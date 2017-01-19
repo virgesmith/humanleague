@@ -1,8 +1,6 @@
 #pragma once
 #include "Sobol.h"
 #include "Tensor.h"
-// TODO sort include paths
-#include "../../utils/NDArray.h"
 
 #include <vector>
 #include <random>
@@ -528,6 +526,5 @@ private:
   uint32_t m_sum;
 };
 
-#include "QRPF4.h"
 
 

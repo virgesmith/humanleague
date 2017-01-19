@@ -18,22 +18,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// pop
-IntegerMatrix pop(IntegerVector marginal0, IntegerVector marginal1, int maxAttempts);
-RcppExport SEXP humanleague_pop(SEXP marginal0SEXP, SEXP marginal1SEXP, SEXP maxAttemptsSEXP) {
+// synthPop2
+DataFrame synthPop2(IntegerVector marginal0, IntegerVector marginal1, int maxAttempts);
+RcppExport SEXP humanleague_synthPop2(SEXP marginal0SEXP, SEXP marginal1SEXP, SEXP maxAttemptsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< IntegerVector >::type marginal0(marginal0SEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type marginal1(marginal1SEXP);
     Rcpp::traits::input_parameter< int >::type maxAttempts(maxAttemptsSEXP);
-    rcpp_result_gen = Rcpp::wrap(pop(marginal0, marginal1, maxAttempts));
+    rcpp_result_gen = Rcpp::wrap(synthPop2(marginal0, marginal1, maxAttempts));
     return rcpp_result_gen;
 END_RCPP
 }
-// pop3
-DataFrame pop3(IntegerVector marginal0, IntegerVector marginal1, IntegerVector marginal2, int maxAttempts);
-RcppExport SEXP humanleague_pop3(SEXP marginal0SEXP, SEXP marginal1SEXP, SEXP marginal2SEXP, SEXP maxAttemptsSEXP) {
+// synthPop3
+DataFrame synthPop3(IntegerVector marginal0, IntegerVector marginal1, IntegerVector marginal2, int maxAttempts);
+RcppExport SEXP humanleague_synthPop3(SEXP marginal0SEXP, SEXP marginal1SEXP, SEXP marginal2SEXP, SEXP maxAttemptsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -41,7 +41,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type marginal1(marginal1SEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type marginal2(marginal2SEXP);
     Rcpp::traits::input_parameter< int >::type maxAttempts(maxAttemptsSEXP);
-    rcpp_result_gen = Rcpp::wrap(pop3(marginal0, marginal1, marginal2, maxAttempts));
+    rcpp_result_gen = Rcpp::wrap(synthPop3(marginal0, marginal1, marginal2, maxAttempts));
     return rcpp_result_gen;
 END_RCPP
 }

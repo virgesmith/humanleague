@@ -1,3 +1,3 @@
-#' @useDynLib Microsim
+#' @useDynLib humanleague
 #' @importFrom Rcpp sourceCpp
 

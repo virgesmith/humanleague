@@ -2,20 +2,20 @@
 
 Copyright 2017 The University of Leeds
 
-This file is part of the R Microsim package.
+This file is part of the R humanleague package.
 
-Microsim is free software: you can redistribute it and/or modify
+humanleague is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Foobar is distributed in the hope that it will be useful,
+humanleague is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 A copy of the GNU General Public License can be found in LICENCE.txt
-It can also be found at <http://www.gnu.org/licenses/>.
+in the project's root directory, or at <http://www.gnu.org/licenses/>.
 
 **********************************************************************/
 
@@ -46,14 +46,14 @@ NumericMatrix sobolSeq(int dim, int samples, bool skip = false)
   return m;
 }
 
-//' Generate a 2D population matrix
+//' Generate a 2D population as a list
 //'
 //' @param marginal0 an integer vector containing marginal data
 //' @param marginal1 an integer vector containing marginal data
 //' @param maxAttempts (optional, default=4) number of retries to make if fitting is unsuccessful
 //' @export
 // [[Rcpp::export]]
-IntegerMatrix pop(IntegerVector marginal0, IntegerVector marginal1, int maxAttempts = 4)
+DataFrame synthPop2(IntegerVector marginal0, IntegerVector marginal1, int maxAttempts = 4)
 {
   std::vector<QRPF<2>::marginal_t> m;
   m.push_back(QRPF<2>::marginal_t(marginal0.begin(), marginal0.end())); // cols
@@ -63,7 +63,7 @@ IntegerMatrix pop(IntegerVector marginal0, IntegerVector marginal1, int maxAttem
 
   bool conv = qrpf.solve(maxAttempts);
 
-  IntegerMatrix result(marginal0.size(), marginal1.size());
+  IntegerMatrix result(qrpf.sum(), 2);
 
   if (!conv)
   {
@@ -76,9 +76,21 @@ IntegerMatrix pop(IntegerVector marginal0, IntegerVector marginal1, int maxAttem
 
   const QRPF<2>::table_t& t = qrpf.result();
 
+  int id = 0; // id is row number
+
   for (size_t j = 0; j < t.size(); ++j)
     for (size_t i = 0; i < t[0].size(); ++i)
-      result(i,j) = t[j][i];
+    {
+      uint32_t p = t[j][i];
+      while (p != 0)
+      {
+        //Rcout << p;
+        result(id, 0) = j;
+        result(id, 1) = i;
+        --p;
+        ++id;
+      }
+    }
 
   return result;
 }
@@ -91,7 +103,7 @@ IntegerMatrix pop(IntegerVector marginal0, IntegerVector marginal1, int maxAttem
 //' @param maxAttempts (optional, default=4) number of retries to make if fitting is unsuccessful
 //' @export
 // [[Rcpp::export]]
-DataFrame pop3(IntegerVector marginal0, IntegerVector marginal1,  IntegerVector marginal2, int maxAttempts = 4)
+DataFrame synthPop3(IntegerVector marginal0, IntegerVector marginal1,  IntegerVector marginal2, int maxAttempts = 4)
 {
   std::vector<QRPF<2>::marginal_t> m;
   m.push_back(QRPF<2>::marginal_t(marginal0.begin(), marginal0.end())); // cols
@@ -113,9 +125,7 @@ DataFrame pop3(IntegerVector marginal0, IntegerVector marginal1,  IntegerVector 
 
   const QRPF<3>::table_t& t = qrpf.result();
 
-  int id = 0;
-
-  //DataFrame result = DataFrame::create(Named("id"), Named("c1"), Named("c2", Named("c3")));
+  int id = 0; // id is row number
   IntegerMatrix result(qrpf.sum(), 3);
 
   for (size_t j = 0; j < t.size(); ++j)
@@ -126,7 +136,6 @@ DataFrame pop3(IntegerVector marginal0, IntegerVector marginal1,  IntegerVector 
         while (p != 0)
         {
           //Rcout << p;
-          //result(id, 0) = ++id;
           result(id, 0) = j;
           result(id, 1) = i;
           result(id, 2) = k;

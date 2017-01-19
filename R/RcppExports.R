@@ -9,14 +9,14 @@ sobolSeq <- function(dim, samples, skip = FALSE) {
     .Call('humanleague_sobolSeq', PACKAGE = 'humanleague', dim, samples, skip)
 }
 
-#' Generate a 2D population matrix
+#' Generate a 2D population as a list
 #'
 #' @param marginal0 an integer vector containing marginal data
 #' @param marginal1 an integer vector containing marginal data
 #' @param maxAttempts (optional, default=4) number of retries to make if fitting is unsuccessful
 #' @export
-pop <- function(marginal0, marginal1, maxAttempts = 4L) {
-    .Call('humanleague_pop', PACKAGE = 'humanleague', marginal0, marginal1, maxAttempts)
+synthPop2 <- function(marginal0, marginal1, maxAttempts = 4L) {
+    .Call('humanleague_synthPop2', PACKAGE = 'humanleague', marginal0, marginal1, maxAttempts)
 }
 
 #' Generate a 3D population as a list
@@ -26,7 +26,7 @@ pop <- function(marginal0, marginal1, maxAttempts = 4L) {
 #' @param marginal2 an integer vector containing marginal data
 #' @param maxAttempts (optional, default=4) number of retries to make if fitting is unsuccessful
 #' @export
-pop3 <- function(marginal0, marginal1, marginal2, maxAttempts = 4L) {
-    .Call('humanleague_pop3', PACKAGE = 'humanleague', marginal0, marginal1, marginal2, maxAttempts)
+synthPop3 <- function(marginal0, marginal1, marginal2, maxAttempts = 4L) {
+    .Call('humanleague_synthPop3', PACKAGE = 'humanleague', marginal0, marginal1, marginal2, maxAttempts)
 }
 

@@ -1,0 +1,65 @@
+---
+title: "MicroMove: simulating urban travel patterns from the bottom up"
+author: "Robin Lovelace and Andrew Smith"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: ref.bib
+---
+
+```{r, eval=FALSE}
+# Get bibliography (run once from project root)
+u = "https://www.zotero.org/api/groups/418217/collections/MP7NS3SC/items/top?limit=100&format=bibtex&v=1"
+b = httr::GET(url = u, httr::write_disk("ref.bib", overwrite = T))
+```
+
+The R package **synthpop** provides a set of tools for generating synthetic data, in the context of anonymisation rather than modelling [@nowok_synthpop:_2016]. ...
+
+@kavroudakis_sms:_2015 focus on the spatial variability of individual-level dat.
+
+## Introduction
+
+
+
+
+## Vignette Info
+
+Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+
+## Styles
+
+The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
+
+    output: 
+      rmarkdown::html_vignette:
+        css: mystyles.css
+
+## Figures
+
+The figure sizes have been customised so that you can easily put two images side-by-side. 
+
+```{r, fig.show='hold'}
+plot(1:10)
+plot(10:1)
+```
+
+You can enable figure captions by `fig_caption: yes` in YAML:
+
+    output:
+      rmarkdown::html_vignette:
+        fig_caption: yes
+
+Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
+
+## More Examples
+
+You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+
+```{r, echo=FALSE, results='asis'}
+knitr::kable(head(mtcars, 10))
+```
+
+## References

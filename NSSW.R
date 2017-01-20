@@ -2,16 +2,16 @@
 # Welcome to Not-so-simple-world, pop. 1000
 #
 # Simple world assumptions:
+# - one person per household
 
-
-# Population generation method: one of ipfp, ml, chi2, lsq, qrpf
-popMethod = "qrpf"
+# Population generation method: one of ipfp, ml, chi2, lsq, qipf
+popMethod = "qipf"
 
 library(dplyr)
 library(humanleague)
 
 getPop2 <- function(popMethod, x, y) {
-  if (popMethod != "qrpf") {
+  if (popMethod != "qipf") {
     target.m1 <- x
     target.m2 <- y
     # storing the margins in a list
@@ -35,7 +35,7 @@ getPop2 <- function(popMethod, x, y) {
 }
 
 getPop3 <- function(t, x, y, z) {
-  if (popMethod != "qrpf") {
+  if (popMethod != "qipf") {
     target.m1 <- x
     target.m2 <- y
     target.m3 <- z
@@ -89,7 +89,7 @@ gender <- c(500, 500)
 age <- c(200, 200, 200, 180, 150, 70 )
 
 populace <- getPop3(popMethod, age, gender, pzones)
-colnames(populace) <- c("zone", "gender", "agegroup") # TODO ordering issues
+colnames(populace) <- c("agegroup", "gender", "zone")
 
 # consistency check
 stopifnot(nrow(filter(populace, zone == 0)) == pzones[1])
@@ -106,7 +106,7 @@ hsize <- c(25, 45, 55, 60, 45, 20 )
 
 # generate O (houses) microsim per zone
 hpop <- getPop2(popMethod, hsize, hzones)
-colnames(hpop) = c("zone", "size")
+colnames(hpop) = c("size", "zone")
 
 # consistency check
 stopifnot(nrow(filter(hpop, zone == 0)) == hzones[1])
@@ -120,17 +120,15 @@ wsize <- c(12, 13, 13, 12)
 
 # generate D (work, shops, social) microsim per zone
 wpop <- getPop2(popMethod, wsize, wzones)
-colnames(wpop) = c("zone", "size")
+colnames(wpop) = c("size", "zone")
 
 # consistency check
 stopifnot(nrow(filter(wpop, zone == 0)) == wzones[1])
 stopifnot(nrow(filter(wpop, size == 0)) == wsize[1])
 
 # TODO
-# how can households be consistent with population
-
+# how can household populations be consistent with overall population?
 
 # TODO
-
 # generate OD dataset containing depTime, arrTime
 

@@ -22,7 +22,8 @@ in the project's root directory, or at <http://www.gnu.org/licenses/>.
 #include <Rcpp.h>
 using namespace Rcpp;
 
-#include "QRPF.h"
+#include "QIPF.h"
+#include "NDArrayUtils.h"
 #include <vector>
 
 
@@ -55,15 +56,16 @@ NumericMatrix sobolSeq(int dim, int samples, bool skip = false)
 // [[Rcpp::export]]
 DataFrame synthPop2(IntegerVector marginal0, IntegerVector marginal1, int maxAttempts = 4)
 {
-  std::vector<QRPF<2>::marginal_t> m;
-  m.push_back(QRPF<2>::marginal_t(marginal0.begin(), marginal0.end())); // cols
-  m.push_back(QRPF<2>::marginal_t(marginal1.begin(), marginal1.end())); // rows
+  std::vector<QIPF<2>::marginal_t> m;
+  m.push_back(QIPF<2>::marginal_t(marginal0.begin(), marginal0.end())); // cols
+  m.push_back(QIPF<2>::marginal_t(marginal1.begin(), marginal1.end())); // rows
 
-  QRPF<2> qrpf(m);
+  QIPF<2> qipf(m);
 
-  bool conv = qrpf.solve(maxAttempts);
+  bool conv = qipf.solve(maxAttempts);
 
-  IntegerMatrix result(qrpf.sum(), 2);
+  IntegerMatrix result(qipf.population(), 2);
+  //IntegerMatrix result(marginal0.size(), marginal1.size());
 
   if (!conv)
   {
@@ -72,25 +74,26 @@ DataFrame synthPop2(IntegerVector marginal0, IntegerVector marginal1, int maxAtt
     return result; //unpopulated
   }
 
-  Rcout << "Found solution with mean square variation of " << qrpf.msv() << std::endl;
+  Rcout << "Found solution with mean square variation of " << qipf.msv() << std::endl;
 
-  const QRPF<2>::table_t& t = qrpf.result();
+  const QIPF<2>::table_t& t = qipf.result();
 
   int id = 0; // id is row number
 
-  for (size_t j = 0; j < t.size(); ++j)
-    for (size_t i = 0; i < t[0].size(); ++i)
+  Index<2, Index_Unfixed> idx(t.sizes());
+
+  while(!idx.end())
+  {
+    uint32_t p = t[idx];
+    while(p)
     {
-      uint32_t p = t[j][i];
-      while (p != 0)
-      {
-        //Rcout << p;
-        result(id, 0) = j;
-        result(id, 1) = i;
-        --p;
-        ++id;
-      }
+      result(id, 0) = idx[0];
+      result(id, 1) = idx[1];
+      --p;
+      ++id;
     }
+    ++idx;
+  }
 
   return result;
 }
@@ -105,14 +108,14 @@ DataFrame synthPop2(IntegerVector marginal0, IntegerVector marginal1, int maxAtt
 // [[Rcpp::export]]
 DataFrame synthPop3(IntegerVector marginal0, IntegerVector marginal1,  IntegerVector marginal2, int maxAttempts = 4)
 {
-  std::vector<QRPF<2>::marginal_t> m;
-  m.push_back(QRPF<2>::marginal_t(marginal0.begin(), marginal0.end())); // cols
-  m.push_back(QRPF<2>::marginal_t(marginal1.begin(), marginal1.end())); // rows
-  m.push_back(QRPF<2>::marginal_t(marginal2.begin(), marginal2.end())); // slices
+  std::vector<QIPF<2>::marginal_t> m;
+  m.push_back(QIPF<2>::marginal_t(marginal0.begin(), marginal0.end())); // cols
+  m.push_back(QIPF<2>::marginal_t(marginal1.begin(), marginal1.end())); // rows
+  m.push_back(QIPF<2>::marginal_t(marginal2.begin(), marginal2.end())); // slices
 
-  QRPF<3> qrpf(m);
+  QIPF<3> qipf(m);
 
-  bool conv = qrpf.solve(maxAttempts);
+  bool conv = qipf.solve(maxAttempts);
 
   if (!conv)
   {
@@ -121,28 +124,29 @@ DataFrame synthPop3(IntegerVector marginal0, IntegerVector marginal1,  IntegerVe
     return IntegerMatrix(1,3);
   }
 
-  Rcout << "Found solution with mean square variation of " << qrpf.msv() << std::endl;
+  Rcout << "Found solution with mean square variation of " << qipf.msv() << std::endl;
 
-  const QRPF<3>::table_t& t = qrpf.result();
+  const QIPF<3>::table_t& t = qipf.result();
 
   int id = 0; // id is row number
-  IntegerMatrix result(qrpf.sum(), 3);
+  IntegerMatrix result(qipf.population(), 3);
 
-  for (size_t j = 0; j < t.size(); ++j)
-    for (size_t i = 0; i < t[0].size(); ++i)
-      for (size_t k = 0; k < t[0][0].size(); ++k)
-      {
-        uint32_t p = t[j][i][k];
-        while (p != 0)
-        {
-          //Rcout << p;
-          result(id, 0) = j;
-          result(id, 1) = i;
-          result(id, 2) = k;
-          --p;
-          ++id;
-        }
-      }
+  Index<3, Index_Unfixed> idx(t.sizes());
+
+  while(!idx.end())
+  {
+    uint32_t p = t[idx];
+    while(p)
+    {
+      result(id, 0) = idx[0];
+      result(id, 1) = idx[1];
+      result(id, 2) = idx[2];
+      --p;
+      ++id;
+    }
+    ++idx;
+  }
+
   return result;
 }
 

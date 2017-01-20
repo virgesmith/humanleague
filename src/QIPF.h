@@ -3,58 +3,7 @@
 
 #include "NDArray.h"
 #include "NDArrayUtils.h"
-#include "../../humanleague/src/Sobol.h"
-
-
-// picks a 1d slice which won't go -ve if you subtract the residual
-template<size_t D, size_t O>
-Index<D, O> pickIndex(uint32_t maxVal, const NDArray<D, uint32_t>& t)
-{
-  Index<D, O> idx(t.sizes());
-
-  while (!idx.end())
-  {
-    typename NDArray<D, uint32_t>::template ConstIterator<O> it(t, idx);
-    if (min<D, uint32_t, O>(it) >= maxVal)
-      break;
-    ++idx;
-  }
-  // if no index found idx.end() == true
-  return idx;
-}
-
-template<size_t D, size_t O>
-bool adjust(const std::vector<int32_t>& r, NDArray<D, uint32_t>& t)
-{
-  // pick an index s.t. subtracting r won't result in -ve values
-  Index<D, O> idx = pickIndex<D, O>(max(r), t);
-
-  if (idx.end())
-    return false;
-
-  typename NDArray<D, uint32_t>::template Iterator<O> it(t, idx);
-
-  for(size_t i = 0; !it.end(); ++it, ++i)
-  {
-    *it -= r[i];
-  }
-  return true;
-}
-
-std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vector<uint32_t>& y)
-{
-  size_t size = x.size();
-  assert(size == y.size());
-
-  std::vector<int32_t> result(size);
-
-  for (size_t i = 0; i < x.size(); ++i)
-  {
-    result[i] = x[i] - y[i];
-  }
-  return result;
-}
-
+#include "Sobol.h"
 
 
 // n-Dimensional Quasirandom integer proportional(?) fitting

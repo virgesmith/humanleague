@@ -29,7 +29,7 @@ getPop2 <- function(popMethod, x, y) {
       pop <- mipfp::ObtainModelEstimates(seed, target.list, target.data, method = popMethod)
     }
   } else {
-    pop <- humanleague::synthPop2(x, y, 4000)
+    pop <- humanleague::synthPop2(x, y)
   }
   return(pop);
 }
@@ -55,7 +55,7 @@ getPop3 <- function(t, x, y, z) {
     }
   } else {
     # large maxSamples until fix adjust postion
-    pop <- humanleague::synthPop3(x, y, z, 1000)
+    pop <- humanleague::synthPop3(x, y, z)
   }
   return(pop);
 }

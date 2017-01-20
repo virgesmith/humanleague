@@ -23,7 +23,6 @@ in the project's root directory, or at <http://www.gnu.org/licenses/>.
 using namespace Rcpp;
 
 #include "QIPF.h"
-#include "NDArrayUtils.h"
 #include <vector>
 
 
@@ -65,7 +64,6 @@ DataFrame synthPop2(IntegerVector marginal0, IntegerVector marginal1, int maxAtt
   bool conv = qipf.solve(maxAttempts);
 
   IntegerMatrix result(qipf.population(), 2);
-  //IntegerMatrix result(marginal0.size(), marginal1.size());
 
   if (!conv)
   {

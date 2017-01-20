@@ -1,6 +1,7 @@
 #pragma once
 
 #include "NDArray.h"
+#include "Index.h"
 
 #include <vector>
 #include <cassert>
@@ -46,7 +47,7 @@ T max(const NDArray<D, T>& v)
 
 // this assumes iterator is pointing to the start of the 1-d slice
 template<size_t D, typename T, size_t O>
-T min(typename NDArray<D,T>::template ConstIterator<O>& it) 
+T min(typename NDArray<D,T>::template ConstIterator<O>& it)
 {
    T minVal = *it;
    while(!it.end())
@@ -103,4 +104,56 @@ std::vector<T> reduce(const NDArray<D, T>& input)
 
   return sums;
 }
+
+
+// picks a 1d slice which won't go -ve if you subtract the residual
+template<size_t D, size_t O>
+Index<D, O> pickIndex(uint32_t maxVal, const NDArray<D, uint32_t>& t)
+{
+  Index<D, O> idx(t.sizes());
+
+  while (!idx.end())
+  {
+    typename NDArray<D, uint32_t>::template ConstIterator<O> it(t, idx);
+    if (min<D, uint32_t, O>(it) >= maxVal)
+      break;
+    ++idx;
+  }
+  // if no index found idx.end() == true
+  return idx;
+}
+
+template<size_t D, size_t O>
+bool adjust(const std::vector<int32_t>& r, NDArray<D, uint32_t>& t)
+{
+  // pick an index s.t. subtracting r won't result in -ve values
+  Index<D, O> idx = pickIndex<D, O>(max(r), t);
+
+  if (idx.end())
+    return false;
+
+  typename NDArray<D, uint32_t>::template Iterator<O> it(t, idx);
+
+  for(size_t i = 0; !it.end(); ++it, ++i)
+  {
+    *it -= r[i];
+  }
+  return true;
+}
+
+std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vector<uint32_t>& y)
+{
+  size_t size = x.size();
+  assert(size == y.size());
+
+  std::vector<int32_t> result(size);
+
+  for (size_t i = 0; i < x.size(); ++i)
+  {
+    result[i] = x[i] - y[i];
+  }
+  return result;
+}
+
+
 

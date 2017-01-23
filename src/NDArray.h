@@ -118,7 +118,7 @@ public:
     m_sizes[0] = 0;
   }
 
-  NDArray(const size_t* sizes)
+  NDArray(const size_t* sizes) : m_storageSize(0), m_data(0)
   {
     resize(sizes);
   }
@@ -154,8 +154,7 @@ public:
 
   void resize(const size_t* sizes)
   {
-    // TODO no realloc if storageSize unchanged
-    deallocate(m_data);
+    size_t oldStorageSize = m_storageSize;
 
     std::copy(sizes, sizes + Dim, m_sizes);
     m_storageSize = sizes[0];
@@ -165,7 +164,13 @@ public:
       assert(sizes[i] < MaxSize);
       m_storageSize *= sizes[i];
     }
-    m_data = allocate(m_storageSize);
+
+    // no realloc if storageSize unchanged
+    if (m_storageSize > oldStorageSize)
+    {
+      deallocate(m_data);
+      m_data = allocate(m_storageSize);
+    }
   }
 
   void assign(T val) const
@@ -181,6 +186,16 @@ public:
   const_reference operator[](const size_t* index) const
   {
     return m_data[offset(index)];
+  }
+
+  value_type* begin() const
+  {
+    return m_data;
+  }
+
+  value_type* end() const
+  {
+    return m_data + m_storageSize;
   }
 
 private:

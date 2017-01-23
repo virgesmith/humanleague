@@ -5,43 +5,15 @@
 
 using namespace Rcpp;
 
-// sobolSeq
-NumericMatrix sobolSeq(int dim, int samples, bool skip);
-RcppExport SEXP humanleague_sobolSeq(SEXP dimSEXP, SEXP samplesSEXP, SEXP skipSEXP) {
+// synthPop
+List synthPop(List marginals, int maxAttempts);
+RcppExport SEXP humanleague_synthPop(SEXP marginalsSEXP, SEXP maxAttemptsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type dim(dimSEXP);
-    Rcpp::traits::input_parameter< int >::type samples(samplesSEXP);
-    Rcpp::traits::input_parameter< bool >::type skip(skipSEXP);
-    rcpp_result_gen = Rcpp::wrap(sobolSeq(dim, samples, skip));
-    return rcpp_result_gen;
-END_RCPP
-}
-// synthPop2
-DataFrame synthPop2(IntegerVector marginal0, IntegerVector marginal1, int maxAttempts);
-RcppExport SEXP humanleague_synthPop2(SEXP marginal0SEXP, SEXP marginal1SEXP, SEXP maxAttemptsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerVector >::type marginal0(marginal0SEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type marginal1(marginal1SEXP);
+    Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
     Rcpp::traits::input_parameter< int >::type maxAttempts(maxAttemptsSEXP);
-    rcpp_result_gen = Rcpp::wrap(synthPop2(marginal0, marginal1, maxAttempts));
-    return rcpp_result_gen;
-END_RCPP
-}
-// synthPop3
-DataFrame synthPop3(IntegerVector marginal0, IntegerVector marginal1, IntegerVector marginal2, int maxAttempts);
-RcppExport SEXP humanleague_synthPop3(SEXP marginal0SEXP, SEXP marginal1SEXP, SEXP marginal2SEXP, SEXP maxAttemptsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerVector >::type marginal0(marginal0SEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type marginal1(marginal1SEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type marginal2(marginal2SEXP);
-    Rcpp::traits::input_parameter< int >::type maxAttempts(maxAttemptsSEXP);
-    rcpp_result_gen = Rcpp::wrap(synthPop3(marginal0, marginal1, marginal2, maxAttempts));
+    rcpp_result_gen = Rcpp::wrap(synthPop(marginals, maxAttempts));
     return rcpp_result_gen;
 END_RCPP
 }

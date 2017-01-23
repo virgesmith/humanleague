@@ -26,123 +26,90 @@ using namespace Rcpp;
 #include <vector>
 
 
-//' Generate an n-D Sobol sequence containing @param samples samples, optionally skipping
-//' @param dim the dimension of the sequence
-//' @param skip (optional, default=false) skips 2^k samples (per dimension) where k is largest integer s.t. 2^k < samples
-//' @export
-// [[Rcpp::export]]
-NumericMatrix sobolSeq(int dim, int samples, bool skip = false)
+template<size_t D>
+void doQipf(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, size_t maxAttempts)
 {
-  static const double scale = 0.5 / (1ull<<63);
-
-  NumericMatrix m(samples, dim);
-
-  Sobol s(dim, skip ? samples : 0);
-
-  for (int j = 0; j < samples; ++j)
-    for (int i = 0; i < dim; ++i)
-      m(j,i) = s() * scale;
-
-  return m;
+  QIPF<D> qipf(m);
+  result["conv"] = qipf.solve(maxAttempts);
+  result["attempts"] = qipf.attempts();
+  result["meanSqVariation"] = qipf.msv();
+  const typename QIPF<D>::table_t& t = qipf.result();
+  Index<D, Index_Unfixed> idx(t.sizes());
+  IntegerVector values(t.storageSize());
+  while (!idx.end())
+  {
+    values[idx.colMajorOffset()] = t[idx];
+    ++idx;
+  }
+  Rcout << std::endl;
+  values.attr("dim") = dims;
+  result["x.hat"] = values;
 }
 
-//' Generate a 2D population as a list
+
+//' Generate a population in n dimensions given n marginals
 //'
-//' @param marginal0 an integer vector containing marginal data
-//' @param marginal1 an integer vector containing marginal data
+//' @param marginals a List of n integer vectors containing marginal data
 //' @param maxAttempts (optional, default=4) number of retries to make if fitting is unsuccessful
 //' @export
 // [[Rcpp::export]]
-DataFrame synthPop2(IntegerVector marginal0, IntegerVector marginal1, int maxAttempts = 4)
+List synthPop(List marginals, int maxAttempts = 4)
 {
-  std::vector<QIPF<2>::marginal_t> m;
-  m.push_back(QIPF<2>::marginal_t(marginal0.begin(), marginal0.end())); // cols
-  m.push_back(QIPF<2>::marginal_t(marginal1.begin(), marginal1.end())); // rows
-
-  QIPF<2> qipf(m);
-
-  bool conv = qipf.solve(maxAttempts);
-
-  IntegerMatrix result(qipf.population(), 2);
-
-  if (!conv)
+  std::vector<std::vector<uint32_t>> m;
+  IntegerVector dims;
+  for (size_t i = 0; i < marginals.size(); ++i)
   {
-    Rcout << "Failed to find exact solution after " << maxAttempts << " attempts.\n"
-          << "Consider increasing maxAttempts (default=4)" << std::endl;
-    return result; //unpopulated
+    const IntegerVector& iv = marginals[i];
+    std::vector<uint32_t> tmp;
+    tmp.reserve(iv.size());
+    std::copy(iv.begin(), iv.end(), std::back_inserter(tmp));
+    m.push_back(tmp); // cols
+    dims.push_back(iv.size());
   }
+  const size_t dim = marginals.size();
 
-  Rcout << "Found solution with mean square variation of " << qipf.msv() << std::endl;
 
-  const QIPF<2>::table_t& t = qipf.result();
+  List result;
+  result["method"] = "qipf";
 
-  int id = 0; // id is row number
-
-  Index<2, Index_Unfixed> idx(t.sizes());
-
-  while(!idx.end())
+  // Workaround for fact that QIPF dimensionality is a template param and thus fixed at compile time
+  switch(dim)
   {
-    uint32_t p = t[idx];
-    while(p)
-    {
-      result(id, 0) = idx[0];
-      result(id, 1) = idx[1];
-      --p;
-      ++id;
-    }
-    ++idx;
-  }
-
-  return result;
-}
-
-//' Generate a 3D population as a list
-//'
-//' @param marginal0 an integer vector containing marginal data
-//' @param marginal1 an integer vector containing marginal data
-//' @param marginal2 an integer vector containing marginal data
-//' @param maxAttempts (optional, default=4) number of retries to make if fitting is unsuccessful
-//' @export
-// [[Rcpp::export]]
-DataFrame synthPop3(IntegerVector marginal0, IntegerVector marginal1,  IntegerVector marginal2, int maxAttempts = 4)
-{
-  std::vector<QIPF<2>::marginal_t> m;
-  m.push_back(QIPF<2>::marginal_t(marginal0.begin(), marginal0.end())); // cols
-  m.push_back(QIPF<2>::marginal_t(marginal1.begin(), marginal1.end())); // rows
-  m.push_back(QIPF<2>::marginal_t(marginal2.begin(), marginal2.end())); // slices
-
-  QIPF<3> qipf(m);
-
-  bool conv = qipf.solve(maxAttempts);
-
-  if (!conv)
-  {
-    Rcout << "Failed to find exact solution after " << maxAttempts << " attempts.\n"
-          << "Consider increasing maxAttempts (default=4)" << std::endl;
-    return IntegerMatrix(1,3);
-  }
-
-  Rcout << "Found solution with mean square variation of " << qipf.msv() << std::endl;
-
-  const QIPF<3>::table_t& t = qipf.result();
-
-  int id = 0; // id is row number
-  IntegerMatrix result(qipf.population(), 3);
-
-  Index<3, Index_Unfixed> idx(t.sizes());
-
-  while(!idx.end())
-  {
-    uint32_t p = t[idx];
-    while(p)
-    {
-      result(id, 0) = idx[0];
-      result(id, 1) = idx[1];
-      result(id, 2) = idx[2];
-      --p;
-      ++id;
-    }
-    ++idx;
+  case 2:
+    doQipf<2>(result, dims, m, maxAttempts);
+    break;
+  case 3:
+    doQipf<3>(result, dims, m, maxAttempts);
+    break;
+  case 4:
+    doQipf<4>(result, dims, m, maxAttempts);
+    break;
+  case 5:
+    doQipf<5>(result, dims, m, maxAttempts);
+    break;
+  case 6:
+    doQipf<6>(result, dims, m, maxAttempts);
+    break;
+  case 7:
+    doQipf<7>(result, dims, m, maxAttempts);
+    break;
+  case 8:
+    doQipf<8>(result, dims, m, maxAttempts);
+    break;
+  case 9:
+    doQipf<9>(result, dims, m, maxAttempts);
+    break;
+  case 10:
+    doQipf<10>(result, dims, m, maxAttempts);
+    break;
+  case 11:
+    doQipf<11>(result, dims, m, maxAttempts);
+    break;
+  case 12:
+    doQipf<12>(result, dims, m, maxAttempts);
+    break;
+  default:
+    throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
   }
 
   return result;

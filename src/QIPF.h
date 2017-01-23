@@ -18,7 +18,7 @@ public:
 
   typedef std::vector<uint32_t> marginal_t;
 
-  QIPF(const std::vector<marginal_t>& marginals) : m_marginals(marginals)
+  QIPF(const std::vector<marginal_t>& marginals) : m_marginals(marginals), m_attempts(0ull)
   {
     if (m_marginals.size() != Dim)
     {
@@ -41,7 +41,7 @@ public:
 
   ~QIPF() { }
 
-  bool solve(size_t maxSamples = 4)
+  bool solve(size_t maxAttempts = 4)
   {
     static Sobol sobol(Dim);
 
@@ -51,10 +51,9 @@ public:
       dists.push_back(std::discrete_distribution<uint32_t>(m_marginals[i].begin(), m_marginals[i].end()));
     }
 
-    size_t sample = 0;
     bool success = false;
 
-    for (; sample < maxSamples && !success; ++sample)
+    for (m_attempts = 0; m_attempts < maxAttempts && !success; ++m_attempts)
     {
       m_t.assign(0u);
 
@@ -121,6 +120,11 @@ public:
     return m_sum;
   }
 
+  size_t attempts() const
+  {
+    return m_attempts;
+  }
+
 private:
 
   template<size_t O>
@@ -142,6 +146,7 @@ private:
   const std::vector<marginal_t> m_marginals;
   table_t m_t;
   size_t m_sum;
+  size_t m_attempts;
 };
 
 // TODO helper macro for member template specialisations

@@ -1,6 +1,6 @@
 Package: humanleague
 Type: Package
-Title: Generates synthetic populations given marginal data
+Description: Generates synthetic populations given marginal data, in up to 12 dimensions
 Version: 0.1.0
 Author: Andrew Smith
 Maintainer: Andrew Smith <a.p.smith@leeds.ac.uk>

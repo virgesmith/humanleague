@@ -105,8 +105,8 @@ wpop <- getPop(popMethod, list(wsize, wzones))
 # TODO
 # generate OD dataset containing depTime, arrTime
 
-#world <- raster::raster(nrows=3, ncols=3, xmn=-150, xmx=150, ymn=-150, ymx =150)
-#values(world) <- pzones
-#polys <- raster::rasterToPolygons(world)
-#stopifnot(polys@data == pzones)
+world <- raster::raster(nrows=3, ncols=3, xmn=-150, xmx=150, ymn=-150, ymx =150)
+values(world) <- pzones
+polys <- raster::rasterToPolygons(world)
+stopifnot(polys@data == pzones)
 

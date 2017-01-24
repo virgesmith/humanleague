@@ -41,7 +41,6 @@ void doQipf(List& result, IntegerVector dims, const std::vector<std::vector<uint
     values[idx.colMajorOffset()] = t[idx];
     ++idx;
   }
-  Rcout << std::endl;
   values.attr("dim") = dims;
   result["x.hat"] = values;
 }

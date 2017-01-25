@@ -25,6 +25,16 @@ public:
       throw std::runtime_error("invalid no. of marginals");
     }
 
+    // check for -ve values have to loop manually and convert to signed value :(
+    for (size_t i = 0; i < m_marginals.size(); ++i)
+    {
+      for (size_t j = 0; j < m_marginals[i].size(); ++j)
+      {
+        if (static_cast<int32_t>(m_marginals[i][j]) < 0)
+          throw std::runtime_error("negative marginal value in marginal " + std::to_string(i) + " element " + std::to_string(j));
+      }
+    }
+
     size_t sizes[Dim];
     m_sum = sum(m_marginals[0]);
     sizes[0] = m_marginals[0].size();
@@ -118,6 +128,12 @@ public:
   size_t population() const
   {
     return m_sum;
+  }
+
+  // the mean population of each state
+  double meanPopPerState() const
+  {
+    return double(m_sum) / m_t.storageSize();
   }
 
   size_t attempts() const

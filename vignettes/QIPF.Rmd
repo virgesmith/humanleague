@@ -152,6 +152,10 @@ which results in a population that now matches both marginals.
 
 We took the Sobol QRNG implementation (in `C`) of stevengj of MIT [https://github.com/stevengj/nlopt/], and put it into a `C++` wrapper that is compliant with the native `C++11` standard library random functionality. We wrote custom N-dimensional array, indexing and iterator functionality, and the QIPF algorithm itself. Finally, using `Rcpp`, we put this into an open source `R` package called `humanleague` which is available at [https://github.com/CatchDat/humanleague](https://github.com/CatchDat/humanleague)
 
+This package supports dimensionality up to 12, although this limit is arbitrary and could be increased if necessary. Input is simply a list of marginal vectors
+
+Output is broadly compatible with the `mipfp` package: N-D population array, number of attempts, variation from "smooth" non-integral solution.
+
 ### Testing
 
 #### QRNG vs PRNG

@@ -24,6 +24,18 @@ using namespace Rcpp;
 
 #include "QIPF.h"
 #include <vector>
+//#include <csignal>
+
+// // Handler for ctrl-C
+// extern "C" void sigint_handler(int)
+// {
+//   // throw back to R
+//   throw std::runtime_error("User interrupt");
+
+// }
+// Enable ctrl-C to interrupt the code
+// TODO this doesnt seem to work, perhaps another approach (like a separate thread?)
+//void (*oldhandler)(int) = signal(SIGINT, sigint_handler);
 
 
 template<size_t D>
@@ -42,13 +54,13 @@ void doQipf(List& result, IntegerVector dims, const std::vector<std::vector<uint
     ++idx;
   }
   values.attr("dim") = dims;
+  result["p.hat"] = qipf.meanPopPerState();
   result["x.hat"] = values;
 }
 
-
 //' Generate a population in n dimensions given n marginals
 //'
-//' @param marginals a List of n integer vectors containing marginal data
+//' @param marginals a List of n integer vectors containing marginal data (2 <= n <= 12)
 //' @param maxAttempts (optional, default=4) number of retries to make if fitting is unsuccessful
 //' @export
 // [[Rcpp::export]]
@@ -66,8 +78,6 @@ List synthPop(List marginals, int maxAttempts = 4)
     dims.push_back(iv.size());
   }
   const size_t dim = marginals.size();
-
-
   List result;
   result["method"] = "qipf";
 
@@ -110,6 +120,8 @@ List synthPop(List marginals, int maxAttempts = 4)
   default:
     throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
   }
+
+  // TODO dump out pop table...
 
   return result;
 }

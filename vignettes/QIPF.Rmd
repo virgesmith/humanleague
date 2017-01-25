@@ -24,20 +24,22 @@ The R package **synthpop** provides a set of tools for generating synthetic data
 
 ## Abstract
 
-We present a novel algorithm - Quasirandom Integer Proportional Fitting - for generating synthetic populations from marginal data. It works purely in the integer domain. It can also deal with empty cells, is not iterative, and is very fast. Briefly, the algorithm generates a "seed" population and applys a maximum of $D$ corrections, where $D$ is the dimensionality of the problem. Although the algorithm is not guaranteed to find a valid solution, in practice we find this to be rare. In most cases resampling with different seed data will eventually produce a solution. In the worst case the non-converged data can be used as a seed population for an existing algorithm such as IPF. We decribe the algorithm, go through a worked example, demonstrate that quasirandom (rather than pseudorandom) seed data is crucial, and compare its performance against established methods. Interested readers are invited to evaluate the method themselves by installing the open-source R package "humanleague".
+We present a novel algorithm - Quasirandom Integer Proportional Fitting - for generating synthetic populations from marginal data. It works purely in the integer domain. It can also deal with empty cells, is not iterative and thus very fast. Briefly, the algorithm generates a quasirandom "seed" population and applys a maximum of $D$ corrections, where $D$ is the dimensionality of the problem. Although the algorithm is not guaranteed to find a valid solution, in practice we find this to be rare. In most cases resampling with different seed data will eventually produce a solution. In the worst case the non-converged data can be used as a seed population for an existing algorithm such as IPF. We decribe the algorithm, go through a worked example, demonstrate that quasirandom (rather than pseudorandom) seed data is crucial, and compare its performance against established methods. Interested readers are invited to evaluate the method themselves by installing the open-source R package `humanleague`.
 
 ## Introduction
+
+Raking is considered to be a solved problem. However current methods do have some shortfalls, for example generating fractional populations, being computationally intensive. We present a method that addresses some of these shortcomings whilst also having shortcomings of its own. We see this method as being complementary to existing methods as there will be circumstances where it produces more useful (i.e. integral) data. Conversely, there are likely to be circumstance where our proposed method is not the best approach.
 
 ## Theory
 
 ### Quasirandom Numbers
 
-Quasirandom numbers, often referred to a low discrepancy sequences, are preferential to pseudorandom numbers in many applications, despite not having some of the (appearance of) randomness properties of (good) pseudorandom generators. In this work we focus on the Sobol QRNG of (refs Sobol, Bratley and Fox, Joe & Kuo). 
+Quasirandom numbers, often referred to as low discrepancy sequences, are preferential to pseudorandom numbers in many applications, despite not having some of the (appearance of) randomness properties of (good) pseudorandom generators. In this work we focus on the Sobol QRNG of (refs Sobol, Bratley and Fox, Joe & Kuo). 
 
 Quasi: inherent dimension, no independence, faster convergence.  
-Pseudo: no dimension, (appear to be) independent, faster convergence.
+Pseudo: dimensionless, (appear to be) independent, slower convergence.
 
-Sobol sequences used in e.g. numerical integration will converge at a rate of $\sim1/N$ (actually $d.ln N/N$ CHECK!) compared to $\sim1/\sqrt N$ for a PRNG
+Sobol sequences used for e.g. numerical integration will converge at a rate of $\approx1/N$ (actually $(ln N)^D/N$ ref Numerical Recipes) compared to $\sim1/\sqrt N$ for a PRNG, and thuis require far fewer samples to achieve the same level of accuracy.
 
 We show that the technique described in this paper will not work effectively if a PRNG is used to generate the seed population...
 
@@ -45,13 +47,15 @@ We show that the technique described in this paper will not work effectively if 
 
 A mathematical statement of the microsimulation problem is as follows:
 
+NB In the notation below, the index $i$ is scalar and refers to a particular dimension. The index $k$ is a vector index of length equal to the dimensionality of the problem.
+
 Given a population $P$ and a set of $N$ marginal vectors $\mathbf{m}_i$ of length $l_i$ such that we have $S$ possible states
 
 $$S=\prod\limits_{i}l_i$$
 
 Find a contingency table $\mathbf T$ in N dimensions such that
 
-$$\sum\limits_{k\neq i} \mathbf{T}_k = \mathbf{m}_i$$
+$$\sum\limits_{k\neq i} (\mathbf{T_i})_k = \mathbf{m}_i$$
 
 here we are summing all elements in all dimensions other than $i$, i.e. keeping $i$ fixed. 
 
@@ -65,41 +69,39 @@ $$\sum\limits_k \mathbf{T} = P$$ (3)
 
 and finally we limit solutions to the natural numbers: 
 
-$${T,m_i}  \in \mathbb N$$ (4)
+$${\mathbf{T},\mathbf{m}_i}  \in \mathbb N$$ (4)
 
-In the general case this is an ill-posed problem as there are not enough constraints for a unique solution. Hence the need to resort to iterative or optimisation-type solutions.
+In the general case this is an ill-posed problem as there are not enough constraints for a unique solution. Hence the need to resort to iterative or optimisation-type solutions, such as IPF, simulated annealing, maximum likelihood, chi-squared fitting, least-squares fitting.
 
 Our algorithm is as follows:
 
-Create an N-dimensional discrete distribution using the marginals $m$
+1. Create an N-dimensional discrete distribution using the marginals $\mathbf{m}_i$
 
-Sample P variates from this distribution to create a "seed" population T0, assigning an individual to the corresponding "slot" (i.e. incrementing the value of $T_ijk$ by one)
+2. Sample {P} variates, using a QRNG, from this distribution to create a "seed" population $\mathbf{T}$, assigning an individual to the corresponding "slot". Specifically, we sample a value of $k$ and increment the value of $\mathbf{T}_k$. Thus $\mathbf{T}$ will - by construction - satisfy constraints (3) and (4). The next step is to check, and adjust if necessary, the population such that constraint (1) is met.
 
-Thus initially T0 will by construction satisfy constraints (3) and (4). The next step is to check, and adjust if necessary, the population such that constraint (1) is met:
+3. For each dimension, calculate the residual vector $\mathbf{r}_i$, the difference between the population and marginal $\mathbf{m}_i$: 
 
-For each dimension, calculate the residual $r_i$, the difference between the population and marginal. 
+$$\mathbf{r}_i = \sum\limits_{k\neq{i}} \mathbf{T}_k - \mathbf{m}_i$$ (5)
 
-$$r_i = \sum_i T_i - m_i$$ (5)
+If all elements of $\mathbf{r}_i$ are zero, constraint (1) is satisfied in dimension $i$. If not, pick any index $k$ in $\mathbf{T}$ and adjust $\mathbf{T}$:
 
-If all elements are zero, constraint (1) is satisfied in dimension i. If not, pick any index with direction i in T and adjust adjust Ti:
+$$\mathbf{T}_{k\neq i} \leftarrow \mathbf{T}_{k\neq i} - \mathbf{r}_i$$ (6)
 
-$$T_{k\neq i} \leftarrow T_{k\neq i} - r_i$$ (6)
+Repeat this step for each dimension. This now ensures that constraint (1) is met (N.B. (3) is already met), but may have resulted in contraint (4) being violated.
 
-Repeat this step for each dimension. This now ensures that constraints (1) is met ((3) is already met), but may have resulted in contraint (4) being violated.
+Naively applying this algorithm is generally unlikely to generate a seed population $\mathbf T$ s.t. all constraints can be met. Specifically, sampling with a PRNG (which draws notionally independent variates), the seed population is likely to have "clusters" and "gaps", the latter of which are likely to violate constraint (4) when adjustments are made.
 
-Naively applying this algorithm is generally unlikely to generate $\mathbf T$ s.t. all constraints are met. Since pseudorandom numbers are notionally independent, the seed population is likely to have "clusters" and "gaps", the latter likely to break constraint (4) when adjustments are made.
+We propose two techniques to minimise this risk. Firstly, the use of a QRNG rather than a PRNG to generate the "seed" population. This results in a more even distribution of the seed population, alleviating (but not entirely eliminating) the cluster/gap issue.
 
-We propose two techniques to minimise this risk. Firstly, the use of quasirandom numbers to generate the "seed" population. The properties of quasirandom numbers are described in more detail in section X. Importantly, they are not independent. Successive numbers differ from each other in a way that will evenly fill a probablity distribution.
+We can show that by using this technique, a QRNG-generated "seed" population will generally be close to meeting all the contraints, and in simple cases may actually meet them all without adjustment.
 
-We show that by using this technique, a "seed" population will be close to meeting all the contraints, and in some cases may meet them all without any adjustment.
+4. If the seed population does not satisfy constraint (3) we apply the adjustments detailed above. In order not to violate constraint (4) the vector in dimension $i$ is chosen such that 
 
-If the seed population does not satisfy constraint (3) we apply the adjustments detailed above. In order not to violate constraint (4) the vector in dimension i is chosen such that 
+$$\min\limits_i \mathbf{T}_k \ge \max\limits_i\Big(\sum\limits_{k\neq{i}} \mathbf{T}_{k} - \mathbf{m}_i\Big)$$ (7)
 
-$$\min T_i >= \max\Big(\sum\limits_i T_i - m_i\Big)$$ (7)
+which ensures that no element in the contingency table goes negative once the residual has been subtracted.
 
-which ensures that no element in the contingency table goes negative.
-
-It may still be that case that there is no vector that satisfies (7), in which case we have to resample the "seed" population as there is no way of adjusting the values that meets all the contraints. We have found this case to be unlikely. See discussion.
+It may be that case that there is no vector index $k$ that satisfies (7), i.e. the seed population is not one that can be adjusted using this algorithm to satisfy all the constraints. In this case we have to resample the "seed" population. We have found this case to be reasonably rare, and since the algorithm is fast it is not onerous to resample a number of times. See discussion.
 
 As a measure of degeneracy(?) we also compute a "variation" of the population from the probability of being in each state:
 
@@ -112,55 +114,53 @@ which is a measure of the Euclidian distance from the "smoothest" non-integral s
 
 ### A Worked Example
 
-We consider a 2 dimensional case here for simpilicity, for a population of 100 consisting of 51 females and 49 males, of which 35 are aged under 0-29, 40 aged 30-59, 25 aged 60+. Thus our constraint vectors are: $m_0=[51,49]$ and $m_1=[35,40,25]$ and there are 6 possible states.    
+We consider a 2 dimensional case here for simpilicity, for a population of 100 consisting of 51 females and 49 males, of which 35 are aged under 0-29, 40 aged 30-59, 25 aged 60+. Thus our constraint vectors are: $\mathbf{m}_0=[51,49]$ and $\mathbf{m}_1=[35,40,25]$ and there are 6 possible states.    
 
 We construct a bivariate discrete distibution using the marginals which will have a probability 
 
-$$p_{ij} = \frac{m_{0i}m_{1j}}{\sum\limits_im_0\sum\limits_jm_1}$$ (8)
+$$p_{ij} = \frac{(\mathbf{m}_0)_i(\mathbf{m}_1)_j}{\sum\limits_i\mathbf{m}_0\sum\limits_j\mathbf{m}_1}$$ (8)
 
-of being in state ${i,j}$. We take 100 (i.e. the population) random samples from this distribution to create a seed population $T$ (in bold), which may look like:
+of being in state $(i,j)$. We take 100 (i.e. the population) random samples from this distribution to create a seed population $\mathbf{T}$ (in bold), which for example may look like:
 
- m~0/m~1 |  35    | 40     | 25     | 
+ $\mathbf{m}_0\setminus\mathbf{m}_1$ |  35    | 40     | 25     | 
 :-------:|--------|--------|--------|----
     51   | **19** | **20** | **11** | *50*
     49   | **17** | **20** | **13** | *50*
     ~    |  *36*  |  *40*  |  *24*  |
 
-Summing over rows and columns we see we do not quite match the marginals. The residuals (italic, from equation 5) are $r_0=[-1, 1]$ and $r_1=[1,0,-1]$.
+Summing over rows and columns we see we do not quite match the marginals. The residuals (italic, from equation 5) are $\mathbf{r}_0=[-1, 1]$ and $\mathbf{r}_1=[1,0,-1]$.
 
-To correct the population we subtract $r_0$ from any first column (any will do, since no choice of column will result in a negative value). Selecting the first column the population becomes:
+To correct the population we subtract $\mathbf{r}_0$ from any one column (in this case no choice of column will result in a negative value). Selecting the first column, the population becomes:
 
- m~0/m~1 |  35    | 40     | 25     | 
+ $\mathbf{m}_0\setminus\mathbf{m}_1$ |  35    | 40     | 25     | 
 :-------:|--------|--------|--------|----
     51   | **20** | **20** | **11** | *51*
     49   | **16** | **20** | **13** | *49*
     ~    |  *36*  |  *40*  |  *24*  |
     
-which now matches $m_0$. Next we subtract $r_1$ from the any row (again any will do, since no choice of row will result in a negative value). Selecting the first row the population becomes:
+which now matches $\mathbf{m}_0$. Next we subtract $\mathbf{r}_1$ from the any one row (again no choice of row will result in a negative value). Selecting the first row, the population becomes:
 
- m~0/m~1 |  35    | 40     | 25     | 
+ $\mathbf{m}_0\setminus\mathbf{m}_1$ |  35    | 40     | 25     | 
 :-------:|--------|--------|--------|----
     51   | **19** | **20** | **12** | *51*
     49   | **16** | **20** | **13** | *49*
     ~    |  *35*  |  *40*  |  *25*  |
 
-which results in a population that matches both marginals. 
+which results in a population that now matches both marginals. 
 
 ### The R Package
 
-The algorithm has been coded in C++ and wrapped, using Rcpp, into an open source R package called `humanleague` which is available at [https://github.com/CatchDat/humanleague](https://github.com/CatchDat/humanleague)
+We took the Sobol QRNG implementation (in `C`) of stevengj of MIT [https://github.com/stevengj/nlopt/], and put it into a `C++` wrapper that is compliant with the native `C++11` standard library random functionality. We wrote custom N-dimensional array, indexing and iterator functionality, and the QIPF algorithm itself. Finally, using `Rcpp`, we put this into an open source `R` package called `humanleague` which is available at [https://github.com/CatchDat/humanleague](https://github.com/CatchDat/humanleague)
 
 ### Testing
 
 #### QRNG vs PRNG
 
-We recorded the success rate of the algorithm for a number of problems using marginals of length 5, substituting a good-quality PRNG (MT19937) for the QRNG.
+We recorded the success rate of the algorithm for a number of problems using marginals of length 5, comparing the number of attempt required using a good-quality PRNG (MT19937 seed for reproducibility?) instead of the Sobol QRNG.
 
-Problem 1: evenly distributed marginals of length $l=5$, identical in each dimension, constructed such that the expected population of each state was 1, i.e.
+The test problems ranged from dimensionality 2 to 5, all marginals identical of length 5 in each dimension. As a proxy measure of difficulty we recorded the mean population per state $P/S$. We limited the number of attempts to 1000, and consider that if this limit is reached the algorithm is unlikely to find a solution in any reasonable time.
 
-$$\sum\limits_{k=0}^{l} \mathbf{m}_k = S$$ (2)
-
-with dimensionality from 2 to 5 dimensions. We measure the mean number of attempts (averaged over 100 runs) required to generate a valid population:
+We present the mean number of attempts (averaged over 100 runs) required to generate a valid population:
 
 Problem 1: $P/S=10$, average attempts to get valid solution ('-' denotes no valid solution found in 1000 attempts)
 
@@ -177,14 +177,17 @@ Problem 2: $P/S=1$, average attempts to get valid solution
     PRNG |**470** |**-**   |**-**  | **-**
 
 
-Problem 3: unevenly distributed marginals $m=[5,25,125,25,5]$, indentical in each dimension. As dimensionality increases, population becomes increasingly sparse. 
+Problem 3: unevenly distributed marginals $m=[5,25,125,25,5]$, indentical in each dimension. As dimensionality increases, population becomes increasingly sparse:
 
    Dim   |  2     |  3     | 4     | 5
 :-------:|--------|--------|-------|------
+    $P/S$|   7.4  |  1.5   |  0.30  |  0.059
     QRNG |**1.05**|**1.3** |**3.4**|**23.5**
     PRNG |**23** |**647**   |**-** | **-**
 
 TODO add ipfp to this comparison
+
+TODO real-world example(s)
 
 ## Results
 
@@ -195,7 +198,7 @@ ref Mark/Robin paper(s)
 ## Discussion
 
 Pros:
-Integer domain only
+Integer domain only (although marginals may need to be integerised)
 Fast
 Multiple solutions
 Deals reasonably well with sparse problems
@@ -203,10 +206,12 @@ Deals reasonably well with sparse problems
 Cons:
 Doesnt always find a solution (but multiple attempts)
 Do we have any real estimate of entropy? Is such a thing possible or make sense? Could you infer distributions by generating large numbers of populations? 
+Sobol maximum dimensionality in our implementation is 1111. Convergence properties of Sobol worsen with increasing dimension which is likely to increasingly problematic when $D>\approx40$
 
 
 
 ## Conclusion
 
 ## Acknowledgements
+stevengj @ MIT for Sobol `C` implementation
 

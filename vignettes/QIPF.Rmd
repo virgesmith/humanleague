@@ -47,7 +47,7 @@ We show that the technique described in this paper will not work effectively if 
 
 A mathematical statement of the microsimulation problem is as follows:
 
-NB In the notation below, the index $i$ is scalar and refers to a particular dimension. The index $k$ is a vector index of length equal to the dimensionality of the problem.
+(NB In the notation below, the index $i$ is scalar and refers to a particular dimension. The index $\mathbf{k}$ is a vector index $[k_1, k_2,...k_D]$ of length $D$, the dimensionality of the problem.)
 
 Given a population $P$ and a set of $N$ marginal vectors $\mathbf{m}_i$ of length $l_i$ such that we have $S$ possible states
 
@@ -55,19 +55,19 @@ $$S=\prod\limits_{i}l_i$$
 
 Find a contingency table $\mathbf T$ in N dimensions such that
 
-$$\sum\limits_{k\neq i} (\mathbf{T_i})_k = \mathbf{m}_i$$
+$$\sum\limits_{\mathbf{k}, k_i fixed} \mathbf{T}_k = \mathbf{m}_i$$
 
-here we are summing all elements in all dimensions other than $i$, i.e. keeping $i$ fixed. 
+in other words each element of $\mathbf{m}_i$ is the sum of all elements in $\mathbf{T}$ for a fixed value of $k_i$.
 
 Each marginal sum must equal the population $P$:
 
-$$\sum\limits_{k=0}^{l_i} (\mathbf{m}_{i}){_k} = P$$ (2)
+$$\sum\limits_{j=0}^{l_i} (\mathbf{m}_{i}){_j} = P$$ (2)
 
 as must the sum of the elements of contingency table:
 
 $$\sum\limits_k \mathbf{T} = P$$ (3)
 
-and finally we limit solutions to the natural numbers: 
+and finally we constrain the elements to the natural numbers: 
 
 $${\mathbf{T},\mathbf{m}_i}  \in \mathbb N$$ (4)
 
@@ -81,13 +81,13 @@ Our algorithm is as follows:
 
 3. For each dimension, calculate the residual vector $\mathbf{r}_i$, the difference between the population and marginal $\mathbf{m}_i$: 
 
-$$\mathbf{r}_i = \sum\limits_{k\neq{i}} \mathbf{T}_k - \mathbf{m}_i$$ (5)
+$$\mathbf{r}_i = \sum\limits_{\mathbf{k}, k_i fixed} \mathbf{T}_k - \mathbf{m}_i$$ (5)
 
 If all elements of $\mathbf{r}_i$ are zero, constraint (1) is satisfied in dimension $i$. If not, pick any index $k$ in $\mathbf{T}$ and adjust $\mathbf{T}$:
 
-$$\mathbf{T}_{k\neq i} \leftarrow \mathbf{T}_{k\neq i} - \mathbf{r}_i$$ (6)
+$$\mathbf{T}_{\mathbf{k}, k_i fixed} \leftarrow \mathbf{T}_{\mathbf{k}, k_ifixed} - \mathbf{r}_i$$ (6)
 
-Repeat this step for each dimension. This now ensures that constraint (1) is met (N.B. (3) is already met), but may have resulted in contraint (4) being violated.
+and repeat this step as necessary for each dimension. This now ensures that constraint (1) is met (N.B. (3) is already met), but may have resulted in contraint (4) being violated.
 
 Naively applying this algorithm is generally unlikely to generate a seed population $\mathbf T$ s.t. all constraints can be met. Specifically, sampling with a PRNG (which draws notionally independent variates), the seed population is likely to have "clusters" and "gaps", the latter of which are likely to violate constraint (4) when adjustments are made.
 
@@ -95,9 +95,9 @@ We propose two techniques to minimise this risk. Firstly, the use of a QRNG rath
 
 We can show that by using this technique, a QRNG-generated "seed" population will generally be close to meeting all the contraints, and in simple cases may actually meet them all without adjustment.
 
-4. If the seed population does not satisfy constraint (3) we apply the adjustments detailed above. In order not to violate constraint (4) the vector in dimension $i$ is chosen such that 
+4. If the seed population does not satisfy constraint (3) we apply the adjustments detailed above. In order not to violate constraint (4) the vector index $\mathbf{k}$ along dimension $i$ is chosen such that 
 
-$$\min\limits_i \mathbf{T}_k \ge \max\limits_i\Big(\sum\limits_{k\neq{i}} \mathbf{T}_{k} - \mathbf{m}_i\Big)$$ (7)
+$$\min\limits_i \mathbf{T}_\mathbf{k} \ge \max\limits_i\Big(\sum\limits_{k_i} \mathbf{T}_{\mathbf{k}} - \mathbf{m}_i\Big)$$ (7)
 
 which ensures that no element in the contingency table goes negative once the residual has been subtracted.
 
@@ -116,35 +116,35 @@ which is a measure of the Euclidian distance from the "smoothest" non-integral s
 
 We consider a 2 dimensional case here for simpilicity, for a population of 100 consisting of 51 females and 49 males, of which 35 are aged under 0-29, 40 aged 30-59, 25 aged 60+. Thus our constraint vectors are: $\mathbf{m}_0=[51,49]$ and $\mathbf{m}_1=[35,40,25]$ and there are 6 possible states.    
 
-We construct a bivariate discrete distibution using the marginals which will have a probability 
+We construct a bivariate discrete distibution using the marginals which will have a probability density
 
 $$p_{ij} = \frac{(\mathbf{m}_0)_i(\mathbf{m}_1)_j}{\sum\limits_i\mathbf{m}_0\sum\limits_j\mathbf{m}_1}$$ (8)
 
-of being in state $(i,j)$. We take 100 (i.e. the population) random samples from this distribution to create a seed population $\mathbf{T}$ (in bold), which for example may look like:
+We take 100 (i.e. the population) random samples $(i,j)$ from this distribution to create a seed population $\mathbf{T}$ (in bold), which for example may look like:
 
- $\mathbf{m}_0\setminus\mathbf{m}_1$ |  35    | 40     | 25     | 
-:-------:|--------|--------|--------|----
-    51   | **19** | **20** | **11** | *50*
-    49   | **17** | **20** | **13** | *50*
-    ~    |  *36*  |  *40*  |  *24*  |
+ $\mathbf{m}_0\setminus\mathbf{m}_1$ |  35    | 40     | 25     | $\mathbf{r}_0$
+:-----------------------------------:|--------|--------|--------|----
+            51                       | **19** | **20** | **11** | *-1*
+            49                       | **17** | **20** | **13** | *+1*
+        $\mathbf{r}_1$               |  *+1*  |  *0*  |  *-1*   |
 
 Summing over rows and columns we see we do not quite match the marginals. The residuals (italic, from equation 5) are $\mathbf{r}_0=[-1, 1]$ and $\mathbf{r}_1=[1,0,-1]$.
 
 To correct the population we subtract $\mathbf{r}_0$ from any one column (in this case no choice of column will result in a negative value). Selecting the first column, the population becomes:
 
- $\mathbf{m}_0\setminus\mathbf{m}_1$ |  35    | 40     | 25     | 
-:-------:|--------|--------|--------|----
-    51   | **20** | **20** | **11** | *51*
-    49   | **16** | **20** | **13** | *49*
-    ~    |  *36*  |  *40*  |  *24*  |
+ $\mathbf{m}_0\setminus\mathbf{m}_1$ |  35    | 40     | 25     | $\mathbf{r}_0$
+:-----------------------------------:|--------|--------|--------|----
+            51                       | **20** | **20** | **11** | *0*
+            49                       | **16** | **20** | **13** | *0*
+        $\mathbf{r}_1$               |  *+1*  |  *0*  |  *-1*   |
     
 which now matches $\mathbf{m}_0$. Next we subtract $\mathbf{r}_1$ from the any one row (again no choice of row will result in a negative value). Selecting the first row, the population becomes:
 
- $\mathbf{m}_0\setminus\mathbf{m}_1$ |  35    | 40     | 25     | 
-:-------:|--------|--------|--------|----
-    51   | **19** | **20** | **12** | *51*
-    49   | **16** | **20** | **13** | *49*
-    ~    |  *35*  |  *40*  |  *25*  |
+ $\mathbf{m}_0\setminus\mathbf{m}_1$ |  35    | 40     | 25     | $\mathbf{r}_0$
+:-----------------------------------:|--------|--------|--------|----
+            51                       | **19** | **20** | **12** | *0*
+            49                       | **16** | **20** | **13** | *0*
+        $\mathbf{r}_1$               |  *0*   |  *0*   |  *0*   |
 
 which results in a population that now matches both marginals. 
 

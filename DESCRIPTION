@@ -1,5 +1,6 @@
 Package: humanleague
 Type: Package
+Title: humanleague: a synthetic population generator
 Description: Generates synthetic populations given marginal data, in up to 12 dimensions
 Version: 0.1.0
 Author: Andrew Smith

@@ -55,21 +55,21 @@ $$S=\prod\limits_{i}l_i$$
 
 Find a contingency table $\mathbf T$ in N dimensions such that
 
-$$\sum\limits_{\mathbf{k}, k_i fixed} \mathbf{T}_k = \mathbf{m}_i$$
+$$\sum\limits_{\mathbf{k}, k_i fixed} \mathbf{T}_\mathbf{k} = \mathbf{m}_i$$
 
 in other words each element of $\mathbf{m}_i$ is the sum of all elements in $\mathbf{T}$ for a fixed value of $k_i$.
 
 Each marginal sum must equal the population $P$:
 
-$$\sum\limits_{j=0}^{l_i} (\mathbf{m}_{i}){_j} = P$$ (2)
+$$\sum\limits \mathbf{m}_{i} = P$$ (2)
 
 as must the sum of the elements of contingency table:
 
-$$\sum\limits_k \mathbf{T} = P$$ (3)
+$$\sum\limits_\mathbf{k} \mathbf{T} = P$$ (3)
 
 and finally we constrain the elements to the natural numbers: 
 
-$${\mathbf{T},\mathbf{m}_i}  \in \mathbb N$$ (4)
+$${\mathbf{T} \in \mathbb{N}^S,\mathbf{m}_i} \in \mathbb{N}^{l_i}$$ (4)
 
 In the general case this is an ill-posed problem as there are not enough constraints for a unique solution. Hence the need to resort to iterative or optimisation-type solutions, such as IPF, simulated annealing, maximum likelihood, chi-squared fitting, least-squares fitting.
 

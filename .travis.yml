@@ -5,9 +5,9 @@ cache: packages
 
 sudo: false
 
-dist: xenial
+dist: trusty
 
-warnings_are_errors: true
+warnings_are_errors: false
 
 r_packages:
   - devtools

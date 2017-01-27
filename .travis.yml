@@ -5,7 +5,7 @@ cache: packages
 
 sudo: false
 
-dist: xenial
+dist: trusty
 
 warnings_are_errors: true
 

@@ -2,7 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-RcppExports.*
 src/*.o
 src/*.so
 src/*.dll

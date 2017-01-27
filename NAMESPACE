@@ -1,4 +1,3 @@
 exportPattern("^[[:alpha:]]+")
-export(synthPop)
 importFrom(Rcpp, evalCpp)
 useDynLib(humanleague)

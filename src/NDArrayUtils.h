@@ -111,10 +111,13 @@ template<size_t D, size_t O>
 Index<D, O> pickIndex(uint32_t maxVal, const NDArray<D, uint32_t>& t)
 {
   Index<D, O> idx(t.sizes());
+  // WEIRD inserting this print statement fixes...
+  std::cout << "max_r = " << maxVal << std::endl;
 
   while (!idx.end())
   {
     typename NDArray<D, uint32_t>::template ConstIterator<O> it(t, idx);
+    std::cout << "min_t" << O << " = "  << min<D, uint32_t, O>(it) << std::endl;
     if (min<D, uint32_t, O>(it) >= maxVal)
       break;
     ++idx;
@@ -126,6 +129,7 @@ Index<D, O> pickIndex(uint32_t maxVal, const NDArray<D, uint32_t>& t)
 template<size_t D, size_t O>
 bool adjust(const std::vector<int32_t>& r, NDArray<D, uint32_t>& t)
 {
+  //std::cout << "adjust" << D << O << std::endl;
   // pick an index s.t. subtracting r won't result in -ve values
   Index<D, O> idx = pickIndex<D, O>(max(r), t);
 

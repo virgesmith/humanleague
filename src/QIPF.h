@@ -53,7 +53,7 @@ public:
 
   bool solve(size_t maxAttempts = 4)
   {
-    static Sobol sobol(Dim);
+    /*static*/ Sobol sobol(Dim);
 
     std::vector<std::discrete_distribution<uint32_t>> dists;
     for (size_t i = 0; i < Dim; ++i)
@@ -80,10 +80,12 @@ public:
       std::vector<std::vector<int32_t>> r(Dim);
       calcResiduals<Dim>(r);
 
+      // print(m_t.rawData(),16);
+
       // std::cout << "initial residuals" << std::endl;
       // for (size_t i = 0; i < Dim; ++i)
       // {
-      //   print(r[i]);
+      //  print(r[i]);
       // }
 
       success = adjust2<Dim>(r);

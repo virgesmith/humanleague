@@ -14,12 +14,6 @@ T sum(const std::vector<T>& v)
 }
 
 template<typename T>
-T max(const std::vector<T>& v)
-{
-  return *std::max_element(v.begin(), v.end());
-}
-
-template<typename T>
 void print(const std::vector<T>& v)
 {
   for (size_t i = 0; i < v.size(); ++i)
@@ -39,24 +33,6 @@ void print(T* p, size_t n)
   std::cout << ";" << std::endl;
 }
 
-template<size_t D, typename T>
-T max(const NDArray<D, T>& v)
-{
-  return *std::max_element(v.rawData(), v.rawData() + v.storageSize());
-}
-
-// this assumes iterator is pointing to the start of the 1-d slice
-template<size_t D, typename T, size_t O>
-T min(typename NDArray<D,T>::template ConstIterator<O>& it)
-{
-   T minVal = *it;
-   while(!it.end())
-   {
-     minVal = std::min(minVal, *it);
-     ++it;
-   }
-   return minVal;
-}
 
 template<typename T>
 bool isZero(const std::vector<T>& v)
@@ -108,17 +84,24 @@ std::vector<T> reduce(const NDArray<D, T>& input)
 
 // picks a 1d slice which won't go -ve if you subtract the residual
 template<size_t D, size_t O>
-Index<D, O> pickIndex(uint32_t maxVal, const NDArray<D, uint32_t>& t)
+Index<D, O> pickIndex(const std::vector<int32_t>& r, const NDArray<D, uint32_t>& t)
 {
   Index<D, O> idx(t.sizes());
-  // WEIRD inserting this print statement fixes...
-  std::cout << "max_r = " << maxVal << std::endl;
 
   while (!idx.end())
   {
     typename NDArray<D, uint32_t>::template ConstIterator<O> it(t, idx);
-    std::cout << "min_t" << O << " = "  << min<D, uint32_t, O>(it) << std::endl;
-    if (min<D, uint32_t, O>(it) >= maxVal)
+    int32_t minVal = static_cast<int32_t>(*it) - r[0];
+    ++it;
+    for (size_t i = 1; i < r.size(); ++i)
+    {
+      minVal = std::min(minVal, static_cast<int32_t>(*it) - r[i]);
+      ++it;
+    }
+
+    //std::cout << "min_t" << " = " << minVal << std::endl;
+    
+    if (minVal >= 0)
       break;
     ++idx;
   }
@@ -126,12 +109,12 @@ Index<D, O> pickIndex(uint32_t maxVal, const NDArray<D, uint32_t>& t)
   return idx;
 }
 
+
 template<size_t D, size_t O>
 bool adjust(const std::vector<int32_t>& r, NDArray<D, uint32_t>& t)
 {
-  //std::cout << "adjust" << D << O << std::endl;
   // pick an index s.t. subtracting r won't result in -ve values
-  Index<D, O> idx = pickIndex<D, O>(max(r), t);
+  Index<D, O> idx = pickIndex<D, O>(r, t);
 
   if (idx.end())
     return false;

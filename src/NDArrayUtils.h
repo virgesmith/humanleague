@@ -18,9 +18,9 @@ void print(const std::vector<T>& v)
 {
   for (size_t i = 0; i < v.size(); ++i)
   {
-    std::cout << v[i] << " ";
+    std::cout << v[i] << ", ";
   }
-  std::cout << ";" << std::endl;
+  std::cout << std::endl;
 }
 
 template<typename T>
@@ -28,9 +28,9 @@ void print(T* p, size_t n)
 {
   for (size_t i = 0; i < n; ++i)
   {
-    std::cout << p[i] << " ";
+    std::cout << p[i] << ", ";
   }
-  std::cout << ";" << std::endl;
+  std::cout << std::endl;
 }
 
 
@@ -84,10 +84,12 @@ std::vector<T> reduce(const NDArray<D, T>& input)
 
 // picks a 1d slice which won't go -ve if you subtract the residual
 template<size_t D, size_t O>
-Index<D, O> pickIndex(const std::vector<int32_t>& r, const NDArray<D, uint32_t>& t)
+Index<D, O> pickIndex(const std::vector<int32_t>& r, const NDArray<D, uint32_t>& t, bool& willGoNegative)
 {
   Index<D, O> idx(t.sizes());
+  Index<D, O> leastNegativeIndex(t.sizes());
 
+  int32_t leastNegativeVal = std::numeric_limits<int32_t>::min();
   while (!idx.end())
   {
     typename NDArray<D, uint32_t>::template ConstIterator<O> it(t, idx);
@@ -100,32 +102,54 @@ Index<D, O> pickIndex(const std::vector<int32_t>& r, const NDArray<D, uint32_t>&
     }
 
     //std::cout << "min_t" << " = " << minVal << std::endl;
-    
+
     if (minVal >= 0)
-      break;
+    {
+      //std::cout << "DIR:" << O << " can adjust without going -ve" << std::endl;
+      //print(idx.m_idx, D);
+      willGoNegative = false;
+      return idx;
+    }
+    else if (minVal > leastNegativeVal)
+    {
+      leastNegativeVal = minVal;
+      leastNegativeIndex = idx;
+    }
     ++idx;
   }
-  // if no index found idx.end() == true
-  return idx;
+  //std::cout << "DIR:" << O  << " CANT adjust without going -ve: " << leastNegativeVal << std::endl;
+  //print(leastNegativeIndex.m_idx, D);
+  willGoNegative = true;
+  return leastNegativeIndex;
 }
 
 
 template<size_t D, size_t O>
-bool adjust(const std::vector<int32_t>& r, NDArray<D, uint32_t>& t)
+bool adjust(const std::vector<int32_t>& r, NDArray<D, uint32_t>& t, bool allowNegative)
 {
-  // pick an index s.t. subtracting r won't result in -ve values
-  Index<D, O> idx = pickIndex<D, O>(r, t);
+  // pick any index s.t. subtracting r won't result in -ve values,
+  // or otherwise the index that will result in the least negative value
+  bool willGoNegative;
+  Index<D, O> idx = pickIndex<D, O>(r, t, willGoNegative);
 
-  if (idx.end())
+  if (!allowNegative && willGoNegative)
     return false;
 
   typename NDArray<D, uint32_t>::template Iterator<O> it(t, idx);
 
+  bool floored = false;
   for(size_t i = 0; !it.end(); ++it, ++i)
   {
-    *it -= r[i];
+    // floor at zero
+    int32_t newVal = static_cast<int32_t>(*it) - r[i];
+    if (newVal < 0)
+    {
+      floored = true;
+      newVal = 0;
+    }
+    *it = newVal;
   }
-  return true;
+  return !floored;
 }
 
 std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vector<uint32_t>& y)

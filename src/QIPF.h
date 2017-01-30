@@ -5,6 +5,14 @@
 #include "NDArrayUtils.h"
 #include "Sobol.h"
 
+inline bool allZeros(const std::vector<std::vector<int32_t>>& r)
+{
+  for (const auto& v: r)
+    if (!isZero(v))
+      return false;
+  return true;
+}
+
 
 // n-Dimensional Quasirandom integer proportional(?) fitting
 template<size_t D>
@@ -65,47 +73,49 @@ public:
       dists.push_back(std::discrete_distribution<uint32_t>(m_marginals[i].begin(), m_marginals[i].end()));
     }
 
-    bool success = false;
 
-    for (m_attempts = 0; m_attempts < maxAttempts && !success; ++m_attempts)
+    m_t.assign(0u);
+
+    size_t idx[Dim];
+    for (size_t i = 0; i < m_sum; ++i)
     {
-      m_t.assign(0u);
-
-      size_t idx[Dim];
-      for (size_t i = 0; i < m_sum; ++i)
+      for (size_t i = 0; i < Dim; ++i)
       {
-        for (size_t i = 0; i < Dim; ++i)
-        {
-          idx[i] = dists[i](sobol);
-        }
-        ++m_t[idx];
+        idx[i] = dists[i](sobol);
       }
-
-      std::vector<std::vector<int32_t>> r(Dim);
-      calcResiduals<Dim>(r);
-
-//      print(m_t.rawData(),m_t.storageSize());
-
-//      std::cout << "initial residuals" << std::endl;
-//      for (size_t i = 0; i < Dim; ++i)
-//      {
-//        print(r[i]);
-//      }
-
-      success = adjust2<Dim>(r);
-      calcResiduals<Dim>(r);
-
-//      std::cout << "adjusted residuals" << std::endl;
-//      for (size_t i = 0; i < Dim; ++i)
-//      {
-//         print(r[i]);
-//      }
-      //std::cout << "sample = " << sample << std::endl;
-      //std::cout << "success = " << success << std::endl;
-
+      ++m_t[idx];
     }
 
-    return success;
+    // for (size_t i = 0; i < m_t.storageSize(); ++i)
+    //   m_t.m_data[i] = 2;
+
+    // temporary
+
+    std::vector<std::vector<int32_t>> r(Dim);
+    calcResiduals<Dim>(r);
+
+    //print(m_t.rawData(),m_t.storageSize());
+
+    // std::cout << "initial residuals" << std::endl;
+    // for (size_t i = 0; i < Dim; ++i)
+    // {
+    //   print(r[i]);
+    // }
+
+    m_attempts = 0;
+    // TODO rename attempts->iters
+    while (!allZeros(r) && m_attempts < maxAttempts)
+    {
+      adjust3<Dim>(r); // is is adjusted on the fly
+      // std::cout << "adjusted residuals" << std::endl;
+      // for (size_t i = 0; i < Dim; ++i)
+      // {
+      //   print(r[i]);
+      // }
+      ++m_attempts;
+    }
+
+    return allZeros(r);
   }
 
   double msv() const
@@ -157,12 +167,15 @@ private:
   }
 
   template<size_t O>
-  bool adjust2(const std::vector<std::vector<int32_t>>& r)
+  void adjust3(std::vector<std::vector<int32_t>>& r)
   {
-    bool ret = true;
-    ret = ret && adjust2<O-1>(r);
-    ret = ret && adjust<Dim, O-1>(r[O-1], m_t);
-    return ret;
+    adjust3<O-1>(r);
+    //print(m_t.rawData(), m_t.storageSize());
+    calcResiduals<Dim>(r);
+    // recalc r
+    adjust<Dim, O-1>(r[O-1], m_t, true);
+    // TODO check we need the second call to calcResiduals
+    calcResiduals<Dim>(r);
   }
 
   const std::vector<marginal_t> m_marginals;
@@ -184,11 +197,11 @@ private:
 #define SPECIALISE_ADJUST(d) \
   template<> \
   template<> \
-  bool QIPF<d>::adjust2<1>(const std::vector<std::vector<int32_t>>& r) \
+  void QIPF<d>::adjust3<1>(std::vector<std::vector<int32_t>>& r) \
   { \
-    return adjust<d, 0>(r[0], m_t); \
+    adjust<d, 0>(r[0], m_t, true); \
+    calcResiduals<1>(r); \
   }
-
 
 SPECIALISE_CALCRESIDUALS(2)
 SPECIALISE_CALCRESIDUALS(3)

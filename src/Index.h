@@ -21,10 +21,16 @@ public:
   Index(const size_t* sizes) : m_atEnd(false)
   {
     std::fill(m_idx, m_idx + Dim, 0);
-    std::copy(sizes, sizes + D, m_sizes);
+    std::copy(sizes, sizes + Dim, m_sizes);
     m_storageSize = m_sizes[0];
     for (size_t i = 1; i < Dim; ++i)
       m_storageSize *= m_sizes[i];
+  }
+
+  Index(const Index& rhs) : m_storageSize(rhs.m_storageSize), m_atEnd(rhs.m_atEnd)
+  {
+    std::copy(rhs.m_idx, rhs.m_idx + Dim, m_idx);
+    std::copy(rhs.m_sizes, rhs.m_sizes + Dim, m_sizes);
   }
 
   size_t* operator++()
@@ -69,7 +75,6 @@ public:
   {
     return m_atEnd;
   }
-
 
 private:
   size_t m_idx[Dim];

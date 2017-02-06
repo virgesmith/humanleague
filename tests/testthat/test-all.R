@@ -56,5 +56,3 @@ test_that("msoa", {
 })
 
 
-test_that("travis is actually running the tests", { expect_equal(1,0) })
-

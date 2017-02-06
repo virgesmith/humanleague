@@ -232,7 +232,8 @@ private:
 
 };
 
-// 0d not implemented for obvious reasons
+// 0d & 1d not implemented for obvious reasons
 template<typename T> class NDArray<0, T>;
+template<typename T> class NDArray<1, T>;
 
 

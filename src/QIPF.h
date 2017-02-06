@@ -15,6 +15,22 @@ inline bool allZeros(const std::vector<std::vector<int32_t>>& r)
 }
 
 
+inline std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vector<uint32_t>& y)
+{
+  size_t size = x.size();
+  assert(size == y.size());
+
+  std::vector<int32_t> result(size);
+
+  for (size_t i = 0; i < x.size(); ++i)
+  {
+    result[i] = x[i] - y[i];
+  }
+  return result;
+}
+
+
+
 // n-Dimensional Quasirandom integer proportional(?) fitting
 template<size_t D>
 class QIPF
@@ -56,9 +72,6 @@ public:
       sizes[i] = m_marginals[i].size();
     }
     m_t.resize(&sizes[0]);
-
-    // init sobol seq
-    //m_sobol.skip(m_sum);
   }
 
   ~QIPF() { }
@@ -90,26 +103,6 @@ public:
 
     std::vector<std::vector<int32_t>> r(Dim);
     calcResiduals<Dim>(r);
-
-//    print(m_t.rawData(),m_t.storageSize());
-
-//    std::cout << "initial residuals" << std::endl;
-//    for (size_t i = 0; i < Dim; ++i)
-//    {
-//      print(r[i]);
-//    }
-
-    // TODO iteration is not longer necessary
-//    while (!allZeros(r) && m_attempts < maxAttempts)
-//    {
-//      adjust3<Dim>(r); // is is adjusted on the fly
-//      // std::cout << "adjusted residuals" << std::endl;
-//      // for (size_t i = 0; i < Dim; ++i)
-//      // {
-//      //   print(r[i]);
-//      // }
-//      ++m_attempts;
-//    }
 
     return allZeros(r);
   }
@@ -148,10 +141,6 @@ public:
     return double(m_sum) / m_t.storageSize();
   }
 
-  // size_t attempts() const
-  // {
-  //   return m_attempts;
-  // }
 
 private:
 
@@ -162,17 +151,17 @@ private:
     r[O-1] = diff(reduce<Dim, uint32_t, O-1>(m_t), m_marginals[O-1]);
   }
 
-  template<size_t O>
-  void adjust3(std::vector<std::vector<int32_t>>& r)
-  {
-    adjust3<O-1>(r);
-    //print(m_t.rawData(), m_t.storageSize());
-    calcResiduals<Dim>(r);
-    // recalc r
-    adjust<Dim, O-1>(r[O-1], m_t, true);
-    // TODO check we need the second call to calcResiduals
-    calcResiduals<Dim>(r);
-  }
+  // template<size_t O>
+  // void adjust3(std::vector<std::vector<int32_t>>& r)
+  // {
+  //   adjust3<O-1>(r);
+  //   //print(m_t.rawData(), m_t.storageSize());
+  //   calcResiduals<Dim>(r);
+  //   // recalc r
+  //   adjust<Dim, O-1>(r[O-1], m_t, true);
+  //   // TODO check we need the second call to calcResiduals
+  //   calcResiduals<Dim>(r);
+  // }
 
   const std::vector<marginal_t> m_marginals;
   table_t m_t;
@@ -190,14 +179,14 @@ private:
     r[0] = diff(reduce<d, uint32_t, 0>(m_t), m_marginals[0]); \
   }
 
-#define SPECIALISE_ADJUST(d) \
-  template<> \
-  template<> \
-  inline void QIPF<d>::adjust3<1>(std::vector<std::vector<int32_t>>& r) \
-  { \
-    adjust<d, 0>(r[0], m_t, true); \
-    calcResiduals<1>(r); \
-  }
+// #define SPECIALISE_ADJUST(d) \
+//   template<> \
+//   template<> \
+//   inline void QIPF<d>::adjust3<1>(std::vector<std::vector<int32_t>>& r) \
+//   { \
+//     adjust<d, 0>(r[0], m_t, true); \
+//     calcResiduals<1>(r); \
+//   }
 
 SPECIALISE_CALCRESIDUALS(2)
 SPECIALISE_CALCRESIDUALS(3)
@@ -211,17 +200,17 @@ SPECIALISE_CALCRESIDUALS(10)
 SPECIALISE_CALCRESIDUALS(11)
 SPECIALISE_CALCRESIDUALS(12)
 
-SPECIALISE_ADJUST(2)
-SPECIALISE_ADJUST(3)
-SPECIALISE_ADJUST(4)
-SPECIALISE_ADJUST(5)
-SPECIALISE_ADJUST(6)
-SPECIALISE_ADJUST(7)
-SPECIALISE_ADJUST(8)
-SPECIALISE_ADJUST(9)
-SPECIALISE_ADJUST(10)
-SPECIALISE_ADJUST(11)
-SPECIALISE_ADJUST(12)
+// SPECIALISE_ADJUST(2)
+// SPECIALISE_ADJUST(3)
+// SPECIALISE_ADJUST(4)
+// SPECIALISE_ADJUST(5)
+// SPECIALISE_ADJUST(6)
+// SPECIALISE_ADJUST(7)
+// SPECIALISE_ADJUST(8)
+// SPECIALISE_ADJUST(9)
+// SPECIALISE_ADJUST(10)
+// SPECIALISE_ADJUST(11)
+// SPECIALISE_ADJUST(12)
 
 // Disallow nonsensical and trivial dimensionalities
 template<> class QIPF<0>;

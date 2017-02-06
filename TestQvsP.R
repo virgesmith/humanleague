@@ -11,14 +11,13 @@ h <- rep(NA, tries)
 
 for (i in 1:tries) {
   r <- humanleague::synthPop(list(x,x))$x.hat
-  #print(r)
   h[i]=r[2,1]-r[1,1]
-  #print(h[i])
 }
 
 print(paste("mean: ", mean(h)))
 print(paste("sd: ", sd(h)))
 
+# hist(h, breaks = 101)
 
 # 2. deviation from multivariate normal distribution
 
@@ -27,3 +26,5 @@ x2 <- x %*% t(x) / sum(x)
 r <- humanleague::synthPop(list(x,x))$x.hat
 rms <- sqrt(sum((r-x2)^2))
 print(paste("rms: ", rms))
+
+#image(r-x2)

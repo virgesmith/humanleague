@@ -10,13 +10,8 @@ extern "C"
 
 #include <cstdint>
 
-// This class is compatible with C++11's distribution objects
-// However since this is multidimensional, if you require different
-// distributions in different dimensions, you will have to use ...
-
-// NASTY alert! C++11 distribution objects will oversample if the width of the uniform <64 bits
-// which renders the QRNG useless.
-// Workaround is to make return type 64 bits and return the Sobol value as the 32 MSB
+// This class is roughly compatible with C++11's distribution objects
+// NB check for 32 vs 64 bit issues (distribution may expect 64 bit variates, this class returns 32bit)
 class Sobol
 {
 public:
@@ -43,5 +38,3 @@ private:
   std::vector<uint32_t> m_buf;
   uint32_t m_pos;
 };
-
-

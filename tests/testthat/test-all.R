@@ -19,21 +19,21 @@ m<-c(25,25,25,25,25)
 test_that("simple 2D", {
   res<-humanleague::synthPop(list(m,m))
   expect_equal(rowSums(res$x.hat), m)
-  expect_equal(res$attempts, 1)
+  expect_equal(res$conv, TRUE)
 })
 
 m = m * 125
 test_that("simple 5D", {
   res<-humanleague::synthPop(list(m,m,m,m,m))
   expect_equal(rowSums(res$x.hat), m)
-  expect_equal(res$attempts, 1)
+  expect_equal(res$conv, TRUE)
 })
 
 m = m * 125
 test_that("simple 8D", {
   res<-humanleague::synthPop(list(m,m,m,m,m,m,m,m))
   expect_equal(rowSums(res$x.hat), m)
-  expect_equal(res$attempts, 1)
+  expect_equal(res$conv, TRUE)
 })
 
 # need to reduce length of dims to get the 12D case to run in any reasonable time
@@ -41,7 +41,7 @@ m = c(2^15,2^15)
 test_that("simple 12D", {
   res<-humanleague::synthPop(list(m,m,m,m,m,m,m,m,m,m,m,m))
   expect_equal(rowSums(res$x.hat), m)
-  expect_equal(res$attempts, 1)
+  expect_equal(res$conv, TRUE)
 })
 
 # realistic case
@@ -52,6 +52,6 @@ test_that("msoa", {
   res<-humanleague::synthPop(list(m1,m2))
   expect_equal(rowSums(res$x.hat), m1)
   expect_equal(colSums(res$x.hat), m2)
-  expect_equal(res$attempts, 1)
+  expect_equal(res$conv, TRUE)
 })
 

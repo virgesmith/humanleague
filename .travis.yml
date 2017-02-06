@@ -15,6 +15,7 @@ r_packages:
   - devtools
   - Rcpp
   - roxygen2
+  - htmltools
   - rmarkdown
   - knitr
   - testthat

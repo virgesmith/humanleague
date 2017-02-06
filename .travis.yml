@@ -19,6 +19,7 @@ r_packages:
   - rmarkdown
   - knitr
   - testthat
+  - yaml
 
 notifications:
   email:

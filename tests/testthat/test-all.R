@@ -55,3 +55,6 @@ test_that("msoa", {
   expect_equal(res$conv, TRUE)
 })
 
+
+test_that("travis is actually running the tests", { expect_equal(1,0) })
+

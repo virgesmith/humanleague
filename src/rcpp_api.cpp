@@ -39,10 +39,10 @@ using namespace Rcpp;
 
 
 template<size_t D>
-void doQipf(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, size_t maxAttempts)
+void doQipf(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m)
 {
   QIPF<D> qipf(m);
-  result["conv"] = qipf.solve(maxAttempts);
+  result["conv"] = qipf.solve();
   result["attempts"] = qipf.attempts();
   result["meanSqVariation"] = qipf.msv();
   const typename QIPF<D>::table_t& t = qipf.result();
@@ -64,7 +64,7 @@ void doQipf(List& result, IntegerVector dims, const std::vector<std::vector<uint
 //' @param maxAttempts (optional, default=4) number of retries to make if fitting is unsuccessful
 //' @export
 // [[Rcpp::export]]
-List synthPop(List marginals, int maxAttempts = 4)
+List synthPop(List marginals)
 {
   std::vector<std::vector<uint32_t>> m;
   IntegerVector dims;
@@ -85,37 +85,37 @@ List synthPop(List marginals, int maxAttempts = 4)
   switch(dim)
   {
   case 2:
-    doQipf<2>(result, dims, m, maxAttempts);
+    doQipf<2>(result, dims, m);
     break;
   case 3:
-    doQipf<3>(result, dims, m, maxAttempts);
+    doQipf<3>(result, dims, m);
     break;
   case 4:
-    doQipf<4>(result, dims, m, maxAttempts);
+    doQipf<4>(result, dims, m);
     break;
   case 5:
-    doQipf<5>(result, dims, m, maxAttempts);
+    doQipf<5>(result, dims, m);
     break;
   case 6:
-    doQipf<6>(result, dims, m, maxAttempts);
+    doQipf<6>(result, dims, m);
     break;
   case 7:
-    doQipf<7>(result, dims, m, maxAttempts);
+    doQipf<7>(result, dims, m);
     break;
   case 8:
-    doQipf<8>(result, dims, m, maxAttempts);
+    doQipf<8>(result, dims, m);
     break;
   case 9:
-    doQipf<9>(result, dims, m, maxAttempts);
+    doQipf<9>(result, dims, m);
     break;
   case 10:
-    doQipf<10>(result, dims, m, maxAttempts);
+    doQipf<10>(result, dims, m);
     break;
   case 11:
-    doQipf<11>(result, dims, m, maxAttempts);
+    doQipf<11>(result, dims, m);
     break;
   case 12:
-    doQipf<12>(result, dims, m, maxAttempts);
+    doQipf<12>(result, dims, m);
     break;
   default:
     throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));

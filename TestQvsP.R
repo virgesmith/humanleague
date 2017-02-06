@@ -2,14 +2,12 @@
 # Problem 1
 tries<-100
 
-maxAttempts=1000
-
 # 2D
-m<-c(1,5,25,5,1)
+m<-c(1,1,1,5,25,5,1)
 m = m * 5
 attempts <- 0
 for (i in 1:tries) {
-  res<-humanleague::synthPop(list(m,m),maxAttempts)
+  res<-humanleague::synthPop(list(m,m))
   #print(attempts)
   attempts = attempts + res$attempts
 }
@@ -19,7 +17,7 @@ print(attempts/tries)
 #m = m * 5
 attempts <- 0
 for (i in 1:tries) {
-  res<-humanleague::synthPop(list(m,m,m),maxAttempts)
+  res<-humanleague::synthPop(list(m,m,m))
   #print(res$attempts)
   #if (res$conf)
   attempts = attempts + res$attempts
@@ -30,7 +28,7 @@ print(attempts/tries)
 #m = m * 5
 attempts <- 0
 for (i in 1:tries) {
-  res<-humanleague::synthPop(list(m,m,m,m),maxAttempts)
+  res<-humanleague::synthPop(list(m,m,m,m))
   #print(res$attempts)
   #if (res$conf)
   attempts = attempts + res$attempts
@@ -41,7 +39,7 @@ print(attempts/tries)
 #m = m * 5
 attempts <- 0
 for (i in 1:tries) {
-  res<-humanleague::synthPop(list(m,m,m,m,m),maxAttempts)
+  res<-humanleague::synthPop(list(m,m,m,m,m))
   #print(res$attempts)
   #if (res$conf)
   attempts = attempts + res$attempts

@@ -6,7 +6,7 @@
 #' @param marginals a List of n integer vectors containing marginal data (2 <= n <= 12)
 #' @param maxAttempts (optional, default=4) number of retries to make if fitting is unsuccessful
 #' @export
-synthPop <- function(marginals, maxAttempts = 4L) {
-    .Call('humanleague_synthPop', PACKAGE = 'humanleague', marginals, maxAttempts)
+synthPop <- function(marginals) {
+    .Call('humanleague_synthPop', PACKAGE = 'humanleague', marginals)
 }
 

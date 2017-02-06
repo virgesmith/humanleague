@@ -17,24 +17,25 @@ extern "C"
 // NASTY alert! C++11 distribution objects will oversample if the width of the uniform <64 bits
 // which renders the QRNG useless.
 // Workaround is to make return type 64 bits and return the Sobol value as the 32 MSB
-class Sobol 
+class Sobol
 {
 public:
   explicit Sobol(uint32_t dim, uint32_t nSkip = 0u);
-  
+
   ~Sobol();
-  
+
   const std::vector<uint32_t>& buf();
-  
-  uint64_t operator()();
-  
+
+  // NB use with care in std::distribtion objects, which may be expecting a 64-bit variate
+  uint32_t operator()();
+
   // Skip largest 2^k <= n
   void skip(uint32_t n);
-  
+
   uint64_t min() const;
-  
+
   uint64_t max() const;
-  
+
 private:
 
   SobolData* m_s;

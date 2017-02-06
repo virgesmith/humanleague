@@ -4,6 +4,7 @@
 #include "NDArray.h"
 #include "NDArrayUtils.h"
 #include "Sobol.h"
+#include "DDWR.h"
 
 inline bool allZeros(const std::vector<std::vector<int32_t>>& r)
 {
@@ -64,15 +65,15 @@ public:
 
   bool solve(size_t maxAttempts = 4)
   {
+    // only initialised on first call, ensures different population each time
     static Sobol sobol(Dim, m_sum);
+    //static std::mt19937 mt(70858048);
 
-    // TODO make dists members?
-    std::vector<std::discrete_distribution<uint32_t>> dists;
+    std::vector<discrete_distribution_without_replacement<uint32_t>> dists;
     for (size_t i = 0; i < Dim; ++i)
     {
-      dists.push_back(std::discrete_distribution<uint32_t>(m_marginals[i].begin(), m_marginals[i].end()));
+      dists.push_back(discrete_distribution_without_replacement<uint32_t>(m_marginals[i].begin(), m_marginals[i].end()));
     }
-
 
     m_t.assign(0u);
 
@@ -81,39 +82,35 @@ public:
     {
       for (size_t i = 0; i < Dim; ++i)
       {
-        idx[i] = dists[i](sobol);
+        idx[i] = dists[i](sobol());
       }
+      //print(idx, Dim);
       ++m_t[idx];
     }
-
-    // for (size_t i = 0; i < m_t.storageSize(); ++i)
-    //   m_t.m_data[i] = 2;
-
-    // temporary
 
     std::vector<std::vector<int32_t>> r(Dim);
     calcResiduals<Dim>(r);
 
-    //print(m_t.rawData(),m_t.storageSize());
+//    print(m_t.rawData(),m_t.storageSize());
 
-    // std::cout << "initial residuals" << std::endl;
-    // for (size_t i = 0; i < Dim; ++i)
-    // {
-    //   print(r[i]);
-    // }
+//    std::cout << "initial residuals" << std::endl;
+//    for (size_t i = 0; i < Dim; ++i)
+//    {
+//      print(r[i]);
+//    }
 
-    m_attempts = 0;
-    // TODO rename attempts->iters
-    while (!allZeros(r) && m_attempts < maxAttempts)
-    {
-      adjust3<Dim>(r); // is is adjusted on the fly
-      // std::cout << "adjusted residuals" << std::endl;
-      // for (size_t i = 0; i < Dim; ++i)
-      // {
-      //   print(r[i]);
-      // }
-      ++m_attempts;
-    }
+    m_attempts = 1;
+    // TODO iteration is not longer necessary
+//    while (!allZeros(r) && m_attempts < maxAttempts)
+//    {
+//      adjust3<Dim>(r); // is is adjusted on the fly
+//      // std::cout << "adjusted residuals" << std::endl;
+//      // for (size_t i = 0; i < Dim; ++i)
+//      // {
+//      //   print(r[i]);
+//      // }
+//      ++m_attempts;
+//    }
 
     return allZeros(r);
   }
@@ -189,7 +186,7 @@ private:
 #define SPECIALISE_CALCRESIDUALS(d) \
   template<> \
   template<> \
-  void QIPF<d>::calcResiduals<1>(std::vector<std::vector<int32_t>>& r) \
+  inline void QIPF<d>::calcResiduals<1>(std::vector<std::vector<int32_t>>& r) \
   { \
     r[0] = diff(reduce<d, uint32_t, 0>(m_t), m_marginals[0]); \
   }
@@ -197,7 +194,7 @@ private:
 #define SPECIALISE_ADJUST(d) \
   template<> \
   template<> \
-  void QIPF<d>::adjust3<1>(std::vector<std::vector<int32_t>>& r) \
+  inline void QIPF<d>::adjust3<1>(std::vector<std::vector<int32_t>>& r) \
   { \
     adjust<d, 0>(r[0], m_t, true); \
     calcResiduals<1>(r); \

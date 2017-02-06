@@ -1,4 +1,4 @@
-// 
+//
 
 #include "Sobol.h"
 
@@ -7,7 +7,7 @@
 #include <cstdint>
 
 Sobol::Sobol(uint32_t dim, uint32_t nSkip) : m_dim(dim), m_buf(dim), m_pos(dim) // ensures m_buf gets populated on 1st access
-{ 
+{
   m_s = nlopt_sobol_create(dim);
   if (nSkip > 0)
     skip(nSkip);
@@ -26,28 +26,28 @@ const std::vector<uint32_t>& Sobol::buf()
   return m_buf;
 }
 
-uint64_t Sobol::operator()()
+uint32_t Sobol::operator()()
 {
-  if (m_pos == m_dim) 
+  if (m_pos == m_dim)
   {
     if (!nlopt_sobol_next(m_s, &m_buf[0]))
       throw std::runtime_error("Exceeded generation limit (2^32-1)");
     m_pos = 0;
   }
-  return uint64_t(m_buf[m_pos++]) << 32;
+  return m_buf[m_pos++];
 }
 
 // Skip largest 2^k <= n
 void Sobol::skip(uint32_t n)
 {
   uint32_t k = 1;
-  while (k*2 <= n) 
+  while (k*2 <= n)
     k *= 2;
-  while (k-- > 0) 
+  while (k-- > 0)
     buf();
 }
 
-uint64_t Sobol::min() const 
+uint64_t Sobol::min() const
 {
   return 0;
 }

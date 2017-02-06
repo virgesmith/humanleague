@@ -52,7 +52,7 @@ uint32_t marginalProduct(const std::vector<std::vector<uint32_t>>& m, const size
 }
 
 template<>
-uint32_t marginalProduct<1>(const std::vector<std::vector<uint32_t>>& m, const size_t* idx)
+inline uint32_t marginalProduct<1>(const std::vector<std::vector<uint32_t>>& m, const size_t* idx)
 {
   return m[0][idx[0]];
 }
@@ -152,7 +152,8 @@ bool adjust(const std::vector<int32_t>& r, NDArray<D, uint32_t>& t, bool allowNe
   return !floored;
 }
 
-std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vector<uint32_t>& y)
+// TODO move to cpp?
+inline std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vector<uint32_t>& y)
 {
   size_t size = x.size();
   assert(size == y.size());

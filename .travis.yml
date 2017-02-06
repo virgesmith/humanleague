@@ -11,6 +11,7 @@ warnings_are_errors: false
 
 r_packages:
   - devtools
+  - Rcpp
   - roxygen2
   - rmarkdown
   - knitr

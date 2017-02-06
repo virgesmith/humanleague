@@ -16,9 +16,6 @@ public:
 
   discrete_distribution_with_replacement(typename std::vector<I>::const_iterator b, typename std::vector<I>::const_iterator e)
   {
-    // enforce integral types only
-    //static_assert(std::is_integral<I>::value, "only integral types supported");
-
     m_freq.reserve(std::distance(b, e));
     std::copy(b, e, std::back_inserter(m_freq));
     m_sum = std::accumulate(m_freq.begin(), m_freq.end(), 0);

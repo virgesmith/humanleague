@@ -27,7 +27,7 @@ public:
 
   typedef std::vector<uint32_t> marginal_t;
 
-  QIPF(const std::vector<marginal_t>& marginals) : m_marginals(marginals), m_attempts(0ull)//, m_sobol(Dim)
+  QIPF(const std::vector<marginal_t>& marginals) : m_marginals(marginals)//, m_attempts(0ull), m_sobol(Dim)
   {
     if (m_marginals.size() != Dim)
     {
@@ -63,11 +63,11 @@ public:
 
   ~QIPF() { }
 
-  bool solve(size_t maxAttempts = 4)
+  bool solve()
   {
     // only initialised on first call, ensures different population each time
     static Sobol sobol(Dim, m_sum);
-    //static std::mt19937 mt(70858048);
+    //static std::mt19937 sobol(70858048);
 
     std::vector<discrete_distribution_without_replacement<uint32_t>> dists;
     for (size_t i = 0; i < Dim; ++i)
@@ -99,7 +99,6 @@ public:
 //      print(r[i]);
 //    }
 
-    m_attempts = 1;
     // TODO iteration is not longer necessary
 //    while (!allZeros(r) && m_attempts < maxAttempts)
 //    {
@@ -149,10 +148,10 @@ public:
     return double(m_sum) / m_t.storageSize();
   }
 
-  size_t attempts() const
-  {
-    return m_attempts;
-  }
+  // size_t attempts() const
+  // {
+  //   return m_attempts;
+  // }
 
 private:
 
@@ -178,7 +177,7 @@ private:
   const std::vector<marginal_t> m_marginals;
   table_t m_t;
   size_t m_sum;
-  size_t m_attempts;
+  //size_t m_attempts;
   //Sobol m_sobol;
 };
 

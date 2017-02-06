@@ -1,47 +1,29 @@
 
-# Problem 1
-tries<-100
 
-# 2D
-m<-c(1,1,1,5,25,5,1)
-m = m * 5
-attempts <- 0
-for (i in 1:tries) {
-  res<-humanleague::synthPop(list(m,m))
-  #print(attempts)
-  attempts = attempts + res$attempts
-}
-print(attempts/tries)
+# 1. histogram differential of 2x2 solutions
 
-# 3D
-#m = m * 5
-attempts <- 0
-for (i in 1:tries) {
-  res<-humanleague::synthPop(list(m,m,m))
-  #print(res$attempts)
-  #if (res$conf)
-  attempts = attempts + res$attempts
-}
-print(attempts/tries)
+# problem 1
+tries <- 100000
 
-# 4D
-#m = m * 5
-attempts <- 0
-for (i in 1:tries) {
-  res<-humanleague::synthPop(list(m,m,m,m))
-  #print(res$attempts)
-  #if (res$conf)
-  attempts = attempts + res$attempts
-}
-print(attempts/tries)
+x <- c(1000,1000)
 
-# 5D
-#m = m * 5
-attempts <- 0
+h <- rep(NA, tries)
+
 for (i in 1:tries) {
-  res<-humanleague::synthPop(list(m,m,m,m,m))
-  #print(res$attempts)
-  #if (res$conf)
-  attempts = attempts + res$attempts
+  r <- humanleague::synthPop(list(x,x))$x.hat
+  #print(r)
+  h[i]=r[2,1]-r[1,1]
+  #print(h[i])
 }
-print(attempts/tries)
+
+print(paste("mean: ", mean(h)))
+print(paste("sd: ", sd(h)))
+
+
+# 2. deviation from multivariate normal distribution
+
+x <- as.integer(dnorm(-50:50,sd=15)*10000)
+x2 <- x %*% t(x) / sum(x)
+r <- humanleague::synthPop(list(x,x))$x.hat
+rms <- sqrt(sum((r-x2)^2))
+print(paste("rms: ", rms))

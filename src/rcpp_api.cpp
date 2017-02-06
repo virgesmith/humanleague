@@ -43,7 +43,6 @@ void doQipf(List& result, IntegerVector dims, const std::vector<std::vector<uint
 {
   QIPF<D> qipf(m);
   result["conv"] = qipf.solve();
-  result["attempts"] = qipf.attempts();
   result["meanSqVariation"] = qipf.msv();
   const typename QIPF<D>::table_t& t = qipf.result();
   Index<D, Index_Unfixed> idx(t.sizes());

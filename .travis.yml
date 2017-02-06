@@ -10,7 +10,10 @@ dist: trusty
 warnings_are_errors: false
 
 r_packages:
+  - stringi
+  - digest
   - devtools
+  - Rcpp
   - roxygen2
   - rmarkdown
   - knitr

@@ -44,6 +44,7 @@ void doQipf(List& result, IntegerVector dims, const std::vector<std::vector<uint
   QIPF<D> qipf(m);
   result["conv"] = qipf.solve();
   result["meanSqVariation"] = qipf.msv();
+  result["error.margins"] = std::vector<uint32_t>(qipf.residuals(), qipf.residuals() + D);
   const typename QIPF<D>::table_t& t = qipf.result();
   Index<D, Index_Unfixed> idx(t.sizes());
   IntegerVector values(t.storageSize());
@@ -59,8 +60,7 @@ void doQipf(List& result, IntegerVector dims, const std::vector<std::vector<uint
 
 //' Generate a population in n dimensions given n marginals
 //'
-//' @param marginals a List of n integer vectors containing marginal data (2 <= n <= 12)
-//' @param maxAttempts (optional, default=4) number of retries to make if fitting is unsuccessful
+//' @param marginals a List of n integer vectors containing marginal data (2 <= n <= 12). The sum of elements in each vector must be identical
 //' @export
 // [[Rcpp::export]]
 List synthPop(List marginals)

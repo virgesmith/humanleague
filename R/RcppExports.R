@@ -3,8 +3,7 @@
 
 #' Generate a population in n dimensions given n marginals
 #'
-#' @param marginals a List of n integer vectors containing marginal data (2 <= n <= 12)
-#' @param maxAttempts (optional, default=4) number of retries to make if fitting is unsuccessful
+#' @param marginals a List of n integer vectors containing marginal data (2 <= n <= 12). The sum of elements in each vector must be identical
 #' @export
 synthPop <- function(marginals) {
     .Call('humanleague_synthPop', PACKAGE = 'humanleague', marginals)

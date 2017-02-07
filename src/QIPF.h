@@ -6,14 +6,22 @@
 #include "Sobol.h"
 #include "DDWR.h"
 
-inline bool allZeros(const std::vector<std::vector<int32_t>>& r)
-{
-  for (const auto& v: r)
-    if (!isZero(v))
-      return false;
-  return true;
-}
+// inline bool allZeros(const std::vector<std::vector<int32_t>>& r)
+// {
+//   for (const auto& v: r)
+//     if (!isZero(v))
+//       return false;
+//   return true;
+// }
 
+inline int32_t maxAbsElement(const std::vector<int32_t>& r)
+{
+  int32_t m = 0;
+  for (size_t i = 0; i < r.size(); ++i)
+  {
+    m = std::max(m, abs(r[i]));
+  }
+}
 
 inline std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vector<uint32_t>& y)
 {
@@ -91,7 +99,7 @@ public:
     m_t.assign(0u);
 
     size_t idx[Dim];
-    for (size_t i = 0; i < m_sum; ++i)
+    for (size_t j = 0; j < m_sum; ++j)
     {
       for (size_t i = 0; i < Dim; ++i)
       {
@@ -104,7 +112,15 @@ public:
     std::vector<std::vector<int32_t>> r(Dim);
     calcResiduals<Dim>(r);
 
-    return allZeros(r);
+    bool allZero = true;
+    for (size_t i = 0; i < Dim; ++i)
+    {
+      int32_t m = maxAbsElement(r[i]);
+      m_residuals[i] = m;
+      allZero = allZero && (m == 0);
+    }
+
+    return allZero;
   }
 
   double msv() const
@@ -128,6 +144,11 @@ public:
   const table_t& result() const
   {
     return m_t;
+  }
+
+  const int32_t* residuals() const
+  {
+    return m_residuals;
   }
 
   size_t population() const
@@ -166,7 +187,7 @@ private:
   const std::vector<marginal_t> m_marginals;
   table_t m_t;
   size_t m_sum;
-  //size_t m_attempts;
+  int32_t m_residuals[Dim];
   //Sobol m_sobol;
 };
 

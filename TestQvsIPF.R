@@ -6,8 +6,31 @@ m2 <- c(18, 1, 1, 3, 6, 5, 1, 2, 1, 8, 2, 3, 4, 2, 4, 2, 2, 2, 4, 2, 4, 2, 2, 8,
 # timing (elapsed)
 seed<-array(rep(1,length(m1)*length(m2)),dim=c(length(m1),length(m2)))
 print(paste("QIPF: ", system.time(qipf <- humanleague::synthPop(list(m1,m2)))[3]))
-#seed<-qipf$x.hat
 print(paste("IPFP: ", system.time(ipfp <- mipfp::Ipfp(seed, list(1,2), list(m1,m2)))[3]))
 # TOO SLOW print(paste("ML: ", system.time(ipfp <- mipfp::ObtainModelEstimates(seed, list(1,2), list(m1,m2), method="ml"))[3]))
 # TOO SLOW print(paste("CHI2: ", system.time(ipfp <- mipfp::ObtainModelEstimates(seed, list(1,2), list(m1,m2), method="chi2"))[3]))
 # TOO SLOW print(paste("LSQ: ", system.time(ipfp <- mipfp::ObtainModelEstimates(seed, list(1,2), list(m1,m2), method="lsq"))[3]))
+
+
+# Problem 2 - bivariate normal degeneracy comparison
+x <- as.integer(dnorm(-50:50,sd=15)*10000)
+x2 <- x %*% t(x) / sum(x)
+r <- humanleague::synthPop(list(x,x))$x.hat
+q <-r
+rms <- sqrt(sum((r-x2)^2))
+print(paste("rms QIPF: ", rms))
+
+seed<-array(rep(1,length(x)*length(x)),dim=c(length(x),length(x)))
+r <- mipfp::Ipfp(seed, list(1,2), list(x,x))$x.hat
+rms <- sqrt(sum((r-x2)^2))
+print(paste("rms IPFP: ", rms))
+
+# Problem 3 timing (elapsed) with smaller marginals
+# x <- as.integer(dnorm(-15:15,sd=5)*10000)
+# print(paste("QIPF (s): ", system.time(qipf <- humanleague::synthPop(list(x,x)))[3]))
+# seed<-array(rep(1,length(x)*length(x)),dim=c(length(x),length(x)))
+# print(paste("IPFP (s): ", system.time(ipfp <- mipfp::Ipfp(seed, list(1,2), list(x,x)))[3]))
+# print(paste("ML (s): ", system.time(ipfp <- mipfp::ObtainModelEstimates(seed, list(1,2), list(x,x), method="ml"))[3]))
+# print(paste("CHI2 (s): ", system.time(ipfp <- mipfp::ObtainModelEstimates(seed, list(1,2), list(x,x), method="chi2"))[3]))
+# print(paste("LSQ (s): ", system.time(ipfp <- mipfp::ObtainModelEstimates(seed, list(1,2), list(x,x), method="lsq"))[3]))
+

@@ -20,6 +20,8 @@ test_that("simple 2D", {
   res<-humanleague::synthPop(list(m,m))
   expect_equal(rowSums(res$x.hat), m)
   expect_equal(res$conv, TRUE)
+  expect_equal(sum(res$error.margins), 0)
+  expect_equal(length(res$error.margins), 2)
 })
 
 m = m * 125
@@ -27,6 +29,8 @@ test_that("simple 5D", {
   res<-humanleague::synthPop(list(m,m,m,m,m))
   expect_equal(rowSums(res$x.hat), m)
   expect_equal(res$conv, TRUE)
+  expect_equal(sum(res$error.margins), 0)
+  expect_equal(length(res$error.margins), 5)
 })
 
 m = m * 125
@@ -34,6 +38,8 @@ test_that("simple 8D", {
   res<-humanleague::synthPop(list(m,m,m,m,m,m,m,m))
   expect_equal(rowSums(res$x.hat), m)
   expect_equal(res$conv, TRUE)
+  expect_equal(sum(res$error.margins), 0)
+  expect_equal(length(res$error.margins), 8)
 })
 
 # need to reduce length of dims to get the 12D case to run in any reasonable time
@@ -42,6 +48,8 @@ test_that("simple 12D", {
   res<-humanleague::synthPop(list(m,m,m,m,m,m,m,m,m,m,m,m))
   expect_equal(rowSums(res$x.hat), m)
   expect_equal(res$conv, TRUE)
+  expect_equal(sum(res$error.margins), 0)
+  expect_equal(length(res$error.margins), 12)
 })
 
 # realistic case

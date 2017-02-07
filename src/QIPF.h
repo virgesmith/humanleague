@@ -21,6 +21,7 @@ inline int32_t maxAbsElement(const std::vector<int32_t>& r)
   {
     m = std::max(m, abs(r[i]));
   }
+  return m;
 }
 
 inline std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vector<uint32_t>& y)
@@ -200,14 +201,14 @@ private:
     r[0] = diff(reduce<d, uint32_t, 0>(m_t), m_marginals[0]); \
   }
 
-// #define SPECIALISE_ADJUST(d) \
-//   template<> \
-//   template<> \
-//   inline void QIPF<d>::adjust3<1>(std::vector<std::vector<int32_t>>& r) \
-//   { \
-//     adjust<d, 0>(r[0], m_t, true); \
-//     calcResiduals<1>(r); \
-//   }
+#define SPECIALISE_ADJUST(d) \
+  template<> \
+  template<> \
+  inline void QIPF<d>::adjust3<1>(std::vector<std::vector<int32_t>>& r) \
+  { \
+    adjust<d, 0>(r[0], m_t, true); \
+    calcResiduals<1>(r); \
+  }
 
 SPECIALISE_CALCRESIDUALS(2)
 SPECIALISE_CALCRESIDUALS(3)

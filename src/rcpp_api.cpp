@@ -65,18 +65,16 @@ void doQipf(List& result, IntegerVector dims, const std::vector<std::vector<uint
 // [[Rcpp::export]]
 List synthPop(List marginals)
 {
-  std::vector<std::vector<uint32_t>> m;
+  const size_t dim = marginals.size();
+  std::vector<std::vector<uint32_t>> m(dim);
   IntegerVector dims;
-  for (size_t i = 0; i < marginals.size(); ++i)
+  for (size_t i = 0; i < dim; ++i)
   {
     const IntegerVector& iv = marginals[i];
-    std::vector<uint32_t> tmp;
-    tmp.reserve(iv.size());
-    std::copy(iv.begin(), iv.end(), std::back_inserter(tmp));
-    m.push_back(tmp); // cols
+    m[i].reserve(iv.size());
+    std::copy(iv.begin(), iv.end(), std::back_inserter(m[i]));
     dims.push_back(iv.size());
   }
-  const size_t dim = marginals.size();
   List result;
   result["method"] = "qipf";
 

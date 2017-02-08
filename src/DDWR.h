@@ -77,6 +77,8 @@ public:
 
   value_type operator()(value_type r)
   {
+    if (!m_sum)
+      throw std::runtime_error("distribution is depleted");
     //    for (size_t i = 0; i < m_freq.size(); ++i)
     //    {
     //      std::cout << m_freq[i] << ", ";
@@ -96,7 +98,7 @@ public:
     return idx;
   }
 
-  operator bool() const
+  bool empty() const
   {
     return m_sum > 0;
   }

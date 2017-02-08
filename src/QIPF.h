@@ -5,14 +5,8 @@
 #include "NDArrayUtils.h"
 #include "Sobol.h"
 #include "DDWR.h"
+//#include "ChiSq.h"
 
-// inline bool allZeros(const std::vector<std::vector<int32_t>>& r)
-// {
-//   for (const auto& v: r)
-//     if (!isZero(v))
-//       return false;
-//   return true;
-// }
 
 inline int32_t maxAbsElement(const std::vector<int32_t>& r)
 {
@@ -39,7 +33,6 @@ inline std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vect
 }
 
 
-
 // n-Dimensional Quasirandom integer proportional(?) fitting
 template<size_t D>
 class QIPF
@@ -52,7 +45,7 @@ public:
 
   typedef std::vector<uint32_t> marginal_t;
 
-  QIPF(const std::vector<marginal_t>& marginals) : m_marginals(marginals)//, m_attempts(0ull), m_sobol(Dim)
+  QIPF(const std::vector<marginal_t>& marginals) : m_marginals(marginals)
   {
     if (m_marginals.size() != Dim)
     {
@@ -87,7 +80,10 @@ public:
 
   bool solve()
   {
+
+    //std::cout << chiSqPdf(1, 0.005) << std::endl;
     // only initialised on first call, ensures different population each time
+    // will throw when it reaches 2^32 samples
     static Sobol sobol(Dim, m_sum);
     //static std::mt19937 sobol(70858048);
 
@@ -121,26 +117,35 @@ public:
       allZero = allZero && (m == 0);
     }
 
-    return allZero;
-  }
+    m_chi2 = 0.0;
+    m_lr = 0.0;
 
-  double msv() const
-  {
-    double sumSq = 0.0;
-
-    Index<D, Index_Unfixed> idx(m_t.sizes());
+    Index<D, Index_Unfixed> index(m_t.sizes());
 
     double scale = 1.0 / std::pow(m_sum, Dim-1);
 
-    while (!idx.end())
+    while (!index.end())
     {
-      double f = marginalProduct<Dim>(m_marginals, idx) * scale;
-      sumSq += (f - m_t[idx]) * (f - m_t[idx]);
-      ++idx;
+      // m is the mean population of this state
+      double m = marginalProduct<Dim>(m_marginals, index) * scale;
+      m_chi2 += (m_t[index] - m) * (m_t[index] - m) / m;
+      m_lr += m_t[index] * log(m_t[index]/m);
+      ++index;
     }
+    m_lr *= 2.0;
 
-    return sumSq / m_t.storageSize();
+    return allZero;
   }
+
+  double chi2() const
+  {
+    return m_chi2;
+  }
+
+  // double lr() const
+  // {
+  //   return m_lr;
+  // }
 
   const table_t& result() const
   {
@@ -162,7 +167,6 @@ public:
   {
     return double(m_sum) / m_t.storageSize();
   }
-
 
 private:
 
@@ -189,7 +193,8 @@ private:
   table_t m_t;
   size_t m_sum;
   int32_t m_residuals[Dim];
-  //Sobol m_sobol;
+  double m_chi2;
+  double m_lr;
 };
 
 // TODO helper macro for member template specialisations

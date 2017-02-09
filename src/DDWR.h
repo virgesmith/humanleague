@@ -30,12 +30,7 @@ public:
 
   value_type operator()(value_type r)
   {
-//    for (size_t i = 0; i < m_freq.size(); ++i)
-//    {
-//      std::cout << m_freq[i] << ", ";
-//    }
     r = r % m_sum;
-//    std::cout << std::endl << r << std::endl;
 
     value_type idx = 0;
     value_type s = m_freq[0];
@@ -79,12 +74,8 @@ public:
   {
     if (!m_sum)
       throw std::runtime_error("distribution is depleted");
-    //    for (size_t i = 0; i < m_freq.size(); ++i)
-    //    {
-    //      std::cout << m_freq[i] << ", ";
-    //    }
+
     r = r % m_sum;
-    //    std::cout << std::endl << r << std::endl;
 
     I idx = 0;
     I s = m_freq[0];
@@ -100,7 +91,7 @@ public:
 
   bool empty() const
   {
-    return m_sum > 0;
+    return m_sum == 0;
   }
 
 private:

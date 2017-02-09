@@ -5,7 +5,8 @@
 #include "NDArrayUtils.h"
 #include "Sobol.h"
 #include "DDWR.h"
-//#include "ChiSq.h"
+#include "PValue.h"
+#include <cmath>
 
 
 inline int32_t maxAbsElement(const std::vector<int32_t>& r)
@@ -33,7 +34,8 @@ inline std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vect
 }
 
 
-// n-Dimensional Quasirandom integer proportional(?) fitting
+// n-Dimensional without-replacement sampling
+// TODO rename
 template<size_t D>
 class QIPF
 {
@@ -65,6 +67,7 @@ public:
     size_t sizes[Dim];
     m_sum = sum(m_marginals[0]);
     sizes[0] = m_marginals[0].size();
+    m_dof = sizes[0] - 1;
     for (size_t i = 1; i < m_marginals.size(); ++i)
     {
       if (m_sum != sum(m_marginals[i]))
@@ -72,6 +75,7 @@ public:
         throw std::runtime_error("invalid marginals");
       }
       sizes[i] = m_marginals[i].size();
+      m_dof *= sizes[i] - 1;
     }
     m_t.resize(&sizes[0]);
   }
@@ -80,8 +84,6 @@ public:
 
   bool solve()
   {
-
-    //std::cout << chiSqPdf(1, 0.005) << std::endl;
     // only initialised on first call, ensures different population each time
     // will throw when it reaches 2^32 samples
     static Sobol sobol(Dim, m_sum);
@@ -100,7 +102,7 @@ public:
     {
       for (size_t i = 0; i < Dim; ++i)
       {
-        idx[i] = dists[i](sobol());
+        idx[i] = dists[i](sobol);
       }
       //print(idx, Dim);
       ++m_t[idx];
@@ -118,7 +120,6 @@ public:
     }
 
     m_chi2 = 0.0;
-    m_lr = 0.0;
 
     Index<D, Index_Unfixed> index(m_t.sizes());
 
@@ -129,23 +130,21 @@ public:
       // m is the mean population of this state
       double m = marginalProduct<Dim>(m_marginals, index) * scale;
       m_chi2 += (m_t[index] - m) * (m_t[index] - m) / m;
-      m_lr += m_t[index] * log(m_t[index]/m);
       ++index;
     }
-    m_lr *= 2.0;
 
     return allZero;
   }
 
-  double chi2() const
+  double pValue() const
+  {
+    return ::pValue(m_dof, m_chi2);
+  }
+
+  double chiSq() const
   {
     return m_chi2;
   }
-
-  // double lr() const
-  // {
-  //   return m_lr;
-  // }
 
   const table_t& result() const
   {
@@ -191,10 +190,14 @@ private:
 
   const std::vector<marginal_t> m_marginals;
   table_t m_t;
+  // total population
   size_t m_sum;
+  // difference between table sums (over single dim) and marginal
   int32_t m_residuals[Dim];
+  // chi-squared statistic
   double m_chi2;
-  double m_lr;
+  // degrees of freedom (for p-value calculation)
+  uint32_t m_dof;
 };
 
 // TODO helper macro for member template specialisations
@@ -204,15 +207,6 @@ private:
   inline void QIPF<d>::calcResiduals<1>(std::vector<std::vector<int32_t>>& r) \
   { \
     r[0] = diff(reduce<d, uint32_t, 0>(m_t), m_marginals[0]); \
-  }
-
-#define SPECIALISE_ADJUST(d) \
-  template<> \
-  template<> \
-  inline void QIPF<d>::adjust3<1>(std::vector<std::vector<int32_t>>& r) \
-  { \
-    adjust<d, 0>(r[0], m_t, true); \
-    calcResiduals<1>(r); \
   }
 
 SPECIALISE_CALCRESIDUALS(2)
@@ -226,18 +220,6 @@ SPECIALISE_CALCRESIDUALS(9)
 SPECIALISE_CALCRESIDUALS(10)
 SPECIALISE_CALCRESIDUALS(11)
 SPECIALISE_CALCRESIDUALS(12)
-
-// SPECIALISE_ADJUST(2)
-// SPECIALISE_ADJUST(3)
-// SPECIALISE_ADJUST(4)
-// SPECIALISE_ADJUST(5)
-// SPECIALISE_ADJUST(6)
-// SPECIALISE_ADJUST(7)
-// SPECIALISE_ADJUST(8)
-// SPECIALISE_ADJUST(9)
-// SPECIALISE_ADJUST(10)
-// SPECIALISE_ADJUST(11)
-// SPECIALISE_ADJUST(12)
 
 // Disallow nonsensical and trivial dimensionalities
 template<> class QIPF<0>;

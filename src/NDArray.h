@@ -45,9 +45,10 @@ public:
       return m_idx;
     }
 
-    void operator++()
+    ConstIterator& operator++()
     {
       ++m_idx[Orient];
+      return *this;
     }
 
     bool end() const
@@ -88,9 +89,10 @@ public:
       return m_idx;
     }
 
-    void operator++()
+    Iterator& operator++()
     {
       ++m_idx[Orient];
+      return *this;
     }
 
     bool end() const

@@ -47,15 +47,19 @@ void doQipf(List& result, IntegerVector dims, const std::vector<std::vector<uint
   result["pValue"] = qipf.pValue();
   result["error.margins"] = std::vector<uint32_t>(qipf.residuals(), qipf.residuals() + D);
   const typename QIPF<D>::table_t& t = qipf.result();
+  const NDArray<D, double>& p = qipf.stateProbabilities();
   Index<D, Index_Unfixed> idx(t.sizes());
   IntegerVector values(t.storageSize());
+  NumericVector probs(t.storageSize());
   while (!idx.end())
   {
     values[idx.colMajorOffset()] = t[idx];
+    probs[idx.colMajorOffset()] = p[idx];
     ++idx;
   }
   values.attr("dim") = dims;
-  result["p.hat"] = qipf.meanPopPerState();
+  probs.attr("dim") = dims;
+  result["p.hat"] = probs;
   result["x.hat"] = values;
 }
 

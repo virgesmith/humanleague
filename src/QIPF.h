@@ -78,6 +78,7 @@ public:
       m_dof *= sizes[i] - 1;
     }
     m_t.resize(&sizes[0]);
+    m_p.resize(&sizes[0]);
   }
 
   ~QIPF() { }
@@ -129,6 +130,7 @@ public:
     {
       // m is the mean population of this state
       double m = marginalProduct<Dim>(m_marginals, index) * scale;
+      m_p[index] = m / m_sum;
       m_chi2 += (m_t[index] - m) * (m_t[index] - m) / m;
       ++index;
     }
@@ -162,9 +164,9 @@ public:
   }
 
   // the mean population of each state
-  double meanPopPerState() const
+  const NDArray<D, double>& stateProbabilities() const
   {
-    return double(m_sum) / m_t.storageSize();
+    return m_p;
   }
 
 private:
@@ -190,6 +192,8 @@ private:
 
   const std::vector<marginal_t> m_marginals;
   table_t m_t;
+  // probabilities for each state
+  NDArray<Dim, double> m_p;
   // total population
   size_t m_sum;
   // difference between table sums (over single dim) and marginal

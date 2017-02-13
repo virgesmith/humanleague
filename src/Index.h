@@ -76,7 +76,7 @@ public:
     return m_atEnd;
   }
 
-private:
+public:
   size_t m_idx[Dim];
   size_t m_sizes[Dim];
   size_t m_storageSize;

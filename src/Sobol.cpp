@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <cstdint>
 
+#include <iostream>
+
 Sobol::Sobol(uint32_t dim, uint32_t nSkip) : m_dim(dim), m_buf(dim), m_pos(dim) // ensures m_buf gets populated on 1st access
 {
   m_s = nlopt_sobol_create(dim);
@@ -41,20 +43,27 @@ uint32_t Sobol::operator()()
 void Sobol::skip(uint32_t n)
 {
   uint32_t k = 1;
-  while (k*2 <= n)
+  while (k <= n)
     k *= 2;
-  while (k-- > 0)
+
+  //std::cout << "skips=" << k << std::endl;
+  uint32_t skipped = 0;
+  while (--k > 0)
+  {
+    ++skipped;
     buf();
+  }
+  //std::cout << "skipped=" << skipped << std::endl;
 }
 
-uint64_t Sobol::min() const
+uint32_t Sobol::min() const
 {
   return 0;
 }
 
-uint64_t Sobol::max() const
+uint32_t Sobol::max() const
 {
-  return std::numeric_limits<uint64_t>::max();
+  return std::numeric_limits<uint32_t>::max();
 }
 
 

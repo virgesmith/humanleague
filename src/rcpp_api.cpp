@@ -22,6 +22,7 @@ in the project's root directory, or at <http://www.gnu.org/licenses/>.
 #include <Rcpp.h>
 using namespace Rcpp;
 
+#include "IWRS.h"
 #include "QIPF.h"
 #include <vector>
 //#include <csignal>
@@ -38,17 +39,17 @@ using namespace Rcpp;
 //void (*oldhandler)(int) = signal(SIGINT, sigint_handler);
 
 
-template<size_t D>
-void doQipf(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m)
+template<typename S>
+void doSolve(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m)
 {
-  QIPF<D> qipf(m);
-  result["conv"] = qipf.solve();
-  result["chiSq"] = qipf.chiSq();
-  result["pValue"] = qipf.pValue();
-  result["error.margins"] = std::vector<uint32_t>(qipf.residuals(), qipf.residuals() + D);
-  const typename QIPF<D>::table_t& t = qipf.result();
-  const NDArray<D, double>& p = qipf.stateProbabilities();
-  Index<D, Index_Unfixed> idx(t.sizes());
+  S solver(m);
+  result["conv"] = solver.solve();
+  result["chiSq"] = solver.chiSq();
+  result["pValue"] = solver.pValue();
+  result["error.margins"] = std::vector<uint32_t>(solver.residuals(), solver.residuals() + S::Dim);
+  const typename S::table_t& t = solver.result();
+  const NDArray<S::Dim, double>& p = solver.stateProbabilities();
+  Index<S::Dim, Index_Unfixed> idx(t.sizes());
   IntegerVector values(t.storageSize());
   NumericVector probs(t.storageSize());
   while (!idx.end())
@@ -81,43 +82,43 @@ List synthPop(List marginals)
     dims.push_back(iv.size());
   }
   List result;
-  result["method"] = "qipf";
+  result["method"] = "iwrs";
 
-  // Workaround for fact that QIPF dimensionality is a template param and thus fixed at compile time
+  // Workaround for fact that IWRS dimensionality is a template param and thus fixed at compile time
   switch(dim)
   {
   case 2:
-    doQipf<2>(result, dims, m);
+    doSolve<IWRS<2>>(result, dims, m);
     break;
   case 3:
-    doQipf<3>(result, dims, m);
+    doSolve<IWRS<3>>(result, dims, m);
     break;
   case 4:
-    doQipf<4>(result, dims, m);
+    doSolve<IWRS<4>>(result, dims, m);
     break;
   case 5:
-    doQipf<5>(result, dims, m);
+    doSolve<IWRS<5>>(result, dims, m);
     break;
   case 6:
-    doQipf<6>(result, dims, m);
+    doSolve<IWRS<6>>(result, dims, m);
     break;
   case 7:
-    doQipf<7>(result, dims, m);
+    doSolve<IWRS<7>>(result, dims, m);
     break;
   case 8:
-    doQipf<8>(result, dims, m);
+    doSolve<IWRS<8>>(result, dims, m);
     break;
   case 9:
-    doQipf<9>(result, dims, m);
+    doSolve<IWRS<9>>(result, dims, m);
     break;
   case 10:
-    doQipf<10>(result, dims, m);
+    doSolve<IWRS<10>>(result, dims, m);
     break;
   case 11:
-    doQipf<11>(result, dims, m);
+    doSolve<IWRS<11>>(result, dims, m);
     break;
   case 12:
-    doQipf<12>(result, dims, m);
+    doSolve<IWRS<12>>(result, dims, m);
     break;
   default:
     throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));

@@ -3,13 +3,16 @@
 
 #include "NDArray.h"
 #include "NDArrayUtils.h"
-#include "DDWR.h"
 #include "Sobol.h"
+#include "DDWR.h"
 #include "PValue.h"
+#include <cmath>
 
-// n-Dimensional Quasirandom integer proportional(?) fitting
+
+// n-Dimensional without-replacement sampling
+// TODO rename
 template<size_t D>
-class QIPF
+class IWRS
 {
 public:
 
@@ -19,7 +22,7 @@ public:
 
   typedef std::vector<uint32_t> marginal_t;
 
-  QIPF(const std::vector<marginal_t>& marginals) : m_marginals(marginals)
+  IWRS(const std::vector<marginal_t>& marginals) : m_marginals(marginals)
   {
     if (m_marginals.size() != Dim)
     {
@@ -39,6 +42,7 @@ public:
     size_t sizes[Dim];
     m_sum = sum(m_marginals[0]);
     sizes[0] = m_marginals[0].size();
+    m_dof = sizes[0] - 1;
     for (size_t i = 1; i < m_marginals.size(); ++i)
     {
       if (m_sum != sum(m_marginals[i]))
@@ -46,76 +50,56 @@ public:
         throw std::runtime_error("invalid marginals");
       }
       sizes[i] = m_marginals[i].size();
+      m_dof *= sizes[i] - 1;
     }
     m_t.resize(&sizes[0]);
     m_p.resize(&sizes[0]);
-
-    // init sobol seq
-    //m_sobol.skip(m_sum);
   }
 
-  ~QIPF() { }
+  ~IWRS() { }
 
-  bool solve(/*size_t maxAttempts = 4*/)
+  bool solve()
   {
-    static Sobol sobol(Dim);
-    sobol.skip(m_sum);
+    // only initialised on first call, ensures different population each time
+    // will throw when it reaches 2^32 samples
+    static Sobol sobol(Dim, m_sum);
+    //static std::mt19937 sobol(70858048);
 
-    // TODO make dists members?
-    std::vector<discrete_distribution_with_replacement<uint32_t>> dists;
+    std::vector<discrete_distribution_without_replacement<uint32_t>> dists;
     for (size_t i = 0; i < Dim; ++i)
     {
-      dists.push_back(discrete_distribution_with_replacement<uint32_t>(m_marginals[i].begin(), m_marginals[i].end()));
+      dists.push_back(discrete_distribution_without_replacement<uint32_t>(m_marginals[i].begin(), m_marginals[i].end()));
     }
 
     m_t.assign(0u);
 
     size_t idx[Dim];
-    for (size_t i = 0; i < m_sum; ++i)
+    for (size_t j = 0; j < m_sum; ++j)
     {
       for (size_t i = 0; i < Dim; ++i)
       {
         idx[i] = dists[i](sobol);
       }
+      //print(idx, Dim);
       ++m_t[idx];
     }
-
-    // for (size_t i = 0; i < m_t.storageSize(); ++i)
-    //   m_t.m_data[i] = 2;
-
-    // temporary
 
     std::vector<std::vector<int32_t>> r(Dim);
     calcResiduals<Dim>(r);
 
-    //print(m_t.rawData(),m_t.storageSize(), m_t.sizes()[1]);
-    std::cout << m_sum << std::endl;
-
-    std::cout << "initial residuals" << std::endl;
+    bool allZero = true;
     for (size_t i = 0; i < Dim; ++i)
     {
-      print(r[i]);
-      std::cout << std::accumulate(r[i].begin(), r[i].end(), 0) << std::endl;
-    }
-
-    size_t m_attempts = 0;
-    //while (!allZeros(r) && m_attempts < 1/*maxAttempts*/)
-    if (!allZeros(r))
-    {
-      adjust3<Dim>(r); // is is adjusted on the fly
-      std::cout << "adjusted residuals" << std::endl;
-      for (size_t i = 0; i < Dim; ++i)
-      {
-        print(r[i]);
-      }
-      ++m_attempts;
+      int32_t m = maxAbsElement(r[i]);
+      m_residuals[i] = m;
+      allZero = allZero && (m == 0);
     }
 
     m_chi2 = 0.0;
 
     Index<D, Index_Unfixed> index(m_t.sizes());
 
-    double scale = 1.0 / std::pow(m_sum, Dim-1u);
+    double scale = 1.0 / std::pow(m_sum, Dim-1);
 
     while (!index.end())
     {
@@ -126,7 +110,7 @@ public:
       ++index;
     }
 
-    return allZeros(r);
+    return allZero;
   }
 
   double pValue() const
@@ -169,17 +153,17 @@ private:
     r[O-1] = diff(reduce<Dim, uint32_t, O-1>(m_t), m_marginals[O-1]);
   }
 
-  template<size_t O>
-  void adjust3(std::vector<std::vector<int32_t>>& r)
-  {
-    adjust3<O-1>(r);
-    //print(m_t.rawData(), m_t.storageSize());
-    calcResiduals<Dim>(r);
-    // recalc r
-    adjust<Dim, O-1>(r[O-1], m_t, true);
-    // TODO check we need the second call to calcResiduals
-    calcResiduals<Dim>(r);
-  }
+  // template<size_t O>
+  // void adjust3(std::vector<std::vector<int32_t>>& r)
+  // {
+  //   adjust3<O-1>(r);
+  //   //print(m_t.rawData(), m_t.storageSize());
+  //   calcResiduals<Dim>(r);
+  //   // recalc r
+  //   adjust<Dim, O-1>(r[O-1], m_t, true);
+  //   // TODO check we need the second call to calcResiduals
+  //   calcResiduals<Dim>(r);
+  // }
 
   const std::vector<marginal_t> m_marginals;
   table_t m_t;
@@ -193,25 +177,15 @@ private:
   double m_chi2;
   // degrees of freedom (for p-value calculation)
   uint32_t m_dof;
-
 };
 
 // TODO helper macro for member template specialisations
 #define SPECIALISE_CALCRESIDUALS(d) \
   template<> \
   template<> \
-  void QIPF<d>::calcResiduals<1>(std::vector<std::vector<int32_t>>& r) \
+  inline void IWRS<d>::calcResiduals<1>(std::vector<std::vector<int32_t>>& r) \
   { \
     r[0] = diff(reduce<d, uint32_t, 0>(m_t), m_marginals[0]); \
-  }
-
-#define SPECIALISE_ADJUST(d) \
-  template<> \
-  template<> \
-  void QIPF<d>::adjust3<1>(std::vector<std::vector<int32_t>>& r) \
-  { \
-    adjust<d, 0>(r[0], m_t, false); \
-    calcResiduals<1>(r); \
   }
 
 SPECIALISE_CALCRESIDUALS(2)
@@ -226,25 +200,13 @@ SPECIALISE_CALCRESIDUALS(10)
 SPECIALISE_CALCRESIDUALS(11)
 SPECIALISE_CALCRESIDUALS(12)
 
-SPECIALISE_ADJUST(2)
-SPECIALISE_ADJUST(3)
-SPECIALISE_ADJUST(4)
-SPECIALISE_ADJUST(5)
-SPECIALISE_ADJUST(6)
-SPECIALISE_ADJUST(7)
-SPECIALISE_ADJUST(8)
-SPECIALISE_ADJUST(9)
-SPECIALISE_ADJUST(10)
-SPECIALISE_ADJUST(11)
-SPECIALISE_ADJUST(12)
-
 // remove the macros since this is a header file
 #undef SPECIALISE_CALCRESIDUALS
-#undef SPECIALISE_ADJUST
-
 
 // Disallow nonsensical and trivial dimensionalities
-template<> class QIPF<0>;
-template<> class QIPF<1>;
+template<> class IWRS<0>;
+template<> class IWRS<1>;
+
+
 
 

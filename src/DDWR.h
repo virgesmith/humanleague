@@ -9,7 +9,7 @@ class discrete_distribution_with_replacement
 {
 public:
 
-  typedef I value_type;
+  typedef I result_type;
 
   // enforce integral types only
   static_assert(std::is_integral<I>::value, "discrete_distribution_with_replacement: only integral types supported");
@@ -23,17 +23,17 @@ public:
 
   // std::distribution compatibility
   template<typename R>
-  value_type operator()(R& rng)
+  result_type operator()(R& rng)
   {
     return operator()(rng());
   }
 
-  value_type operator()(value_type r)
+  result_type operator()(result_type r)
   {
-    r = r % m_sum;
+    r = (r >> 19) % m_sum;
 
-    value_type idx = 0;
-    value_type s = m_freq[0];
+    result_type idx = 0;
+    result_type s = m_freq[0];
     while (r >= s)
     {
       ++idx;
@@ -51,7 +51,7 @@ template<typename I> // I must be an integral type
 class discrete_distribution_without_replacement
 {
 public:
-  typedef I value_type;
+  typedef I result_type;
 
   // enforce integral types only
   static_assert(std::is_integral<I>::value, "discrete_distribution_without_replacement: only integral types supported");
@@ -65,12 +65,12 @@ public:
 
   // std::distribution compatibility
   template<typename R>
-  value_type operator()(R& rng)
+  result_type operator()(R& rng)
   {
     return operator()(rng());
   }
 
-  value_type operator()(value_type r)
+  result_type operator()(result_type r)
   {
     if (!m_sum)
       throw std::runtime_error("distribution is depleted");

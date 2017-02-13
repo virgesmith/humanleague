@@ -15,26 +15,29 @@ extern "C"
 class Sobol
 {
 public:
-  explicit Sobol(uint32_t dim, uint32_t nSkip = 0u);
+
+  typedef uint32_t result_type;
+
+  explicit Sobol(uint32_t dim, result_type nSkip = 0u);
 
   ~Sobol();
 
-  const std::vector<uint32_t>& buf();
+  const std::vector<result_type>& buf();
 
   // NB use with care in std::distribtion objects, which may be expecting a 64-bit variate
-  uint32_t operator()();
+  result_type operator()();
 
   // Skip largest 2^k <= n
-  void skip(uint32_t n);
+  void skip(result_type n);
 
-  uint64_t min() const;
+  result_type min() const;
 
-  uint64_t max() const;
+  result_type max() const;
 
 private:
 
   SobolData* m_s;
   uint32_t m_dim;
-  std::vector<uint32_t> m_buf;
+  std::vector<result_type> m_buf;
   uint32_t m_pos;
 };

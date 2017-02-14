@@ -39,18 +39,18 @@ uint32_t Sobol::operator()()
   return m_buf[m_pos++];
 }
 
-// Skip largest 2^k <= n
+// Skip largest 2^k-1 < n
 void Sobol::skip(uint32_t n)
 {
   uint32_t k = 1;
-  while (k <= n)
+  while (k < n)
     k *= 2;
 
   //std::cout << "skips=" << k << std::endl;
-  uint32_t skipped = 0;
+  //uint32_t skipped = 0;
   while (--k > 0)
   {
-    ++skipped;
+    //++skipped;
     buf();
   }
   //std::cout << "skipped=" << skipped << std::endl;

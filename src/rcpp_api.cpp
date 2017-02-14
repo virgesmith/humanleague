@@ -69,7 +69,7 @@ void doSolve(List& result, IntegerVector dims, const std::vector<std::vector<uin
 //' @param marginals a List of n integer vectors containing marginal data (2 <= n <= 12). The sum of elements in each vector must be identical
 //' @export
 // [[Rcpp::export]]
-List synthPop(List marginals)
+List synthPop(List marginals, const std::string& method = "iwrs")
 {
   const size_t dim = marginals.size();
   std::vector<std::vector<uint32_t>> m(dim);
@@ -82,48 +82,96 @@ List synthPop(List marginals)
     dims.push_back(iv.size());
   }
   List result;
-  result["method"] = "iwrs";
+  result["method"] = method;
 
-  // Workaround for fact that IWRS dimensionality is a template param and thus fixed at compile time
-  switch(dim)
+  if (method == "iwrs")
   {
-  case 2:
-    doSolve<IWRS<2>>(result, dims, m);
-    break;
-  case 3:
-    doSolve<IWRS<3>>(result, dims, m);
-    break;
-  case 4:
-    doSolve<IWRS<4>>(result, dims, m);
-    break;
-  case 5:
-    doSolve<IWRS<5>>(result, dims, m);
-    break;
-  case 6:
-    doSolve<IWRS<6>>(result, dims, m);
-    break;
-  case 7:
-    doSolve<IWRS<7>>(result, dims, m);
-    break;
-  case 8:
-    doSolve<IWRS<8>>(result, dims, m);
-    break;
-  case 9:
-    doSolve<IWRS<9>>(result, dims, m);
-    break;
-  case 10:
-    doSolve<IWRS<10>>(result, dims, m);
-    break;
-  case 11:
-    doSolve<IWRS<11>>(result, dims, m);
-    break;
-  case 12:
-    doSolve<IWRS<12>>(result, dims, m);
-    break;
-  default:
-    throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
+    // Workaround for fact that dimensionality is a template param and thus fixed at compile time
+    switch(dim)
+    {
+    case 2:
+      doSolve<IWRS<2>>(result, dims, m);
+      break;
+    case 3:
+      doSolve<IWRS<3>>(result, dims, m);
+      break;
+    case 4:
+      doSolve<IWRS<4>>(result, dims, m);
+      break;
+    case 5:
+      doSolve<IWRS<5>>(result, dims, m);
+      break;
+    case 6:
+      doSolve<IWRS<6>>(result, dims, m);
+      break;
+    case 7:
+      doSolve<IWRS<7>>(result, dims, m);
+      break;
+    case 8:
+      doSolve<IWRS<8>>(result, dims, m);
+      break;
+    case 9:
+      doSolve<IWRS<9>>(result, dims, m);
+      break;
+    case 10:
+      doSolve<IWRS<10>>(result, dims, m);
+      break;
+    case 11:
+      doSolve<IWRS<11>>(result, dims, m);
+      break;
+    case 12:
+      doSolve<IWRS<12>>(result, dims, m);
+      break;
+    default:
+      throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
+    }
   }
-
+  else if (method == "qipf")
+  {
+    // Workaround for fact that dimensionality is a template param and thus fixed at compile time
+    switch(dim)
+    {
+    case 2:
+      doSolve<IWRS<2>>(result, dims, m);
+      break;
+    case 3:
+      doSolve<IWRS<3>>(result, dims, m);
+      break;
+    case 4:
+      doSolve<IWRS<4>>(result, dims, m);
+      break;
+    case 5:
+      doSolve<IWRS<5>>(result, dims, m);
+      break;
+    case 6:
+      doSolve<IWRS<6>>(result, dims, m);
+      break;
+    case 7:
+      doSolve<IWRS<7>>(result, dims, m);
+      break;
+    case 8:
+      doSolve<IWRS<8>>(result, dims, m);
+      break;
+    case 9:
+      doSolve<IWRS<9>>(result, dims, m);
+      break;
+    case 10:
+      doSolve<IWRS<10>>(result, dims, m);
+      break;
+    case 11:
+      doSolve<IWRS<11>>(result, dims, m);
+      break;
+    case 12:
+      doSolve<IWRS<12>>(result, dims, m);
+      break;
+    default:
+      throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
+    }
+  }
+  else
+  {
+    throw std::runtime_error("Invalid method. Valid values are: 'iwrs', 'qipf'");
+  }
   // TODO dump out pop table...
 
   return result;

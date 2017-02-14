@@ -5,7 +5,7 @@
 #'
 #' @param marginals a List of n integer vectors containing marginal data (2 <= n <= 12). The sum of elements in each vector must be identical
 #' @export
-synthPop <- function(marginals) {
-    .Call('humanleague_synthPop', PACKAGE = 'humanleague', marginals)
+synthPop <- function(marginals, method = "iwrs") {
+    .Call('humanleague_synthPop', PACKAGE = 'humanleague', marginals, method)
 }
 

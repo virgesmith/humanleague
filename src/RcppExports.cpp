@@ -6,13 +6,14 @@
 using namespace Rcpp;
 
 // synthPop
-List synthPop(List marginals);
-RcppExport SEXP humanleague_synthPop(SEXP marginalsSEXP) {
+List synthPop(List marginals, const std::string& method);
+RcppExport SEXP humanleague_synthPop(SEXP marginalsSEXP, SEXP methodSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
-    rcpp_result_gen = Rcpp::wrap(synthPop(marginals));
+    Rcpp::traits::input_parameter< const std::string& >::type method(methodSEXP);
+    rcpp_result_gen = Rcpp::wrap(synthPop(marginals, method));
     return rcpp_result_gen;
 END_RCPP
 }

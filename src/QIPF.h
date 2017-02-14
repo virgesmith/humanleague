@@ -80,34 +80,29 @@ public:
       ++m_t[idx];
     }
 
-    // for (size_t i = 0; i < m_t.storageSize(); ++i)
-    //   m_t.m_data[i] = 2;
-
-    // temporary
-
     std::vector<std::vector<int32_t>> r(Dim);
     calcResiduals<Dim>(r);
 
-    //print(m_t.rawData(),m_t.storageSize(), m_t.sizes()[1]);
-    std::cout << m_sum << std::endl;
+    // print(m_t.rawData(),m_t.storageSize(), m_t.sizes()[1]);
+    // std::cout << m_sum << std::endl;
 
-    std::cout << "initial residuals" << std::endl;
-    for (size_t i = 0; i < Dim; ++i)
-    {
-      print(r[i]);
-      std::cout << std::accumulate(r[i].begin(), r[i].end(), 0) << std::endl;
-    }
+    // std::cout << "initial residuals" << std::endl;
+    // for (size_t i = 0; i < Dim; ++i)
+    // {
+    //   print(r[i]);
+    //   std::cout << std::accumulate(r[i].begin(), r[i].end(), 0) << std::endl;
+    // }
 
     size_t m_attempts = 0;
     //while (!allZeros(r) && m_attempts < 1/*maxAttempts*/)
     if (!allZeros(r))
     {
       adjust3<Dim>(r); // is is adjusted on the fly
-      std::cout << "adjusted residuals" << std::endl;
-      for (size_t i = 0; i < Dim; ++i)
-      {
-        print(r[i]);
-      }
+      // std::cout << "adjusted residuals" << std::endl;
+      // for (size_t i = 0; i < Dim; ++i)
+      // {
+      //   print(r[i]);
+      // }
       ++m_attempts;
     }
 
@@ -176,7 +171,7 @@ private:
     //print(m_t.rawData(), m_t.storageSize());
     calcResiduals<Dim>(r);
     // recalc r
-    adjust<Dim, O-1>(r[O-1], m_t, true);
+    adjust<Dim, O-1>(r, m_t, false);
     // TODO check we need the second call to calcResiduals
     calcResiduals<Dim>(r);
   }
@@ -210,7 +205,7 @@ private:
   template<> \
   void QIPF<d>::adjust3<1>(std::vector<std::vector<int32_t>>& r) \
   { \
-    adjust<d, 0>(r[0], m_t, false); \
+    adjust<d, 0>(r, m_t, false); \
     calcResiduals<1>(r); \
   }
 

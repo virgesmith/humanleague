@@ -30,7 +30,8 @@ public:
 
   result_type operator()(result_type r)
   {
-    r = (r >> 19) % m_sum;
+    // map r [0,2^32) -> [0, m_sum)
+    r = (uint32_t)(double(r)/(1ull<<32) * m_sum);
 
     result_type idx = 0;
     result_type s = m_freq[0];
@@ -75,7 +76,8 @@ public:
     if (!m_sum)
       throw std::runtime_error("distribution is depleted");
 
-    r = r % m_sum;
+    // map r in [0,2^32) -> [0, m_sum)
+    r = (uint32_t)(double(r)/(1ull<<32) * m_sum);
 
     I idx = 0;
     I s = m_freq[0];

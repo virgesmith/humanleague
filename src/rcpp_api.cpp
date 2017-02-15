@@ -23,7 +23,7 @@ in the project's root directory, or at <http://www.gnu.org/licenses/>.
 using namespace Rcpp;
 
 #include "IWRS.h"
-#include "QIPF.h"
+#include "IQRS.h"
 #include <vector>
 //#include <csignal>
 
@@ -45,7 +45,12 @@ void doSolve(List& result, IntegerVector dims, const std::vector<std::vector<uin
   S solver(m);
   result["conv"] = solver.solve();
   result["chiSq"] = solver.chiSq();
-  result["pValue"] = solver.pValue();
+  std::pair<double, bool> pVal = solver.pValue();
+  result["pValue"] = pVal.first;
+  if (!pVal.second)
+  {
+    result["warning"] = "p-value may be inaccurate";
+  }
   result["error.margins"] = std::vector<uint32_t>(solver.residuals(), solver.residuals() + S::Dim);
   const typename S::table_t& t = solver.result();
   const NDArray<S::Dim, double>& p = solver.stateProbabilities();
@@ -126,43 +131,43 @@ List synthPop(List marginals, const std::string& method = "iwrs")
       throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
     }
   }
-  else if (method == "qipf")
+  else if (method == "iqrs")
   {
     // Workaround for fact that dimensionality is a template param and thus fixed at compile time
     switch(dim)
     {
     case 2:
-      doSolve<IWRS<2>>(result, dims, m);
+      doSolve<IQRS<2>>(result, dims, m);
       break;
     case 3:
-      doSolve<IWRS<3>>(result, dims, m);
+      doSolve<IQRS<3>>(result, dims, m);
       break;
     case 4:
-      doSolve<IWRS<4>>(result, dims, m);
+      doSolve<IQRS<4>>(result, dims, m);
       break;
     case 5:
-      doSolve<IWRS<5>>(result, dims, m);
+      doSolve<IQRS<5>>(result, dims, m);
       break;
     case 6:
-      doSolve<IWRS<6>>(result, dims, m);
+      doSolve<IQRS<6>>(result, dims, m);
       break;
     case 7:
-      doSolve<IWRS<7>>(result, dims, m);
+      doSolve<IQRS<7>>(result, dims, m);
       break;
     case 8:
-      doSolve<IWRS<8>>(result, dims, m);
+      doSolve<IQRS<8>>(result, dims, m);
       break;
     case 9:
-      doSolve<IWRS<9>>(result, dims, m);
+      doSolve<IQRS<9>>(result, dims, m);
       break;
     case 10:
-      doSolve<IWRS<10>>(result, dims, m);
+      doSolve<IQRS<10>>(result, dims, m);
       break;
     case 11:
-      doSolve<IWRS<11>>(result, dims, m);
+      doSolve<IQRS<11>>(result, dims, m);
       break;
     case 12:
-      doSolve<IWRS<12>>(result, dims, m);
+      doSolve<IQRS<12>>(result, dims, m);
       break;
     default:
       throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
@@ -170,7 +175,7 @@ List synthPop(List marginals, const std::string& method = "iwrs")
   }
   else
   {
-    throw std::runtime_error("Invalid method. Valid values are: 'iwrs', 'qipf'");
+    throw std::runtime_error("Invalid method. Valid values are: 'iwrs', 'iqrs'");
   }
   // TODO dump out pop table...
 

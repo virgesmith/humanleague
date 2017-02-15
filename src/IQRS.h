@@ -7,9 +7,9 @@
 #include "Sobol.h"
 #include "PValue.h"
 
-// n-Dimensional Quasirandom integer proportional(?) fitting
+// n-Dimensional Integer Quasirandom with-Replacement Sampling
 template<size_t D>
-class QIPF
+class IQRS
 {
 public:
 
@@ -19,7 +19,7 @@ public:
 
   typedef std::vector<uint32_t> marginal_t;
 
-  QIPF(const std::vector<marginal_t>& marginals) : m_marginals(marginals)
+  IQRS(const std::vector<marginal_t>& marginals) : m_marginals(marginals)
   {
     if (m_marginals.size() != Dim)
     {
@@ -39,6 +39,7 @@ public:
     size_t sizes[Dim];
     m_sum = sum(m_marginals[0]);
     sizes[0] = m_marginals[0].size();
+    m_dof = sizes[0] - 1;
     for (size_t i = 1; i < m_marginals.size(); ++i)
     {
       if (m_sum != sum(m_marginals[i]))
@@ -46,6 +47,7 @@ public:
         throw std::runtime_error("invalid marginals");
       }
       sizes[i] = m_marginals[i].size();
+      m_dof *= sizes[i] - 1;
     }
     m_t.resize(&sizes[0]);
     m_p.resize(&sizes[0]);
@@ -54,7 +56,7 @@ public:
     //m_sobol.skip(m_sum);
   }
 
-  ~QIPF() { }
+  ~IQRS() { }
 
   bool solve(/*size_t maxAttempts = 4*/)
   {
@@ -94,7 +96,8 @@ public:
     // }
 
     size_t m_attempts = 0;
-    //while (!allZeros(r) && m_attempts < 1/*maxAttempts*/)
+
+    //while (!allZeros(r) && m_attempts < 1/*maxAttempts*/) not looping for now
     if (!allZeros(r))
     {
       adjust3<Dim>(r); // is is adjusted on the fly
@@ -104,6 +107,13 @@ public:
       //   print(r[i]);
       // }
       ++m_attempts;
+    }
+
+    for (size_t i = 0; i < Dim; ++i)
+    {
+      int32_t m = maxAbsElement(r[i]);
+      m_residuals[i] = m;
+      //allZero = allZero && (m == 0);
     }
 
     m_chi2 = 0.0;
@@ -124,7 +134,7 @@ public:
     return allZeros(r);
   }
 
-  double pValue() const
+  std::pair<double, bool> pValue() const
   {
     return ::pValue(m_dof, m_chi2);
   }
@@ -195,7 +205,7 @@ private:
 #define SPECIALISE_CALCRESIDUALS(d) \
   template<> \
   template<> \
-  void QIPF<d>::calcResiduals<1>(std::vector<std::vector<int32_t>>& r) \
+  void IQRS<d>::calcResiduals<1>(std::vector<std::vector<int32_t>>& r) \
   { \
     r[0] = diff(reduce<d, uint32_t, 0>(m_t), m_marginals[0]); \
   }
@@ -203,7 +213,7 @@ private:
 #define SPECIALISE_ADJUST(d) \
   template<> \
   template<> \
-  void QIPF<d>::adjust3<1>(std::vector<std::vector<int32_t>>& r) \
+  void IQRS<d>::adjust3<1>(std::vector<std::vector<int32_t>>& r) \
   { \
     adjust<d, 0>(r, m_t, false); \
     calcResiduals<1>(r); \
@@ -239,7 +249,7 @@ SPECIALISE_ADJUST(12)
 
 
 // Disallow nonsensical and trivial dimensionalities
-template<> class QIPF<0>;
-template<> class QIPF<1>;
+template<> class IQRS<0>;
+template<> class IQRS<1>;
 
 

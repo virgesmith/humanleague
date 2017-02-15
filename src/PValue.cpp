@@ -54,12 +54,16 @@ namespace {
 //    2, X < 0.
 //    3, underflow.
 //    4, error return from the Log Gamma routine.
+//    5, failed to converge in series expansion
+//    6, failed to converge in continued fraction
 //
 //    Output, double GAMAIN, the value of the incomplete gamma ratio.
 //
 
 double gamain ( double x, double p, int *ifault )
 {
+  const int maxIters = 10000;
+  int iter;
   double a;
   static const double acu = 1.0E-08;
   double an;
@@ -75,7 +79,7 @@ double gamain ( double x, double p, int *ifault )
   double rn;
   double term;
   static const double loguflo = log(1.0E-37);
-  double value;
+  double value = 0.0;
 
   *ifault = 0;
   //
@@ -84,21 +88,18 @@ double gamain ( double x, double p, int *ifault )
   if ( p <= 0.0 )
   {
     *ifault = 1;
-    value = 0.0;
     return value;
   }
 
   if ( x < 0.0 )
   {
     *ifault = 2;
-    value = 0.0;
     return value;
   }
 
   if ( x == 0.0 )
   {
     *ifault = 0;
-    value = 0.0;
     return value;
   }
 
@@ -109,7 +110,6 @@ double gamain ( double x, double p, int *ifault )
   if ( arg < loguflo )
   {
     *ifault = 3;
-    value = 0.0;
     return value;
   }
 
@@ -124,7 +124,7 @@ double gamain ( double x, double p, int *ifault )
     term = 1.0;
     rn = p;
 
-    for ( ; ; )
+    for (iter = 0 ; iter < maxIters; ++iter)
     {
       rn = rn + 1.0;
       term = term * x / rn;
@@ -135,6 +135,9 @@ double gamain ( double x, double p, int *ifault )
         break;
       }
     }
+    // convergence failure
+    if (iter == maxIters)
+      *ifault = 5;
 
     value = gin * factor / p;
     return value;
@@ -153,7 +156,7 @@ double gamain ( double x, double p, int *ifault )
 
   gin = pn[2] / pn[3];
 
-  for ( ; ; )
+  for (iter = 0 ; iter < maxIters; ++iter)
   {
     a = a + 1.0;
     b = b + 2.0;
@@ -198,22 +201,22 @@ double gamain ( double x, double p, int *ifault )
       }
     }
   }
-
+  // convergence failure
+  if (iter == maxIters)
+    *ifault = 6;
   return value;
 }
 
 }
 
-double pValue(uint32_t dof, double x)
+
+std::pair<double, bool> pValue(uint32_t dof, double x)
 {
   double k = dof * 0.5;
-  int e;
+  int e = 0;
   double p = 1.0 - gamain(x/2.0, k, &e);
-  if (e != 0 && e != 3) // ignore underflow errors
-  {
-    throw std::runtime_error("gamain error: " + std::to_string(e));
-  }
-  return p;
+  // we drop detail of the error here and just return true/false, plus the value (false meaning p is potentially inaccurate)
+  return std::make_pair(p, e == 0);
 }
 
 

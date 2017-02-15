@@ -113,7 +113,7 @@ public:
     return allZero;
   }
 
-  double pValue() const
+  std::pair<double, bool> pValue() const
   {
     return ::pValue(m_dof, m_chi2);
   }

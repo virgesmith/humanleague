@@ -1,53 +1,45 @@
 ---
-title: "Sampling Methods for Synthetic Population Generation"
-author: "Andrew P Smith and Robin Lovelace"
-date: "`r Sys.Date()`"
-output: pdf_document
+title: "Integer Sampling Methods for Synthetic Population Generation"
+author: "Andrew P Smith"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  pdf_document:
+    number_sections: true
+autoNumber: all
 vignette: >
-  %\VignetteIndexEntry{Quasirandom Sampling for Microsimulation}
+  %\VignetteIndexEntry{Integer Sampling Methods for Synthetic Population Generation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-bibliography: ref.bib
 ---
 
-autoNumber: all
+***
+The established numerical methods for synthesising a population from marginal data are robust and well understood, but none are able to generate an integral population. Thus some postprocessing ("integerisation") may need to be done to remove fractional values. The motivation for this work was to investigate possible alternative methods of synthesis that are computationally fast and directly result in integral populations. We show that, not unexpectedly, quasirandom sample the population far more evenly than pseudorandom numbers, but there is no guarantee of convergence. Secondly, we demonstrate that sampling the marginals without replacement guarantees convergence regardless of the type of random numbers used, but may result in population that are statistically unlikely. We have made the algorithms available in an open-source R package `humanleague`, which interested readers are invited to evaluate.
 
-```{r, eval=FALSE}
-# Get bibliography (run once from project root)
-u = "https://www.zotero.org/api/groups/418217/collections/MP7NS3SC/items/top?limit=100&format=bibtex&v=1"
-b = httr::GET(url = u, httr::write_disk("ref.bib", overwrite = T))
-```
+***
 
-The R package **synthpop** provides a set of tools for generating synthetic data, in the context of anonymisation rather than modelling [@nowok_synthpop:_2016]. ...
 
-@kavroudakis_sms:_2015 focus on the spatial variability of individual-level dat.
+# Introduction
 
-## Abstract
+Raking is considered to be a solved problem. However current methods do have some shortfalls, for example generating fractional populations, not being able to cope with zeros (ref?), and can be computationally intensive....
 
-The established numerical methods for synthesising a population from marginal data are robust and well understood, but none are able to generate an integral population. Thus some postprocessing ("integerisation") may need to be done to remove fractional values. The motivation for this work was to investigate possible alternative methods of synthesis that are computationally fast and directly result in integral populations. We show that, not unexpectedly, quasirandom numbers are much better than pseudorandom numbers at sampling a valid population, but there is no guarantee of convergence. Secondly, we demonstrate that sampling the marginals without replacement does guarantee convergence, but may result in population that are statistically unlikely. We present the latter algorithm the open-source R package `humanleague`, which interested readers are invited to evaluate.
+# Theory
 
-## Introduction
-
-Raking is considered to be a solved problem. However current methods do have some shortfalls, for example generating fractional populations, and can be computationally intensive. W
-
-## Theory
-
-### Quasirandom Numbers
+## Quasirandom Numbers
 
 Quasirandom numbers, often referred to as low discrepancy sequences, are preferential to pseudorandom numbers in many applications, despite not having some of the (appearance of) randomness properties of (good) pseudorandom generators. In this work we focus on the Sobol QRNG of (refs Sobol, Bratley and Fox, Joe & Kuo). 
 
-Quasi: inherent dimension, no independence, faster convergence.  
-Pseudo: dimensionless, (appear to be) independent, slower convergence.
+Quasi: inherent dimension, no independence, faster convergence. Relatively short period
+Pseudo: dimensionless, (appear to be) independent, slower convergence. Some generators have extremely long periods.
 
 Sobol sequences used for e.g. numerical integration will converge at a rate of $\approx1/N$ (actually $(ln N)^D/N$ ref Numerical Recipes) compared to $\sim1/\sqrt N$ for a PRNG, and thuis require far fewer samples to achieve the same level of accuracy.
 
 If we consider the sample space to be a multivariate discrete distribution over the unit hypercube, this maps directly to the values of the Sobol sequence.
 
+## Sampling without Replacement
 
-### Sampling without Replacement
+TODO check home desktop for this text (forgot to commit??)
 
-
-### The Algorithm
+## The Problem
 
 A mathematical statement of the microsimulation problem is as follows:
 
@@ -63,31 +55,51 @@ $$\sum\limits_{\mathbf{k}, k_i fixed} \mathbf{T}_\mathbf{k} = \mathbf{m}_i$$
 
 in other words each element of $\mathbf{m}_i$ is the sum of all elements in $\mathbf{T}$ for a fixed value of $k_i$.
 
-Each marginal sum must equal the population $P$:
+Each marginal sum and the sum of the elements of contingency table must equal the population $P$:
 
-$$\sum\limits \mathbf{m}_{i} = P$$ (2)
-
-as must the sum of the elements of contingency table:
-
-$$\sum\limits_\mathbf{k} \mathbf{T} = P$$ (3)
+$$\sum\limits \mathbf{m}_{i} = \sum\limits_\mathbf{k} \mathbf{T} = P$$ 
 
 and finally we constrain the elements to the natural numbers: 
 
-$${\mathbf{T} \in \mathbb{N}^S,\mathbf{m}_i} \in \mathbb{N}^{l_i}$$ (4)
+$${\mathbf{T} \in \mathbb{N}^S,\mathbf{m}_i} \in \mathbb{N}^{l_i}$$ 
 
 In the general case this is an ill-posed problem as there are not enough constraints for a unique solution. Hence the need to resort to iterative or optimisation-type solutions, such as IPF, simulated annealing, maximum likelihood, chi-squared fitting, least-squares fitting.
 
+## The Algorithms
 
+### Integer Quasirandom with-Replacement Sampling
 
-## Method
+1. Create an N-dimensional discrete with-replacement distribution using the marginals $\mathbf{m}_i$
 
-### A Worked Example
+2. Sample {P} quasirandom variates from this distribution to create a "seed" population $\mathbf{T}$, assigning an individual to the corresponding "slot". Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_k$. Thus $\mathbf{T}$ will - by construction - satisfy constraints (3) and (4). The next step is to check, and adjust if necessary, the population such that constraint (1) is met.
 
-We consider a 2 dimensional case here for simpilicity, for a population of 100 consisting of 51 females and 49 males, of which 35 are aged under 0-29, 40 aged 30-59, 25 aged 60+. Thus our constraint vectors are: $\mathbf{m}_0=[51,49]$ and $\mathbf{m}_1=[35,40,25]$ and there are 6 possible states.    
+3. For each dimension, calculate the residual vector $\mathbf{r}_i$, the difference between the population and marginal $\mathbf{m}_i$: 
+$$\mathbf{r}_i = \sum\limits_{\mathbf{k}, k_i fixed} \mathbf{T}_k - \mathbf{m}_i$$
+If all elements of $\mathbf{r}_i$ are zero, constraint (1) is satisfied in dimension $i$. If not, find an index $\mathbf{k}$ in $\mathbf{T}$ such that subtracting $\mathbf{r}_i$ will not result in negative values in $\mathbf{T}$
+$$\mathbf{T}_{\mathbf{k}, k_i fixed} \leftarrow \mathbf{T}_{\mathbf{k}, k_ifixed} - \mathbf{r}_i$$
+and repeat this step as necessary for each dimension. 
+
+4. If $\mathbf{k}$ exists, perform the subtraction, otherwise abort the computation, since it is not possible to adjust $\mathbf{T}$ within the contraints.
+
+5. Compute a $\chi^2$ statistic and a p-value.
+
+### Integer Without-Replacement Sampling
+
+1. Create an N-dimensional discrete without-replacement distribution using the marginals $\mathbf{m}_i$
+
+2. Sample {P} random variates from this distribution to create a "seed" population $\mathbf{T}$, assigning an individual to the corresponding "slot". Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_\mathbf{k}$, repeating until our distribution is fully depleted. Constructing the problem in this way automatically ensures that all constraints are met.
+
+3. Compute a $\chi^2$ statistic and a p-value.
+
+# Method
+
+## A Worked Example of IQRS
+
+We consider a 2 dimensional case here for simpilicity, for a population of 100 consisting of 51 females and 49 males, of which 35 are aged under 0-29, 40 aged 30-59, 25 aged 60+. Thus our constraint vectors are: $\mathbf{m}_0=\{51,49\}$ and $\mathbf{m}_1=\{35,40,25\}$ and there are 6 possible states.    
 
 We construct a bivariate discrete distibution using the marginals which will have a probability density
 
-$$p_{ij} = \frac{(\mathbf{m}_0)_i(\mathbf{m}_1)_j}{\sum\limits_i\mathbf{m}_0\sum\limits_j\mathbf{m}_1}$$ (8)
+$$p_{ij} = \frac{(\mathbf{m}_0)_i(\mathbf{m}_1)_j}{\sum\limits_i\mathbf{m}_0\sum\limits_j\mathbf{m}_1}$$ 
 
 We take 100 (i.e. the population) random samples $(i,j)$ from this distribution to create a seed population $\mathbf{T}$ (in bold), which for example may look like:
 
@@ -105,7 +117,7 @@ To correct the population we subtract $\mathbf{r}_0$ from any one column (in thi
 :-----------------------------------:|--------|--------|--------|----
             51                       | **20** | **20** | **11** | *0*
             49                       | **16** | **20** | **13** | *0*
-        $\mathbf{r}_1$               |  *+1*  |  *0*  |  *-1*   |
+        $\mathbf{r}_1$               |  *+1*  |  *0*   |  *-1*  |
     
 which now matches $\mathbf{m}_0$. Next we subtract $\mathbf{r}_1$ from the any one row (again no choice of row will result in a negative value). Selecting the first row, the population becomes:
 
@@ -117,74 +129,137 @@ which now matches $\mathbf{m}_0$. Next we subtract $\mathbf{r}_1$ from the any o
 
 which results in a population that now matches both marginals. 
 
-### The R Package
+## A Worked Example of IWRS
 
-We took the Sobol QRNG implementation (in `C`) of stevengj of MIT [https://github.com/stevengj/nlopt/], and put it into a `C++` wrapper that is compliant with the native `C++11` standard library random functionality. We wrote custom N-dimensional array, indexing and iterator functionality, and the QIPF algorithm itself. Finally, using `Rcpp`, we put this into an open source `R` package called `humanleague` which is available at [https://github.com/CatchDat/humanleague](https://github.com/CatchDat/humanleague)
+(probably unnecessary given its simplicity)
+
+## The R Package
+
+We took the Sobol QRNG implementation (in `C`) of stevengj of MIT [https://github.com/stevengj/nlopt/], and put it into a `C++` wrapper that is compliant with the native `C++11` standard library random functionality. We wrote custom N-dimensional array, indexing and iterator functionality, and the IQRS algorithm itself. Finally, using `Rcpp`, we put this into an open source `R` package called `humanleague` which is available at [https://github.com/CatchDat/humanleague](https://github.com/CatchDat/humanleague)
 
 This package supports dimensionality up to 12, although this limit is arbitrary and could be increased if necessary. Input is simply a list of marginal vectors
 
 Output is broadly compatible with the `mipfp` package: N-D population array, number of attempts, variation from "smooth" non-integral solution.
 
-### Testing
+## Testing
 
-#### QRNG vs PRNG
+- test IQRS PRNG vs QRNG
 
-We recorded the success rate of the algorithm for a number of problems using marginals of length 5, comparing the number of attempt required using a good-quality PRNG (MT19937 seed for reproducibility?) instead of the Sobol QRNG.
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
 
-The test problems ranged from dimensionality 2 to 5, all marginals identical of length 5 in each dimension. As a proxy measure of difficulty we recorded the mean population per state $P/S$. We limited the number of attempts to 1000, and consider that if this limit is reached the algorithm is unlikely to find a solution in any reasonable time.
+- test IQRS and IWRS on various inputs and check p-value is acceptable
 
-We present the mean number of attempts (averaged over 100 runs) required to generate a valid population:
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
 
-Problem 1: $P/S=10$, average attempts to get valid solution ('-' denotes no valid solution found in 1000 attempts)
+- find cases where IQRS doesn't work
 
-   Dim   |  2     |  3     | 4     | 5
-:-------:|--------|--------|-------|------
-    QRNG | **1**  | **1**  | **1** | **1**
-    PRNG | **3.4**| **322**| **-** | **-**
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
 
-Problem 2: $P/S=1$, average attempts to get valid solution
+- compare to IPF:
 
-   Dim   |  2     |  3     | 4     | 5
-:-------:|--------|--------|-------|------
-    QRNG |**6.6** |**1.9** |**4.6**|**7.8**
-    PRNG |**470** |**-**   |**-**  | **-**
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+
+ use output as IPF input
+  
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;  
+  
+- compare p-values? (unfair - integerise IPF output first and/or random seed)
+  
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;  
+
+# Results
 
 
-Problem 3: unevenly distributed marginals $m=[5,25,125,25,5]$, indentical in each dimension. As dimensionality increases, population becomes increasingly sparse:
+IQRS only practical with QRNG. But still not always works. Relaxing -ve contraint temporarily might help but outside scope.
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
 
-   Dim   |  2     |  3     | 4     | 5
-:-------:|--------|--------|-------|------
-    $P/S$|   7.4  |  1.5   |  0.30  |  0.059
-    QRNG |**1.05**|**1.3** |**3.4**|**23.5**
-    PRNG |**23** |**647**   |**-** | **-**
 
-TODO add ipfp to this comparison
+IWRS always works
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
 
-TODO real-world example(s)
 
-## Results
+both methods can produce statistically dodgy pops. Left to end user to decide and resample if necessary
 
-Clearly QRNG makes this method work.
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+
 
 ref Mark/Robin paper(s)
 
-## Discussion
+# Discussion
 
 Pros:
 Integer domain only (although marginals may need to be integerised)
 Fast
 Multiple solutions
-Deals reasonably well with sparse problems
+Deals reasonably with sparse problems, zeros
+
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+
 
 Cons:
-Doesnt always find a solution (but multiple attempts)
-Do we have any real estimate of entropy? Is such a thing possible or make sense? Could you infer distributions by generating large numbers of populations? 
-Sobol maximum dimensionality in our implementation is 1111. Convergence properties of Sobol worsen with increasing dimension which is likely to increasingly problematic when $D>\approx40$
+IQRS doesnt always find a solution (but multiple attempts)
+Both Doesnt always find a statistically likely solution
+
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
 
 
+# Conclusion
 
-## Conclusion
+We think this a complementary technique.
+Perhaps not suitable for anonymisation?
 
-## Acknowledgements
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+
+
+# Acknowledgements
+Catch! project funding
 stevengj @ MIT for Sobol `C` implementation
+incomplete gamma function code
 
+# References
+
+```{r, eval=FALSE}
+# Get bibliography (run once from project root)
+u = "https://www.zotero.org/api/groups/418217/collections/MP7NS3SC/items/top?limit=100&format=bibtex&v=1"
+b = httr::GET(url = u, httr::write_disk("ref.bib", overwrite = T))
+```
+
+The R package **synthpop** provides a set of tools for generating synthetic data, in the context of anonymisation rather than modelling [@nowok_synthpop:_2016]. ...
+
+@kavroudakis_sms:_2015 focus on the spatial variability of individual-level dat.

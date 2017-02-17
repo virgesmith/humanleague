@@ -22,6 +22,9 @@ The established numerical methods for synthesising a population from marginal da
 
 Raking is considered to be a solved problem. However current methods do have some shortfalls, for example generating fractional populations, not being able to cope with zeros (ref?), and can be computationally intensive....
 
+Integerisation is not guaranteed to break contraints. The implementation in the `rakeR` package for example, only guarantees to conserve the total population. 
+
+
 # Theory
 
 ## Quasirandom Numbers
@@ -35,15 +38,20 @@ Sobol sequences used for e.g. numerical integration will converge at a rate of $
 
 If we consider the sample space to be a multivariate discrete distribution over the unit hypercube, this maps directly to the values of the Sobol sequence.
 
-## Sampling without Replacement
+### Sampling without Replacement
 
-TODO check home desktop for this text (forgot to commit??)
+Given a discrete distribution of frequencies $\{f_0,f_1,...f_n\}$, after each random sample $i \in \{0...n\}$ with probability 
+
+$$p(i) = \frac{f_i}{\sum\limits_{j=0}^{n}f_j}$$
+
+we adjust the distribution to $\{f_0,f_1,...f_i-1,....f_n\}$. Once $f_i$ has reached zero not further samples can take the value $i$ since $p(i) = 0$. Sampling continues until $f_i = 0 \space\forall\space i \in \{0...n\}$.
+
 
 ## The Problem
 
 A mathematical statement of the microsimulation problem is as follows:
 
-(NB In the notation below, the index $i$ is scalar and refers to a particular dimension. The index $\mathbf{k}$ is a vector index $[k_1, k_2,...k_D]$ of length $D$, the dimensionality of the problem.)
+(NB In the notation below, the index $i$ is scalar and refers to a particular dimension. The index $\mathbf{k}$ is a vector index $\{k_1, k_2,...k_D\}$ of length $D$, the dimensionality of the problem.)
 
 Given a population $P$ and a set of $N$ marginal vectors $\mathbf{m}_i$ of length $l_i$ such that we have $S$ possible states
 
@@ -53,13 +61,13 @@ Find a contingency table $\mathbf T$ in N dimensions such that
 
 $$\sum\limits_{\mathbf{k}, k_i fixed} \mathbf{T}_\mathbf{k} = \mathbf{m}_i$$
 
-in other words each element of $\mathbf{m}_i$ is the sum of all elements in $\mathbf{T}$ for a fixed value of $k_i$.
+in other words each element of $\mathbf{m}_i$ is the sum of all elements in $\mathbf{T}$ for a fixed value of $k_i$. We define this as constraint (1).
 
 Each marginal sum and the sum of the elements of contingency table must equal the population $P$:
 
 $$\sum\limits \mathbf{m}_{i} = \sum\limits_\mathbf{k} \mathbf{T} = P$$ 
 
-and finally we constrain the elements to the natural numbers: 
+We define this as constraint (2). Finally, constraint (3) restricts the elements to the natural numbers: 
 
 $${\mathbf{T} \in \mathbb{N}^S,\mathbf{m}_i} \in \mathbb{N}^{l_i}$$ 
 
@@ -71,7 +79,7 @@ In the general case this is an ill-posed problem as there are not enough constra
 
 1. Create an N-dimensional discrete with-replacement distribution using the marginals $\mathbf{m}_i$
 
-2. Sample {P} quasirandom variates from this distribution to create a "seed" population $\mathbf{T}$, assigning an individual to the corresponding "slot". Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_k$. Thus $\mathbf{T}$ will - by construction - satisfy constraints (3) and (4). The next step is to check, and adjust if necessary, the population such that constraint (1) is met.
+2. Sample {P} quasirandom variates from this distribution to create a "seed" population $\mathbf{T}$. Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_k$. Thus $\mathbf{T}$ will - by construction - satisfy constraints (2) and (3). The next step is to check, and adjust if necessary, the population such that constraint (1) is met.
 
 3. For each dimension, calculate the residual vector $\mathbf{r}_i$, the difference between the population and marginal $\mathbf{m}_i$: 
 $$\mathbf{r}_i = \sum\limits_{\mathbf{k}, k_i fixed} \mathbf{T}_k - \mathbf{m}_i$$
@@ -87,7 +95,7 @@ and repeat this step as necessary for each dimension.
 
 1. Create an N-dimensional discrete without-replacement distribution using the marginals $\mathbf{m}_i$
 
-2. Sample {P} random variates from this distribution to create a "seed" population $\mathbf{T}$, assigning an individual to the corresponding "slot". Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_\mathbf{k}$, repeating until our distribution is fully depleted. Constructing the problem in this way automatically ensures that all constraints are met.
+2. Sample {P} random variates from this distribution to create a population $\mathbf{T}$. Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_\mathbf{k}$, repeating until our distribution is fully depleted. Constructing the problem in this way automatically ensures that all constraints are automatically met.
 
 3. Compute a $\chi^2$ statistic and a p-value.
 
@@ -95,7 +103,7 @@ and repeat this step as necessary for each dimension.
 
 ## A Worked Example of IQRS
 
-We consider a 2 dimensional case here for simpilicity, for a population of 100 consisting of 51 females and 49 males, of which 35 are aged under 0-29, 40 aged 30-59, 25 aged 60+. Thus our constraint vectors are: $\mathbf{m}_0=\{51,49\}$ and $\mathbf{m}_1=\{35,40,25\}$ and there are 6 possible states.    
+We consider a 2 dimensional case here for simplicity, for a population of 100 individuals with two categorical characteristics. Let the marginal vectors be $\mathbf{m}_0=\{51,49\}$ and $\mathbf{m}_1=\{35,40,25\}$, giving the population 6 possible states.    
 
 We construct a bivariate discrete distibution using the marginals which will have a probability density
 
@@ -109,7 +117,7 @@ We take 100 (i.e. the population) random samples $(i,j)$ from this distribution 
             49                       | **17** | **20** | **13** | *+1*
         $\mathbf{r}_1$               |  *+1*  |  *0*  |  *-1*   |
 
-Summing over rows and columns we see we do not quite match the marginals. The residuals (italic, from equation 5) are $\mathbf{r}_0=[-1, 1]$ and $\mathbf{r}_1=[1,0,-1]$.
+Summing over rows and columns we see we do not quite match the marginals. The residuals (italic, from equation 5) are $\mathbf{r}_0=\{-1, 1\}$ and $\mathbf{r}_1=\{1,0,-1\}$.
 
 To correct the population we subtract $\mathbf{r}_0$ from any one column (in this case no choice of column will result in a negative value). Selecting the first column, the population becomes:
 
@@ -141,7 +149,47 @@ This package supports dimensionality up to 12, although this limit is arbitrary 
 
 Output is broadly compatible with the `mipfp` package: N-D population array, number of attempts, variation from "smooth" non-integral solution.
 
-## Testing
+# Comparison of Methods
+
+## Statistical Properties
+
+We compare the three algorithms using a number of test cases.
+
+No integerisation was done to the IPF data (using e.g. the `R` package `rakeR`) due to that fact that integerisation only guarantees constraints (1) and (3) are met, and can in fact break constraint (2) on a non-integer input that meets contraints (1) and (2). The $\chi^2$ value resulting from IPF is thus likely to be slightly lower due to the fact the numbers need not be integral.
+
+IPF was initialised with a random seed array, uniformly distributed in $[0,2P/S)$
+
+The first three tests are made-up examples. Input data for the remaining tests are marginal figures derived from 2011 UK census data at the MSOA level (mid-layer super output area), one dimension representing person status in terms of ags,sex, and economic activity, the other dimension their workplace location.
+
+
+ Dim | Pop | States | N | $\bar{c}$ | IQRS $\bar{p}$  | $\bar{t}$ | $\bar{c}$ | IWRS $\bar{p}$ | $\bar{t}$ | $\bar{c}$ | IIPF $\bar{p}$ | $\bar{t}$ 
+:-:|---|---|---|--------|--------|--------|--------|--------|--------|-------|-------|------
+2|20|4|1000|1|0.78|1|0.79|0.95|0.48
+2|125|25|1000|1|0.91|1|0.91|0.98|0.06
+2|935|49|1000|1|0.74|1|0.86|0.98|0.03
+2|4958|16032|1000|0|0.82|1|0.81|1|1
+2|4098|11760|1000|0|0.84|1|0.8|1|1
+2|4029|11904|1000|0|0.81|1|0.8|1|1
+2|4989|14640|1000|0|0.8|1|0.79|1|1
+2|5219|15168|1000|0|0.79|1|0.79|1|1
+
+## Performance
+
+We measure the performance of the algorithms using the same tests as above.
+
+ Dim | Pop | States | N | IQRS | IWRS | IIPF 
+:-:|--|-----|----|----|----|------|------
+2|  20|    4|1000|0.03|0.03| 1.99
+2| 125|   25|1000|0.04|0.04| 2.9
+2| 935|   49|1000|0.07|0.07| 2.05
+2|4958|16032|1000|0.95|0.92|46.78
+2|4098|11760|1000|0.77|0.69|32.07
+2|4029|11904|1000|0.8 |0.68|30.82
+2|4989|14640|1000|0.95|0.85|43.71
+2|5219|15168|1000|0.96|0.86|46.73 
+
+The table ean execution time in milliseconds of the three algorithms for the 2-dimensional test cases
+
 
 - test IQRS PRNG vs QRNG
 
@@ -185,7 +233,6 @@ Output is broadly compatible with the `mipfp` package: N-D population array, num
 &nbsp;
 &nbsp;  
 
-# Results
 
 
 IQRS only practical with QRNG. But still not always works. Relaxing -ve contraint temporarily might help but outside scope.
@@ -213,6 +260,9 @@ both methods can produce statistically dodgy pops. Left to end user to decide an
 ref Mark/Robin paper(s)
 
 # Discussion
+
+IQRS not guaranteed to work, but when it does 
+
 
 Pros:
 Integer domain only (although marginals may need to be integerised)

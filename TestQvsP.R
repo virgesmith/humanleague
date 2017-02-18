@@ -1,20 +1,26 @@
 
 
-# 1. histogram differential of 2x2 solutions
+# 1. histogram p-value for flat 10x10 populations
 
 # problem 1
 
-x <- c(1,2,3,4,5,6,7,8,9,10)
+x <- rep(12,12)
 
-for (i in 1:1000) {
+tests=10000
 
-r = humanleague::synthPop(list(x,x))
-tr = chisq.test(r$x.hat)
-stopifnot(tr$p.value > 0.05)
-s = mipfp::Ipfp(matrix(rep(1, length(x)^2), nrow=length(x)), list(1,2), list(x,x))
-#ts = chisq.test(s$x.hat)
+hq = rep(0, tests)
+hw = rep(0, tests)
 
-print(paste(tr$p.value, ts$p.value))
+for (i in 1:10000) {
+
+  r = humanleague::synthPop(list(x,x), "iqrs")
+
+  if (r$conv) {
+    hq[i] = r$pValue
+  }
+
+  r = humanleague::synthPop(list(x,x))
+  hw[i] = r$pValue
 
 }
 # start = proc.time()

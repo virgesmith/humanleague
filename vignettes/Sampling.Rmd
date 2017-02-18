@@ -1,6 +1,6 @@
 ---
 title: "Integer Sampling Methods for Synthetic Population Generation"
-author: "Andrew P Smith"
+author: "Andrew P Smith et al"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output: 
   pdf_document:
@@ -13,7 +13,7 @@ vignette: >
 ---
 
 ***
-The established numerical methods for synthesising a population from marginal data are robust and well understood, but none are able to generate an integral population. Thus some postprocessing ("integerisation") may need to be done to remove fractional values. The motivation for this work was to investigate possible alternative methods of synthesis that are computationally fast and directly result in integral populations. We show that, not unexpectedly, quasirandom sample the population far more evenly than pseudorandom numbers, but there is no guarantee of convergence. Secondly, we demonstrate that sampling the marginals without replacement guarantees convergence regardless of the type of random numbers used, but may result in population that are statistically unlikely. We have made the algorithms available in an open-source R package `humanleague`, which interested readers are invited to evaluate.
+The established numerical methods for synthesising a population from marginal data are robust and well understood, but none are able to generate an integral population. Thus some potentially destructive postprocessing ("integerisation") may need to be done to remove fractional values. The motivation for this work was to investigate possible alternative methods of synthesis that are computationally fast and directly result in integral populations. We show that by using quasirandom numbers to sample a seed population, often generates populations that match (or can be adjusted to match) the marginal data. Secondly, we demonstrate that sampling the marginals without replacement guarantees convergence regardless of the type of random numbers used, but may result in populations that are statistically unlikely. We have made the algorithms available in an open-source R package `humanleague`, which interested readers are invited to evaluate.
 
 ***
 
@@ -29,35 +29,35 @@ Integerisation is not guaranteed to break contraints. The implementation in the 
 
 ## Quasirandom Numbers
 
-Quasirandom numbers, often referred to as low discrepancy sequences, are preferential to pseudorandom numbers in many applications, despite not having some of the (appearance of) randomness properties of (good) pseudorandom generators. In this work we focus on the Sobol QRNG of (refs Sobol, Bratley and Fox, Joe & Kuo). 
+Quasirandom numbers, often referred to as low discrepancy sequences, are preferential to pseudorandom numbers in many applications, despite not having some of the (appearance of) randomness that good pseudorandom generators possess. In this work we focus on the Sobol quasirandom sequence. (refs Sobol, Bratley and Fox, Joe & Kuo). 
 
-Quasi: inherent dimension, no independence, faster convergence. Relatively short period
-Pseudo: dimensionless, (appear to be) independent, slower convergence. Some generators have extremely long periods.
+Sobol, as with other quasirandom sequences, have an inherent dimensionality, a relatively short period - the sequence is exhausted once every integer in the sample space has been sampled. Successive samples tend to evenly fill the sample space, and thus successive samples in the same dimension lack independence. Good pseudorandom generators have no inherent dimensionality, can have very long period, and appear to be independent.
 
-Sobol sequences used for e.g. numerical integration will converge at a rate of $\approx1/N$ (actually $(ln N)^D/N$ ref Numerical Recipes) compared to $\sim1/\sqrt N$ for a PRNG, and thuis require far fewer samples to achieve the same level of accuracy.
+For applications like numerical integration, Sobol sequences converge to a solution at a rate of $\approx1/N$ (actually $(ln N)^D/N$ ref Numerical Recipes) compared to $\approx1/\sqrt N$ for a pseudorandom generator, and thus require far fewer samples to achieve the same level of accuracy.
 
-If we consider the sample space to be a multivariate discrete distribution over the unit hypercube, this maps directly to the values of the Sobol sequence.
+For comparison, we use the Mersenne Twister (ref?) pseudorandom generator (specifically the MT19937 implementation) as a "good" pseudorandom generator, and a pathologically "bad" dummy generator which generates only zeros. 
 
 ### Sampling without Replacement
 
-Given a discrete distribution of frequencies $\{f_0,f_1,...f_n\}$, after each random sample $i \in \{0...n\}$ with probability 
+Given a population $P$ with discrete integral distribution frequencies $\{f_0,f_1,...f_n\}$, a random sample $i \in \{0...n\}$ has probability 
 
 $$p(i) = \frac{f_i}{\sum\limits_{j=0}^{n}f_j}$$
 
-we adjust the distribution to $\{f_0,f_1,...f_i-1,....f_n\}$. Once $f_i$ has reached zero not further samples can take the value $i$ since $p(i) = 0$. Sampling continues until $f_i = 0 \space\forall\space i \in \{0...n\}$.
+Once a sample is taken the distribution is adjusted to $\{f_0,f_1,...f_i-1,....f_n\}$. Once $f_i$ has reached zero no further samples can take the value $i$ since $p(i) = 0$. 
 
+Since $f_i$ cannot be oversampled, this implies that $f_{j\neq{i}}$ cannot be undersampled. If follows that after sampling $P$ variates, $f_i = 0 \space\forall\space i \in \{0...n\}$. Thus there is a guarantee that the distibution is sampled exactly.
 
-## The Problem
+## Problem Statement
 
 A mathematical statement of the microsimulation problem is as follows:
 
-(NB In the notation below, the index $i$ is scalar and refers to a particular dimension. The index $\mathbf{k}$ is a vector index $\{k_1, k_2,...k_D\}$ of length $D$, the dimensionality of the problem.)
+(In the notation below, the index $i$ is scalar and refers to a particular dimension. The index $\mathbf{k}$ is a vector index $\{k_1, k_2,...k_D\}$ of length $D$, the dimensionality of the problem.)
 
-Given a population $P$ and a set of $N$ marginal vectors $\mathbf{m}_i$ of length $l_i$ such that we have $S$ possible states
+Given a population $P$ and a set of $D$ marginal vectors $\mathbf{m}_i$ of length $l_i$ such that we have $S$ possible states
 
 $$S=\prod\limits_{i}l_i$$
 
-Find a contingency table $\mathbf T$ in N dimensions such that
+Find a contingency table $\mathbf T$ in $D$ dimensions such that
 
 $$\sum\limits_{\mathbf{k}, k_i fixed} \mathbf{T}_\mathbf{k} = \mathbf{m}_i$$
 
@@ -75,23 +75,26 @@ In the general case this is an ill-posed problem as there are not enough constra
 
 ## The Algorithms
 
-### Integer Quasirandom with-Replacement Sampling
+### Integer Quasirandom with-Replacement Sampling (IQRS)
 
-1. Create an N-dimensional discrete with-replacement distribution using the marginals $\mathbf{m}_i$
+1. Create a $D$-dimensional discrete with-replacement distribution using the marginals $\mathbf{m}_i$
 
-2. Sample {P} quasirandom variates from this distribution to create a "seed" population $\mathbf{T}$. Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_k$. Thus $\mathbf{T}$ will - by construction - satisfy constraints (2) and (3). The next step is to check, and adjust if necessary, the population such that constraint (1) is met.
+2. Sample $P$ quasirandom variates from this distribution to create a "seed" population $\mathbf{T}$. Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_k$. Thus $\mathbf{T}$ will - by construction - satisfy constraints (2) and (3). The next step is to check, and adjust if necessary, the population such that constraint (1) is met.
 
-3. For each dimension, calculate the residual vector $\mathbf{r}_i$, the difference between the population and marginal $\mathbf{m}_i$: 
+3. Calculate the residual vector $\mathbf{r}_i$, the difference between the seed population and marginal $\mathbf{m}_i$: 
 $$\mathbf{r}_i = \sum\limits_{\mathbf{k}, k_i fixed} \mathbf{T}_k - \mathbf{m}_i$$
 If all elements of $\mathbf{r}_i$ are zero, constraint (1) is satisfied in dimension $i$. If not, find an index $\mathbf{k}$ in $\mathbf{T}$ such that subtracting $\mathbf{r}_i$ will not result in negative values in $\mathbf{T}$
+
+4. If $\mathbf{k}$ exists, perform the subtraction:
 $$\mathbf{T}_{\mathbf{k}, k_i fixed} \leftarrow \mathbf{T}_{\mathbf{k}, k_ifixed} - \mathbf{r}_i$$
-and repeat this step as necessary for each dimension. 
 
-4. If $\mathbf{k}$ exists, perform the subtraction, otherwise abort the computation, since it is not possible to adjust $\mathbf{T}$ within the contraints.
+5. Repeat step 3. as necessary for each dimension.
 
-5. Compute a $\chi^2$ statistic and a p-value.
+6. Compute a $\chi^2$ statistic and a p-value.
 
-### Integer Without-Replacement Sampling
+Note that the algorithm will fail if, in any dimension, there is a nonzero residual and no index $\mathbf{k}$ from which the residual can be subtracted without resulting in negative elements of $\mathbf{T}$. This likelihood is vastly reduced by using quasirandom sampling. 
+
+### Integer Without-Replacement Sampling (IWRS)
 
 1. Create an N-dimensional discrete without-replacement distribution using the marginals $\mathbf{m}_i$
 
@@ -103,21 +106,21 @@ and repeat this step as necessary for each dimension.
 
 ## A Worked Example of IQRS
 
-We consider a 2 dimensional case here for simplicity, for a population of 100 individuals with two categorical characteristics. Let the marginal vectors be $\mathbf{m}_0=\{51,49\}$ and $\mathbf{m}_1=\{35,40,25\}$, giving the population 6 possible states.    
+We consider a 2 dimensional case here for simplicity, for a population $P$ of 100 individuals with two categorical characteristics. Let the marginal vectors be $\mathbf{m}_0=\{51,49\}$ and $\mathbf{m}_1=\{35,40,25\}$, giving the population 6 possible states.    
 
 We construct a bivariate discrete distibution using the marginals which will have a probability density
 
 $$p_{ij} = \frac{(\mathbf{m}_0)_i(\mathbf{m}_1)_j}{\sum\limits_i\mathbf{m}_0\sum\limits_j\mathbf{m}_1}$$ 
 
-We take 100 (i.e. the population) random samples $(i,j)$ from this distribution to create a seed population $\mathbf{T}$ (in bold), which for example may look like:
+We take $P$ random samples $(i,j)$ from this distribution to create a seed population $\mathbf{T}$ (in bold), which for example may look like:
 
  $\mathbf{m}_0\setminus\mathbf{m}_1$ |  35    | 40     | 25     | $\mathbf{r}_0$
 :-----------------------------------:|--------|--------|--------|----
             51                       | **19** | **20** | **11** | *-1*
             49                       | **17** | **20** | **13** | *+1*
-        $\mathbf{r}_1$               |  *+1*  |  *0*  |  *-1*   |
+        $\mathbf{r}_1$               |  *+1*  |  *0*   | *-1*   |
 
-Summing over rows and columns we see we do not quite match the marginals. The residuals (italic, from equation 5) are $\mathbf{r}_0=\{-1, 1\}$ and $\mathbf{r}_1=\{1,0,-1\}$.
+The row and column sums do not quite match the marginals. The residuals (italic, from equation 5) are $\mathbf{r}_0=\{-1, 1\}$ and $\mathbf{r}_1=\{1,0,-1\}$.
 
 To correct the population we subtract $\mathbf{r}_0$ from any one column (in this case no choice of column will result in a negative value). Selecting the first column, the population becomes:
 
@@ -135,34 +138,40 @@ which now matches $\mathbf{m}_0$. Next we subtract $\mathbf{r}_1$ from the any o
             49                       | **16** | **20** | **13** | *0*
         $\mathbf{r}_1$               |  *0*   |  *0*   |  *0*   |
 
-which results in a population that now matches both marginals. 
+which results in a population that now matches both marginals. It should be noted that in this example there are six possible ways that the seed population could be adjusted.  
 
-## A Worked Example of IWRS
-
-(probably unnecessary given its simplicity)
+Given the simplicity if IWRS, it is unnecessary to provide a worked example.
 
 ## The R Package
 
 We took the Sobol QRNG implementation (in `C`) of stevengj of MIT [https://github.com/stevengj/nlopt/], and put it into a `C++` wrapper that is compliant with the native `C++11` standard library random functionality. We wrote custom N-dimensional array, indexing and iterator functionality, and the IQRS algorithm itself. Finally, using `Rcpp`, we put this into an open source `R` package called `humanleague` which is available at [https://github.com/CatchDat/humanleague](https://github.com/CatchDat/humanleague)
 
-This package supports dimensionality up to 12, although this limit is arbitrary and could be increased if necessary. Input is simply a list of marginal vectors
+This package supports dimensionalities up to 12, although this limit is arbitrary and could be increased if necessary. Input is simply a list of marginal vectors
 
-Output is broadly compatible with the `mipfp` package: N-D population array, number of attempts, variation from "smooth" non-integral solution.
+Output is broadly compatible with the established `mipfp` `R` package: 
+
+- $D$-dimensional population array
+- $D$-dimensional probability array
+- boolean value indicating convergence
+- maximum value of each residual vector
+- $\chi^2$ statistic
+- p-value
 
 # Comparison of Methods
 
 ## Statistical Properties
 
-We compare the three algorithms using a number of test cases.
+We compare the two algorithms to IPF using a number of two-dimensional test cases.
 
-No integerisation was done to the IPF data (using e.g. the `R` package `rakeR`) due to that fact that integerisation only guarantees constraints (1) and (3) are met, and can in fact break constraint (2) on a non-integer input that meets contraints (1) and (2). The $\chi^2$ value resulting from IPF is thus likely to be slightly lower due to the fact the numbers need not be integral.
+No integerisation was done to the IPF data (using e.g. the `R` package `rakeR`) due to that fact that integerisation only guarantees constraints (1) and (3) are met, and can in fact break constraint (2) on a non-integer input that meets it. The $\chi^2$ value resulting from IPF is thus likely to be slightly lower due to the fact the numbers need not be integral.
 
 IPF was initialised with a random seed array, uniformly distributed in $[0,2P/S)$
 
-The first three tests are made-up examples. Input data for the remaining tests are marginal figures derived from 2011 UK census data at the MSOA level (mid-layer super output area), one dimension representing person status in terms of ags,sex, and economic activity, the other dimension their workplace location.
+The first three tests are made-up examples. The remainder are marginal figures derived from 2011 UK census data at the MSOA level (mid-layer super output area), with one dimension representing person status in terms of age, sex, and economic activity, the other their workplace location.
 
+TODO add max/min p-values, remove D
 
- Dim | Pop | States | N | $\bar{c}$ | IQRS $\bar{p}$  | $\bar{t}$ | $\bar{c}$ | IWRS $\bar{p}$ | $\bar{t}$ | $\bar{c}$ | IIPF $\bar{p}$ | $\bar{t}$ 
+ Dim | Pop | States | N | IQRS $\bar{c}$ | IQRS $\bar{p}$  | IWRS $\bar{c}$ | IWRS $\bar{p}$ | IPF $\bar{c}$ | IPF $\bar{p}$  
 :-:|---|---|---|--------|--------|--------|--------|--------|--------|-------|-------|------
 2|20|4|1000|1|0.78|1|0.79|0.95|0.48
 2|125|25|1000|1|0.91|1|0.91|0.98|0.06
@@ -173,9 +182,36 @@ The first three tests are made-up examples. Input data for the remaining tests a
 2|4989|14640|1000|0|0.8|1|0.79|1|1
 2|5219|15168|1000|0|0.79|1|0.79|1|1
 
+
+Now we do a more detailed analysis. Using two evenly distributed marginal vectors of length 10 and a population $P$ = 100 and number of states $S$ = 100, sampling 10000 populations.
+
+Firstly we used the IQRS algorithm with a PRNG, and found only one attempt reached a valid population, i.e. a success rate of 0.01%. This confirms our earlier reasoning that quasirandom numbers are essential.
+
+```{r, echo=FALSE, out.width="75%", fig.cap="Distribution of p-values of IQRS."}
+knitr::include_graphics("figures/iqrs_pvalue_dist.png")
+```
+
+Secondly, reverting back to a QRNG we examined the distribution of p-values for IQRS, which can be seen in figure 1. In the analysis we assigned a p-value of zero to any case where the population did not match the marginals, which happened about 15% of the time.
+
+Next we compared the performance of IWRS using a PRNG and a QRNG. Since we knew the algorithm is guaranteed to work regardless of the RNG used, we again looked at the distribution of p-values, which can be seen in figures 2 and 3. There is a marked difference between the two, with the PRNG implementation being broadly symmetric with a bias toward mid-range values, whereas thr QRNG implementation is very strongly biased toward high p-values. 
+
+```{r, echo=FALSE, out.width="75%", fig.cap="Distribution of p-values of IWRS using PRNG."}
+knitr::include_graphics("figures/iwrs_prng_pvalue_dist.png")
+```
+
+```{r, echo=FALSE, out.width="75%", fig.cap="Distribution of p-values of IWRS using QRNG"}
+knitr::include_graphics("figures/iwrs_pvalue_dist.png")
+```
+
+
+TODO use low p-value IWRS result as input to IPF - what happens?
+
+TODO anonymisation?
+
 ## Performance
 
-We measure the performance of the algorithms using the same tests as above.
+The performance of the algorithms is shown, mean execution time in milliseconds
+using the same tests as above.
 
  Dim | Pop | States | N | IQRS | IWRS | IIPF 
 :-:|--|-----|----|----|----|------|------
@@ -188,116 +224,41 @@ We measure the performance of the algorithms using the same tests as above.
 2|4989|14640|1000|0.95|0.85|43.71
 2|5219|15168|1000|0.96|0.86|46.73 
 
-The table ean execution time in milliseconds of the three algorithms for the 2-dimensional test cases
-
-
-- test IQRS PRNG vs QRNG
-
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-
-- test IQRS and IWRS on various inputs and check p-value is acceptable
-
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-
-- find cases where IQRS doesn't work
-
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-
-- compare to IPF:
-
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-
- use output as IPF input
-  
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;  
-  
-- compare p-values? (unfair - integerise IPF output first and/or random seed)
-  
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;  
-
-
-
-IQRS only practical with QRNG. But still not always works. Relaxing -ve contraint temporarily might help but outside scope.
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-
-
-IWRS always works
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-
-
-both methods can produce statistically dodgy pops. Left to end user to decide and resample if necessary
-
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-
-
 ref Mark/Robin paper(s)
 
 # Discussion
 
-IQRS not guaranteed to work, but when it does 
+IQRS not guaranteed to work, but when it does...
 
+IWRS will always work...better RNGs give better p-values
+
+In both cases it may be necessary to reject the result if the p-value is unsuitable
 
 Pros:
 Integer domain only (although marginals may need to be integerised)
 Fast
-Multiple solutions
-Deals reasonably with sparse problems, zeros
-
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-
+Multiple solutions?
+Deals with sparse problems, zeros
 
 Cons:
 IQRS doesnt always find a solution (but multiple attempts)
-Both Doesnt always find a statistically likely solution
-
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-
+Both dont always find a statistically likely solution
+IPF has highest p-value
 
 # Conclusion
 
-We think this a complementary technique.
-Perhaps not suitable for anonymisation?
+The algorithms presented here have some significant advantages over traditional IPF. Notably, integer populations in many cases are preferable to fractional ones, and integerising fractional populations after the fact can alter the marginals. 
 
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
+In terms of performance, they are faster, due largely to not being iterative in nature, but population synthesis is unlikely to be a bottleneck in any workflow.
 
+However the algorithms have some disadvantages. IQRS may not be able to generate a valid population. Both generally result in lower p values than IPF.
+
+Could low p values might actually be advantageous in some circumstances?
+
+Are the algorithms suitable for anonymisation?
 
 # Acknowledgements
+
 Catch! project funding
 stevengj @ MIT for Sobol `C` implementation
 incomplete gamma function code

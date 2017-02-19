@@ -229,9 +229,15 @@ ref Mark/Robin paper(s)
 # Discussion
 
 IQRS not guaranteed to work, but when it does...
+<<<<<<< HEAD
 
 IWRS will always work...better RNGs give better p-values
 
+=======
+
+IWRS will always work...better RNGs give better p-values
+
+>>>>>>> 406bc7446d0779344ee17b90b1c5dd55fd86edc3
 In both cases it may be necessary to reject the result if the p-value is unsuitable
 
 Pros:

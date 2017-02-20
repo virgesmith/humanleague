@@ -2,37 +2,47 @@
 library(humanleague)
 library(rakeR)
 
-
 run <- function(marginals, reps = 1000) {
   pop = sum(marginals[[1]])
   dims = lengths(marginals)
   states = prod(dims)
 
-  cat(paste(length(marginals), pop, states, reps, "", sep="|"))
+  cat(paste(pop, states, reps, "", sep="|"))
 
   stopifnot(reps > 0)
 
   nconv = 0
   meanp = 0
+  maxp = -1e8
+  minp = 1e8
+
   start = Sys.time()
   for (i in 1:reps) {
     iqrs = humanleague::synthPop(marginals, "iqrs")
     nconv = nconv + iqrs$conv
     meanp = meanp + iqrs$pValue
+    maxp = max(maxp, iqrs$pValue)
+    minp = min(minp, iqrs$pValue)
   }
   elapsed = Sys.time() - start
-  cat(paste(round(nconv/reps,2), round(meanp/reps,2), "", sep="|"))
+  cat(paste(round(nconv/reps,2), minp, round(meanp/reps,2), maxp, "", sep="|"))
+
 
   nconv = 0
   meanp = 0
+  maxp = -1e8
+  minp = 1e8
+
   start = Sys.time()
   for (i in 1:reps) {
     iwrs = humanleague::synthPop(marginals, "iwrs")
     nconv = nconv + iwrs$conv
     meanp = meanp + iwrs$pValue
+    maxp = max(maxp, iqrs$pValue)
+    minp = min(minp, iqrs$pValue)
   }
   elapsed = Sys.time() - start
-  cat(paste(round(nconv/reps,2), round(meanp/reps,2), "", sep="|"))
+  cat(paste(round(nconv/reps,2), minp, round(meanp/reps,2), maxp, "", sep="|"))
 
   # randomly populate seed array so that its sum approximates the actual population
   nconv = 0
@@ -65,7 +75,7 @@ run <- function(marginals, reps = 1000) {
 }
 
 
-cat(" D | P | S | N | IQRS-C | IQRS-P | IWRS-C | IWRS-P | IPF-C | IPF-P \n")
+cat(" P | S | N | IQRS-C | MIN-P | IQRS-P | MAX-P | IWRS-C | IWRS-P | IPF-C | IPF-P \n")
 cat(":-:|---|---|---|--------|--------|--------|--------|-------|-------\n")
 
 # noddy case

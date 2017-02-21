@@ -4,23 +4,27 @@
 
 # problem 1
 
-x <- rep(12,12)
+x <- rep(10,10)
 
 tests=10000
 
-hq = rep(0, tests)
-hw = rep(0, tests)
+pq = rep(0, tests)
+pw = rep(0, tests)
+cq = rep(0, tests)
+cw = rep(0, tests)
 
 for (i in 1:10000) {
 
   r = humanleague::synthPop(list(x,x), "iqrs")
 
   if (r$conv) {
-    hq[i] = r$pValue
+    pq[i] = r$pValue
+    cq[i] = r$chiSq
   }
 
   r = humanleague::synthPop(list(x,x))
-  hw[i] = r$pValue
+  pw[i] = r$pValue
+  cw[i] = r$chiSq
 
 }
 # start = proc.time()

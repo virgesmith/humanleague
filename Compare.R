@@ -13,42 +13,34 @@ run <- function(marginals, reps = 1000) {
 
   nconv = 0
   meanp = 0
-  maxp = -1e8
-  minp = 1e8
 
   start = Sys.time()
   for (i in 1:reps) {
     iqrs = humanleague::synthPop(marginals, "iqrs")
     nconv = nconv + iqrs$conv
     meanp = meanp + iqrs$pValue
-    maxp = max(maxp, iqrs$pValue)
-    minp = min(minp, iqrs$pValue)
   }
   elapsed = Sys.time() - start
-  cat(paste(round(nconv/reps,2), minp, round(meanp/reps,2), maxp, "", sep="|"))
+  cat(paste(round(nconv/reps,2), round(meanp/reps,2), "", sep="|"))
 
 
   nconv = 0
   meanp = 0
-  maxp = -1e8
-  minp = 1e8
 
   start = Sys.time()
   for (i in 1:reps) {
     iwrs = humanleague::synthPop(marginals, "iwrs")
     nconv = nconv + iwrs$conv
     meanp = meanp + iwrs$pValue
-    maxp = max(maxp, iqrs$pValue)
-    minp = min(minp, iqrs$pValue)
   }
   elapsed = Sys.time() - start
-  cat(paste(round(nconv/reps,2), minp, round(meanp/reps,2), maxp, "", sep="|"))
+  cat(paste(round(nconv/reps,2), round(meanp/reps,2), "", sep="|"))
 
   # randomly populate seed array so that its sum approximates the actual population
   nconv = 0
   meanp = 0
   for (i in 1:reps) {
-    seed = array(data=runif(states,0, 2*pop/states), dim=dims)
+    seed = array(data=runif(states,0, 2), dim=dims)
     ipf = mipfp::Ipfp(seed, list(1,2), marginals)
     # dont integerise, often violates constraints
     #if (all(ipf$x.hat == floor(ipf$x.hat))) {
@@ -56,7 +48,7 @@ run <- function(marginals, reps = 1000) {
     #} else {
     #  ipfpop = rakeR::integerise(weights=ipf$x.hat, method="trs")
     #}
-    ipfconv = max(ipf$error.margins) < 1e-10
+    ipfconv = max(ipf$error.margins) < 1e-8
     ipfpval = chisq.test(ipfpop)$p.value
     #print(as.vector(ipfpop - ipf$p.hat * sum(marginals[[1]])))
     if (length(marginals) == 2) {

@@ -14,7 +14,7 @@ vignette: >
 ---
 
 ***
-Established methods for synthesising a population from geographically aggregated data are robust and well understood. However, most rely on the potentially destructive proces of "integerisation" to generate whole individuals. This paper investigates alternative methods of synthesis that are computationally efficient and result in integer populations directly. We showcase the method of 'quasirandom sampling' for population synthesis and demonstrate its ability to generate populations that match geographically aggregated data. The results show that sampling the marginals without replacement guarantees a match and that quasirandom sampling performs better than pseudorandom (or 'simple random') sampling at generating populations that fit multiple constraints. The algorithms are available in an open-source R package `humanleague`.
+Established methods for synthesising a population from geographically aggregated data are robust and well understood. However, most rely on the potentially destructive process of "integerisation" to generate whole individuals. This paper investigates alternative methods of synthesis that are computationally efficient and result in integer populations directly. We showcase the method of 'quasirandom sampling' for population synthesis and demonstrate its ability to generate populations that match geographically aggregated data. The results show that sampling the marginals without replacement guarantees a match and that quasirandom sampling performs better than pseudorandom (or 'simple random') sampling at generating populations that fit multiple constraints. The algorithms are available in an open-source R package `humanleague`.
 
 ***
 

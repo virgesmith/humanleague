@@ -22,18 +22,11 @@ Established methods for synthesising a population from geographically aggregated
 
 Iterative Proportional Fitting (IPF) is a popular and well-established technique for generating synthetic populations from marginal data.
 Compared with other methods of 'population synthesis' IPF is relatively fast, simple and easy to implemented, as showcased in a practical introduction to the subject by @lovelace_spatial_2016.
-There have even been a number of software packages aimed at facilitating IPF for spatial microsimulation and other applications [].
+Further, a number of software packages aimed at facilitating IPF for spatial microsimulation and other applications have been published [e.g. @barthelemy_cran_2016; @jones_raker:_2016].
 
-However, the method has various limitations from the perspective of spatial microsimulation for social simulation, most IPF's generation of fractional weights instead of integer populations [@lovelace_truncate_2013], and its handling of 'empty cells' [@lovelace_evaluating_2015].
-These are well-documented, as illustrated in an outstanding PhD thesis by @zaloznik_iterative_2011, and papers documenting developments aimed at overcoming barriers reducing the utility of IPF for spatial microsimulation.
-
-
-
-Nor is it able to generate states containing exactly zero population. IPF requires an initial starting "seed" population (often simply setting each state to a population of one) and updates the matrix iteratively, stopping when the marginals are matched to withing some specified tolerance.
-
-Integerisation is a common technique used to convert fractional populations into integer ones. However these methods are not guaranteed to break contraints, even though the fractional input population may satisfy them. The implementation in the `R` package `rakeR` for example, only guarantees to conserve the total population, and may create a difference between the population and the marginals.
-
-IPF does, however, result in degenerate populations with little or no detectable correlation between between the marginals.
+However, the method has various limitations from the perspective of spatial microsimulation for social simulation. For example,
+IPF generates fractional weights instead of integer populations, an issue tackled by 'integerisation' techniques [@lovelace_truncate_2013]; handles 'empty cells' poorly [@lovelace_evaluating_2015]; and requires a representative individual-level 'seed' population.
+The most in-depth exploration of such limitations and the mathematical behaviour of IPF to date is an outstanding PhD thesis on the subject [@zaloznik_iterative_2011].
 
 In this paper we investigate sampling techniques where a population matrix is built exclusively in the integer domain We show that this technique can only work effectively if a quasirandom (as opposed to a pseudorandom) number generator is used, and this in itself is not sufficient to work in all cases. We also show that this problem can be overcome by combining the quasirandom generator with a sampling-without-replacement algorithm. We then look at the statistical properties of the resulting populations, comparing them to populations generated with the IPF algorithm.
 

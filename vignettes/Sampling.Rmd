@@ -79,9 +79,11 @@ In the general case this is an ill-posed problem as there are not enough constra
 
 # The Algorithms
 
+The algorithms described in this paper are outlined in this sectio.
+
 ## Integer Quasirandom with-Replacement Sampling (IQRS)
 
-1. Create a $D$-dimensional discrete with-replacement distribution using the marginals $\mathbf{m}_i$
+1. Create a $D$-dimensional discrete with-replacement distribution using the marginals $\mathbf{m}_i$ to represent the per-zone totals within each variable category.
 
 2. Sample $P$ quasirandom variates from this distribution to create a "seed" population $\mathbf{T}$. Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_k$. Thus $\mathbf{T}$ will - by construction - satisfy constraints (2) and (3). The next step is to check, and adjust if necessary, the population such that constraint (1) is met.
 
@@ -96,11 +98,13 @@ $$\mathbf{T}_{\mathbf{k}, k_i fixed} \leftarrow \mathbf{T}_{\mathbf{k}, k_ifixed
 
 6. Compute a $\chi^2$ statistic and a p-value.
 
+<!-- Explain p-value on first occurance (here) -->
+
 Note that the algorithm will fail if, in any dimension, there is a nonzero residual and no index $\mathbf{k}$ from which the residual can be subtracted without resulting in negative elements of $\mathbf{T}$. This likelihood is vastly reduced by using quasirandom sampling. 
 
 ## Integer Without-Replacement Sampling (IWRS)
 
-1. Create an N-dimensional discrete without-replacement distribution using the marginals $\mathbf{m}_i$
+1. Create an D-dimensional discrete without-replacement distribution using the marginals $\mathbf{m}_i$
 
 2. Sample $P$ random variates from this distribution to create a population $\mathbf{T}$. Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_\mathbf{k}$, repeating until our distribution is fully depleted. Constructing the problem in this way automatically ensures that all constraints are automatically met.
 
@@ -172,10 +176,9 @@ No integerisation was done to the IPF data (using e.g. the `R` package `rakeR`) 
 IPF was initialised with a random seed array, each element uniformly distributed in $[0,2)$
 
 The first three tests are made-up examples. The remainder are marginal figures derived from 2011 UK census data at the MSOA level (mid-layer super output area), with one dimension representing person status in terms of age, sex, and economic activity, the other their workplace location.
+Interestingly, IPF performed least well on the simple tests, generating the lowest mean p-values (Table 1).
 
-Interestingly, IPF performed least well on the simple tests, generating the lowest mean p-values.
-
-In the table below $\bar{c}$ refers to the convergence success rate, and $\bar{p}$ refers to the mean p-value.
+Table 1: Convergence behaviour of population synthesis algorithms. $\bar{c}$ refers to the convergence success rate, and $\bar{p}$ refers to the mean p-value.
 
  Pop | States | N | IQRS $\bar{c}$ | IQRS $\bar{p}$  | IWRS $\bar{c}$ | IWRS $\bar{p}$ | IPF $\bar{c}$ | IPF $\bar{p}$  
 :---:|---|---|--------|--------|--------|--------|--------|--------|-------|-------|------

@@ -199,7 +199,7 @@ Firstly we used the IQRS algorithm with a PRNG, and found only one attempt reach
 knitr::include_graphics("figures/iqrs_pvalue_dist.png")
 ```
 
-Secondly, reverting back to a QRNG we examined the distribution of p-values for IQRS, which can be seen in figure 1. In the analysis we assigned a p-value of zero to any case where the population did not match the marginals, which happened about 15% of the time.
+Secondly, reverting back to a QRNG, we examined the distribution of p-values for IQRS, which can be seen in figure 1. In the analysis we assigned a p-value of zero to any case where the population did not match the marginals, which happened about 15% of the time.
 
 Next we compared the performance of IWRS using a PRNG and a QRNG. Since we knew the algorithm is guaranteed to work regardless of the RNG used, we again looked at the distribution of p-values, which can be seen in figures 2 and 3. There is a marked difference between the two, with the PRNG implementation being broadly symmetric with a bias toward mid-range values, whereas the QRNG implementation is very strongly biased toward high p-values. 
 
@@ -215,7 +215,9 @@ If the result of the IWRS algorithm is used as the seed for the IPF algorithm, t
 
 ## Performance
 
-The performance of the algorithms is shown, mean execution time in milliseconds using the same tests as above. Since computers vary widely in performance for numerous reasons, the numbers should be interpreted relatively.
+The performance of the algorithms of the tests described above is illustrated in Table 2. Since computers vary widely in performance for numerous reasons, the numbers should be interpreted as relative performance indicators, not absolute values.
+
+Table 2: Computational efficiency of the algorithms in terms of execution time.
 
 Pop | States | N | IQRS | IWRS | IPF 
 :--:|-----|----|----|----|-----
@@ -228,7 +230,7 @@ Pop | States | N | IQRS | IWRS | IPF
 4989|14640|1000|0.95|0.85|43.71
 5219|15168|1000|0.96|0.86|46.73 
 
-ref Mark/Robin paper(s)
+<!-- ref Mark/Robin paper(s) -->
 
 # Discussion
 

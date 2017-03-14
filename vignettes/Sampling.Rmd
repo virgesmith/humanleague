@@ -41,7 +41,6 @@ Sobol, as with other quasirandom sequences, have an inherent dimensionality and 
 For applications such as numerical integration, Sobol sequences converge at a rate of $\approx1/N$ (actually $(ln N)^D/N$ [@vetterling_numerical_1992] compared to $\approx1/\sqrt N$ for a pseudorandom generator, and thus require far fewer samples to achieve the same level of accuracy.
 
 Quasirandom sequences are not seeded like pseudorandom generators. To avoid repetition, and for better degeneracy, it is recommended to discard a number of variates on initialisation [@joe_remark_2003], and on subsequent sampling continue the sequence from its previous position.
-
 For comparison in the analysis below, we use the MT19937 variant of the Mersenne Twister pseudorandom generator [@matsumoto_mersenne_1998].
 
 ### Sampling without Replacement
@@ -56,9 +55,7 @@ Since $f_i$ cannot be oversampled, this implies that $f_{j\neq{i}}$ cannot be un
 
 ## Problem Statement
 
-A mathematical statement of the microsimulation problem is as follows:
-
-(In the notation below, the index $i$ is scalar and refers to a particular dimension. The index $\mathbf{k}$ is a vector index $\{k_1, k_2,...k_D\}$ of length $D$, the dimensionality of the problem.)
+A mathematical statement of the microsimulation problem is as follows:^[In the notation below, the index $i$ is scalar and refers to a particular dimension. The index $\mathbf{k}$ is a vector index $\{k_1, k_2,...k_D\}$ of length $D$, the dimensionality of the problem.]
 
 Given a population $P$ and a set of $D$ marginal vectors $\mathbf{m}_i$ of length $l_i$ such that we have $S$ possible states
 

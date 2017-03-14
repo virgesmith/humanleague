@@ -20,7 +20,9 @@ Established methods for synthesising a population from geographically aggregated
 
 # Introduction
 
-Iterative Proportional Fitting (IPF), sometimes known as matrix raking, is a popular and well-established technique for generating synthetic populations from marginal data. However, the method does have some shortfalls, for example it will often generate fractional populations, i.e. a non-integral population in each category or state. Nor is it able to generate states containing exactly zero population. IPF requires an initial starting "seed" population (often simply setting each state to a population of one) and updates the matrix iteratively, stopping when the marginals are matched to withing some specified tolerance.
+Iterative Proportional Fitting (IPF), sometimes known as matrix raking, is a popular and well-established technique for generating synthetic populations from marginal data.
+IPF first became well-know 
+, the method has various shortfalls.  will often generate fractional populations, i.e. a non-integral population in each category or state. Nor is it able to generate states containing exactly zero population. IPF requires an initial starting "seed" population (often simply setting each state to a population of one) and updates the matrix iteratively, stopping when the marginals are matched to withing some specified tolerance.
 
 Integerisation is a common technique used to convert fractional populations into integer ones. However these methods are not guaranteed to break contraints, even though the fractional input population may satisfy them. The implementation in the `R` package `rakeR` for example, only guarantees to conserve the total population, and may create a difference between the population and the marginals.
 
@@ -252,7 +254,7 @@ Catch! project funding
 
 # References
 
-```{r, eval=FALSE}
+```{r}
 # Get bibliography (run once from project root)
 u = "https://www.zotero.org/api/groups/418217/collections/MP7NS3SC/items/top?limit=100&format=bibtex&v=1"
 b = httr::GET(url = u, httr::write_disk("ref.bib", overwrite = T))

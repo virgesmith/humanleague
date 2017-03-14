@@ -20,9 +20,16 @@ Established methods for synthesising a population from geographically aggregated
 
 # Introduction
 
-Iterative Proportional Fitting (IPF), sometimes known as matrix raking, is a popular and well-established technique for generating synthetic populations from marginal data.
-IPF first became well-know 
-, the method has various shortfalls.  will often generate fractional populations, i.e. a non-integral population in each category or state. Nor is it able to generate states containing exactly zero population. IPF requires an initial starting "seed" population (often simply setting each state to a population of one) and updates the matrix iteratively, stopping when the marginals are matched to withing some specified tolerance.
+Iterative Proportional Fitting (IPF) is a popular and well-established technique for generating synthetic populations from marginal data.
+Compared with other methods of 'population synthesis' IPF is relatively fast, simple and easy to implemented, as showcased in a practical introduction to the subject by @lovelace_spatial_2016.
+There have even been a number of software packages aimed at facilitating IPF for spatial microsimulation and other applications [].
+
+However, the method has various limitations from the perspective of spatial microsimulation for social simulation, most IPF's generation of fractional weights instead of integer populations [@lovelace_truncate_2013], and its handling of 'empty cells' [@lovelace_evaluating_2015].
+These are well-documented, as illustrated in an outstanding PhD thesis by @zaloznik_iterative_2011, and papers documenting developments aimed at overcoming barriers reducing the utility of IPF for spatial microsimulation.
+
+
+
+Nor is it able to generate states containing exactly zero population. IPF requires an initial starting "seed" population (often simply setting each state to a population of one) and updates the matrix iteratively, stopping when the marginals are matched to withing some specified tolerance.
 
 Integerisation is a common technique used to convert fractional populations into integer ones. However these methods are not guaranteed to break contraints, even though the fractional input population may satisfy them. The implementation in the `R` package `rakeR` for example, only guarantees to conserve the total population, and may create a difference between the population and the marginals.
 
@@ -149,7 +156,7 @@ The IWRS algorithm, being simpler, does not warrant an example. The algorithm de
 
 ## The Implementation
 
-The algorithms are implemented in an `R` package called `humanleague`, writen in `C++11` and `C` and interfaced using `Rcpp`. We used open source implementations of the Sobol sequence generator [@johnson_stevengj] (Johnson 2016) and the incomplete gamma function [@burkardt_asa032_????] (Burkhardt 2008). The remainder of the code was developed by the authors. The Sobol sequence generator is implemented in such a way that it is not reset each time a population is requested, allowing different populations to be generated each time. 
+The algorithms are implemented in an `R` package called `humanleague`, writen in `C++11` and `C` and interfaced using `Rcpp`. We used open source implementations of the Sobol sequence generator [@johnson_stevengj/nlopt:_nodate] and the incomplete gamma function [@burkardt_asa032_2008]. The remainder of the code was developed by the authors. The Sobol sequence generator is implemented in such a way that it is not reset each time a population is requested, allowing different populations to be generated each time. 
 
 The intent is to submit the package to the offical CRAN repository, but until then it is available at [https://github.com/CatchDat/humanleague](https://github.com/CatchDat/humanleague).
 

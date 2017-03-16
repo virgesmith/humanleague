@@ -1,6 +1,6 @@
 ---
 title: "Quasirandom Sampling Methods for Synthetic Population Generation"
-author: "Andrew P Smith et al"
+author: "Andrew P Smith, Robin Lovelace and Mark Birkin"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output: 
   pdf_document:
@@ -14,7 +14,7 @@ vignette: >
 ---
 
 ***
-Established methods for synthesising a population from geographically aggregated data are robust and well understood. However, most rely on the potentially destructive process of "integerisation" to generate whole individuals. This paper investigates alternative methods of synthesis that are computationally efficient and result in integer populations directly. We showcase the method of 'quasirandom sampling' for population synthesis and demonstrate its ability to generate populations that match geographically aggregated data. The results show that sampling the marginals without replacement guarantees a match and that quasirandom sampling performs better than pseudorandom (or 'simple random') sampling at generating populations that fit multiple constraints. The algorithms are available in an open-source R package `humanleague`.
+Established methods for synthesising a population from geographically aggregated data are robust and well understood. However, most rely on the potentially detrimental process of "integerisation" to generate whole individuals. This paper investigates alternative methods of synthesis that are computationally efficient and result in integer populations directly. We showcase the method of 'quasirandom sampling' for population synthesis and demonstrate its ability to generate populations that match geographically aggregated data, as long as fully-specified marginal data is available. The results show that sampling the marginals without replacement guarantees a match and that quasirandom sampling performs better than pseudorandom (or 'simple random') sampling at generating populations that fit multiple constraints. The algorithms are available in an open-source R package `humanleague`.
 
 ***
 
@@ -79,7 +79,7 @@ In the general case this is an ill-posed problem as there are not enough constra
 
 # The Algorithms
 
-The algorithms described in this paper are outlined in this sectio.
+The algorithms described in this paper are outlined in this section.
 
 ## Integer Quasirandom with-Replacement Sampling (IQRS)
 
@@ -102,7 +102,7 @@ $$\mathbf{T}_{\mathbf{k}, k_i fixed} \leftarrow \mathbf{T}_{\mathbf{k}, k_ifixed
 
 Note that the algorithm will fail if, in any dimension, there is a nonzero residual and no index $\mathbf{k}$ from which the residual can be subtracted without resulting in negative elements of $\mathbf{T}$. This likelihood is vastly reduced by using quasirandom sampling. 
 
-## Integer Without-Replacement Sampling (IWRS)
+## Integer Quasirandom Without-Replacement Sampling (IQWS)
 
 1. Create an D-dimensional discrete without-replacement distribution using the marginals $\mathbf{m}_i$
 
@@ -146,11 +146,11 @@ which now matches $\mathbf{m}_0$. Next we subtract $\mathbf{r}_1$ from the any o
 
 which results in a population that now matches both marginals. It should be noted that in this example there are six possible ways that the seed population could be adjusted.  
 
-The IWRS algorithm, being simpler, does not warrant an example. The algorithm description above suffices.
+The IQWS algorithm, being simpler, does not warrant an example. The algorithm description above suffices.
 
 ## The Implementation
 
-The algorithms are implemented in an `R` package called `humanleague`, writen in `C++11` and `C` and interfaced using `Rcpp`. We used open source implementations of the Sobol sequence generator [@johnson_stevengj/nlopt:_nodate] and the incomplete gamma function [@burkardt_asa032_2008]. The remainder of the code was developed by the authors. The Sobol sequence generator is implemented in such a way that it is not reset each time a population is requested, allowing different populations to be generated each time. 
+The algorithms are implemented in an `R` package called `humanleague`, written in `C++11` and `C` and interfaced using `Rcpp`. We used open source implementations of the Sobol sequence generator [@johnson_stevengj/nlopt:_nodate] and the incomplete gamma function [@burkardt_asa032_2008]. The remainder of the code was developed by the authors. The Sobol sequence generator is implemented in such a way that it is not reset each time a population is requested, allowing different populations to be generated each time. 
 
 The intent is to submit the package to the offical CRAN repository, but until then it is available at [https://github.com/CatchDat/humanleague](https://github.com/CatchDat/humanleague).
 
@@ -180,7 +180,7 @@ Interestingly, IPF performed least well on the simple tests, generating the lowe
 
 Table 1: Convergence behaviour of population synthesis algorithms. $\bar{c}$ refers to the convergence success rate, and $\bar{p}$ refers to the mean p-value.
 
- Pop | States | N | IQRS $\bar{c}$ | IQRS $\bar{p}$  | IWRS $\bar{c}$ | IWRS $\bar{p}$ | IPF $\bar{c}$ | IPF $\bar{p}$  
+ Pop | States | N | IQRS $\bar{c}$ | IQRS $\bar{p}$  | IQWS $\bar{c}$ | IQWS $\bar{p}$ | IPF $\bar{c}$ | IPF $\bar{p}$  
 :---:|---|---|--------|--------|--------|--------|--------|--------|-------|-------|------
   20|    4|1000|1|0.78|1|0.79|1|0.48
  125|   25|1000|1|0.91|1|0.91|1|0.06
@@ -201,53 +201,60 @@ knitr::include_graphics("figures/iqrs_pvalue_dist.png")
 
 Secondly, reverting back to a QRNG, we examined the distribution of p-values for IQRS, which can be seen in figure 1. In the analysis we assigned a p-value of zero to any case where the population did not match the marginals, which happened about 15% of the time.
 
-Next we compared the performance of IWRS using a PRNG and a QRNG. Since we knew the algorithm is guaranteed to work regardless of the RNG used, we again looked at the distribution of p-values, which can be seen in figures 2 and 3. There is a marked difference between the two, with the PRNG implementation being broadly symmetric with a bias toward mid-range values, whereas the QRNG implementation is very strongly biased toward high p-values. 
+Next we compared the performance of IQWS using a PRNG and a QRNG. Since we knew the algorithm is guaranteed to work regardless of the RNG used, we again looked at the distribution of p-values, which can be seen in figures 2 and 3. There is a marked difference between the two, with the PRNG implementation being broadly symmetric with a bias toward mid-range values, whereas the QRNG implementation is very strongly biased toward high p-values. 
 
-```{r, echo=FALSE, out.width="75%", fig.cap="Distribution of p-values of IWRS using PRNG."}
-knitr::include_graphics("figures/iwrs_prng_pvalue_dist.png")
+```{r, echo=FALSE, out.width="75%", fig.cap="Distribution of p-values of IQWS using PRNG."}
+knitr::include_graphics("figures/iqws_prng_pvalue_dist.png")
 ```
 
-```{r, echo=FALSE, out.width="75%", fig.cap="Distribution of p-values of IWRS using QRNG"}
-knitr::include_graphics("figures/iwrs_pvalue_dist.png")
+```{r, echo=FALSE, out.width="75%", fig.cap="Distribution of p-values of IQWS using QRNG"}
+knitr::include_graphics("figures/iqws_pvalue_dist.png")
 ```
 
-If the result of the IWRS algorithm is used as the seed for the IPF algorithm, the latter simply returns the seed matrix. This happens even when we deliberately pick a result with a low (>0.005) p-value.
+If the result of the IQWS algorithm is used as the seed for the IPF algorithm, the latter simply returns the seed matrix. This happens even when we deliberately pick a result with a low (>0.005) p-value.
+
+## Range of Use
+
+IPF can be used for microsimulation in cases where some marginal data is not fully specified. For example, some categorical constraint data may only be available for a subset of the whole population. By using this data in the initial guess for the iteration, rather than as a marginal constraint, the incomplete data is scaled up to, and smoothed over, the overall population. An example of this type of microsimulation is given in @[Lovelace
+
+The methods described in this paper are not able to generate populations in this case.
 
 ## Performance
 
 The performance of the algorithms of the tests described above is illustrated in Table 2. Since computers vary widely in performance for numerous reasons, the numbers should be interpreted as relative performance indicators, not absolute values.
 
-Table 2: Computational efficiency of the algorithms in terms of execution time.
+Table 2: Relative computation time of the algorithms, using the first case as a baseline. 
 
-Pop | States | N | IQRS | IWRS | IPF 
+Pop | States | N | IQRS | IQWS | IPF 
 :--:|-----|----|----|----|-----
-  20|    4|1000|0.03|0.03| 1.99
- 125|   25|1000|0.04|0.04| 2.9
- 935|   49|1000|0.07|0.07| 2.05
-4958|16032|1000|0.95|0.92|46.78
-4098|11760|1000|0.77|0.69|32.07
-4029|11904|1000|0.8 |0.68|30.82
-4989|14640|1000|0.95|0.85|43.71
-5219|15168|1000|0.96|0.86|46.73 
+  20|    4|1000|1.0 |1.0 |66.3
+ 125|   25|1000|1.3 |1.3 |96.7
+ 935|   49|1000|2.3 |2.3 |68.3
+4958|16032|1000|31.7|30.7|1559.3
+4098|11760|1000|25.7|23.0|1069.0
+4029|11904|1000|26.7|22.7|1027.3
+4989|14640|1000|31.7|28.3|1457.0
+5219|15168|1000|32.0|28.7|1557.7
 
 <!-- ref Mark/Robin paper(s) -->
 
 # Discussion
 
-<!-- Name the algorithms by name in full again here at outset -->
-The algorithms presented here have substantial advantages over traditional IPF, primarily the generation of integer populations by default.
-Furthermore, we have demonstrated that integerising fractional populations generated by other methods may result in populations that no longer match the marginals. 
+The methods presented here, Integer Quasirandom with-Replacement Sampling and Integer Quasirandom Without-replacement Sampling, really represent an evolution of a single algorithm. The earlier (IQRS) has a flaw in that it lacks guaranteed convergence, which is addressed by IQWS. As such, this discussion focuses solely on IQWS. 
 
-In terms of performance, IQRS and IWRS algorithms are faster than the IPF implementation we compared against (`mipfp`). This is likely due to the fact the algorithms are not iterative in nature, and that the implementation is in a low-level language. The performance of population synthesis is unlikely to be the bottleneck in any workflow, so performance is not considered a major advantage.
+IQWS has some advantages over traditional IPF, primarily the generation of integer populations by default, which may be beneficial for example in agent-based modelling (ABM) applications.
 
-The main disadvantage of IQRS is that it may not always be able to generate a valid population. IWRS came about as an evolution (and simplification) of the algorithm that resolved this issue. 
-The IWRS algorithm works well even for sparse populations.
+However, IQWS is more limited in it's application, requiring that all marginal data is fully specified, (i.e. matches the entire population) whereas IPF is not so retricted.
 
-Another possible disadvantage is that both IQRS and IWRS generally result in populations with lower p-values than IPF. We would expect end-users to check the p-value against a suitable threshhold, and reject and resample if necessary.
+In terms of performance, IQWS is significantly faster than the IPF implementation we compared against (`mipfp`). This is likely due to the fact that the algorithm is not iterative in nature, and that the implementation is very efficient, written in a low-level language. The performance of population synthesis is often not the bottleneck in any workflow, so performance may not be considered a major advantage.
+
+Another possible disadvantage is that IQWS generally results in populations with lower p-values than IPF. We would envisage that end-users check the p-value against a suitable threshhold, and reject and resample if necessary.
 
 # Conclusion
 
-Although IQRS may be of limited use due to the fact it cannot always generate a population, we believe IWRS is promising as a technique that could complement existing techniques, especially when integral populations are important. We do recommend that users satisfy themselves that the resulting population is adequately degenerate.
+Although IQRS may be of limited use due to the fact it cannot always generate a population, we believe IQWS is promising as a technique that could complement existing techniques, especially when integral populations are important. We do recommend that users satisfy themselves that the resulting population is adequately degenerate.
+
+
 
 <!-- Expand on this - need to be much wordier and eloquent here, and refer back more to literature -->
 

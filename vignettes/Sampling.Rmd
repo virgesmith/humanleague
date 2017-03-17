@@ -14,15 +14,15 @@ vignette: >
 ---
 
 ***
-Established methods for synthesising a population from geographically aggregated data are robust and well understood. However, most rely on the potentially detrimental process of "integerisation" to generate whole individuals. This paper investigates alternative methods of synthesis that are computationally efficient and result in integer populations directly. We showcase the method of 'quasirandom sampling' for population synthesis and demonstrate its ability to generate populations that match geographically aggregated data, as long as fully-specified marginal data is available. The results show that sampling the marginals without replacement guarantees a match and that quasirandom sampling performs better than pseudorandom (or 'simple random') sampling at generating populations that fit multiple constraints. The algorithms are available in an open-source R package `humanleague`.
+Established methods for synthesising a population from geographically aggregated data are robust and well understood. However, most rely on the potentially detrimental process of "integerisation" to generate whole individuals. This paper investigates alternative methods of synthesis that are computationally efficient and result in integer populations directly. We showcase the method of 'quasirandom sampling' for population synthesis and demonstrate its ability to generate populations that match geographically aggregated data, as long as fully-specified marginal data is available. The results show that sampling the without replacement is required to guarantee a population matching the marginals, and that quasirandom sampling performs better than pseudorandom (or 'simple random') sampling at generating degenerate populations (i.e with higher p-values). The algorithms are available in an open-source R package `humanleague`.
 
 ***
 
 # Introduction
 
 Iterative Proportional Fitting (IPF) is a popular and well-established technique for generating synthetic populations from marginal data.
-Compared with other methods of 'population synthesis' IPF is relatively fast, simple and easy to implemented, as showcased in a practical introduction to the subject by @lovelace_spatial_2016.
-Further, a number of software packages aimed at facilitating IPF for spatial microsimulation and other applications have been published [e.g. @barthelemy_cran_2016; @jones_raker:_2016].
+Compared with other methods of 'population synthesis' IPF is relatively fast, simple and easy to implemente, as showcased in a practical introduction to the subject by @lovelace_spatial_2016.
+Furthermore, a number of software packages aimed at facilitating IPF for spatial microsimulation and other applications have been published [e.g. @barthelemy_cran_2016; @jones_raker:_2016].
 
 However, the method has various limitations from the perspective of spatial microsimulation for social simulation. For example,
 IPF generates fractional weights instead of integer populations, an issue tackled by 'integerisation' techniques [@lovelace_truncate_2013]; handles 'empty cells' poorly [@lovelace_evaluating_2015]; and requires a representative individual-level 'seed' population.
@@ -96,9 +96,16 @@ $$\mathbf{T}_{\mathbf{k}, k_i fixed} \leftarrow \mathbf{T}_{\mathbf{k}, k_ifixed
 
 5. Repeat step 3. as necessary for each dimension.
 
-6. Compute a $\chi^2$ statistic and a p-value.
+6. Compute a $\chi^2$ statistic:
 
-<!-- Explain p-value on first occurance (here) -->
+$$\chi^2 = \frac{\sum\limits_{\mathbf{k}}(T_\mathbf{k}-p_\mathbf{k}S)^2}{p_\mathbf{k}S}$$
+
+and a p-value, which represents the statistical significance of the synthetic population (in this case we prefer higher values, since lower ones indicate that there is some interdependence between the marginals.
+
+$$p=1-\mathbb{P}[d/2,\chi^2]$$
+
+where $\mathbb{P}$ is the cumulative $\chi^2$ density function and the degrees of freedom $d$ is
+$$d=\prod\limits_{i}l_i-1$$
 
 Note that the algorithm will fail if, in any dimension, there is a nonzero residual and no index $\mathbf{k}$ from which the residual can be subtracted without resulting in negative elements of $\mathbf{T}$. This likelihood is vastly reduced by using quasirandom sampling. 
 
@@ -215,7 +222,7 @@ If the result of the IQWS algorithm is used as the seed for the IPF algorithm, t
 
 ## Range of Use
 
-IPF can be used for microsimulation in cases where some marginal data is not fully specified. For example, some categorical constraint data may only be available for a subset of the whole population. By using this data in the initial guess for the iteration, rather than as a marginal constraint, the incomplete data is scaled up to, and smoothed over, the overall population. An example of this type of microsimulation is given in @[Lovelace
+IPF can be used for microsimulation in cases where some marginal data is not fully specified. For example, some categorical constraint data may only be available for a subset of the whole population. By using this data in the initial guess for the iteration, rather than as a marginal constraint, the incomplete data is scaled up to, and smoothed over, the overall population. An example of this type of microsimulation "CakeMap" is given in @lovelace_spatial_2016.
 
 The methods described in this paper are not able to generate populations in this case.
 

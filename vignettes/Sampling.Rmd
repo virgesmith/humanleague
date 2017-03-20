@@ -36,14 +36,18 @@ In this paper we investigate sampling techniques where a population matrix is bu
 
 Quasirandom numbers, often referred to as low discrepancy sequences, are preferential to pseudorandom numbers in many applications, despite not having some of the (appearance of) randomness that good pseudorandom generators possess. In this work we focus on the Sobol quasirandom sequence [@bratley_algorithm_1988; @joe_remark_2003].
 
-Sobol, as with other quasirandom sequences, have an inherent dimensionality and a relatively short period - the sequence is exhausted once every integer in the sample space has been sampled . Successive samples tend to evenly fill the sample space, and thus successive samples lack independence. Conversely, a good pseudorandom generator has no discernible dependence between variates often has a much longer period, allowing for very large samples to be taken.
+Sobol, as with other quasirandom sequences, have an inherent dimensionality and a relatively short period - the sequence is exhausted once every integer in the sample space has been sampled . Successive samples tend to evenly fill the sample space, and thus successive samples lack independence. Conversely, a good pseudorandom generator has no discernible dependence between variates often has a much longer period, allowing for very large samples to be taken. 
 
 For applications such as numerical integration, Sobol sequences converge at a rate of $\approx1/N$ (actually $(ln N)^D/N$ [@vetterling_numerical_1992] compared to $\approx1/\sqrt N$ for a pseudorandom generator, and thus require far fewer samples to achieve the same level of accuracy.
 
 Quasirandom sequences are not seeded like pseudorandom generators. To avoid repetition, and for better degeneracy, it is recommended to discard a number of variates on initialisation [@joe_remark_2003], and on subsequent sampling continue the sequence from its previous position.
 For comparison in the analysis below, we use the MT19937 variant of the Mersenne Twister pseudorandom generator [@matsumoto_mersenne_1998].
 
-### Sampling without Replacement
+```{r, echo=FALSE, out.width="50%", fig.show='hold', fig.cap="2000 uniform 2d samples -  pseudorandom and quasirandom."}
+knitr::include_graphics(c("figures/pseudo2d.png","figures/quasi2d.png"))
+```
+
+## Sampling without Replacement
 
 Given discretely distributed population $P$ with integral frequencies $\{f_0,f_1,...f_n\}$, a random sample $i \in \{0...n\}$ has probability 
 
@@ -51,7 +55,7 @@ $$p(i) = \frac{f_i}{\sum\limits_{j=0}^{n}f_j}$$
 
 Once a sample $i$ is taken the distribution is adjusted to $\{f_0,f_1,...f_i-1,....f_n\}$. Once $f_i$ has reached zero no further samples can take the value $i$ since $p(i) = 0$. 
 
-Since $f_i$ cannot be oversampled, this implies that $f_{j\neq{i}}$ cannot be undersampled. If follows that after sampling $P$ variates, $f_i = 0 \space\forall\space i \in \{0...n\}$. Thus there is a guarantee that the distibution is sampled exactly.
+Since $f_i$ cannot be oversampled, this implies that all the other states $f_{j\neq{i}}$ cannot be undersampled. By extension, if all but one states $f_{i\neq{j}}$ cannot be oversampled, then $f_j$ cannot be undersampled. Thus each state can neither be under- nor oversampled: the distibution must be matched exactly.
 
 ## Problem Statement
 
@@ -97,13 +101,9 @@ $$\mathbf{T}_{\mathbf{k}, k_i fixed} \leftarrow \mathbf{T}_{\mathbf{k}, k_ifixed
 5. Repeat step 3. as necessary for each dimension.
 
 6. Compute a $\chi^2$ statistic:
-
 $$\chi^2 = \frac{\sum\limits_{\mathbf{k}}(T_\mathbf{k}-p_\mathbf{k}S)^2}{p_\mathbf{k}S}$$
-
 and a p-value, which represents the statistical significance of the synthetic population (in this case we prefer higher values, since lower ones indicate that there is some interdependence between the marginals.
-
 $$p=1-\mathbb{P}[d/2,\chi^2]$$
-
 where $\mathbb{P}$ is the cumulative $\chi^2$ density function and the degrees of freedom $d$ is
 $$d=\prod\limits_{i}l_i-1$$
 
@@ -111,7 +111,7 @@ Note that the algorithm will fail if, in any dimension, there is a nonzero resid
 
 ## Integer Quasirandom Without-Replacement Sampling (IQWS)
 
-1. Create an D-dimensional discrete without-replacement distribution using the marginals $\mathbf{m}_i$
+1. Create an $D$-dimensional discrete without-replacement distribution using the marginals $\mathbf{m}_i$
 
 2. Sample $P$ random variates from this distribution to create a population $\mathbf{T}$. Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_\mathbf{k}$, repeating until our distribution is fully depleted. Constructing the problem in this way automatically ensures that all constraints are automatically met.
 
@@ -202,7 +202,7 @@ A more detailed analysis was performed on two evenly distributed marginal vector
 
 Firstly we used the IQRS algorithm with a PRNG, and found only one attempt reached a valid population, i.e. a success rate of 0.01%. This confirms our earlier reasoning that quasirandom numbers are essential for the algorithm.
 
-```{r, echo=FALSE, out.width="75%", fig.cap="Distribution of p-values of IQRS."}
+```{r, echo=FALSE, out.width="75%", fig.align='center', fig.cap="Distribution of p-values of IQRS."}
 knitr::include_graphics("figures/iqrs_pvalue_dist.png")
 ```
 
@@ -210,12 +210,8 @@ Secondly, reverting back to a QRNG, we examined the distribution of p-values for
 
 Next we compared the performance of IQWS using a PRNG and a QRNG. Since we knew the algorithm is guaranteed to work regardless of the RNG used, we again looked at the distribution of p-values, which can be seen in figures 2 and 3. There is a marked difference between the two, with the PRNG implementation being broadly symmetric with a bias toward mid-range values, whereas the QRNG implementation is very strongly biased toward high p-values. 
 
-```{r, echo=FALSE, out.width="75%", fig.cap="Distribution of p-values of IQWS using PRNG."}
-knitr::include_graphics("figures/iqws_prng_pvalue_dist.png")
-```
-
-```{r, echo=FALSE, out.width="75%", fig.cap="Distribution of p-values of IQWS using QRNG"}
-knitr::include_graphics("figures/iqws_pvalue_dist.png")
+```{r, echo=FALSE, out.width="50%", fig.show="hold", fig.cap="Distribution of p-values of IQWS using PRNG (left) and QRNG (right)."}
+knitr::include_graphics(c("figures/iqws_prng_pvalue_dist.png","figures/iqws_pvalue_dist.png"))
 ```
 
 If the result of the IQWS algorithm is used as the seed for the IPF algorithm, the latter simply returns the seed matrix. This happens even when we deliberately pick a result with a low (>0.005) p-value.
@@ -259,9 +255,13 @@ Another possible disadvantage is that IQWS generally results in populations with
 
 # Conclusion
 
+Advantages of IPF: established, works with incomplete marginals.
+
+Advantages of IQWS: fast(er), integer populations 
+
+
+
 Although IQRS may be of limited use due to the fact it cannot always generate a population, we believe IQWS is promising as a technique that could complement existing techniques, especially when integral populations are important. We do recommend that users satisfy themselves that the resulting population is adequately degenerate.
-
-
 
 <!-- Expand on this - need to be much wordier and eloquent here, and refer back more to literature -->
 
@@ -269,7 +269,7 @@ We anticipate further investigation of the algorithms for deliberately generatin
 
 # Acknowledgements
 
-Catch! project funding
+The authors would like to acknowledge Catch! project funding
 
 # References
 

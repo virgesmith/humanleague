@@ -32,6 +32,19 @@ In this paper we investigate sampling techniques where a population matrix is bu
 
 # Theory
 
+## Degeneracy and Statistical Likelihood.
+
+In this work we define degeneracy as the number of possible different ways a given overall population can be sampled. Making the assumption that marginals are uncorrelated, the higher the degeneracy of the population, the more statistically likely the population is. We measure the degeneracy of populations using a $\chi^2$ statistic:
+
+$$\chi^2 = \frac{\sum\limits_{\mathbf{k}}(\mathbf{T}_\mathbf{k}-p_\mathbf{k}S)^2}{p_\mathbf{k}S}$$
+
+from which we can estimate a p-value, which represents the statistical significance of the synthetic population. 
+
+$$p=1-\mathbb{P}[d/2,\chi^2]$$
+where $\mathbb{P}$ is the cumulative $\chi^2$ density function and $d$ the degrees of freedom of the system. 
+
+The aim in this context is to generate populations with a high p-value, i.e. a low statistical significance and a high-degeneracy. 
+
 ## Quasirandom Numbers
 
 Quasirandom numbers, often referred to as low discrepancy sequences, are preferential to pseudorandom numbers in many applications, despite not having some of the (appearance of) randomness that good pseudorandom generators possess. In this work we focus on the Sobol quasirandom sequence [@bratley_algorithm_1988; @joe_remark_2003].
@@ -85,87 +98,84 @@ The probability of a given state $\mathbf{k}$ being occupied is thus the product
 
 $$p_{\mathbf{k}} = \prod\limits_{i=1}^{D}(\mathbf{m}_i)_\mathbf{k}/P$$
 
-In the general case there are not enough constraints to determine a unique solution. Hence there is a need to resort to iterative or optimisation-type solutions, such as IPF, simulated annealing, likelihood estimate, chi-squared fitting, or least-squares fitting.
-
-# The Algorithms
-
-The algorithms described in this paper are outlined in this section.
-
-## Integer Quasirandom with-Replacement Sampling (IQRS)
-
-1. Create a $D$-dimensional discrete with-replacement distribution using the marginals $\mathbf{m}_i$ to represent the per-zone totals within each variable category.
-
-2. Sample $P$ quasirandom variates from this distribution to create a "seed" population $\mathbf{T}$. Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_k$. Thus $\mathbf{T}$ will - by construction - satisfy constraints (2) and (3). The next step is to check, and adjust if necessary, the population such that constraint (1) is met.
-
-3. Calculate the residual vector $\mathbf{r}_i$, the difference between the seed population and marginal $\mathbf{m}_i$: 
-$$\mathbf{r}_i = \sum\limits_{\mathbf{k}, k_i fixed} \mathbf{T}_k - \mathbf{m}_i$$
-If all elements of $\mathbf{r}_i$ are zero, constraint (1) is satisfied in dimension $i$. If not, find an index $\mathbf{k}$ in $\mathbf{T}$ such that subtracting $\mathbf{r}_i$ will not result in negative values in $\mathbf{T}$
-
-4. If $\mathbf{k}$ exists, perform the subtraction:
-$$\mathbf{T}_{\mathbf{k}, k_i fixed} \leftarrow \mathbf{T}_{\mathbf{k}, k_ifixed} - \mathbf{r}_i$$
-
-5. Repeat step 3. as necessary for each dimension.
-
-6. Compute a $\chi^2$ statistic:
-$$\chi^2 = \frac{\sum\limits_{\mathbf{k}}(\mathbf{T}_\mathbf{k}-p_\mathbf{k}S)^2}{p_\mathbf{k}S}$$
-and a p-value, which represents the statistical significance of the synthetic population (in this case we prefer higher values, since lower ones indicate that there is some interdependence between the marginals.
-$$p=1-\mathbb{P}[d/2,\chi^2]$$
-where $\mathbb{P}$ is the cumulative $\chi^2$ density function and the degrees of freedom $d$ is
+And the degrees of freedom $d$ of the system (required in order to calculate the statistical significance of the population) is given by
 $$d=\prod\limits_{i}l_i-1$$
 
-Note that the algorithm will fail if, in any dimension, there is a nonzero residual and no index $\mathbf{k}$ from which the residual can be subtracted without resulting in negative elements of $\mathbf{T}$. This likelihood is vastly reduced by using quasirandom sampling. 
+In the general case there are not enough constraints to determine a unique solution. Hence there is a need to resort to iterative or optimisation-type solutions, such as IPF, simulated annealing, likelihood estimate, chi-squared fitting, or least-squares fitting.
 
-## Integer Quasirandom Without-Replacement Sampling (IQWS)
+# The Algorithm
+
+The final version of the algorithm is outlined in this section, a description of the process by which we arrived at this algorithm follows in the Discussion.
 
 1. Create an $D$-dimensional discrete without-replacement distribution using the marginals $\mathbf{m}_i$
 
-2. Sample $P$ random variates from this distribution to create a population $\mathbf{T}$. Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_\mathbf{k}$, repeating until our distribution is fully depleted. Constructing the problem in this way automatically ensures that all constraints are automatically met.
+2. Sample $P$ random variates from this distribution to create a population $\mathbf{T}$. Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_\mathbf{k}$, repeating until the distribution is fully depleted. Constructing the problem in this way automatically ensures that all constraints are automatically met, as explained in the previous section.
 
-3. Compute a $\chi^2$ statistic and a p-value, as described above.
+3. Compute occupation probabilities $p_\mathbf{k}$ for each state $\mathbf{k}$. 
 
-## A Worked Example of IQRS
+4. Compute a $\chi^2$ statistic and a p-value, which represents the statistical significance of the synthetic population (in this case we prefer higher p-values, i.e. statistically insignificant populations.
 
-We consider a 2 dimensional case here for simplicity, for a population $P$ of 100 individuals with two categorical characteristics. Let the marginal vectors be $\mathbf{m}_0=\{51,49\}$ and $\mathbf{m}_1=\{35,40,25\}$, giving the population 6 possible states.    
-
-We construct a bivariate discrete distibution using the marginals which will have a probability density
-
-$$p_{ij} = \frac{(\mathbf{m}_0)_i(\mathbf{m}_1)_j}{\sum\limits_i\mathbf{m}_0\sum\limits_j\mathbf{m}_1}$$ 
-
-We take $P$ random samples $(i,j)$ from this distribution to create a seed population $\mathbf{T}$ (in bold), which for example may look like:
-
- $\mathbf{m}_0\setminus\mathbf{m}_1$ |  35    | 40     | 25     | $\mathbf{r}_0$
-:-----------------------------------:|--------|--------|--------|----
-            51                       | **19** | **20** | **11** | *-1*
-            49                       | **17** | **20** | **13** | *+1*
-        $\mathbf{r}_1$               |  *+1*  |  *0*   | *-1*   |
-
-The row and column sums do not quite match the marginals. The residuals (italic, from equation 5) are $\mathbf{r}_0=\{-1, 1\}$ and $\mathbf{r}_1=\{1,0,-1\}$.
-
-To correct the population we subtract $\mathbf{r}_0$ from any one column (in this case no choice of column will result in a negative value). Selecting the first column, the population becomes:
-
- $\mathbf{m}_0\setminus\mathbf{m}_1$ |  35    | 40     | 25     | $\mathbf{r}_0$
-:-----------------------------------:|--------|--------|--------|----
-            51                       | **20** | **20** | **11** | *0*
-            49                       | **16** | **20** | **13** | *0*
-        $\mathbf{r}_1$               |  *+1*  |  *0*   |  *-1*  |
-    
-which now matches $\mathbf{m}_0$. Next we subtract $\mathbf{r}_1$ from the any one row (again no choice of row will result in a negative value). Selecting the first row, the population becomes:
-
- $\mathbf{m}_0\setminus\mathbf{m}_1$ |  35    | 40     | 25     | $\mathbf{r}_0$
-:-----------------------------------:|--------|--------|--------|----
-            51                       | **19** | **20** | **12** | *0*
-            49                       | **16** | **20** | **13** | *0*
-        $\mathbf{r}_1$               |  *0*   |  *0*   |  *0*   |
-
-which results in a population that now matches both marginals. It should be noted that in this example there are six possible ways that the seed population could be adjusted.  
-
-The IQWS algorithm, being simpler, does not warrant an example. The algorithm description above suffices.
 
 ## The Implementation
 
-The algorithms are implemented in an `R` package called `humanleague`, written in `C++11` and `C` and interfaced using `Rcpp`. We used open source implementations of the Sobol sequence generator [@johnson_stevengj/nlopt:_nodate] and the incomplete gamma function [@burkardt_asa032_2008]. The remainder of the code was developed by the authors. The Sobol sequence generator is implemented in such a way that it is not reset each time a population is requested, allowing different populations to be generated each time. 
+The algorithm is implemented in an `R` package called `humanleague`, written in `C++11` and `C` and exposed to `R` via the `Rcpp`. We used open source implementations of the Sobol sequence generator [@johnson_stevengj/nlopt:_nodate] and the incomplete gamma function [@burkardt_asa032_2008]. 
 
-The intent is to submit the package to the offical CRAN repository, but until then it is available at [https://github.com/CatchDat/humanleague](https://github.com/CatchDat/humanleague).
+One of the many useful features introduced in `C++11` was a random number framework, which splits underlying (uniform) generators and the distributions, and defines APIs that these classes should implement [http://en.cppreference.com/w/cpp/numeric/random] (http://en.cppreference.com/w/cpp/numeric/random). There is no native support for quasirandom generators nor for with-replacement distributions, but by conforming to the APIs they can be implemented to easily interoperate with the native implementations.
+
+It should be noted that there are two instances where the new types are non-conformant (see below):
+- a quasirandom generator has inherent dimensionality, and thus should return that number of variates per sample. In our implementation we provided both single value and multiple value accessor functions.
+- without-replacement sampling will eventually become exhausted, as a result we provided a function to test if the distribution is empty, and our accessor function will throw an exception if the distribution is fully depleted.
+
+The remainder of the code was developed by the authors. The Sobol sequence generator is implemented in such a way that it is not reset each time a population is requested, allowing different populations to be generated each time. 
+
+```{cpp}
+  class Sobol
+  {
+  public:
+    typedef uint32_t result_type;
+    explicit Sobol(uint32_t dim, result_type nSkip = 0u);
+    ~Sobol();
+    const std::vector<result_type>& buf();
+    result_type operator()();
+    void skip(result_type n);
+    result_type min() const;
+    result_type max() const;
+  private:
+    SobolData* m_s;
+    uint32_t m_dim;
+    std::vector<result_type> m_buf;
+    uint32_t m_pos;
+  };
+
+  template<typename I> // I must be an integral type
+  class discrete_distribution_without_replacement
+  {
+  public:
+    typedef I result_type;
+  
+    // enforce integral types only
+    static_assert(std::is_integral<I>::value, 
+      "discrete_distribution_without_replacement: only integral types supported");
+  
+    discrete_distribution_without_replacement(typename std::vector<I>::const_iterator b, 
+                                              typename std::vector<I>::const_iterator e);
+  
+    // std::distribution compatibility
+    template<typename R>
+    result_type operator()(R& rng);
+  
+    result_type operator()(result_type r);
+  
+    bool empty() const;
+  
+  private:
+    std::vector<I> m_freq;
+    I m_sum;
+  };
+
+```
+
+The the package is freely available on github.com [https://github.com/CatchDat/humanleague](https://github.com/CatchDat/humanleague). Plans are in progress to submit it the offical CRAN repository.
 
 The implementation supports dimensionalities up to the 12, although this limit is arbitrary and could be increased if necessary. Input is simply a list of marginal vectors
 
@@ -178,7 +188,43 @@ The output is broadly compatible with the established `mipfp` (Barthelemy & Sues
 - $\chi^2$ statistic
 - p-value
 
-# Comparison of Methods
+as can be seen by the example output below:
+
+```
+  > x=c(10,10,10)
+  > p=humanleague::synthPop(list(x,x))
+  > p
+  $method
+  [1] "iwrs"
+  
+  $conv
+  [1] TRUE
+  
+  $chiSq
+  [1] 1.2
+  
+  $pValue
+  [1] 0.8780986
+  
+  $error.margins
+  [1] 0 0
+  
+  $p.hat
+            [,1]      [,2]      [,3]
+  [1,] 0.1111111 0.1111111 0.1111111
+  [2,] 0.1111111 0.1111111 0.1111111
+  [3,] 0.1111111 0.1111111 0.1111111
+  
+  $x.hat
+       [,1] [,2] [,3]
+  [1,]    4    3    3
+  [2,]    4    3    3
+  [3,]    2    4    4
+  
+  > 
+```
+
+# Comparison to Existing Methods
 
 ## Statistical Properties
 
@@ -191,18 +237,18 @@ IPF was initialised with a random seed array, each element uniformly distributed
 The first three tests are made-up examples. The remainder are marginal figures derived from 2011 UK census data at the MSOA level (mid-layer super output area), with one dimension representing person status in terms of age, sex, and economic activity, the other their workplace location.
 Interestingly, IPF performed least well on the simple tests, generating the lowest mean p-values (Table 1).
 
-Table 1: Convergence behaviour of population synthesis algorithms. $\bar{c}$ refers to the convergence success rate, and $\bar{p}$ refers to the mean p-value.
+Table 1: Convergence behaviour of population synthesis algorithms. $N$ is the number of times the algorithm was run, $\bar{c}$ refers to the convergence success rate, and $\bar{p}$ refers to the mean p-value.
 
- Pop | States | N | IQRS $\bar{c}$ | IQRS $\bar{p}$  | IQWS $\bar{c}$ | IQWS $\bar{p}$ | IPF $\bar{c}$ | IPF $\bar{p}$  
-:---:|---|---|--------|--------|--------|--------|--------|--------|-------|-------|------
-  20|    4|1000|1|0.78|1|0.79|1|0.48
- 125|   25|1000|1|0.91|1|0.91|1|0.06
- 935|   49|1000|1|0.74|1|0.86|1|0.03
-4958|16032|1000|0|0.82|1|0.81|1|1
-4098|11760|1000|0|0.84|1|0.8 |1|1
-4029|11904|1000|0|0.81|1|0.8 |1|1
-4989|14640|1000|0|0.8 |1|0.79|1|1
-5219|15168|1000|0|0.79|1|0.79|1|1
+ Pop | States |  N | QIWS $\bar{c}$ | QIWS $\bar{p}$ | IPF $\bar{c}$ | IPF $\bar{p}$  
+:---:|--------|----|----------------|----------------|---------------|---------------
+   20|       4|1000|               1|            0.79|              1|0.48
+  125|      25|1000|               1|            0.91|              1|0.06
+  935|      49|1000|               1|            0.86|              1|0.03
+ 4958|   16032|1000|               1|            0.81|              1|1
+ 4098|   11760|1000|               1|            0.8 |              1|1
+ 4029|   11904|1000|               1|            0.8 |              1|1
+ 4989|   14640|1000|               1|            0.79|              1|1
+ 5219|   15168|1000|               1|            0.79|              1|1
 
 A more detailed analysis was performed on two evenly distributed marginal vectors of length 10 and a population $P$ = 100 and number of states $S$ = 100, sampling 10000 populations.
 
@@ -214,13 +260,13 @@ knitr::include_graphics("figures/iqrs_pvalue_dist.png")
 
 Secondly, reverting back to a QRNG, we examined the distribution of p-values for IQRS, which can be seen in figure 1. In the analysis we assigned a p-value of zero to any case where the population did not match the marginals, which happened about 15% of the time.
 
-Next we compared the performance of IQWS using a PRNG and a QRNG. Since we knew the algorithm is guaranteed to work regardless of the RNG used, we again looked at the distribution of p-values, which can be seen in figures 2 and 3. There is a marked difference between the two, with the PRNG implementation being broadly symmetric with a bias toward mid-range values, whereas the QRNG implementation is very strongly biased toward high p-values. 
+Next we compared the performance of QIWS using a PRNG and a QRNG. Since we knew the algorithm is guaranteed to work regardless of the RNG used, we again looked at the distribution of p-values, which can be seen in figures 2 and 3. There is a marked difference between the two, with the PRNG implementation being broadly symmetric with a bias toward mid-range values, whereas the QRNG implementation is very strongly biased toward high p-values. 
 
-```{r, echo=FALSE, out.width="50%", fig.show="hold", fig.cap="Distribution of p-values of IQWS using PRNG (left) and QRNG (right)."}
+```{r, echo=FALSE, out.width="50%", fig.show="hold", fig.cap="Distribution of p-values of QIWS using PRNG (left) and QRNG (right)."}
 knitr::include_graphics(c("figures/iqws_prng_pvalue_dist.png","figures/iqws_pvalue_dist.png"))
 ```
 
-If the result of the IQWS algorithm is used as the seed for the IPF algorithm, the latter simply returns the seed matrix. This happens even when we deliberately pick a result with a low (>0.005) p-value.
+If the result of the QIWS algorithm is used as the seed for the IPF algorithm, the latter simply returns the seed matrix. This happens even when we deliberately pick a result with a low (>0.005) p-value.
 
 ## Range of Use
 
@@ -234,40 +280,79 @@ The performance of the algorithms of the tests described above is illustrated in
 
 Table 2: Relative computation time of the algorithms, using the first case as a baseline. 
 
-Pop | States | N | IQRS | IQWS | IPF 
-:--:|-----|----|----|----|-----
-  20|    4|1000|1.0 |1.0 |66.3
- 125|   25|1000|1.3 |1.3 |96.7
- 935|   49|1000|2.3 |2.3 |68.3
-4958|16032|1000|31.7|30.7|1559.3
-4098|11760|1000|25.7|23.0|1069.0
-4029|11904|1000|26.7|22.7|1027.3
-4989|14640|1000|31.7|28.3|1457.0
-5219|15168|1000|32.0|28.7|1557.7
+Pop | States |  N | QIWS | IPF 
+:--:|--------|----|------|------
+  20|       4|1000|  1.0 |66.3
+ 125|      25|1000|  1.3 |96.7
+ 935|      49|1000|  2.3 |68.3
+4958|   16032|1000|  30.7|1559.3
+4098|   11760|1000|  23.0|1069.0
+4029|   11904|1000|  22.7|1027.3
+4989|   14640|1000|  28.3|1457.0
+5219|   15168|1000|  28.7|1557.7
 
 <!-- ref Mark/Robin paper(s) -->
 
 # Discussion
 
-The methods presented here, Integer Quasirandom with-Replacement Sampling and Integer Quasirandom Without-replacement Sampling, really represent an evolution of a single algorithm. The earlier (IQRS) has a flaw in that it lacks guaranteed convergence, which is addressed by IQWS. As such, this discussion focuses solely on IQWS. 
+## Evolution of the algorithm. 
 
-IQWS has some advantages over traditional IPF, primarily the generation of integer populations by default, which may be beneficial for example in agent-based modelling (ABM) applications.
+The motivation behind the development of this method came from the fact that IPF, in general, does not generate integral populations in each state. If the resulting population is used as a basis for Agent-Based Modelling (ABM), then an integerisation process must be applied to the synthesised population. Whilst this process preserves the overall population, it may not exactly preserve all of the marginal distributions. 
 
-However, IQWS is more limited in it's application, requiring that all marginal data is fully specified, (i.e. matches the entire population) whereas IPF is not so retricted.
+Although integerisation may not introduce significant errors, the authors considered whether there was an alternative method of synthesis that would directly result in an integral population that exactly matched the marginal distributions.
 
-In terms of performance, IQWS is significantly faster than the IPF implementation we compared against (`mipfp`). This is likely due to the fact that the algorithm is not iterative in nature, and that the implementation is very efficient, written in a low-level language. The performance of population synthesis is often not the bottleneck in any workflow, so performance may not be considered a major advantage.
+The authors could not find any references in the literature on the use of quasirandom sequences for the purpose of population synthesis, and so decided to investigate the suitability of algorithms using such sequences.
 
-Another possible disadvantage is that IQWS generally results in populations with lower p-values than IPF. We would envisage that end-users check the p-value against a suitable threshhold, and reject and resample if necessary.
+Firstly, it was demonstrated that naive pseudorandom sampling could not reliably generate populations matching the marginals. Since successive samples as ostensibly independent, there is no mechanism to reduce under- or oversampling of any particular state. 
+
+The initial analysis was very simple, using quasirandom sampling of static marginal distributions (i.e. with-replacement) to build a population. For "toy" problems this method often worked, but for more complex problems the algorithm often failed to exactly match all the marginals.
+
+In general, the resulting population mismatched the marginals only slightly. A correction algorithm was implemented which, applied at most once for each dimension of the population, adjusted the states by the error in the marginal for that dimension. This corrected the overall population, and is reminiscent of an iteration in IPF.
+
+It was also demonstrated that a correction step as described above could not be applied to a pseudorandomly generated population because the marginal errors were generally to large to be able to apply a correction: such corrections would typically result in a negative population in one or more states.
+
+Furthermore, it was shown that even using quasirandom sampling, it was not always guaranteed that a population could be corrected using the method described above without a negative population in one or more states. The sparser (the ratio of the total population $P$ to the number of possible states $S$) the population, the more often this would occur. Often the solution was simply to discard and resample the population until an exact or correctable population was generated. This raised a concern about the reliability (and efficiency) of the algorithm, and in fact further testing did reveal cases where the algorithm the number of resamples required was unacceptably large, even exhausting the period of the generator.
+
+This flaw drove the authors to come up with an alternative formulation of the algorithm, and it transpired that without-replacement sampling would guarantee that the population matched all marginals by design (as explained in section 2.2) the, eliminating the need for the correction step entirely. In fact, this method is guaranteed to work regardless of the underlying random number generation. 
+
+The next phase of the work was to analyse generated populations statistically, focussing on the degeneracy of the resulting populations. 
+
+## Statistical Properties
+
+To put this into context, consider a "random" number generator that simply always returns zero. If we used this as the basis for without-replacement sampling of a marginal distribution ${10,10,10}$. We would get a sequence consisting of ten ones, ten twos and ten threes as the samples exhausted each bin and moved to the next. In two dimensions, this would result in a population matrix
+
+$$\left( \begin{array}{ccc}
+10 & 0 & 0 \\
+0 & 10 & 0 \\
+0 & 0 & 10 \end{array} \right)$$
+
+suggesting that the marginals are fully correlated. This particular result has a low degeneracy - there are not many different ways at arriving at this result - and p-value of effectively zero implying it is vanishingly unlikely that this population resulted by chance.
+
+
+
+## Application
+
+
+
+
+
+QIWS has some advantages over traditional IPF, primarily the generation of integer populations by default, which may be beneficial for example in agent-based modelling (ABM) applications.
+
+However, QIWS is more limited in it's application, requiring that all marginal data is fully specified, (i.e. matches the entire population) whereas IPF is not so retricted.
+
+In terms of performance, QIWS is significantly faster than the IPF implementation we compared against (`mipfp`). This is likely due to the fact that the algorithm is not iterative in nature, and that the implementation is very efficient, written in a low-level language. The performance of population synthesis is often not the bottleneck in any workflow, so performance may not be considered a major advantage.
+
+Another possible disadvantage is that QIWS generally results in populations with lower p-values than IPF. We would envisage that end-users check the p-value against a suitable threshhold, and reject and resample if necessary.
 
 # Conclusion
 
 Advantages of IPF: established, works with incomplete marginals.
 
-Advantages of IQWS: fast(er), integer populations 
+Advantages of QIWS: fast(er), integer populations 
 
 
 
-Although IQRS may be of limited use due to the fact it cannot always generate a population, we believe IQWS is promising as a technique that could complement existing techniques, especially when integral populations are important. We do recommend that users satisfy themselves that the resulting population is adequately degenerate.
+Although IQRS may be of limited use due to the fact it cannot always generate a population, we believe QIWS is promising as a technique that could complement existing techniques, especially when integral populations are important. We do recommend that users satisfy themselves that the resulting population is adequately degenerate.
 
 <!-- Expand on this - need to be much wordier and eloquent here, and refer back more to literature -->
 

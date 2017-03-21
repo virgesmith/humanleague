@@ -10,8 +10,10 @@ tests=10000
 
 pq = rep(0, tests)
 pw = rep(0, tests)
+pI = rep(0, tests)
 cq = rep(0, tests)
 cw = rep(0, tests)
+ci = rep(0, tests)
 
 for (i in 1:10000) {
 
@@ -26,6 +28,13 @@ for (i in 1:10000) {
   pw[i] = r$pValue
   cw[i] = r$chiSq
 
+  seed = matrix(runif(100,0,2), nrow=10)
+  r = mipfp::Ipfp(seed, list(1,2), list(x,x))
+  if (r$conv) {
+    s=chisq.test(r$x.hat)
+    pI[i] = s$p.value
+    ci[i] = s$statistic
+  }
 }
 # start = proc.time()
 # for (i in 1:tries) {

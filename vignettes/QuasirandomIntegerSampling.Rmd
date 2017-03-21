@@ -1,16 +1,15 @@
 ---
 title: "Quasirandom Sampling Methods for Synthetic Population Generation"
-author: "Andrew P Smith, Robin Lovelace and Mark Birkin"
-date: "`r format(Sys.time(), '%d %B %Y')`"
-output: 
+author: "Andrew P Smith and Robin Lovelace"
+date: '`r format(Sys.time(), "%d %B %Y")`'
+output:
   pdf_document:
-    number_sections: true
-autoNumber: all
+    number_sections: yes
+  html_document: default
 bibliography: ref.bib
-vignette: >
-  %\VignetteIndexEntry{Quasirandom Sampling Methods for Synthetic Population Generation}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+autoNumber: all
+vignette: |
+  %\VignetteIndexEntry{Quasirandom Integer Sampling for Synthetic Population Generation} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
 ---
 
 ***
@@ -32,7 +31,7 @@ In this paper we investigate sampling techniques where a population matrix is bu
 
 # Theory
 
-## Degeneracy and Statistical Likelihood.
+## Degeneracy and Statistical Likelihood
 
 In this work we define degeneracy as the number of possible different ways a given overall population can be sampled. Making the assumption that marginals are uncorrelated, the higher the degeneracy of the population, the more statistically likely the population is. We measure the degeneracy of populations using a $\chi^2$ statistic:
 
@@ -115,18 +114,17 @@ The final version of the algorithm is outlined in this section, a description of
 
 4. Compute a $\chi^2$ statistic and a p-value, which represents the statistical significance of the synthetic population (in this case we prefer higher p-values, i.e. statistically insignificant populations.
 
-
 ## The Implementation
 
-The algorithm is implemented in an `R` package called `humanleague`, written in `C++11` and `C` and exposed to `R` via the `Rcpp`. We used open source implementations of the Sobol sequence generator [@johnson_stevengj/nlopt:_nodate] and the incomplete gamma function [@burkardt_asa032_2008]. 
+The algorithm is implemented in an `R` package called `humanleague`, written in `C++11` and `C` and exposed to `R` via `Rcpp`. We used open source implementations of the Sobol sequence generator [@johnson_stevengj/nlopt:_nodate] and the incomplete gamma function [@burkardt_asa032_2008]. 
 
-One of the many useful features introduced in `C++11` was a random number framework, which splits underlying (uniform) generators and the distributions, and defines APIs that these classes should implement [http://en.cppreference.com/w/cpp/numeric/random] (http://en.cppreference.com/w/cpp/numeric/random). There is no native support for quasirandom generators nor for with-replacement distributions, but by conforming to the APIs they can be implemented to easily interoperate with the native implementations.
+One of the many useful features introduced in `C++11` was a random number framework, which splits underlying (uniform) generators and the distributions, and defines APIs that these classes should implement [http://en.cppreference.com/w/cpp/numeric/random] (http://en.cppreference.com/w/cpp/numeric/random). There is no native support for quasirandom generators nor for without-replacement distributions, but by conforming to the APIs they can be implemented to easily interoperate with the native implementations.
 
 It should be noted that there are two instances where the new types are non-conformant (see below):
 - a quasirandom generator has inherent dimensionality, and thus should return that number of variates per sample. In our implementation we provided both single value and multiple value accessor functions.
-- without-replacement sampling will eventually become exhausted, as a result we provided a function to test if the distribution is empty, and our accessor function will throw an exception if the distribution is fully depleted.
+- without-replacement sampling will eventually become exhausted, as a result we provided a function to test if the distribution is empty, and our accessor function throws an exception if the distribution is fully depleted.
 
-The remainder of the code was developed by the authors. The Sobol sequence generator is implemented in such a way that it is not reset each time a population is requested, allowing different populations to be generated each time. 
+The remainder of the code was developed by the authors. The Sobol sequence generator is implemented in such a way that it is not reset each time a population is requested, allowing different populations to be generated each time, up to the limit of the sequence being exhausted. Our implementation uses 32-bit unsigned integers and allows for $\approx4\times10^9$ samples (in each dimension). 
 
 ```{cpp}
   class Sobol
@@ -152,22 +150,16 @@ The remainder of the code was developed by the authors. The Sobol sequence gener
   {
   public:
     typedef I result_type;
-  
     // enforce integral types only
     static_assert(std::is_integral<I>::value, 
       "discrete_distribution_without_replacement: only integral types supported");
-  
     discrete_distribution_without_replacement(typename std::vector<I>::const_iterator b, 
                                               typename std::vector<I>::const_iterator e);
-  
     // std::distribution compatibility
     template<typename R>
     result_type operator()(R& rng);
-  
     result_type operator()(result_type r);
-  
     bool empty() const;
-  
   private:
     std::vector<I> m_freq;
     I m_sum;
@@ -175,14 +167,14 @@ The remainder of the code was developed by the authors. The Sobol sequence gener
 
 ```
 
-The the package is freely available on github.com [https://github.com/CatchDat/humanleague](https://github.com/CatchDat/humanleague). Plans are in progress to submit it the offical CRAN repository.
+The the package is freely available at [https://github.com/CatchDat/humanleague](https://github.com/CatchDat/humanleague). Plans are in progress to submit it the offical CRAN repository.
 
-The implementation supports dimensionalities up to the 12, although this limit is arbitrary and could be increased if necessary. Input is simply a list of marginal vectors
+The implementation supports dimensionalities up to 12, although this limit is arbitrary and could be increased if necessary. Input is simply a list of integer vectors representing the marginals. Marginal vector must all sum to the population $P$.
 
 The output is broadly compatible with the established `mipfp` (Barthelemy & Suesse 2016) `R` package: 
 
-- $D$-dimensional population array
-- $D$-dimensional probability array
+- $D$-dimensional population table $\mathbf{T_\mathbf{k}}$
+- $D$-dimensional occupancy probability array $\mathbf{p_\mathbf{k}}$
 - boolean value indicating convergence
 - maximum value of each residual vector
 - $\chi^2$ statistic
@@ -195,7 +187,7 @@ as can be seen by the example output below:
   > p=humanleague::synthPop(list(x,x))
   > p
   $method
-  [1] "iwrs"
+  [1] "qiws"
   
   $conv
   [1] TRUE
@@ -220,22 +212,19 @@ as can be seen by the example output below:
   [1,]    4    3    3
   [2,]    4    3    3
   [3,]    2    4    4
-  
-  > 
 ```
 
 # Comparison to Existing Methods
 
 ## Statistical Properties
 
-We compare the two algorithms to IPF using a number of two-dimensional test cases.
+For this we comparsed the QIWS algorithm to IPF using a number of two-dimensional test cases.
 
-No integerisation was done to the IPF data (using e.g. the `R` package `rakeR`) due to that fact that integerisation only guarantees constraints (1) and (3) are met, and can in fact break constraint (2) on a non-integer input that meets it. The $\chi^2$ value resulting from IPF is thus likely to be slightly lower due to the fact the numbers need not be integral.
+No integerisation was done to the IPF data (using e.g. the `R` package `rakeR`) due to that fact that integerisation can cause a mismatch in one or more margials.
 
 IPF was initialised with a random seed array, each element uniformly distributed in $[0,2)$
 
 The first three tests are made-up examples. The remainder are marginal figures derived from 2011 UK census data at the MSOA level (mid-layer super output area), with one dimension representing person status in terms of age, sex, and economic activity, the other their workplace location.
-Interestingly, IPF performed least well on the simple tests, generating the lowest mean p-values (Table 1).
 
 Table 1: Convergence behaviour of population synthesis algorithms. $N$ is the number of times the algorithm was run, $\bar{c}$ refers to the convergence success rate, and $\bar{p}$ refers to the mean p-value.
 
@@ -252,31 +241,20 @@ Table 1: Convergence behaviour of population synthesis algorithms. $N$ is the nu
 
 A more detailed analysis was performed on two evenly distributed marginal vectors of length 10 and a population $P$ = 100 and number of states $S$ = 100, sampling 10000 populations.
 
-Firstly we used the IQRS algorithm with a PRNG, and found only one attempt reached a valid population, i.e. a success rate of 0.01%. This confirms our earlier reasoning that quasirandom numbers are essential for the algorithm.
+For reference, the histogram of p-values using IPF (with random seed values) yields the following rather unsurprising result:
 
-```{r, echo=FALSE, out.width="75%", fig.align='center', fig.cap="Distribution of p-values of IQRS."}
-knitr::include_graphics("figures/iqrs_pvalue_dist.png")
-```
-
-Secondly, reverting back to a QRNG, we examined the distribution of p-values for IQRS, which can be seen in figure 1. In the analysis we assigned a p-value of zero to any case where the population did not match the marginals, which happened about 15% of the time.
-
-Next we compared the performance of QIWS using a PRNG and a QRNG. Since we knew the algorithm is guaranteed to work regardless of the RNG used, we again looked at the distribution of p-values, which can be seen in figures 2 and 3. There is a marked difference between the two, with the PRNG implementation being broadly symmetric with a bias toward mid-range values, whereas the QRNG implementation is very strongly biased toward high p-values. 
+```{r, echo=FALSE, fig.show="asis", fig.align='center', fig.cap="Distribution of p-values of IPF.", out.width="50%"}
+knitr::include_graphics("figures/ipf_pvalue_dist.png") 
+``` 
+We compared the statistical performance of QIWS using a pseudorandom generator and a quasirandom generator. The algorithm is guaranteed to work in both cases so we looked at the distribution of p-values, which can be seen in figure 2.
 
 ```{r, echo=FALSE, out.width="50%", fig.show="hold", fig.cap="Distribution of p-values of QIWS using PRNG (left) and QRNG (right)."}
-knitr::include_graphics(c("figures/iqws_prng_pvalue_dist.png","figures/iqws_pvalue_dist.png"))
+knitr::include_graphics(c("figures/iqws_prng_pvalue_dist.png","figures/iqws_pvalue_dist.png")) 
 ```
-
-If the result of the QIWS algorithm is used as the seed for the IPF algorithm, the latter simply returns the seed matrix. This happens even when we deliberately pick a result with a low (>0.005) p-value.
-
-## Range of Use
-
-IPF can be used for microsimulation in cases where some marginal data is not fully specified. For example, some categorical constraint data may only be available for a subset of the whole population. By using this data in the initial guess for the iteration, rather than as a marginal constraint, the incomplete data is scaled up to, and smoothed over, the overall population. An example of this type of microsimulation "CakeMap" is given in @lovelace_spatial_2016.
-
-The methods described in this paper are not able to generate populations in this case.
 
 ## Performance
 
-The performance of the algorithms of the tests described above is illustrated in Table 2. Since computers vary widely in performance for numerous reasons, the numbers should be interpreted as relative performance indicators, not absolute values.
+Since computers vary widely in performance for many reasons, we present normalised performance values.
 
 Table 2: Relative computation time of the algorithms, using the first case as a baseline. 
 
@@ -290,8 +268,6 @@ Pop | States |  N | QIWS | IPF
 4029|   11904|1000|  22.7|1027.3
 4989|   14640|1000|  28.3|1457.0
 5219|   15168|1000|  28.7|1557.7
-
-<!-- ref Mark/Robin paper(s) -->
 
 # Discussion
 
@@ -315,42 +291,50 @@ Furthermore, it was shown that even using quasirandom sampling, it was not alway
 
 This flaw drove the authors to come up with an alternative formulation of the algorithm, and it transpired that without-replacement sampling would guarantee that the population matched all marginals by design (as explained in section 2.2) the, eliminating the need for the correction step entirely. In fact, this method is guaranteed to work regardless of the underlying random number generation. 
 
-The next phase of the work was to analyse generated populations statistically, focussing on the degeneracy of the resulting populations. 
+The next phase of the work was to analyse generated populations statistically, focussing on the degeneracy of the resulting populations. The results from this work, presented in the previous section, are discussed below.
 
 ## Statistical Properties
 
-To put this into context, consider a "random" number generator that simply always returns zero. If we used this as the basis for without-replacement sampling of a marginal distribution ${10,10,10}$. We would get a sequence consisting of ten ones, ten twos and ten threes as the samples exhausted each bin and moved to the next. In two dimensions, this would result in a population matrix
+Neither IPF nor QIWS failed to converge on any of the test cases in Table 1.
+
+One unexpected observation was that IPF performed least well on the simple tests, generating the lowest mean p-values.
+
+To put pseudorandom versus quasirandom sampling into context, consider a "random" number generator that simply always returns zero. If we used this as the basis for without-replacement sampling of a marginal distribution $\lbrace10,10,10\rbrace$. We would get a sequence consisting of ten ones, ten twos and ten threes as the samples exhausted each bin and moved to the next. In two dimensions, this would result in a population matrix
 
 $$\left( \begin{array}{ccc}
 10 & 0 & 0 \\
 0 & 10 & 0 \\
 0 & 0 & 10 \end{array} \right)$$
 
-suggesting that the marginals are fully correlated. This particular result has a low degeneracy - there are not many different ways at arriving at this result - and p-value of effectively zero implying it is vanishingly unlikely that this population resulted by chance.
+suggesting that the marginals are strongly correlated. This particular result has a low degeneracy - there are relatively few different ways at arriving at this result - and a p-value of effectively zero implying that it is vanishingly unlikely that this population resulted by chance.
 
+The $\chi^2$ value resulting from IPF is likely to be slightly lower than QIWS due to the fact the former numbers are not generally integral. Figure 2 demonstrates that IPF almost always results in a p-value of 1. This is expected due to the way that the IPF algorithm works. 
 
+QIWS does not achieve such high p-values in general, as seen in figure 3, and there is a marked difference in the distribution of p-values depending on the type of underlying random generator used. It can be seen clearly that quasirandom sampling generally yields more degenerate populations, and is much closer to IPF in this respect. 
 
-## Application
+It should be borne in mind that QIPF cannot achieve the same p-value levels as IPF due to the simple fact that the population is integral, as this will generally result in a higher $\chi^2$ statistic. We would caution users, however, to check the resulting p-value against some suitable threshhold and resample if necessary.
 
+## Performance
 
+QIWS performance is far superior to IPF. One reason for this is that QIPF is not iterative, but the following points should be noted:
+- the comparison is somewhat unfair since our implementation is compiled `C++` code and Ipfp's implementation is interpreted `R` code. 
+- performance of population synthesis is probably not a significant factor in most workflows, and thus speed may be of marginal advantage.
 
+## Application / Range of Use
 
+IPF can be used for microsimulation in cases where some marginal data is not fully specified. For example, some categorical constraint data may only be available for a subset of the whole population. By using this data in the initial guess for the iteration, rather than as a marginal constraint, the incomplete data is scaled to, and smoothed over, the overall population. An example of this type of microsimulation "CakeMap" is given in @lovelace_spatial_2016.
 
-QIWS has some advantages over traditional IPF, primarily the generation of integer populations by default, which may be beneficial for example in agent-based modelling (ABM) applications.
+QIWS requires that all marginals are fully-specified. It needs this data to construct a multivariate discrete distribution to sample from. It is thus not applicable to problems such as "CakeMap".
 
-However, QIWS is more limited in it's application, requiring that all marginal data is fully specified, (i.e. matches the entire population) whereas IPF is not so retricted.
+For agent-based modelling (ABM) applications, QIWS has the advantage that it always generates integer populations. 
 
-In terms of performance, QIWS is significantly faster than the IPF implementation we compared against (`mipfp`). This is likely due to the fact that the algorithm is not iterative in nature, and that the implementation is very efficient, written in a low-level language. The performance of population synthesis is often not the bottleneck in any workflow, so performance may not be considered a major advantage.
-
-Another possible disadvantage is that QIWS generally results in populations with lower p-values than IPF. We would envisage that end-users check the p-value against a suitable threshhold, and reject and resample if necessary.
+QIPF may potentially be of use in the process of anonymising populations. It is outside the scope of this work, but since full marginal data will likely be available, this may be worth investigating.
 
 # Conclusion
 
 Advantages of IPF: established, works with incomplete marginals.
 
 Advantages of QIWS: fast(er), integer populations 
-
-
 
 Although IQRS may be of limited use due to the fact it cannot always generate a population, we believe QIWS is promising as a technique that could complement existing techniques, especially when integral populations are important. We do recommend that users satisfy themselves that the resulting population is adequately degenerate.
 
@@ -360,11 +344,11 @@ We anticipate further investigation of the algorithms for deliberately generatin
 
 # Acknowledgements
 
-The authors would like to acknowledge Catch! project funding
+The authors would like to thank Professor Mark Birkin for invaluable feedback, and acknowledge Innovate UK's Catch! project for providing funding for this work.
 
 # References
 
-```{r}
+```{r, echo=FALSE}
 # Get bibliography (run once from project root)
 u = "https://www.zotero.org/api/groups/418217/collections/MP7NS3SC/items/top?limit=100&format=bibtex&v=1"
 b = httr::GET(url = u, httr::write_disk("ref.bib", overwrite = T))

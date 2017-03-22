@@ -1,6 +1,6 @@
 ---
 title: "Population Synthesis with Quasirandom Integer Sampling"
-author: "Andrew P Smith and Robin Lovelace"
+author: "Andrew P Smith, Robin Lovelace and Mark Birkin"
 date: '`r format(Sys.time(), "%d %B %Y")`'
 output:
   pdf_document:
@@ -13,17 +13,15 @@ vignette: |
 ---
 
 ***
-Established methods for synthesising a population from geographically aggregated data are robust and well understood. However, most rely on the potentially detrimental process of "integerisation" if a whole-individual population is required, e.g. be used for Agent-Based Modelling. This paper investigates a sampling method of synthesis that is computationally efficient and results directly in integer populations. We showcase the concept of quasirandom sequences and demonstrate that they perform far better than pseudorandom numbers in this context. We demonstrate that sampling the marginal distributions ^without replacement^ is crucial. We perform some comparative statistical analyses of example populations, and highlight the advantages and disadvantages of our method over the established ones. Our implementation is available in an open-source R package `humanleague`.
+Established methods for synthesising a population from geographically aggregated data are robust and well understood. However, most rely on the potentially detrimental process of "integerisation" if a whole-individual population is required, e.g. be used for Agent-Based Modelling. This paper investigates a sampling method of synthesis that is computationally efficient and results directly in integer populations. We showcase the concept of quasirandom sequences and demonstrate that they perform far better than pseudorandom numbers in this context. We demonstrate that sampling the marginal distributions _without replacement_ is crucial. We perform some comparative statistical analyses of example populations, and highlight the advantages and disadvantages of our method over the established ones. Our implementation is available in an open-source R package `humanleague`.
 
 ***
 
 # Introduction
 
-Iterative Proportional Fitting (IPF) is a popular and well-established technique for generating synthetic populations from marginal data. Compared with other methods of 'population synthesis' IPF is relatively fast, simple and easy to implement, as showcased in a practical introduction to the subject by @lovelace_spatial_2016.
-Furthermore, a number of software packages aimed at facilitating IPF for spatial microsimulation and other applications have been published [e.g. @barthelemy_cran_2016; @jones_raker:_2016].
+Iterative Proportional Fitting (IPF) is a popular and well-established technique for generating synthetic populations from marginal data. Compared with other methods of 'population synthesis' IPF is relatively fast, simple and easy to implement, as showcased in a practical introduction to the subject by @lovelace_spatial_2016. Furthermore, a number of software packages aimed at facilitating IPF for spatial microsimulation and other applications have been published [e.g. @barthelemy_cran_2016; @jones_raker:_2016].
 
-However, the method has various limitations from the perspective of spatial microsimulation for social simulation. For example,
-IPF generates fractional weights instead of integer populations, an issue tackled by 'integerisation' techniques [@lovelace_truncate_2013]; handles 'empty cells' poorly [@lovelace_evaluating_2015]; and requires a representative individual-level 'seed' population. The most in-depth exploration of such limitations and the mathematical behaviour of IPF to date is an outstanding PhD thesis on the subject [@zaloznik_iterative_2011].
+However, the method has various limitations from the perspective of spatial microsimulation for social simulation. For example, IPF generates fractional weights instead of integer populations, an issue tackled by 'integerisation' techniques [@lovelace_truncate_2013]; handles 'empty cells' poorly [@lovelace_evaluating_2015]; and requires a representative individual-level 'seed' population. The most in-depth exploration of such limitations and the mathematical behaviour of IPF to date is an outstanding PhD thesis on the subject [@zaloznik_iterative_2011].
 
 In this paper we investigate sampling techniques where a population matrix is built exclusively in the integer domain. We show that this technique can only work effectively if a quasirandom (as opposed to a pseudorandom) number generator is used, and this in itself is not sufficient to work in all cases. We also show that this problem can be overcome by combining the quasirandom generator with a sampling-without-replacement algorithm. We then look at the statistical properties of the resulting populations, comparing them to populations generated with the IPF algorithm.
 
@@ -31,7 +29,9 @@ In this paper we investigate sampling techniques where a population matrix is bu
 
 ## Degeneracy and Statistical Likelihood
 
-In this work we define degeneracy as the number of possible different ways a given overall population can be sampled. Making the assumption that marginals are uncorrelated, the higher the degeneracy of the population, the more statistically likely the population is. We measure the degeneracy of populations using a $\chi^2$ statistic:
+In this work we define degeneracy as the number of possible different ways a given overall population $P$ can be sampled into a table $\mathbf{T}$ containing $S$ possible states $\mathbf{k}$, with probability $p_\mathbf{k}$, the system having $d$ degrees of freedom. ^[These terms are defined more precisely in section 2.4.] Making the assumption that marginals are uncorrelated, then the higher the degeneracy of the population, the more statistically likely the population is.
+
+We measure the degeneracy of populations using a $\chi^2$ statistic:
 
 $$\chi^2 = \frac{\sum\limits_{\mathbf{k}}(\mathbf{T}_\mathbf{k}-p_\mathbf{k}S)^2}{p_\mathbf{k}S}$$
 
@@ -39,7 +39,6 @@ from which we can estimate a p-value, which represents the statistical significa
 
 $$p=1-\mathbb{P}[d/2,\chi^2]$$
 where $\mathbb{P}$ is the cumulative $\chi^2$ density function and $d$ the degrees of freedom of the system. 
-
 The aim in this context is to generate populations with a high p-value, i.e. a low statistical significance and a high-degeneracy. 
 
 ## Quasirandom Numbers
@@ -67,7 +66,7 @@ $$p(i) = \frac{f_i}{\sum\limits_{j=0}^{n}f_j}$$
 
 Once a sample $i$ is taken the distribution is adjusted to $\{f_0,f_1,...f_i-1,....f_n\}$. Once $f_i$ has reached zero no further samples can take the value $i$ since $p(i) = 0$. 
 
-Since $f_i$ cannot be oversampled, this implies that all the other states $f_{j\neq{i}}$ cannot be undersampled. By extension, if all but one states $f_{i\neq{j}}$ cannot be oversampled, then $f_j$ cannot be undersampled. Thus each state can neither be under- nor oversampled: the distibution must be matched exactly.
+Since $f_i$ cannot be oversampled, this implies that all the other states $f_{j\neq{i}}$ cannot be undersampled. By extension, if all but one states $f_{i\neq{j}}$ cannot be oversampled, then $f_j$ cannot be undersampled. Thus each state can neither be under- nor oversampled: the distribution must be matched exactly.
 
 ## Problem Statement
 
@@ -214,6 +213,8 @@ as can be seen by the example output below:
 
 # Comparison to Existing Methods
 
+In this section we present the results of the final version of the sampling algorithm. The process by which we arrived at this version is given in section 5.1.
+
 ## Statistical Properties
 
 For this we compared the QIWS algorithm to IPF using a number of two-dimensional test cases.
@@ -283,19 +284,23 @@ The initial algorithm simply sampled the marginal distributions (with replacemen
 
 In general, the resulting population mismatched the marginals only slightly. A correction algorithm was implemented which, applied at most once for each dimension of the population, adjusted the states by the error in the marginal for that dimension. This corrected the overall population, and is reminiscent of an iteration in IPF.
 
-It was also demonstrated that a correction step as described above could not be applied to a pseudorandomly generated population because the marginal errors were generally to large to be able to apply a correction: such corrections would typically result in a negative population in one or more states.
+It was also demonstrated that a correction step as described above could not be applied to a pseudorandomly generated population because the marginal errors were almost always too large to be able to apply a correction: such corrections would typically result in a negative population in one or more states.
 
 Furthermore, it was shown that even using quasirandom sampling, it was not always guaranteed that a population could be corrected using the method described above without a negative population in one or more states. The sparser (the ratio of the total population $P$ to the number of possible states $S$) the population, the more often this would occur. Often the solution was simply to discard and resample the population until an exact or correctable population was generated. This raised a concern about the reliability (and efficiency) of the algorithm, and in fact further testing did reveal cases where the algorithm the number of resamples required was unacceptably large, even exhausting the period of the generator.
 
-This flaw drove the authors to come up with an alternative formulation of the algorithm, and it transpired that without-replacement sampling would guarantee that the population matched all marginals by design (as explained in section 2.2) the, eliminating the need for the correction step entirely. In fact, this method is guaranteed to work regardless of the underlying random number generation. 
+This flaw drove the authors to come up with an alternative formulation of the algorithm, and it transpired that without-replacement sampling would guarantee that the population matched all marginals by design (as explained in section 2.2), eliminating the need for the correction step entirely. In fact, this method is guaranteed to work regardless of the choice of underlying random number generation. 
 
 The next phase of the work was to analyse generated populations statistically, focussing on the degeneracy of the resulting populations. The results from this work, presented in the previous section, are discussed below.
 
 ## Statistical Properties
 
+### General Remarks
+
 Neither IPF nor QIWS failed to converge on any of the test cases in Table 1.
 
-One unexpected observation was that IPF performed least well on the simple tests, generating the lowest mean p-values.
+One unexpected observation was that IPF performed least well on the simple tests, generating the lowest mean p-values. TODO suggest explanation?
+
+### Randomness in Context
 
 To put pseudorandom versus quasirandom sampling into context, consider a "random" number generator that simply always returns zero. If we used this as the basis for without-replacement sampling of a marginal distribution $\lbrace10,10,10\rbrace$. We would get a sequence consisting of ten ones, ten twos and ten threes as the samples exhausted each bin and moved to the next. In two dimensions, this would result in a population matrix
 
@@ -306,17 +311,21 @@ $$\left( \begin{array}{ccc}
 
 suggesting that the marginals are strongly correlated. This particular result has a low degeneracy - there are relatively few different ways at arriving at this result - and a p-value of effectively zero implying that it is vanishingly unlikely that this population resulted by chance.
 
-The $\chi^2$ value resulting from IPF is likely to be slightly lower than QIWS due to the fact the former numbers are not generally integral. Figure 2 demonstrates that IPF almost always results in a p-value of 1. This is expected due to the way that the IPF algorithm works. 
+### Degeneracy
+
+The $\chi^2$ value resulting from IPF is likely to be slightly lower than QIWS due to the fact the former numbers are not generally integral. Figure 2 demonstrates that IPF almost always results in a p-value of 1. This is expected due to the manner by which that the IPF algorithm works. 
 
 QIWS does not achieve such high p-values in general, as seen in figure 3, and there is a marked difference in the distribution of p-values depending on the type of underlying random generator used. It can be seen clearly that quasirandom sampling generally yields more degenerate populations, and is much closer to IPF in this respect. 
 
-It should be borne in mind that QIPF cannot achieve the same p-value levels as IPF due to the simple fact that the population is integral, as this will generally result in a higher $\chi^2$ statistic. We would caution users, however, to check the resulting p-value against some suitable threshhold and resample if necessary.
+It should be borne in mind that one of the reasons that QIWS cannot achieve the high p-value levels as consistently as IPF is due to the simple fact that the population is integral, and this will generally result in a higher $\chi^2$ statistic. We would caution users, however, to check the resulting p-value against some suitable threshhold and resample if necessary.
 
 ## Performance
 
-QIWS performance is far superior to IPF. One reason for this is that QIPF is not iterative, but the following points should be noted:
-- the comparison is somewhat unfair since our implementation is compiled `C++` code and Ipfp's implementation is interpreted `R` code. 
-- performance of population synthesis is probably not a significant factor in most workflows, and thus speed may be of marginal advantage.
+QIWS performance is far superior to IPF. One reason for this is that QIWS is not iterative, but the following points should be noted:
+
+* the comparison is somewhat unfair since our implementation is compiled `C++` code and Ipfp's implementation is interpreted `R` code. 
+
+* performance of population synthesis is probably not a significant factor in most workflows, and thus speed may be of marginal advantage.
 
 ## Application / Range of Use
 
@@ -324,25 +333,31 @@ IPF can be used for microsimulation in cases where some marginal data is not ful
 
 QIWS requires that all marginals are fully-specified. It needs this data to construct a multivariate discrete distribution to sample from. It is thus not applicable to problems such as "CakeMap".
 
-For agent-based modelling (ABM) applications, QIWS has the advantage that it always generates integer populations. 
+For agent-based modelling (ABM) applications, QIWS has the advantage that it always generates integer populations. Thus integerisation, which may alter the population in such a way that the marginals are no longer met, is not required.
 
-QIPF may potentially be of use in the process of anonymising populations. It is outside the scope of this work, but since full marginal data will likely be available, this may be worth investigating.
+QIWS may potentially be of use in the process of anonymising populations. It is outside the scope of this work, but since full marginal data will likely be available, its use in this context may be worth investigating.
 
 # Conclusion
 
-Advantages of IPF: established, works with incomplete marginals.
+This work forms part of a larger project in which a city-scale population microsynthesis is used as the basis for an Agent-Based Model of commute patterns, using census data combined with a crowdsourced dataset. The QIWS algorithm and the software implementation in an `R` package was developed for this purpose, eliminating the need for integerising the sythesised population. This microsimulation involved categorical variables (i.e. marginals) representing home and work locations (at MSOA resolution), mode of transport, gender, age group, and economic activity type, with the crowdsourced data overlaid on the larger census population. 
 
-Advantages of QIWS: fast(er), integer populations 
+The QIWS algorithm was thus designed with this type of synthesis in mind, where all marginal data is fully specified, and in this context it fulfils the requirements.
 
-Although IQRS may be of limited use due to the fact it cannot always generate a population, we believe QIWS is promising as a technique that could complement existing techniques, especially when integral populations are important. We do recommend that users satisfy themselves that the resulting population is adequately degenerate.
+If there are specfic requirements for a degenerate population, statistical data is provided about the generated population that will guide the user in determining the suitablity of the generated population.
 
-<!-- Expand on this - need to be much wordier and eloquent here, and refer back more to literature -->
+In situations where integral populations are desirable QIWS presents an advantage over established techniques by eliminating the need for postprocessing the population - for instance by integerisation.
 
-We anticipate further investigation of the algorithms for deliberately generating populations with low p-values, in cases where the marginals are known to be strongly correlated. We have not studied the application of these algorithms for anonymisation of populations [@nowok_synthpop:_2016]
+In applications where performance is a key factor, we have shown that our implementation of QIWS comfortably outperforms a popular `R` implementation of IPF [@barthelemy_cran_2016].
+
+We have established that QIWS can be used for microsynthesis given aggregate data. Although outside the scope of this work, we believe that the algorithm could equally be applied to an anonymisation process whereby individual-level data is first aggregated and then synthesised, for example [@nowok_synthpop:_2016].
+
+We are aware that QIWS is more limited in scope than IPF in that it is unable to deal with cases where some marginal data is not explicitly specified, instead being expressed in the seed population used to initialise the IPF iteration. It may be that with further development of the algorithm some of these limitations could be overcome.
+
+As such we enviage QIWS as a technique that complements rather than supplants established methods, and publicise the technique as such.
 
 # Acknowledgements
 
-The authors would like to thank Professor Mark Birkin for invaluable feedback, and acknowledge Innovate UK's Catch! project for providing funding for this work.
+The authors would like to thank Professor Mark Birkin for his invaluable feedback, and acknowledge Innovate UK's Catch! project for providing the funding for this work.
 
 # References
 
@@ -352,6 +367,3 @@ u = "https://www.zotero.org/api/groups/418217/collections/MP7NS3SC/items/top?lim
 b = httr::GET(url = u, httr::write_disk("ref.bib", overwrite = T))
 ```
 
-
-
-@kavroudakis_sms:_2015 focus on the spatial variability of individual-level dat.

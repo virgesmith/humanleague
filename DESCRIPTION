@@ -15,5 +15,6 @@ RoxygenNote: 5.0.1
 Suggests: knitr,
     rmarkdown,
     testthat,
-    curl
+    curl,
+    rcurl
 VignetteBuilder: knitr

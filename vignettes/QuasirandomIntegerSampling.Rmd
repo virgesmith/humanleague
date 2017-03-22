@@ -1,5 +1,5 @@
 ---
-title: "Quasirandom Sampling Methods for Synthetic Population Generation"
+title: "Population Synthesis with Quasirandom Integer Sampling"
 author: "Andrew P Smith and Robin Lovelace"
 date: '`r format(Sys.time(), "%d %B %Y")`'
 output:
@@ -9,25 +9,23 @@ output:
 bibliography: ref.bib
 autoNumber: all
 vignette: |
-  %\VignetteIndexEntry{Quasirandom Integer Sampling for Synthetic Population Generation} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{Population Synthesis with Quasirandom Integer Sampling} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
 ---
 
 ***
-Established methods for synthesising a population from geographically aggregated data are robust and well understood. However, most rely on the potentially detrimental process of "integerisation" to generate whole individuals, if the population is to be used for e.g. Agent-Based Modelling. This paper investigates alternative methods of synthesis that are computationally efficient and result in integer populations directly. We showcase the method of 'quasirandom sampling' for population synthesis and demonstrate its ability to generate populations that match geographically aggregated data, as long as fully-specified marginal data is available. The results show that sampling the without replacement is required to guarantee a population matching the marginals, and that quasirandom sampling performs better than pseudorandom (or 'simple random') sampling at generating degenerate populations (i.e with higher p-values). The algorithms are available in an open-source R package `humanleague`.
+Established methods for synthesising a population from geographically aggregated data are robust and well understood. However, most rely on the potentially detrimental process of "integerisation" if a whole-individual population is required, e.g. be used for Agent-Based Modelling. This paper investigates a sampling method of synthesis that is computationally efficient and results directly in integer populations. We showcase the concept of quasirandom sequences and demonstrate that they perform far better than pseudorandom numbers in this context. We demonstrate that sampling the marginal distributions ^without replacement^ is crucial. We perform some comparative statistical analyses of example populations, and highlight the advantages and disadvantages of our method over the established ones. Our implementation is available in an open-source R package `humanleague`.
 
 ***
 
 # Introduction
 
-Iterative Proportional Fitting (IPF) is a popular and well-established technique for generating synthetic populations from marginal data.
-Compared with other methods of 'population synthesis' IPF is relatively fast, simple and easy to implemente, as showcased in a practical introduction to the subject by @lovelace_spatial_2016.
+Iterative Proportional Fitting (IPF) is a popular and well-established technique for generating synthetic populations from marginal data. Compared with other methods of 'population synthesis' IPF is relatively fast, simple and easy to implement, as showcased in a practical introduction to the subject by @lovelace_spatial_2016.
 Furthermore, a number of software packages aimed at facilitating IPF for spatial microsimulation and other applications have been published [e.g. @barthelemy_cran_2016; @jones_raker:_2016].
 
 However, the method has various limitations from the perspective of spatial microsimulation for social simulation. For example,
-IPF generates fractional weights instead of integer populations, an issue tackled by 'integerisation' techniques [@lovelace_truncate_2013]; handles 'empty cells' poorly [@lovelace_evaluating_2015]; and requires a representative individual-level 'seed' population.
-The most in-depth exploration of such limitations and the mathematical behaviour of IPF to date is an outstanding PhD thesis on the subject [@zaloznik_iterative_2011].
+IPF generates fractional weights instead of integer populations, an issue tackled by 'integerisation' techniques [@lovelace_truncate_2013]; handles 'empty cells' poorly [@lovelace_evaluating_2015]; and requires a representative individual-level 'seed' population. The most in-depth exploration of such limitations and the mathematical behaviour of IPF to date is an outstanding PhD thesis on the subject [@zaloznik_iterative_2011].
 
-In this paper we investigate sampling techniques where a population matrix is built exclusively in the integer domain We show that this technique can only work effectively if a quasirandom (as opposed to a pseudorandom) number generator is used, and this in itself is not sufficient to work in all cases. We also show that this problem can be overcome by combining the quasirandom generator with a sampling-without-replacement algorithm. We then look at the statistical properties of the resulting populations, comparing them to populations generated with the IPF algorithm.
+In this paper we investigate sampling techniques where a population matrix is built exclusively in the integer domain. We show that this technique can only work effectively if a quasirandom (as opposed to a pseudorandom) number generator is used, and this in itself is not sufficient to work in all cases. We also show that this problem can be overcome by combining the quasirandom generator with a sampling-without-replacement algorithm. We then look at the statistical properties of the resulting populations, comparing them to populations generated with the IPF algorithm.
 
 # Theory
 
@@ -218,7 +216,7 @@ as can be seen by the example output below:
 
 ## Statistical Properties
 
-For this we comparsed the QIWS algorithm to IPF using a number of two-dimensional test cases.
+For this we compared the QIWS algorithm to IPF using a number of two-dimensional test cases.
 
 No integerisation was done to the IPF data (using e.g. the `R` package `rakeR`) due to that fact that integerisation can cause a mismatch in one or more margials.
 
@@ -277,11 +275,11 @@ The motivation behind the development of this method came from the fact that IPF
 
 Although integerisation may not introduce significant errors, the authors considered whether there was an alternative method of synthesis that would directly result in an integral population that exactly matched the marginal distributions.
 
-The authors could not find any references in the literature on the use of quasirandom sequences for the purpose of population synthesis, and so decided to investigate the suitability of algorithms using such sequences.
+We could not find any references in the literature on the use of quasirandom sequences for the purpose of population synthesis, and so decided to investigate the suitability of sampling algorithms using such sequences.
 
-Firstly, it was demonstrated that naive pseudorandom sampling could not reliably generate populations matching the marginals. Since successive samples as ostensibly independent, there is no mechanism to reduce under- or oversampling of any particular state. 
+Firstly, it was demonstrated that naive pseudorandom sampling could not reliably generate populations matching the marginals. Since successive samples are ostensibly independent, there is no mechanism to reduce under- or oversampling of any particular state. 
 
-The initial analysis was very simple, using quasirandom sampling of static marginal distributions (i.e. with-replacement) to build a population. For "toy" problems this method often worked, but for more complex problems the algorithm often failed to exactly match all the marginals.
+The initial algorithm simply sampled the marginal distributions (with replacement), using quasirandom numbers, to build a population. For "toy" problems this method often worked, but for more complex problems the algorithm often failed to exactly match all the marginals.
 
 In general, the resulting population mismatched the marginals only slightly. A correction algorithm was implemented which, applied at most once for each dimension of the population, adjusted the states by the error in the marginal for that dimension. This corrected the overall population, and is reminiscent of an iteration in IPF.
 

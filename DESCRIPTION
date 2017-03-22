@@ -14,5 +14,6 @@ LinkingTo: Rcpp
 RoxygenNote: 5.0.1
 Suggests: knitr,
     rmarkdown,
-    testthat
+    testthat,
+    curl
 VignetteBuilder: knitr

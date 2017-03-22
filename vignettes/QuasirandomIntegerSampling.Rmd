@@ -55,7 +55,7 @@ Quasirandom sequences are not seeded like pseudorandom generators. To avoid repe
 
 In the later analysis of our algorithm, for comparison, we use the MT19937 variant of the Mersenne Twister as our pseudorandom generator [@matsumoto_mersenne_1998].
 
-```{r, echo=FALSE, out.width="50%", fig.show='hold', fig.cap="2000 uniform 2d samples -  pseudorandom and quasirandom."}
+```{r, echo=FALSE, out.width="50%", fig.show='hold', fig.cap="Bivariate uniform samples -  pseudorandom (left) and quasirandom (right)."}
 knitr::include_graphics(c("figures/pseudo2d.png","figures/quasi2d.png"))
 ```
 
@@ -70,6 +70,8 @@ Once a sample $i$ is taken the distribution is adjusted to $\{f_1,f_2,...f_i-1,.
 Since $f_i$ cannot be oversampled, this implies that all the other states $f_{j\neq{i}}$ cannot be undersampled. By extension, if all but one states $f_{i\neq{j}}$ cannot be oversampled, then $f_j$ cannot be undersampled. Thus each state can neither be under- nor oversampled: the distribution must be matched exactly.
 
 ## Problem Statement
+
+Population synthesis (Orcutt 1957) refers to the (re)generation of individual-level data from aggregate (marginal) data. For example, UK census data provides aggregate data across numerous socio-economic categories at various geographical resolutions - but it expressly does not provide data at an individual-level, for privacy reasons among others. 
 
 A mathematical statement of population synthesis is as follows:^[In the notation below, the index $i$ is scalar and refers to a particular dimension. The index $\mathbf{k}$ is a vector index $\{k_1, k_2,...k_D\}$ of length $D$, the dimensionality of the problem.]
 
@@ -225,7 +227,7 @@ No integerisation was done to the IPF data (using e.g. the `R` package `rakeR`) 
 
 IPF was initialised with a random seed array, each element uniformly distributed in $[0,2)$
 
-The first three tests are made-up examples. The remainder are marginal figures derived from 2011 UK census data at the MSOA level (mid-layer super output area), with one dimension representing person status in terms of age, sex, and economic activity, the other their workplace location.
+The first three tests are made-up examples. The remainder are marginal figures derived from 2011 UK census data at the MSOA level (mid-layer super output area), with one dimension representing person status in terms of age, sex, and economic activity, the other their workplace location (MSOA). 
 
  Pop | States |  N | QIWS $\bar{c}$ | QIWS $\bar{p}$ | IPF $\bar{c}$ | IPF $\bar{p}$  
 :---:|--------|----|----------------|----------------|---------------|---------------
@@ -327,7 +329,7 @@ QIWS performance is far superior to IPF. One reason for this is that QIWS is not
 
 * the comparison is somewhat unfair since our implementation is compiled `C` and `C++` code and Ipfp's implementation is interpreted `R` code. 
 
-* performance of population synthesis is probably not a significant factor in most workflows, and thus speed may be of marginal advantage.
+* performance of population synthesis may not be a significant factor in most workflows, and thus speed may be of marginal advantage. However in large-scale ensemble simulation applications, the performance of QIWS may be an advantage.  
 
 ## Application / Range of Use
 
@@ -349,7 +351,7 @@ If there are specific requirements for a degenerate population, statistical data
 
 In situations where integral populations are desirable QIWS presents an advantage over established techniques by eliminating the need for postprocessing the population - for instance by integerisation.
 
-In applications where performance is a key factor, we have shown that our implementation of QIWS comfortably outperforms a popular `R` implementation of IPF [@barthelemy_cran_2016].
+In applications where performance is a key factor, we have shown that our implementation of QIWS comfortably outperforms a popular `R` implementation of IPF [@barthelemy_cran_2016]. For large-scale ensemble modelling, this could be advantageous.
 
 We have established that QIWS can be used for microsynthesis given aggregate data. Although outside the scope of this work, we believe that the algorithm could equally be applied to an anonymisation process whereby individual-level data is first aggregated and then synthesised, for example [@nowok_synthpop:_2016].
 

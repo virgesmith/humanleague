@@ -13,7 +13,7 @@ vignette: |
 ---
 
 ***
-Established methods for synthesising a population from geographically aggregated data are robust and well understood. However, most rely on the potentially detrimental process of "integerisation" if a whole-individual population is required, e.g. be used for Agent-Based Modelling. This paper investigates a sampling method of synthesis that is computationally efficient and results directly in integer populations. We showcase the concept of quasirandom sequences and demonstrate that they perform far better than pseudorandom numbers in this context. We demonstrate that sampling the marginal distributions _without replacement_ is crucial. We perform some comparative statistical analyses of example populations, and highlight the advantages and disadvantages of our method over the established ones. Our implementation is available in an open-source R package `humanleague`.
+Established methods for synthesising a population from geographically aggregated data are robust and well understood. However, most rely on the potentially detrimental process of "integerisation" if a whole-individual population is required, e.g. for use in Agent-Based Modelling. This paper investigates a sampling method of synthesis that is computationally efficient and results directly in integer populations. We showcase the concept of quasirandom sequences and demonstrate that they perform far better than pseudorandom numbers in this context. We demonstrate that sampling the marginal distributions _without replacement_ is crucial, and perform some comparative statistical analyses of example populations. Finally we highlight the advantages and disadvantages of our method over the established ones. The implementation is available in an open-source R package `humanleague`.
 
 ***
 
@@ -29,7 +29,7 @@ In this paper we investigate sampling techniques where a population matrix is bu
 
 ## Degeneracy and Statistical Likelihood
 
-In this work we define degeneracy as the number of possible different ways a given overall population $P$ can be sampled into a table $\mathbf{T}$ containing $S$ possible states $\mathbf{k}$, with probability $p_\mathbf{k}$, the system having $d$ degrees of freedom. ^[These terms are defined more precisely in section 2.4.] Making the assumption that marginals are uncorrelated, then the higher the degeneracy of the population, the more statistically likely the population is.
+In this work we define degeneracy as the number of possible different ways a given overall population $P$ can be sampled into a table $\mathbf{T}$ containing $S$ possible states $\mathbf{k}$, with occupancy probability $p_\mathbf{k}$, the system having $d$ degrees of freedom. ^[These terms are defined more precisely in section 2.4.] Making the assumption that marginals are uncorrelated, then the higher the degeneracy of the population, the more statistically likely the population is.
 
 We measure the degeneracy of populations using a $\chi^2$ statistic:
 
@@ -45,14 +45,15 @@ The aim in this context is to generate populations with a high p-value, i.e. a l
 
 Quasirandom numbers, often referred to as low discrepancy sequences, are preferential to pseudorandom numbers in many applications, despite not having some of the (appearance of) randomness that good pseudorandom generators possess. In this work we focus on the Sobol quasirandom sequence [@bratley_algorithm_1988; @joe_remark_2003].
 
-Figure 1 qualitatively illustrates the difference between pseudo- and quasirandom sampling. Each plot contains 2000 uniform points in two dimensions. The quasirandom samples fill the sample space far more evenly and display an obvious lack of randomness, clearly showing a lack of independence between samples. Conversely, the pseudorandom samples show no discernable pattern with clusters and gaps present in the sampling domain, suggesting independence between variates.
+Figure 1 qualitatively illustrates the difference between pseudo- and quasirandom sampling. Each plot contains 2000 uniform points in two dimensions. The quasirandom samples fill the sample space far more evenly and display an obvious lack of randomness, clearly showing a lack of independence between samples. Conversely, the pseudorandom samples show no discernible pattern with clusters and gaps present in the sampling domain, suggesting independence between variates.
 
-Sobol sequences, as with other quasirandom sequences, have an inherent dimensionality and a relatively short period - the sequence is exhausted once every integer in the sample space has been sampled . Successive samples evenly fill the sample space, and thus lack independence. Conversely, a good pseudorandom generator has no discernible dependence between variates often has a much longer period, allowing for very large samples to be taken. 
+Sobol sequences, as with other quasirandom sequences, have an inherent dimensionality and a relatively short period - the sequence is exhausted once every integer in the sample space has been sampled. Successive samples evenly fill the sample space, and thus lack independence. Conversely, a good pseudorandom generator has no discernible dependence between variates often has a much longer period, allowing for very large samples to be taken. 
 
-For applications such as numerical integration, Sobol sequences converge at a rate of $\approx1/N$ (actually $(ln N)^D/N$ [@vetterling_numerical_1992] compared to $\approx1/\sqrt N$ for a pseudorandom generator, and thus require far fewer samples to achieve the same level of accuracy.
+For applications such as numerical integration, Sobol sequences converge at a rate of $\approx1/N$ (actually $(ln N)^D/N$ [@press_numerical_nodate] compared to $\approx1/\sqrt N$ for a pseudorandom generator, and thus require far fewer samples to achieve the same level of accuracy.
 
 Quasirandom sequences are not seeded like pseudorandom generators. To avoid repetition, and for better degeneracy, it is recommended to discard a number of variates on initialisation [@joe_remark_2003], and on subsequent sampling continue the sequence from its previous position.
-For comparison in the analysis below, we use the MT19937 variant of the Mersenne Twister pseudorandom generator [@matsumoto_mersenne_1998].
+
+In the later analysis of our algorithm, for comparison, we use the MT19937 variant of the Mersenne Twister as our pseudorandom generator [@matsumoto_mersenne_1998].
 
 ```{r, echo=FALSE, out.width="50%", fig.show='hold', fig.cap="2000 uniform 2d samples -  pseudorandom and quasirandom."}
 knitr::include_graphics(c("figures/pseudo2d.png","figures/quasi2d.png"))
@@ -60,11 +61,11 @@ knitr::include_graphics(c("figures/pseudo2d.png","figures/quasi2d.png"))
 
 ## Sampling without Replacement
 
-Given discretely distributed population $P$ with integral frequencies $\{f_0,f_1,...f_n\}$, a random sample $i \in \{0...n\}$ has probability 
+Given discretely distributed population $P$ with integral frequencies $\{f_1,f_2,...f_n\}$, a random sample $i \in \{1...n\}$ has probability 
 
 $$p(i) = \frac{f_i}{\sum\limits_{j=0}^{n}f_j}$$
 
-Once a sample $i$ is taken the distribution is adjusted to $\{f_0,f_1,...f_i-1,....f_n\}$. Once $f_i$ has reached zero no further samples can take the value $i$ since $p(i) = 0$. 
+Once a sample $i$ is taken the distribution is adjusted to $\{f_1,f_2,...f_i-1,...f_n\}$, with resultant impact on $p$. Once $f_i$ has reached zero no further samples can take the value $i$ since $p(i) = 0$. 
 
 Since $f_i$ cannot be oversampled, this implies that all the other states $f_{j\neq{i}}$ cannot be undersampled. By extension, if all but one states $f_{i\neq{j}}$ cannot be oversampled, then $f_j$ cannot be undersampled. Thus each state can neither be under- nor oversampled: the distribution must be matched exactly.
 
@@ -80,13 +81,13 @@ Find a contingency table $\mathbf T$ in $D$ dimensions such that
 
 $$\sum\limits_{\mathbf{k}, k_i fixed} \mathbf{T}_\mathbf{k} = \mathbf{m}_i$$
 
-in other words each element of $\mathbf{m}_i$ is the sum of all elements in $\mathbf{T}$ for a fixed value of $k_i$. We define this as constraint (1).
+in other words each element of $\mathbf{m}_i$ is the sum of all elements in $\mathbf{T}$ for a fixed value of $k_i$. We define this as the _marginal constraint_.
 
 Each marginal sum and the sum of the elements of contingency table must equal the population $P$:
 
 $$\sum\limits \mathbf{m}_{i} = \sum\limits_\mathbf{k} \mathbf{T} = P$$ 
 
-We define this as constraint (2). Finally, constraint (3) restricts the elements to the natural numbers: 
+We define this as the _population constraint_. Finally, the _integral constraint_ restricts the elements to the natural numbers: 
 
 $${\mathbf{T} \in \mathbb{N}^S,\mathbf{m}_i} \in \mathbb{N}^{l_i}$$ 
 
@@ -115,13 +116,15 @@ The final version of the algorithm is outlined in this section, a description of
 
 The algorithm is implemented in an `R` package called `humanleague`, written in `C++11` and `C` and exposed to `R` via `Rcpp`. We used open source implementations of the Sobol sequence generator [@johnson_stevengj/nlopt:_nodate] and the incomplete gamma function [@burkardt_asa032_2008]. 
 
-One of the many useful features introduced in `C++11` was a random number framework, which splits underlying (uniform) generators and the distributions, and defines APIs that these classes should implement [http://en.cppreference.com/w/cpp/numeric/random] (http://en.cppreference.com/w/cpp/numeric/random). There is no native support for quasirandom generators nor for without-replacement distributions, but by conforming to the APIs they can be implemented to easily interoperate with the native implementations.
+One of the many useful features introduced in `C++11` was a random number framework, which splits underlying (uniform) generators and the distributions, and defines APIs that these classes should implement  [(see e.g.  http://en.cppreference.com/w/cpp/numeric/random)](http://en.cppreference.com/w/cpp/numeric/random). There is no native support for quasirandom generators nor for without-replacement distributions, but by conforming to the APIs they can be implemented to interoperate with the native generator and distribution implementations.
 
-It should be noted that there are two instances where the new types are non-conformant (see below):
-- a quasirandom generator has inherent dimensionality, and thus should return that number of variates per sample. In our implementation we provided both single value and multiple value accessor functions.
-- without-replacement sampling will eventually become exhausted, as a result we provided a function to test if the distribution is empty, and our accessor function throws an exception if the distribution is fully depleted.
+It should be noted that there are two instances where the new types extend the standard interfaces (see class definitions below):
 
-The remainder of the code was developed by the authors. The Sobol sequence generator is implemented in such a way that it is not reset each time a population is requested, allowing different populations to be generated each time, up to the limit of the sequence being exhausted. Our implementation uses 32-bit unsigned integers and allows for $\approx4\times10^9$ samples (in each dimension). 
+ * a quasirandom generator has inherent dimensionality, and thus should return that number of variates per sample. In our implementation we provided both the standard single-valued `operator()` and the extended vector `buf()` accessor functions.
+
+ * without-replacement sampling will eventually become exhausted, as a result we provided a boolean `empty()` function to check if the distribution is exhausted. If exhausted, the accessor functions will throw an exception.
+
+The remainder of the code was developed by the authors. The Sobol sequence generator is implemented in such a way that it is not reset each time a population is requested, allowing different populations to be generated each time, up to the limit of the sequence being exhausted. Our implementation uses 32-bit unsigned integers, thus allowing for $\approx4\times10^9$ samples (in each dimension). 
 
 ```{cpp}
   class Sobol
@@ -161,10 +164,9 @@ The remainder of the code was developed by the authors. The Sobol sequence gener
     std::vector<I> m_freq;
     I m_sum;
   };
-
 ```
 
-The the package is freely available at [https://github.com/CatchDat/humanleague](https://github.com/CatchDat/humanleague). Plans are in progress to submit it the offical CRAN repository.
+The package is open source and available at [https://github.com/CatchDat/humanleague](https://github.com/CatchDat/humanleague). Plans are in progress to submit it the official CRAN repository.
 
 The implementation supports dimensionalities up to 12, although this limit is arbitrary and could be increased if necessary. Input is simply a list of integer vectors representing the marginals. Marginal vector must all sum to the population $P$.
 
@@ -213,19 +215,17 @@ as can be seen by the example output below:
 
 # Comparison to Existing Methods
 
-In this section we present the results of the final version of the sampling algorithm. The process by which we arrived at this version is given in section 5.1.
+In this section we present results from the final version of the sampling algorithm. The process by which we arrived at this version is given in section 5.1.
 
 ## Statistical Properties
 
 For this we compared the QIWS algorithm to IPF using a number of two-dimensional test cases.
 
-No integerisation was done to the IPF data (using e.g. the `R` package `rakeR`) due to that fact that integerisation can cause a mismatch in one or more margials.
+No integerisation was done to the IPF data (using e.g. the `R` package `rakeR`) due to that fact that integerisation can cause a mismatch in one or more marginals.
 
 IPF was initialised with a random seed array, each element uniformly distributed in $[0,2)$
 
 The first three tests are made-up examples. The remainder are marginal figures derived from 2011 UK census data at the MSOA level (mid-layer super output area), with one dimension representing person status in terms of age, sex, and economic activity, the other their workplace location.
-
-Table 1: Convergence behaviour of population synthesis algorithms. $N$ is the number of times the algorithm was run, $\bar{c}$ refers to the convergence success rate, and $\bar{p}$ refers to the mean p-value.
 
  Pop | States |  N | QIWS $\bar{c}$ | QIWS $\bar{p}$ | IPF $\bar{c}$ | IPF $\bar{p}$  
 :---:|--------|----|----------------|----------------|---------------|---------------
@@ -238,6 +238,8 @@ Table 1: Convergence behaviour of population synthesis algorithms. $N$ is the nu
  4989|   14640|1000|               1|            0.79|              1|1
  5219|   15168|1000|               1|            0.79|              1|1
 
+Table 1: Convergence behaviour of population synthesis algorithms. $N$ is the number of times the algorithm was run, $\bar{c}$ refers to the convergence success rate, and $\bar{p}$ refers to the mean p-value.
+
 A more detailed analysis was performed on two evenly distributed marginal vectors of length 10 and a population $P$ = 100 and number of states $S$ = 100, sampling 10000 populations.
 
 For reference, the histogram of p-values using IPF (with random seed values) yields the following rather unsurprising result:
@@ -247,15 +249,13 @@ knitr::include_graphics("figures/ipf_pvalue_dist.png")
 ``` 
 We compared the statistical performance of QIWS using a pseudorandom generator and a quasirandom generator. The algorithm is guaranteed to work in both cases so we looked at the distribution of p-values, which can be seen in figure 2.
 
-```{r, echo=FALSE, out.width="50%", fig.show="hold", fig.cap="Distribution of p-values of QIWS using PRNG (left) and QRNG (right)."}
+```{r, echo=FALSE, out.width="50%", fig.show="hold", fig.cap="Distribution of p-values of QIWS using pseudorandom (left) and quasirandom (right) sampling."}
 knitr::include_graphics(c("figures/iqws_prng_pvalue_dist.png","figures/iqws_pvalue_dist.png")) 
 ```
 
 ## Performance
 
 Since computers vary widely in performance for many reasons, we present normalised performance values.
-
-Table 2: Relative computation time of the algorithms, using the first case as a baseline. 
 
 Pop | States |  N | QIWS | IPF 
 :--:|--------|----|------|------
@@ -267,6 +267,8 @@ Pop | States |  N | QIWS | IPF
 4029|   11904|1000|  22.7|1027.3
 4989|   14640|1000|  28.3|1457.0
 5219|   15168|1000|  28.7|1557.7
+
+Table 2: Relative computation time of the algorithms, using the first case as a baseline. 
 
 # Discussion
 
@@ -298,7 +300,7 @@ The next phase of the work was to analyse generated populations statistically, f
 
 Neither IPF nor QIWS failed to converge on any of the test cases in Table 1.
 
-One unexpected observation was that IPF performed least well on the simple tests, generating the lowest mean p-values. TODO suggest explanation?
+One unexpected observation was that IPF performed least well on the simple tests, generating the lowest mean p-values. Since these are "toy" examples we do not attribute any significance to this, putting it down to our choice of random seed.
 
 ### Randomness in Context
 
@@ -313,17 +315,17 @@ suggesting that the marginals are strongly correlated. This particular result ha
 
 ### Degeneracy
 
-The $\chi^2$ value resulting from IPF is likely to be slightly lower than QIWS due to the fact the former numbers are not generally integral. Figure 2 demonstrates that IPF almost always results in a p-value of 1. This is expected due to the manner by which that the IPF algorithm works. 
+The $\chi^2$ value resulting from IPF is likely to be slightly lower than QIWS due to the fact the former numbers are not generally integral. Figure 2 demonstrates that IPF almost always results in a p-value of 1. This is expected due to the manner in which that the IPF algorithm works.
 
 QIWS does not achieve such high p-values in general, as seen in figure 3, and there is a marked difference in the distribution of p-values depending on the type of underlying random generator used. It can be seen clearly that quasirandom sampling generally yields more degenerate populations, and is much closer to IPF in this respect. 
 
-It should be borne in mind that one of the reasons that QIWS cannot achieve the high p-value levels as consistently as IPF is due to the simple fact that the population is integral, and this will generally result in a higher $\chi^2$ statistic. We would caution users, however, to check the resulting p-value against some suitable threshhold and resample if necessary.
+It should be borne in mind that one of the reasons that QIWS cannot achieve the high p-value levels as consistently as IPF is due to the simple fact that the population is integral, and this will generally result in a higher $\chi^2$ statistic. We would caution users, however, to check the resulting p-value against some suitable threshold and resample if necessary.
 
 ## Performance
 
 QIWS performance is far superior to IPF. One reason for this is that QIWS is not iterative, but the following points should be noted:
 
-* the comparison is somewhat unfair since our implementation is compiled `C++` code and Ipfp's implementation is interpreted `R` code. 
+* the comparison is somewhat unfair since our implementation is compiled `C` and `C++` code and Ipfp's implementation is interpreted `R` code. 
 
 * performance of population synthesis is probably not a significant factor in most workflows, and thus speed may be of marginal advantage.
 
@@ -339,11 +341,11 @@ QIWS may potentially be of use in the process of anonymising populations. It is 
 
 # Conclusion
 
-This work forms part of a larger project in which a city-scale population microsynthesis is used as the basis for an Agent-Based Model of commute patterns, using census data combined with a crowdsourced dataset. The QIWS algorithm and the software implementation in an `R` package was developed for this purpose, eliminating the need for integerising the sythesised population. This microsimulation involved categorical variables (i.e. marginals) representing home and work locations (at MSOA resolution), mode of transport, gender, age group, and economic activity type, with the crowdsourced data overlaid on the larger census population. 
+This work forms part of a larger project in which a city-scale population microsynthesis is used as the basis for an Agent-Based Model of commute patterns, using census data combined with a crowdsourced dataset. The QIWS algorithm and the software implementation in an `R` package was developed for this purpose, eliminating the need for integerising the synthesised population. This microsimulation involved categorical variables (i.e. marginals) representing home and work locations (at MSOA resolution), mode of transport, gender, age group, and economic activity type, with the crowdsourced data overlaid on the larger census population. 
 
 The QIWS algorithm was thus designed with this type of synthesis in mind, where all marginal data is fully specified, and in this context it fulfils the requirements.
 
-If there are specfic requirements for a degenerate population, statistical data is provided about the generated population that will guide the user in determining the suitablity of the generated population.
+If there are specific requirements for a degenerate population, statistical data is provided about the generated population that will guide the user in determining the suitability of the generated population.
 
 In situations where integral populations are desirable QIWS presents an advantage over established techniques by eliminating the need for postprocessing the population - for instance by integerisation.
 
@@ -353,7 +355,7 @@ We have established that QIWS can be used for microsynthesis given aggregate dat
 
 We are aware that QIWS is more limited in scope than IPF in that it is unable to deal with cases where some marginal data is not explicitly specified, instead being expressed in the seed population used to initialise the IPF iteration. It may be that with further development of the algorithm some of these limitations could be overcome.
 
-As such we enviage QIWS as a technique that complements rather than supplants established methods, and publicise the technique as such.
+As such we envisage QIWS as a technique that complements rather than supplants established methods, and publicise the technique as such.
 
 # Acknowledgements
 

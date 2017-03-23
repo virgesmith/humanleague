@@ -357,7 +357,7 @@ implementations of the Sobol sequence generator (Johnson 2017) and the
 incomplete gamma function (Burkardt 2008).
 
 One of the many useful features introduced in \texttt{C++11} was a
-random number framework, which splits underlying (uniform) generators
+standard random number framework, which splits underlying (uniform) generators
 and the distributions, and defines APIs that these classes should
 implement \href{http://en.cppreference.com/w/cpp/numeric/random}{(see
 e.g. http://en.cppreference.com/w/cpp/numeric/random)}. There is no
@@ -436,8 +436,8 @@ submit it the official CRAN repository.
 
 The implementation supports dimensionalities up to 12, although this
 limit is arbitrary and could be increased if necessary. Input is simply
-a list of integer vectors representing the marginals. Marginal vector
-must all sum to the population \(P\).
+a list of integer vectors representing the marginals. Marginal vectors
+must all sum to the population (to satisfy the population constraint) \(P\).
 
 The output is broadly compatible with the established \texttt{mipfp}
 (Barthelemy \& Suesse 2016) \texttt{R} package:
@@ -510,7 +510,8 @@ package \texttt{rakeR}) due to that fact that integerisation can cause a
 mismatch in one or more marginals.
 
 IPF was initialised with a random seed array, each element uniformly
-distributed in \([0,2)\)
+distributed in \([0,2)\), so that for the p-value tests the initial total population would be 
+approximately equal to the final total.
 
 The first three tests are made-up examples. The remainder are marginal
 figures derived from 2011 UK census data at the MSOA level (mid-layer
@@ -535,9 +536,11 @@ Pop & States & N & QIWS \(\bar{c}\) & QIWS \(\bar{p}\) & IPF \(\bar{c}\)
 \bottomrule
 \end{longtable}
 
+\begin{center}
 Table 1: Convergence behaviour of population synthesis algorithms. \(N\)
 is the number of times the algorithm was run, \(\bar{c}\) refers to the
 convergence success rate, and \(\bar{p}\) refers to the mean p-value.
+\end{center}
 
 A more detailed analysis was performed on two evenly distributed
 marginal vectors of length 10 and a population \(P\) = 100 and number of
@@ -558,7 +561,7 @@ values) yields the following rather unsurprising result:
 We compared the statistical performance of QIWS using a pseudorandom
 generator and a quasirandom generator. The algorithm is guaranteed to
 work in both cases so we looked at the distribution of p-values, which
-can be seen in figure 2.
+can be seen in figure 3.
 
 \begin{figure}[H]
 \includegraphics[width=0.5\linewidth]{figures/iqws_prng_pvalue_dist} \includegraphics[width=0.5\linewidth]{figures/iqws_pvalue_dist} \caption{Distribution of p-values of QIWS using pseudorandom (left) and quasirandom (right) sampling.}\label{fig:unnamed-chunk-4}
@@ -585,8 +588,10 @@ Pop & States & N & QIWS & IPF\tabularnewline
 \bottomrule
 \end{longtable}
 
+\begin{center}
 Table 2: Relative computation time of the algorithms, using the first
 case as a baseline.
+\end{center}
 
 \section{Discussion}\label{discussion}
 
@@ -799,8 +804,7 @@ supplants established methods, and publicise the technique as such.
 
 \section{Acknowledgements}\label{acknowledgements}
 
-The authors would like to thank Professor Mark Birkin for his invaluable
-feedback, and acknowledge Innovate UK's Catch! project for providing the
+The authors acknowledge Innovate UK's Catch! project for providing the
 funding for this work.
 
 \section*{References}\label{references}
@@ -870,6 +874,10 @@ Nowok, Beata, Gillian M. Raab, and Chris Dibben. 2016. ``Synthpop:
 Bespoke Creation of Synthetic Data in R.'' \emph{Journal of Statistical
 Software} 74 (11).
 doi:\href{https://doi.org/10.18637/jss.v074.i11}{10.18637/jss.v074.i11}.
+
+\hypertarget{ref-orcutt_new_1957}{}
+Orcutt, Guy H. 1957. ``A New Type of Socio-Economic System'' \emph{The Review of Economics and Statistics} 39 (2).
+doi:\href{http://www.jstor.org/stable/1928528}.
 
 \hypertarget{ref-press_numerical_nodate}{}
 Press, William, Saul Teukolsky, William Vetterling, and Brian Flannery.

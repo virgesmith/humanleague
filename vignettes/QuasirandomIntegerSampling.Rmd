@@ -4,6 +4,7 @@ author: "Andrew P Smith, Robin Lovelace and Mark Birkin"
 date: '`r format(Sys.time(), "%d %B %Y")`'
 output:
   pdf_document:
+    keep_tex: yes
     number_sections: yes
   html_document: default
 bibliography: ref.bib

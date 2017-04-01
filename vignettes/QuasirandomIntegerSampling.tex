@@ -553,8 +553,8 @@ marginal vectors of length 10 and a population \(P\) = 100 and number of
 states \(S\) = 100, sampling 10000 populations.
 
 For reference, the histogram of p-values using IPF (with random seed
-values) yields the following rather unsurprising result \footnote{The IPF algorithm
- seeks to maximise entropy, resulting in a low $chi^2$ statistic (Lovelace et al. 2015).}:
+values) yields the following rather unsurprising result\footnote{The IPF algorithm
+ seeks to maximise entropy, resulting in a low \(\chi^2\) statistic (Lovelace et al. 2015).}:
 
 \begin{figure}[H]
 
@@ -564,8 +564,6 @@ values) yields the following rather unsurprising result \footnote{The IPF algori
 
 \caption{Distribution of p-values of IPF.}\label{fig:unnamed-chunk-3}
 \end{figure}
-
-This is entirely expected, since the IPF algorithm 
 
 We compared the statistical performance of our integer without-replacement sampling using a pseudorandom
 generator and a quasirandom generator. The algorithm is guaranteed to
@@ -598,7 +596,7 @@ Pop & States & N & QIWS & IPF\tabularnewline
 \end{longtable}
 
 \begin{center}
-Table 2: Relative computation time of the algorithms, using the first
+Table 2: Relative computation time of the algorithms for \(N\) runs, using the first
 case as a baseline.
 \end{center}
 
@@ -708,8 +706,8 @@ that it is vanishingly unlikely that this population resulted by chance.
 The \(\chi^2\) value resulting from IPF is likely to be slightly lower
 than QIWS due to the fact the former numbers are not generally integral.
 Figure 2 demonstrates that IPF almost always results in a p-value of 1.
-This is expected due to the manner in which that the IPF algorithm
-works.
+This is entirely expected due to the fact that the IPF algorithm seeks a 
+maximum-entropy solution.
 
 QIWS does not achieve such high p-values in general, as seen in figure
 3, and there is a marked difference in the distribution of p-values

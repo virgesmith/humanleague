@@ -170,8 +170,14 @@ exploration of such limitations and the mathematical behaviour of IPF to
 date is an outstanding PhD thesis on the subject (Zaloznik 2011).
 
 In this paper we investigate sampling techniques where a population
-matrix is built exclusively in the integer domain. We show that this
-technique can only work effectively if a quasirandom (as opposed to a
+matrix is built exclusively in the integer domain. The research reported 
+in this paper is partly motivated by the need to generate individual 
+simulated agents for an entire city.  Journey patterns are imputed to 
+each member of the simulated population using app-based mobility traces 
+in order to generate travel demand schedules for an entire urban population 
+in pseudo-real-time.  
+
+We show that integer sampling can only work effectively if a quasirandom (as opposed to a
 pseudorandom) number generator is used, and this in itself is not
 sufficient to work in all cases. We also show that this problem can be
 overcome by combining the quasirandom generator with a
@@ -217,7 +223,7 @@ Figure 1 qualitatively illustrates the difference between pseudo- and
 quasirandom sampling. Each plot contains 2000 uniform points in two
 dimensions. The quasirandom samples fill the sample space far more
 evenly and display an obvious lack of randomness, clearly showing a lack
-of independence between samples. Conversely, the pseudorandom samples
+of independence between samples. In contrast, the pseudorandom samples
 show no discernible pattern with clusters and gaps present in the
 sampling domain, suggesting independence between variates.
 
@@ -319,7 +325,7 @@ calculate the statistical significance of the population) is given by
 In the general case there are not enough constraints to determine a
 unique solution. Hence there is a need to resort to iterative or
 optimisation-type solutions, such as IPF, simulated annealing,
-likelihood estimate, chi-squared fitting, or least-squares fitting.
+likelihood estimation, chi-squared fitting, or least-squares fitting.
 
 \section{The Algorithm}\label{the-algorithm}
 
@@ -345,7 +351,7 @@ in the Discussion.
 \item
   Compute a \(\chi^2\) statistic and a p-value, which represents the
   statistical significance of the synthetic population (in this case we
-  prefer higher p-values, i.e.~statistically insignificant populations.
+  prefer higher p-values, i.e.~statistically insignificant populations).
 \end{enumerate}
 
 \subsection{The Implementation}\label{the-implementation}
@@ -547,7 +553,8 @@ marginal vectors of length 10 and a population \(P\) = 100 and number of
 states \(S\) = 100, sampling 10000 populations.
 
 For reference, the histogram of p-values using IPF (with random seed
-values) yields the following rather unsurprising result:
+values) yields the following rather unsurprising result \footnote{The IPF algorithm
+ seeks to maximise entropy, resulting in a low $chi^2$ statistic (Lovelace et al. 2015).}:
 
 \begin{figure}[H]
 
@@ -558,7 +565,9 @@ values) yields the following rather unsurprising result:
 \caption{Distribution of p-values of IPF.}\label{fig:unnamed-chunk-3}
 \end{figure}
 
-We compared the statistical performance of QIWS using a pseudorandom
+This is entirely expected, since the IPF algorithm 
+
+We compared the statistical performance of our integer without-replacement sampling using a pseudorandom
 generator and a quasirandom generator. The algorithm is guaranteed to
 work in both cases so we looked at the distribution of p-values, which
 can be seen in figure 3.
@@ -679,7 +688,7 @@ it down to our choice of random seed.
 To put pseudorandom versus quasirandom sampling into context, consider a
 ``random'' number generator that simply always returns zero. If we used
 this as the basis for without-replacement sampling of a marginal
-distribution \(\lbrace10,10,10\rbrace\). We would get a sequence
+distribution \(\lbrace10,10,10\rbrace\), we would get a sequence
 consisting of ten ones, ten twos and ten threes as the samples exhausted
 each bin and moved to the next. In two dimensions, this would result in
 a population matrix

@@ -21,7 +21,7 @@ Established methods for synthesising a population from geographically aggregated
 # Introduction
 
 Iterative Proportional Fitting (IPF) is a popular and well-established technique for generating synthetic populations from marginal data.
-Compared with other methods of 'population synthesis' IPF is relatively fast, simple and easy to implemente, as showcased in a practical introduction to the subject by @lovelace_spatial_2016.
+Compared with other methods of 'population synthesis' IPF is relatively fast, simple and easy to implement, as showcased in a practical introduction to the subject by @lovelace_spatial_2016.
 Furthermore, a number of software packages aimed at facilitating IPF for spatial microsimulation and other applications have been published [e.g. @barthelemy_cran_2016; @jones_raker:_2016].
 
 However, the method has various limitations from the perspective of spatial microsimulation for social simulation. For example,
@@ -36,13 +36,13 @@ In this paper we investigate sampling techniques where a population matrix is bu
 
 Quasirandom numbers, often referred to as low discrepancy sequences, are preferential to pseudorandom numbers in many applications, despite not having some of the (appearance of) randomness that good pseudorandom generators possess. In this work we focus on the Sobol quasirandom sequence [@bratley_algorithm_1988; @joe_remark_2003].
 
-Figure 1 qualitatively illustrates the difference between pseudo- and quasirandom sampling. Each plot contains 2000 uniform points in two dimensions. The quasirandom samples fill the sample space far more evenly and display an obvious lack of randomness, clearly showing a lack of independence between samples. Conversely, the pseudorandom samples show no discernable pattern with clusters and gaps present in the sampling domain, suggesting independence between variates.
+Figure 1 qualitatively illustrates the difference between pseudo- and quasirandom sampling. Each plot contains 2000 uniform points in two dimensions. The quasirandom samples fill the sample space far more evenly and display an obvious lack of randomness, clearly showing a lack of independence between samples. Conversely, the pseudorandom samples show no discernible pattern with clusters and gaps present in the sampling domain, suggesting independence between variables.
 
-Sobol sequences, as with other quasirandom sequences, have an inherent dimensionality and a relatively short period - the sequence is exhausted once every integer in the sample space has been sampled . Successive samples evenly fill the sample space, and thus lack independence. Conversely, a good pseudorandom generator has no discernible dependence between variates often has a much longer period, allowing for very large samples to be taken. 
+Sobol sequences, as with other quasirandom sequences, have an inherent dimensionality and a relatively short period - the sequence is exhausted once every integer in the sample space has been sampled . Successive samples evenly fill the sample space, and thus lack independence. Conversely, a good pseudorandom generator has no discernible dependence between variables often has a much longer period, allowing for very large samples to be taken. 
 
 For applications such as numerical integration, Sobol sequences converge at a rate of $\approx1/N$ (actually $(ln N)^D/N$ [@vetterling_numerical_1992] compared to $\approx1/\sqrt N$ for a pseudorandom generator, and thus require far fewer samples to achieve the same level of accuracy.
 
-Quasirandom sequences are not seeded like pseudorandom generators. To avoid repetition, and for better degeneracy, it is recommended to discard a number of variates on initialisation [@joe_remark_2003], and on subsequent sampling continue the sequence from its previous position.
+Quasirandom sequences are not seeded like pseudorandom generators. To avoid repetition, and for better degeneracy, it is recommended to discard a number of variables on initialisation [@joe_remark_2003], and on subsequent sampling continue the sequence from its previous position.
 For comparison in the analysis below, we use the MT19937 variant of the Mersenne Twister pseudorandom generator [@matsumoto_mersenne_1998].
 
 ```{r, echo=FALSE, out.width="50%", fig.show='hold', fig.cap="2000 uniform 2d samples -  pseudorandom and quasirandom."}
@@ -57,7 +57,7 @@ $$p(i) = \frac{f_i}{\sum\limits_{j=0}^{n}f_j}$$
 
 Once a sample $i$ is taken the distribution is adjusted to $\{f_0,f_1,...f_i-1,....f_n\}$. Once $f_i$ has reached zero no further samples can take the value $i$ since $p(i) = 0$. 
 
-Since $f_i$ cannot be oversampled, this implies that all the other states $f_{j\neq{i}}$ cannot be undersampled. By extension, if all but one states $f_{i\neq{j}}$ cannot be oversampled, then $f_j$ cannot be undersampled. Thus each state can neither be under- nor oversampled: the distibution must be matched exactly.
+Since $f_i$ cannot be oversampled, this implies that all the other states $f_{j\neq{i}}$ cannot be undersampled. By extension, if all but one states $f_{i\neq{j}}$ cannot be oversampled, then $f_j$ cannot be undersampled. Thus each state can neither be under- nor oversampled: the distribution must be matched exactly.
 
 ## Problem Statement
 
@@ -95,7 +95,7 @@ The algorithms described in this paper are outlined in this section.
 
 1. Create a $D$-dimensional discrete with-replacement distribution using the marginals $\mathbf{m}_i$ to represent the per-zone totals within each variable category.
 
-2. Sample $P$ quasirandom variates from this distribution to create a "seed" population $\mathbf{T}$. Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_k$. Thus $\mathbf{T}$ will - by construction - satisfy constraints (2) and (3). The next step is to check, and adjust if necessary, the population such that constraint (1) is met.
+2. Sample $P$ quasirandom variables from this distribution to create a "seed" population $\mathbf{T}$. Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_k$. Thus $\mathbf{T}$ will - by construction - satisfy constraints (2) and (3). The next step is to check, and adjust if necessary, the population such that constraint (1) is met.
 
 3. Calculate the residual vector $\mathbf{r}_i$, the difference between the seed population and marginal $\mathbf{m}_i$: 
 $$\mathbf{r}_i = \sum\limits_{\mathbf{k}, k_i fixed} \mathbf{T}_k - \mathbf{m}_i$$
@@ -119,7 +119,7 @@ Note that the algorithm will fail if, in any dimension, there is a nonzero resid
 
 1. Create an $D$-dimensional discrete without-replacement distribution using the marginals $\mathbf{m}_i$
 
-2. Sample $P$ random variates from this distribution to create a population $\mathbf{T}$. Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_\mathbf{k}$, repeating until our distribution is fully depleted. Constructing the problem in this way automatically ensures that all constraints are automatically met.
+2. Sample $P$ random variables from this distribution to create a population $\mathbf{T}$. Specifically, we sample a value of $\mathbf{k}$ and increment the value of $\mathbf{T}_\mathbf{k}$, repeating until our distribution is fully depleted. Constructing the problem in this way automatically ensures that all constraints are automatically met.
 
 3. Compute a $\chi^2$ statistic and a p-value, as described above.
 
@@ -127,7 +127,7 @@ Note that the algorithm will fail if, in any dimension, there is a nonzero resid
 
 We consider a 2 dimensional case here for simplicity, for a population $P$ of 100 individuals with two categorical characteristics. Let the marginal vectors be $\mathbf{m}_0=\{51,49\}$ and $\mathbf{m}_1=\{35,40,25\}$, giving the population 6 possible states.    
 
-We construct a bivariate discrete distibution using the marginals which will have a probability density
+We construct a bivariate discrete distribution using the marginals which will have a probability density
 
 $$p_{ij} = \frac{(\mathbf{m}_0)_i(\mathbf{m}_1)_j}{\sum\limits_i\mathbf{m}_0\sum\limits_j\mathbf{m}_1}$$ 
 
@@ -165,7 +165,7 @@ The IQWS algorithm, being simpler, does not warrant an example. The algorithm de
 
 The algorithms are implemented in an `R` package called `humanleague`, written in `C++11` and `C` and interfaced using `Rcpp`. We used open source implementations of the Sobol sequence generator [@johnson_stevengj/nlopt:_nodate] and the incomplete gamma function [@burkardt_asa032_2008]. The remainder of the code was developed by the authors. The Sobol sequence generator is implemented in such a way that it is not reset each time a population is requested, allowing different populations to be generated each time. 
 
-The intent is to submit the package to the offical CRAN repository, but until then it is available at [https://github.com/CatchDat/humanleague](https://github.com/CatchDat/humanleague).
+The intent is to submit the package to the official CRAN repository, but until then it is available at [https://github.com/CatchDat/humanleague](https://github.com/CatchDat/humanleague).
 
 The implementation supports dimensionalities up to the 12, although this limit is arbitrary and could be increased if necessary. Input is simply a list of marginal vectors
 
@@ -173,7 +173,7 @@ The output is broadly compatible with the established `mipfp` (Barthelemy & Sues
 
 - $D$-dimensional population array
 - $D$-dimensional probability array
-- boolean value indicating convergence
+- Boolean value indicating convergence
 - maximum value of each residual vector
 - $\chi^2$ statistic
 - p-value
@@ -253,11 +253,11 @@ The methods presented here, Integer Quasirandom with-Replacement Sampling and In
 
 IQWS has some advantages over traditional IPF, primarily the generation of integer populations by default, which may be beneficial for example in agent-based modelling (ABM) applications.
 
-However, IQWS is more limited in it's application, requiring that all marginal data is fully specified, (i.e. matches the entire population) whereas IPF is not so retricted.
+However, IQWS is more limited in it's application, requiring that all marginal data is fully specified, (i.e. matches the entire population) whereas IPF is not so restricted.
 
 In terms of performance, IQWS is significantly faster than the IPF implementation we compared against (`mipfp`). This is likely due to the fact that the algorithm is not iterative in nature, and that the implementation is very efficient, written in a low-level language. The performance of population synthesis is often not the bottleneck in any workflow, so performance may not be considered a major advantage.
 
-Another possible disadvantage is that IQWS generally results in populations with lower p-values than IPF. We would envisage that end-users check the p-value against a suitable threshhold, and reject and resample if necessary.
+Another possible disadvantage is that IQWS generally results in populations with lower p-values than IPF. We would envisage that end-users check the p-value against a suitable threshold, and reject and resample if necessary.
 
 # Conclusion
 
@@ -287,4 +287,4 @@ b = httr::GET(url = u, httr::write_disk("ref.bib", overwrite = T))
 
 
 
-@kavroudakis_sms:_2015 focus on the spatial variability of individual-level dat.
+@kavroudakis_sms:_2015 focus on the spatial variability of individual-level data.

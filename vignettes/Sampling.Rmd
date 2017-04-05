@@ -279,7 +279,7 @@ The authors would like to acknowledge Catch! project funding
 
 # References
 
-```{r}
+```{r, echo=FALSE}
 # Get bibliography (run once from project root)
 u = "https://www.zotero.org/api/groups/418217/collections/MP7NS3SC/items/top?limit=100&format=bibtex&v=1"
 b = httr::GET(url = u, httr::write_disk("ref.bib", overwrite = T))

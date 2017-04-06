@@ -256,7 +256,7 @@ MT19937 variant of the Mersenne Twister as our pseudorandom generator
 \subsection{Sampling without
 Replacement}\label{sampling-without-replacement}
 
-Given discretely distributed population \(P\) with integral frequencies
+Given a discretely distributed population \(P\) with integral frequencies
 \(\{f_1,f_2,...f_n\}\), a random sample \(i \in \{1...n\}\) has
 probability
 
@@ -320,7 +320,7 @@ the product of the marginal probabilities:
 
 And the degrees of freedom \(d\) of the system (required in order to
 calculate the statistical significance of the population) is given by
-\[d=\prod\limits_{i}l_i-1\]
+\[d=\prod\limits_{i}(l_i-1)\]
 
 In the general case there are not enough constraints to determine a
 unique solution. Hence there is a need to resort to iterative or
@@ -387,8 +387,7 @@ extend the standard interfaces (see class definitions below):
   throw an exception.
 \end{itemize}
 
-The remainder of the code was developed by the authors. The Sobol
-sequence generator is implemented in such a way that it is not reset
+The Sobol sequence generator is implemented in such a way that it is not reset
 each time a population is requested, allowing different populations to
 be generated each time, up to the limit of the sequence being exhausted.
 Our implementation uses 32-bit unsigned integers, thus allowing for

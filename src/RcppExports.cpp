@@ -17,3 +17,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// prob2Freq
+List prob2Freq(NumericVector pIn, int pop);
+RcppExport SEXP humanleague_prob2Freq(SEXP pInSEXP, SEXP popSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type pIn(pInSEXP);
+    Rcpp::traits::input_parameter< int >::type pop(popSEXP);
+    rcpp_result_gen = Rcpp::wrap(prob2Freq(pIn, pop));
+    return rcpp_result_gen;
+END_RCPP
+}

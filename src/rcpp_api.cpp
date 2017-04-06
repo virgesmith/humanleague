@@ -24,6 +24,7 @@ using namespace Rcpp;
 
 #include "IWRS.h"
 #include "IQRS.h"
+#include "Integerise.h"
 #include <vector>
 //#include <csignal>
 
@@ -181,4 +182,35 @@ List synthPop(List marginals, const std::string& method = "iwrs")
 
   return result;
 }
+
+
+//' Generate integer frequencies from probilities and an overall population
+//'
+//' @param p a numeric vector of state occupation probabilities
+//' @param pop the total population
+//' @export
+// [[Rcpp::export]]
+List prob2Freq(NumericVector pIn, int pop)
+{
+  double var;
+  const std::vector<double>& p = as<std::vector<double>>(pIn);
+
+  if (pop < 1)
+  {
+    throw std::runtime_error("population must be strictly positive");
+  }
+
+  if (fabs(std::accumulate(p.begin(), p.end(), -1.0)) > std::numeric_limits<double>::epsilon())
+  {
+    throw std::runtime_error("probabilities do not sum to unity");
+  }
+  std::vector<int> f = integeriseMarginalDistribution(p, pop, var);
+
+  List result;
+  result["freq"] = f;
+  result["var"] = var;
+
+  return result;
+}
+
 

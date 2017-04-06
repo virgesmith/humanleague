@@ -9,3 +9,12 @@ synthPop <- function(marginals, method = "iwrs") {
     .Call('humanleague_synthPop', PACKAGE = 'humanleague', marginals, method)
 }
 
+#' Generate integer frequencies from probilities and an overall population
+#'
+#' @param p a numeric vector of state occupation probabilities
+#' @param pop the total population
+#' @export
+prob2Freq <- function(pIn, pop) {
+    .Call('humanleague_prob2Freq', PACKAGE = 'humanleague', pIn, pop)
+}
+

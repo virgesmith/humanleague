@@ -13,6 +13,8 @@ vignette: |
   %\VignetteIndexEntry{Population Synthesis with Quasirandom Integer Sampling} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
 ---
 
+# THIS FILE IS NOT KEPT UP-TO-DATE - SEE QuasirandomIntegerSampling.tex
+
 ***
 Established methods for synthesising a population from geographically aggregated data are robust and well understood. However, most rely on the potentially detrimental process of "integerisation" if a whole-individual population is required, e.g. for use in Agent-Based Modelling. This paper investigates a sampling method of synthesis that is computationally efficient and results directly in integer populations. We showcase the concept of quasirandom sequences and demonstrate that they perform far better than pseudorandom numbers in this context. We demonstrate that sampling the marginal distributions _without replacement_ is crucial, and perform some comparative statistical analyses of example populations. Finally we highlight the advantages and disadvantages of our method over the established ones. The implementation is available in an open-source R package `humanleague`.
 

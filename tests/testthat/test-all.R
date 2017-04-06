@@ -118,4 +118,31 @@ test_that("msoa iqrs", {
   expect_equal(res$conv, FALSE)
 })
 
+##### Marginal integerisation tests
+
+test_that("population must be positive", {
+  expect_error(humanleague::prob2Freq(c(0.5,0.5), -100))
+})
+
+test_that("probabilities must sum to zero", {
+  expect_error(humanleague::prob2Freq(c(0.5,0.4999), 100))
+})
+
+test_that("simple1", {
+  res<-humanleague::prob2Freq(c(0.1,0.2,0.3,0.4), 10)
+  expect_equal(res$freq, c(1,2,3,4))
+  expect_equal(res$var, 0)
+})
+
+test_that("simple2", {
+  res<-humanleague::prob2Freq(c(0.1,0.2,0.3,0.4), 11)
+  expect_equal(res$freq, c(1,2,3,5))
+  expect_equal(res$var, 0.125)
+})
+
+test_that("degenerate", {
+  res<-humanleague::prob2Freq(c(0.2,0.2,0.2,0.2,0.2), 11)
+  expect_equal(res$freq, c(3,2,2,2,2))
+  expect_equal(res$var, 0.16)
+})
 

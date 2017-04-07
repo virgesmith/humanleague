@@ -213,4 +213,24 @@ List prob2Freq(NumericVector pIn, int pop)
   return result;
 }
 
+//' Generate integer frequencies from probilities and an overall population
+//'
+//' @param d dimensions
+//' @param n number of variates to sample
+//' @param k number of variates to skip
+//' @export
+// [[Rcpp::export]]
+NumericMatrix sobolSequence(int dim, int n, int skip = 0)
+{
+  static const double scale = 0.5 / (1ull<<31);
 
+  NumericMatrix m(n, dim);
+
+  Sobol s(dim, skip);
+
+  for (int j = 0; j <n ; ++j)
+    for (int i = 0; i < dim; ++i)
+      m(j,i) = s() * scale;
+
+  return m;
+}

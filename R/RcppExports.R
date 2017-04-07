@@ -18,3 +18,13 @@ prob2Freq <- function(pIn, pop) {
     .Call('humanleague_prob2Freq', PACKAGE = 'humanleague', pIn, pop)
 }
 
+#' Generate integer frequencies from probilities and an overall population
+#'
+#' @param d dimensions
+#' @param n number of variates to sample
+#' @param k number of variates to skip
+#' @export
+sobolSequence <- function(dim, n, skip = 0L) {
+    .Call('humanleague_sobolSequence', PACKAGE = 'humanleague', dim, n, skip)
+}
+

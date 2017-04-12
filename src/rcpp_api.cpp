@@ -22,10 +22,11 @@ in the project's root directory, or at <http://www.gnu.org/licenses/>.
 #include <Rcpp.h>
 using namespace Rcpp;
 
-#include "IWRS.h"
-#include "IQRS.h"
+#include "QIWS.h"
+//#include "IQRS.h"
 #include "Integerise.h"
 #include <vector>
+
 //#include <csignal>
 
 // // Handler for ctrl-C
@@ -70,12 +71,17 @@ void doSolve(List& result, IntegerVector dims, const std::vector<std::vector<uin
   result["x.hat"] = values;
 }
 
-//' Generate a population in n dimensions given n marginals
+//' Generate a population in n dimensions given n marginals.
 //'
+//' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
+//' generates an n-dimensional population table where elements sum to the input marginals, and supplemental data.
 //' @param marginals a List of n integer vectors containing marginal data (2 <= n <= 12). The sum of elements in each vector must be identical
+//' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
+//' @examples
+//' synthPop(list(c(1,2,3,4), c(3,4,3))
 //' @export
 // [[Rcpp::export]]
-List synthPop(List marginals, const std::string& method = "iwrs")
+List synthPop(List marginals)
 {
   const size_t dim = marginals.size();
   std::vector<std::vector<uint32_t>> m(dim);
@@ -88,109 +94,63 @@ List synthPop(List marginals, const std::string& method = "iwrs")
     dims.push_back(iv.size());
   }
   List result;
-  result["method"] = method;
+  result["method"] = "QIWS";
 
-  if (method == "iwrs")
+  // Workaround for fact that dimensionality is a template param and thus fixed at compile time
+  switch(dim)
   {
-    // Workaround for fact that dimensionality is a template param and thus fixed at compile time
-    switch(dim)
-    {
-    case 2:
-      doSolve<IWRS<2>>(result, dims, m);
-      break;
-    case 3:
-      doSolve<IWRS<3>>(result, dims, m);
-      break;
-    case 4:
-      doSolve<IWRS<4>>(result, dims, m);
-      break;
-    case 5:
-      doSolve<IWRS<5>>(result, dims, m);
-      break;
-    case 6:
-      doSolve<IWRS<6>>(result, dims, m);
-      break;
-    case 7:
-      doSolve<IWRS<7>>(result, dims, m);
-      break;
-    case 8:
-      doSolve<IWRS<8>>(result, dims, m);
-      break;
-    case 9:
-      doSolve<IWRS<9>>(result, dims, m);
-      break;
-    case 10:
-      doSolve<IWRS<10>>(result, dims, m);
-      break;
-    case 11:
-      doSolve<IWRS<11>>(result, dims, m);
-      break;
-    case 12:
-      doSolve<IWRS<12>>(result, dims, m);
-      break;
-    default:
-      throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
-    }
+  case 2:
+    doSolve<QIWS<2>>(result, dims, m);
+    break;
+  case 3:
+    doSolve<QIWS<3>>(result, dims, m);
+    break;
+  case 4:
+    doSolve<QIWS<4>>(result, dims, m);
+    break;
+  case 5:
+    doSolve<QIWS<5>>(result, dims, m);
+    break;
+  case 6:
+    doSolve<QIWS<6>>(result, dims, m);
+    break;
+  case 7:
+    doSolve<QIWS<7>>(result, dims, m);
+    break;
+  case 8:
+    doSolve<QIWS<8>>(result, dims, m);
+    break;
+  case 9:
+    doSolve<QIWS<9>>(result, dims, m);
+    break;
+  case 10:
+    doSolve<QIWS<10>>(result, dims, m);
+    break;
+  case 11:
+    doSolve<QIWS<11>>(result, dims, m);
+    break;
+  case 12:
+    doSolve<QIWS<12>>(result, dims, m);
+    break;
+  default:
+    throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
   }
-  else if (method == "iqrs")
-  {
-    // Workaround for fact that dimensionality is a template param and thus fixed at compile time
-    switch(dim)
-    {
-    case 2:
-      doSolve<IQRS<2>>(result, dims, m);
-      break;
-    case 3:
-      doSolve<IQRS<3>>(result, dims, m);
-      break;
-    case 4:
-      doSolve<IQRS<4>>(result, dims, m);
-      break;
-    case 5:
-      doSolve<IQRS<5>>(result, dims, m);
-      break;
-    case 6:
-      doSolve<IQRS<6>>(result, dims, m);
-      break;
-    case 7:
-      doSolve<IQRS<7>>(result, dims, m);
-      break;
-    case 8:
-      doSolve<IQRS<8>>(result, dims, m);
-      break;
-    case 9:
-      doSolve<IQRS<9>>(result, dims, m);
-      break;
-    case 10:
-      doSolve<IQRS<10>>(result, dims, m);
-      break;
-    case 11:
-      doSolve<IQRS<11>>(result, dims, m);
-      break;
-    case 12:
-      doSolve<IQRS<12>>(result, dims, m);
-      break;
-    default:
-      throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
-    }
-  }
-  else
-  {
-    throw std::runtime_error("Invalid method. Valid values are: 'iwrs', 'iqrs'");
-  }
-  // TODO dump out pop table...
 
   return result;
 }
 
 
-//' Generate integer frequencies from probilities and an overall population
+//' Generate integer frequencies from discrete probabilities and an overall population.
 //'
-//' @param p a numeric vector of state occupation probabilities
+//' This function will generate the closest integer vector to the probabilities scaled to the population.
+//' @param pIn a numeric vector of state occupation probabilities. Must sum to unity (to within double precision epsilon)
 //' @param pop the total population
+//' @return an integer vector of frequencies that sums to pop.
+//' @examples
+//' prob2IntFreq(c(0.1,0.2,0.3,0.4), 11)
 //' @export
 // [[Rcpp::export]]
-List prob2Freq(NumericVector pIn, int pop)
+List prob2IntFreq(NumericVector pIn, int pop)
 {
   double var;
   const std::vector<double>& p = as<std::vector<double>>(pIn);
@@ -213,11 +173,14 @@ List prob2Freq(NumericVector pIn, int pop)
   return result;
 }
 
-//' Generate integer frequencies from probilities and an overall population
+//' Generate Sobol' quasirandom sequence
 //'
-//' @param d dimensions
+//' @param dim dimensions
 //' @param n number of variates to sample
-//' @param k number of variates to skip
+//' @param skip number of variates to skip (actual number skipped will be largest power of 2 less than k)
+//' @return a n-by-d matrix of uniform probabilities in (0,1).
+//' @examples
+//' sobolSequence(2, 1000, 1000) # will skip 512 numbers!
 //' @export
 // [[Rcpp::export]]
 NumericMatrix sobolSequence(int dim, int n, int skip = 0)

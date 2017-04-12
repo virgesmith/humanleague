@@ -2,16 +2,21 @@
 % Please edit documentation in R/RcppExports.R
 \name{synthPop}
 \alias{synthPop}
-\title{Generate a population in n dimensions given n marginals}
+\title{Generate a population in n dimensions given n marginals.}
 \usage{
-synthPop(marginals, maxAttempts = 4L)
+synthPop(marginals)
 }
 \arguments{
-\item{marginals}{a List of n integer vectors containing marginal data (2 <= n <= 12)}
-
-\item{maxAttempts}{(optional, default=4) number of retries to make if fitting is unsuccessful}
+\item{marginals}{a List of n integer vectors containing marginal data (2 <= n <= 12). The sum of elements in each vector must be identical}
+}
+\value{
+an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
 }
 \description{
-Generate a population in n dimensions given n marginals
+Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
+generates an n-dimensional population table where elements sum to the input marginals, and supplemental data.
+}
+\examples{
+synthPop(list(c(1,2,3,4), c(3,4,3))
 }
 

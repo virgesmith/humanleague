@@ -6,26 +6,25 @@
 using namespace Rcpp;
 
 // synthPop
-List synthPop(List marginals, const std::string& method);
-RcppExport SEXP humanleague_synthPop(SEXP marginalsSEXP, SEXP methodSEXP) {
+List synthPop(List marginals);
+RcppExport SEXP humanleague_synthPop(SEXP marginalsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type method(methodSEXP);
-    rcpp_result_gen = Rcpp::wrap(synthPop(marginals, method));
+    rcpp_result_gen = Rcpp::wrap(synthPop(marginals));
     return rcpp_result_gen;
 END_RCPP
 }
-// prob2Freq
-List prob2Freq(NumericVector pIn, int pop);
-RcppExport SEXP humanleague_prob2Freq(SEXP pInSEXP, SEXP popSEXP) {
+// prob2IntFreq
+List prob2IntFreq(NumericVector pIn, int pop);
+RcppExport SEXP humanleague_prob2IntFreq(SEXP pInSEXP, SEXP popSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type pIn(pInSEXP);
     Rcpp::traits::input_parameter< int >::type pop(popSEXP);
-    rcpp_result_gen = Rcpp::wrap(prob2Freq(pIn, pop));
+    rcpp_result_gen = Rcpp::wrap(prob2IntFreq(pIn, pop));
     return rcpp_result_gen;
 END_RCPP
 }

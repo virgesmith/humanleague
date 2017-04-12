@@ -12,7 +12,7 @@
 // n-Dimensional without-replacement sampling
 // TODO rename
 template<size_t D>
-class IWRS
+class QIWS
 {
 public:
 
@@ -22,7 +22,7 @@ public:
 
   typedef std::vector<uint32_t> marginal_t;
 
-  IWRS(const std::vector<marginal_t>& marginals) : m_marginals(marginals)
+  QIWS(const std::vector<marginal_t>& marginals) : m_marginals(marginals)
   {
     if (m_marginals.size() != Dim)
     {
@@ -56,7 +56,7 @@ public:
     m_p.resize(&sizes[0]);
   }
 
-  ~IWRS() { }
+  ~QIWS() { }
 
   bool solve()
   {
@@ -183,7 +183,7 @@ private:
 #define SPECIALISE_CALCRESIDUALS(d) \
   template<> \
   template<> \
-  inline void IWRS<d>::calcResiduals<1>(std::vector<std::vector<int32_t>>& r) \
+  inline void QIWS<d>::calcResiduals<1>(std::vector<std::vector<int32_t>>& r) \
   { \
     r[0] = diff(reduce<d, uint32_t, 0>(m_t), m_marginals[0]); \
   }
@@ -204,8 +204,8 @@ SPECIALISE_CALCRESIDUALS(12)
 #undef SPECIALISE_CALCRESIDUALS
 
 // Disallow nonsensical and trivial dimensionalities
-template<> class IWRS<0>;
-template<> class IWRS<1>;
+template<> class QIWS<0>;
+template<> class QIWS<1>;
 
 
 

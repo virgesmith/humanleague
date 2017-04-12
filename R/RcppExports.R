@@ -8,7 +8,7 @@
 #' @param marginals a List of n integer vectors containing marginal data (2 <= n <= 12). The sum of elements in each vector must be identical
 #' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
 #' @examples
-#' synthPop(list(c(1,2,3,4), c(3,4,3))
+#' synthPop(list(c(1,2,3,4), c(3,4,3)))
 #' @export
 synthPop <- function(marginals) {
     .Call('humanleague_synthPop', PACKAGE = 'humanleague', marginals)

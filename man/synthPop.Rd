@@ -17,6 +17,6 @@ Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
 generates an n-dimensional population table where elements sum to the input marginals, and supplemental data.
 }
 \examples{
-synthPop(list(c(1,2,3,4), c(3,4,3))
+synthPop(list(c(1,2,3,4), c(3,4,3)))
 }
 

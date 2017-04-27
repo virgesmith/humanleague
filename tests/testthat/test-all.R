@@ -10,6 +10,7 @@ test_that("dimension invalid", {
   expect_error(humanleague::synthPop(list(c(10,10))))
 })
 
+
 test_that("marginal has -ve value", {
   expect_error(humanleague::synthPop(list(c(10,-10),c(10,-10))))
 })

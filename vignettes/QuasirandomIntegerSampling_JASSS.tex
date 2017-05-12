@@ -33,14 +33,13 @@
 \title{Population Synthesis with Quasirandom Integer Sampling}
 
 %All authors should be included in the submission. To anonymise the submission, set to 'true' the \reviewcopy command below. However, before submitting  you can check that all the informations you entered are correct by temporarily setting it to 'false'. Please remember to set it back to 'true' before the submission.
-\reviewcopy{false} 
+\reviewcopy{true} 
 
 \author[1]{Andrew P Smith}
 
 % Subsequent author should be included using the following template. You can add more in case of need, just remember to appropriately set the corresponding number.  Please check the the authblk package documentation  in case of doubts
 
 \author[1]{Robin Lovelace}
-
 \author[1]{Mark Birkin}
 \affil[1]{University of Leeds}
 
@@ -161,19 +160,19 @@ Iterative Proportional Fitting (IPF) is a popular and well-established
 technique for generating synthetic populations from marginal data.
 Compared with other methods of `population synthesis' IPF is relatively
 fast, simple and easy to implement, as showcased in a practical
-introduction to the subject by Lovelace and Dumont (2016). Furthermore,
+introduction to the subject by \cite{lovelace_spatial_2016}. Furthermore,
 a number of software packages aimed at facilitating IPF for spatial
 microsimulation and other applications have been published (e.g.
-Barthelemy and Suesse 2016; Jones, Lovelace, and Dumont 2016).
+\cite{barthelemy_cran_2016}, \cite{jones_raker:_2016}).
 
 However, the method has various limitations from the perspective of
 spatial microsimulation for social simulation. For example, IPF
 generates fractional weights instead of integer populations, an issue
-tackled by `integerisation' techniques (Lovelace and Ballas 2013);
-handles `empty cells' poorly (Lovelace et al. 2015); and requires a
+tackled by `integerisation' techniques \cite{lovelace_truncate_2013};
+handles `empty cells' poorly \cite{lovelace_evaluating_2015}; and requires a
 representative individual-level `seed' population. The most in-depth
 exploration of such limitations and the mathematical behaviour of IPF to
-date is an outstanding PhD thesis on the subject (Zaloznik 2011).
+date is a Ph.D. thesis on the subject (\cite{zaloznik_iterative_2011}).
 
 In this paper we investigate sampling techniques where a population
 matrix is built exclusively in the integer domain. The research reported 
@@ -225,7 +224,7 @@ Quasirandom numbers, often referred to as low discrepancy sequences, are
 preferential to pseudorandom numbers in many applications, despite not
 having some of the (appearance of) randomness that good pseudorandom
 generators possess. In this work we focus on the Sobol quasirandom
-sequence (Bratley and Fox 1988; Joe and Kuo 2003).
+sequence (\cite{bratley_algorithm_1988}, \cite{joe_remark_2003}).
 
 Figure 1 qualitatively illustrates the difference between pseudo- and
 quasirandom sampling. Each plot contains 2000 uniform points in two
@@ -251,18 +250,18 @@ between variates often has a much longer period, allowing for very large
 samples to be taken.
 
 For applications such as numerical integration, Sobol sequences converge
-at a rate of \(\approx1/N\) (actually \((ln N)^D/N\) (Press et al. 2017)
+at a rate of \(\approx1/N\) (actually \((ln N)^D/N\) (\cite{press_numerical_nodate})
 compared to \(\approx1/\sqrt N\) for a pseudorandom generator, and thus
 require far fewer samples to achieve the same level of accuracy.
 
 Quasirandom sequences are not seeded like pseudorandom generators. To
 avoid repetition, and for better degeneracy, it is recommended to
-discard a number of variates on initialisation (Joe and Kuo 2003), and
+discard a number of variates on initialisation (\cite{joe_remark_2003}), and
 on subsequent sampling continue the sequence from its previous position.
 
 In the later analysis of our algorithm, for comparison, we use the
 MT19937 variant of the Mersenne Twister as our pseudorandom generator
-(Matsumoto and Nishimura 1998).
+(\cite{matsumoto_mersenne_1998}).
 
 \subsection{Sampling without
 Replacement}\label{sampling-without-replacement}
@@ -371,8 +370,8 @@ in the Discussion.
 The algorithm is implemented in an \texttt{R} package called
 \texttt{humanleague}, written in \texttt{C++11} and \texttt{C} and
 exposed to \texttt{R} via \texttt{Rcpp}. We used open source
-implementations of the Sobol sequence generator (Johnson 2017) and the
-incomplete gamma function (Burkardt 2008), the latter in order to 
+implementations of the Sobol sequence generator (\cite{johnson_stevengj/nlopt:_nodate}) and the
+incomplete gamma function (\cite{burkardt_asa032_2008}\cite{noauthor_notitle_nodate}), the latter in order to 
 compute the p-value.
 
 One of the many useful features introduced in \texttt{C++11} was a
@@ -554,7 +553,7 @@ location (MSOA).
 	\end{tabular}
 	\caption{Convergence behaviour of population synthesis algorithms. \(N\)
 	is the number of times the algorithm was run, \(\bar{c}\) refers to the
-	convergence success rate, and \(\bar{p}\) refers to the mean p-value.}\end{table}
+	convergence success rate, and \(\bar{p}\) refers to the mean p-value.}
 	\label{tab1}	
 \end{table}
 
@@ -885,7 +884,7 @@ funding for this work.
 % Please upload the bib file (not just the bbl one) when submitting.
  
 \bibliographystyle{jasss}
-\bibliography{ref.bib} % Please set the right name for your bib file
+\bibliography{./ref.bib} % Please set the right name for your bib file
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

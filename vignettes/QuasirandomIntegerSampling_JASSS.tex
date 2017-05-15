@@ -33,7 +33,7 @@
 \title{Population Synthesis with Quasirandom Integer Sampling}
 
 %All authors should be included in the submission. To anonymise the submission, set to 'true' the \reviewcopy command below. However, before submitting  you can check that all the informations you entered are correct by temporarily setting it to 'false'. Please remember to set it back to 'true' before the submission.
-\reviewcopy{true} 
+\reviewcopy{false} 
 
 \author[1]{Andrew P Smith}
 
@@ -180,7 +180,9 @@ in this paper is partly motivated by the need to generate individual
 simulated agents for an entire city.  Journey patterns are imputed to 
 each member of the simulated population using app-based mobility traces 
 in order to generate travel demand schedules for an entire urban population 
-in pseudo-real-time.  
+in pseudo-real-time.
+
+Working exclusively in the integer domain requires that marginal frequencies are integral. Often, these are expressed as probabilities rather than frequencies. We propose that integerising each marginal at this stage is preferable to integerising the final population. Mathematically, integerisation in a single dimension is straightforward and a closest solution can always be quantified.    
 
 We show that integer sampling can only work effectively if a quasirandom (as opposed to a
 pseudorandom) number generator is used, and this in itself is not
@@ -191,35 +193,7 @@ properties of the resulting populations, comparing them to populations
 generated with the IPF algorithm.
 
 \section{Theory}\label{theory}
-
-\subsection{Degeneracy and Statistical
-Likelihood}\label{degeneracy-and-statistical-likelihood}
-
-In this work we define degeneracy as the number of possible different
-ways a given overall population \(P\) can be sampled into a table
-\(\mathbf{T}\) containing \(S\) possible states \(\mathbf{k}\), with
-occupancy probability \(p_\mathbf{k}\), the system having \(d\) degrees
-of freedom.\footnote{These terms are defined more precisely in section
-  2.4.} Making the assumption that marginals are uncorrelated, then the
-higher the degeneracy of the population, the more statistically likely
-the population is.
-
-We measure the degeneracy of populations using a \(\chi^2\) statistic:
-\begin{equation}
-\chi^2 = \frac{\sum\limits_{\mathbf{k}}(\mathbf{T}_\mathbf{k}-p_\mathbf{k}S)^2}{p_\mathbf{k}S}
-\end{equation}
-from which we can estimate a p-value, which represents the statistical
-significance of the synthetic population.
-\begin{equation}
-p=1-\mathbb{P}[d/2,\chi^2] 
-\end{equation}
-where \(\mathbb{P}\) is the cumulative
-\(\chi^2\) density function and \(d\) the degrees of freedom of the
-system. The aim in this context is to generate populations with a high
-p-value, i.e.~a low statistical significance and a high-degeneracy.
-
 \subsection{Quasirandom Numbers}\label{quasirandom-numbers}
-
 Quasirandom numbers, often referred to as low discrepancy sequences, are
 preferential to pseudorandom numbers in many applications, despite not
 having some of the (appearance of) randomness that good pseudorandom
@@ -252,7 +226,7 @@ samples to be taken.
 For applications such as numerical integration, Sobol sequences converge
 at a rate of \(\approx1/N\) (actually \((ln N)^D/N\) (\cite{press_numerical_nodate})
 compared to \(\approx1/\sqrt N\) for a pseudorandom generator, and thus
-require far fewer samples to achieve the same level of accuracy.
+require far fewer samples to achieve the same level of accuracy. This makes quasirandom sampling particularly suitable for Monte-Carlo integration of high-dimensional functions: far fewer samples are required to obtain the same level of accuracy that would be achieved using pseudorandom sampling. 
 
 Quasirandom sequences are not seeded like pseudorandom generators. To
 avoid repetition, and for better degeneracy, it is recommended to
@@ -263,8 +237,9 @@ In the later analysis of our algorithm, for comparison, we use the
 MT19937 variant of the Mersenne Twister as our pseudorandom generator
 (\cite{matsumoto_mersenne_1998}).
 
-\subsection{Sampling without
-Replacement}\label{sampling-without-replacement}
+Consider the following simple example: we wish to calculate the expected value of the sum of 2 fair and independent dice, sampling 100 times. Using pseudorandom sampling, with a standard error proportional to the square root of the number of samples, we would expect to get an estimate of \(7 \pm 10\%\). However, using quasirandom sampling, since the standard error is inversely proportional to the number of samples, the estimate will be \(7 \pm 1\%\). To achieve the same accuracy with peudorandom numbers would require 10000 samples.
+
+\subsection{Sampling without Replacement}\label{sampling-without-replacement}
 
 Given a discretely distributed population \(P\) with integral frequencies
 \(\{f_1,f_2,...f_n\}\), a random sample \(i \in \{1...n\}\) has
@@ -282,6 +257,54 @@ states \(f_{j\neq{i}}\) cannot be undersampled. By extension, if all but
 one states \(f_{i\neq{j}}\) cannot be oversampled, then \(f_j\) cannot
 be undersampled. Thus each state can neither be under- nor oversampled:
 the distribution must be matched exactly.
+
+\subsection{Integerisation of Probabilities}\label{integerisation-of-probabilities}
+
+Given discrete probabilities \(p_i\) and an overall population \(P\), the nearest integer frequencies can be obtained using the following algorithm:
+
+Obtain a lower bound for integer frequencies by computing
+\begin{equation}
+f_i = \lfloor p_{i}P \rfloor
+\end{equation}
+\begin{equation}
+g_i = p_i P - f_i
+\end{equation}
+\begin{equation}
+X = P - \sum\limits_i{f_i}
+\end{equation}
+Then, increment \(X\) values of \(f_i\) corresponding to the largest values of \(g_i\). This ensures that
+\begin{equation}
+\sum\limits_i{f_i} = P 
+\end{equation}
+matching the population, and that \(g_i\) is minimised. Note that there may be multiple solutions
+
+\subsection{Degeneracy and Statistical
+Likelihood}\label{degeneracy-and-statistical-likelihood}
+
+TODO move to later in this section 
+
+In this work we define degeneracy as the number of possible different
+ways a given overall population \(P\) can be sampled into a table
+\(\mathbf{T}\) containing \(S\) possible states \(\mathbf{k}\), with
+occupancy probability \(p_\mathbf{k}\), the system having \(d\) degrees
+of freedom.\footnote{These terms are defined more precisely in section
+  2.4.} Making the assumption that marginals are uncorrelated, then the
+higher the degeneracy of the population, the more statistically likely
+the population is.
+
+We measure the degeneracy of populations using a \(\chi^2\) statistic:
+\begin{equation}
+\chi^2 = \frac{\sum\limits_{\mathbf{k}}(\mathbf{T}_\mathbf{k}-p_\mathbf{k}S)^2}{p_\mathbf{k}S}
+\end{equation}
+from which we can estimate a p-value, which represents the statistical
+significance of the synthetic population.
+\begin{equation}
+p=1-\mathbb{P}[d/2,\chi^2] 
+\end{equation}
+where \(\mathbb{P}\) is the cumulative
+\(\chi^2\) density function and \(d\) the degrees of freedom of the
+system. The aim in this context is to generate populations with a high
+p-value, i.e.~a low statistical significance and a high-degeneracy.
 
 \subsection{Problem Statement}\label{problem-statement}
 

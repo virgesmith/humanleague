@@ -19,4 +19,3 @@ generates an n-dimensional population table where elements sum to the input marg
 \examples{
 synthPop(list(c(1,2,3,4), c(3,4,3)))
 }
-

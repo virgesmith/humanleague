@@ -22,4 +22,3 @@ Generate Sobol' quasirandom sequence
 \examples{
 sobolSequence(2, 1000, 1000) # will skip 512 numbers!
 }
-

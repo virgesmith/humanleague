@@ -20,4 +20,3 @@ This function will generate the closest integer vector to the probabilities scal
 \examples{
 prob2IntFreq(c(0.1,0.2,0.3,0.4), 11)
 }
-

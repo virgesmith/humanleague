@@ -1,4 +1,4 @@
 exportPattern("^[[:alpha:]]+")
 importFrom(Rcpp, evalCpp)
-useDynLib(humanleague)
+useDynLib(humanleague, .registration = T)
 

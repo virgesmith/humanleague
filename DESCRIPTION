@@ -1,7 +1,7 @@
 Package: humanleague
 Type: Package
 Title: Human League: a Synthetic Population Generator
-Description: Generates integer synthetic populations given integer marginal data, in up to 12 dimensions, using quasi-random without-replacement sampling. Also provides a quasirandom sequence generator and a function to convert discrete marginal probabilities into integer frequencies.
+Description: Generates integer synthetic populations given integer marginal data, in up to 12 dimensions, using quasi-random without-replacement sampling. Also provides a quasi-random sequence generator and a function to convert discrete marginal probabilities into integer frequencies.
 Version: 0.1.0
 Author: Andrew Smith
 Maintainer: Andrew Smith <a.p.smith@leeds.ac.uk>

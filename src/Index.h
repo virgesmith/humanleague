@@ -7,7 +7,7 @@
 #include <cassert>
 
 // this may need to be moved to a cpp file to avoid linker errors
-static const size_t Index_Unfixed = -1ull;
+static const size_t Index_Unfixed = std::numeric_limits<size_t>::max();
 
 // Indexer for elements in n-D array, holding dimension C constant
 // Use C=Index_Unfixed to loop over all elements

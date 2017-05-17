@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-std::vector<int> integeriseMarginalDistribution(const std::vector<double>& p, size_t pop, double& mse)
+std::vector<int> integeriseMarginalDistribution(const std::vector<double>& p, int pop, double& mse)
 {
   const size_t n = p.size();
   std::vector<int> f(n);

@@ -7,7 +7,7 @@
 unitTest()
 }
 \value{
-number of test failures.
+a List containing, number of tests run, number of failures, and any error messages.
 }
 \description{
 Entry point to enable runing unit tests in R (e.g. in testthat)

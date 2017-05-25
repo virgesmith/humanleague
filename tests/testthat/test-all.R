@@ -4,7 +4,12 @@ context("humanleague")
 
 # Unit test harness
 test_that("unit tests", {
-  expect_equal(humanleague::unitTest(), 0)
+  result = humanleague::unitTest()
+  expect_gt(result$nTests, 0)
+  expect_equal(result$nFails, 0)
+  if (result$nFails) {
+    print(result$errors)
+  }
 })
 
 # Regression tests

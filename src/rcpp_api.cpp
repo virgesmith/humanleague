@@ -202,15 +202,19 @@ NumericMatrix sobolSequence(int dim, int n, int skip = 0)
 
 //' Entry point to enable runing unit tests in R (e.g. in testthat)
 //'
-//' @return number of test failures.
-//' @param none
+//' @return a List containing, number of tests run, number of failures, and any error messages.
 //' @examples
 //' unitTest()
 //' @export
 // [[Rcpp::export]]
-int unitTest()
+List unitTest()
 {
-  int nFails = unittest::run();
+  const unittest::Logger& log = unittest::run();
 
-  return nFails;
+  List result;
+  result["nTests"] = log.testsRun;
+  result["nFails"] = log.testsFailed;
+  result["errors"] = log.errors;
+
+  return result;
 }

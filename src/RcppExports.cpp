@@ -42,7 +42,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // unitTest
-int unitTest();
+List unitTest();
 RcppExport SEXP humanleague_unitTest() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

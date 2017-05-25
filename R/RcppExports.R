@@ -40,3 +40,14 @@ sobolSequence <- function(dim, n, skip = 0L) {
     .Call('humanleague_sobolSequence', PACKAGE = 'humanleague', dim, n, skip)
 }
 
+#' Entry point to enable runing unit tests in R (e.g. in testthat)
+#'
+#' @return number of test failures.
+#' @param none
+#' @examples
+#' unitTest()
+#' @export
+unitTest <- function() {
+    .Call('humanleague_unitTest', PACKAGE = 'humanleague')
+}
+

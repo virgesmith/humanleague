@@ -1,3 +1,9 @@
+
+// Disabled for now
+// TODO determine whether this is best practice
+#if 0
+
+
 #include <R.h>
 #include <Rinternals.h>
 #include <stdlib.h> // for NULL
@@ -19,3 +25,5 @@ void R_init_humanleague(DllInfo *dll)
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }
+
+#endif

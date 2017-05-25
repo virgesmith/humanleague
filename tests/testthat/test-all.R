@@ -2,6 +2,13 @@
 
 context("humanleague")
 
+# Unit test harness
+test_that("unit tests", {
+  expect_equal(humanleague::unitTest(), 0)
+})
+
+# Regression tests
+
 test_that("marginal sums are invalid", {
   expect_error(humanleague::synthPop(list(c(10,10),c(10,11))))
 })

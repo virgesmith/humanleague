@@ -23,8 +23,10 @@ in the project's root directory, or at <http://www.gnu.org/licenses/>.
 using namespace Rcpp;
 
 #include "QIWS.h"
-//#include "IQRS.h"
 #include "Integerise.h"
+
+#include "UnitTester.h"
+
 #include <vector>
 
 //#include <csignal>
@@ -196,4 +198,19 @@ NumericMatrix sobolSequence(int dim, int n, int skip = 0)
       m(j,i) = s() * scale;
 
   return m;
+}
+
+//' Entry point to enable runing unit tests in R (e.g. in testthat)
+//'
+//' @return number of test failures.
+//' @param none
+//' @examples
+//' unitTest()
+//' @export
+// [[Rcpp::export]]
+int unitTest()
+{
+  int nFails = unittest::run();
+
+  return nFails;
 }

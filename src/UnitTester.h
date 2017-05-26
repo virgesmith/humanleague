@@ -75,6 +75,7 @@ void testSobol();
 void testDDWR();
 void testPValue();
 void testQIWS();
+void testConstrainedSampling();
 
 const Logger& run();
 

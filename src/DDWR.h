@@ -54,6 +54,8 @@ class discrete_distribution_without_replacement
 public:
   typedef I result_type;
 
+  static const result_type invalid_state = -1;
+
   // enforce integral types only
   static_assert(std::is_integral<I>::value, "discrete_distribution_without_replacement: only integral types supported");
 
@@ -91,6 +93,37 @@ public:
     return idx;
   }
 
+  result_type constrainedSample(result_type r, size_t firstForbiddenState/*const std::vector<uint32_t>& allowedStates*/)
+  {
+    if (!m_sum)
+      throw std::runtime_error("distribution is depleted");
+
+    firstForbiddenState = std::min(m_freq.size(), firstForbiddenState);
+
+    // result_type allowedSum = 0;
+    // for (size_t i = 0; i < firstForbiddenState; ++i)
+    // {
+    //   allowedSum += m_freq[i];
+    // }
+    result_type allowedSum = std::accumulate(m_freq.begin(), m_freq.begin() + firstForbiddenState, 0);
+
+    // map r in [0,2^32) -> [0, m_sum)
+    r = (uint32_t)(double(r)/(1ull<<32) * allowedSum);
+
+    result_type idx = 0;
+    result_type s = m_freq[0];
+    while (r >= s)
+    {
+      ++idx;
+      s += m_freq[idx];
+      // give up if impossible to sample a non-forbidden state
+      if (idx >= firstForbiddenState)
+        return invalid_state;
+    }
+    --m_freq[idx];
+    --m_sum;
+    return idx;
+}
   bool empty() const
   {
     return m_sum == 0;

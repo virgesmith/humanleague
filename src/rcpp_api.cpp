@@ -23,6 +23,7 @@ in the project's root directory, or at <http://www.gnu.org/licenses/>.
 using namespace Rcpp;
 
 #include "QIWS.h"
+#include "CQIWS.h"
 #include "Integerise.h"
 
 #include "UnitTester.h"
@@ -136,6 +137,45 @@ List synthPop(List marginals)
     break;
   default:
     throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
+  }
+
+  return result;
+}
+
+//' Generate a constrained population in 2 dimensions given n marginals.
+//' Constraint is hard-coded
+//'
+//' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
+//' generates an 2-dimensional population table where elements sum to the input marginals, and supplemental data.
+//' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
+//' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
+//' @examples
+//' synthPopC(list(c(1,2,3,4), c(3,4,3)))
+//' @export
+// [[Rcpp::export]]
+List synthPopC(List marginals)
+{
+  const size_t dim = marginals.size();
+  std::vector<std::vector<uint32_t>> m(dim);
+  IntegerVector dims;
+  for (size_t i = 0; i < dim; ++i)
+  {
+    const IntegerVector& iv = marginals[i];
+    m[i].reserve(iv.size());
+    std::copy(iv.begin(), iv.end(), std::back_inserter(m[i]));
+    dims.push_back(iv.size());
+  }
+  List result;
+  result["method"] = "CQIWS";
+
+  // Workaround for fact that dimensionality is a template param and thus fixed at compile time
+  switch(dim)
+  {
+  case 2:
+    doSolve<CQIWS>(result, dims, m);
+    break;
+  default:
+    throw std::runtime_error("CQIWS invalid dimensionality: " + std::to_string(dim));
   }
 
   return result;

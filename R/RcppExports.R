@@ -14,6 +14,20 @@ synthPop <- function(marginals) {
     .Call('humanleague_synthPop', PACKAGE = 'humanleague', marginals)
 }
 
+#' Generate a constrained population in 2 dimensions given n marginals.
+#' Constraint is hard-coded
+#'
+#' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
+#' generates an 2-dimensional population table where elements sum to the input marginals, and supplemental data.
+#' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
+#' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
+#' @examples
+#' synthPopC(list(c(1,2,3,4), c(3,4,3)))
+#' @export
+synthPopC <- function(marginals) {
+    .Call('humanleague_synthPopC', PACKAGE = 'humanleague', marginals)
+}
+
 #' Generate integer frequencies from discrete probabilities and an overall population.
 #'
 #' This function will generate the closest integer vector to the probabilities scaled to the population.

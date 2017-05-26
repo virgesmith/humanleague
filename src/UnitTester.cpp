@@ -37,6 +37,7 @@ const unittest::Logger& unittest::run()
   // UNHANDLED_ERROR();
 
   // call test functions
+  testConstrainedSampling();
   testNDArray();
   testSobol();
   testDDWR();

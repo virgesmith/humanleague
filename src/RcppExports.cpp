@@ -16,6 +16,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// synthPopC
+List synthPopC(List marginals);
+RcppExport SEXP humanleague_synthPopC(SEXP marginalsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
+    rcpp_result_gen = Rcpp::wrap(synthPopC(marginals));
+    return rcpp_result_gen;
+END_RCPP
+}
 // prob2IntFreq
 List prob2IntFreq(NumericVector pIn, int pop);
 RcppExport SEXP humanleague_prob2IntFreq(SEXP pInSEXP, SEXP popSEXP) {

@@ -56,6 +56,15 @@ void Sobol::skip(uint32_t n)
   //std::cout << "skipped=" << skipped << std::endl;
 }
 
+
+void Sobol::reset(uint32_t nSkip)
+{
+  nlopt_sobol_destroy(m_s);
+  m_s = nlopt_sobol_create(m_dim);
+  if (nSkip > 0)
+    skip(nSkip);
+}
+
 uint32_t Sobol::min() const
 {
   return 0;

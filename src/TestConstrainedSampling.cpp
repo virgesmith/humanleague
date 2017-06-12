@@ -70,4 +70,17 @@ void unittest::testConstrainedSampling()
     CHECK(cqiws.solve());
 
   }
+  {
+    std::vector<uint32_t> rooms{1, 1, 8, 3,84, 21, 4, 4, 1};
+    std::vector<uint32_t> beds{0, 8, 3, 113, 2, 1};
+    std::vector<std::vector<uint32_t>> dists;
+    dists.push_back(rooms);
+    dists.push_back(beds);
+
+    //Rcpp::Rcout << runCQIWS(dists) << std::endl;
+    CQIWS cqiws(dists);
+    CHECK(cqiws.solve());
+    print(cqiws.result().rawData(), cqiws.result().storageSize(), cqiws.result().size(1), Rcpp::Rcout);
+
+  }
 }

@@ -7,6 +7,9 @@
 #include "Sobol.h"
 #include "DDWR.h"
 #include "PValue.h"
+
+#include <Rcpp.h>
+using Rcpp::Rcout;
 #include <cmath>
 
 
@@ -26,12 +29,19 @@ inline bool constraintMet(const NDArray<2, bool>& allowed, QIWS<2>::table_t& t)
 
 inline bool switchOne(size_t* forbiddenIndex, const NDArray<2, bool>& allowedStates, QIWS<2>::table_t& pop)
 {
+  if (pop[forbiddenIndex] > 1000) return true;
+
   // TODO randomise starting index
   size_t switchFromIndex[2];
   size_t offset0 = std::rand() % pop.sizes()[0];
   size_t offset1 = std::rand() % pop.sizes()[1];
+  //print(pop.rawData(), pop.storageSize(), pop.sizes()[1], Rcout);
+  //Rcout << "Forbidden state is " << forbiddenIndex[0] << ", " << forbiddenIndex[1] << " value " << pop[forbiddenIndex] << std::endl;
   //Rcout << "Starting indices are " << offset0 << ", " << offset1 << std::endl;
+  bool haveCachedSwitchState = false;
+  size_t cachedSwitchFromIndex[2];
   for (size_t counter0 = 0; counter0 < pop.sizes()[0]; ++counter0)
+  {
     for (size_t counter1 = 0; counter1 < pop.sizes()[1]; ++counter1)
     {
       switchFromIndex[0] = (counter0 + offset0) % pop.sizes()[0];
@@ -43,13 +53,13 @@ inline bool switchOne(size_t* forbiddenIndex, const NDArray<2, bool>& allowedSta
       size_t switchToIndexA[2] = { forbiddenIndex[0], switchFromIndex[1] };
       size_t switchToIndexB[2] = { switchFromIndex[0], forbiddenIndex[1] };
 
-      // TODO relax restriction that both switch-to states are permitted?
-      if ((allowedStates[switchToIndexA] || allowedStates[switchToIndexB])
+      // Prefer if both switch-to states are allowed
+      if ((allowedStates[switchToIndexA] && allowedStates[switchToIndexB])
             && pop[switchFromIndex]/*only needs to have 1 >= pop[forbiddenIndex]*/)
       {
-        //Rcout << "Found pairable state at " << switchFromIndex[0] << ", " << switchFromIndex[1] << std::endl;
-        //Rcout << "Found allowed state at " << switchToIndexA[0] << ", " << switchToIndexA[1] << std::endl;
-        //Rcout << "Found allowed state at " << switchToIndexB[0] << ", " << switchToIndexB[1] << std::endl;
+        // Rcout << "Found pairable state at " << switchFromIndex[0] << ", " << switchFromIndex[1] << std::endl;
+        // Rcout << "Found allowed state at " << switchToIndexA[0] << ", " << switchToIndexA[1] << std::endl;
+        // Rcout << "Found allowed state at " << switchToIndexB[0] << ", " << switchToIndexB[1] << std::endl;
 
         // one at a time
         --pop[switchFromIndex];// -= pop[forbiddenIndex];
@@ -59,7 +69,29 @@ inline bool switchOne(size_t* forbiddenIndex, const NDArray<2, bool>& allowedSta
         //print(pop.rawData(), pop.storageSize(), pop.sizes()[1], Rcout);
         return true;
       }
+      //but also keep track of one place where a non-optimal switch can be made
+      else if (!haveCachedSwitchState /*&& (!allowedStates[switchToIndexA] && !allowedStates[switchToIndexB])*/
+                 && pop[switchFromIndex])
+      {
+        cachedSwitchFromIndex[0] = switchFromIndex[0];
+        cachedSwitchFromIndex[1] = switchFromIndex[1];
+        haveCachedSwitchState = true;
+      }
     }
+  }
+  if (haveCachedSwitchState)
+  {
+    size_t switchToIndexA[2] = { forbiddenIndex[0], cachedSwitchFromIndex[1] };
+    size_t switchToIndexB[2] = { cachedSwitchFromIndex[0], forbiddenIndex[1] };
+    // Rcout << "Found pairable state at " << cachedSwitchFromIndex[0] << ", " << cachedSwitchFromIndex[1] << std::endl;
+    // Rcout << "Found 1/2 allowed state at " << switchToIndexA[0] << ", " << switchToIndexA[1] << std::endl;
+    // Rcout << "Found 1/2 allowed state at " << switchToIndexB[0] << ", " << switchToIndexB[1] << std::endl;
+    --pop[cachedSwitchFromIndex];// -= pop[forbiddenIndex];
+    ++pop[switchToIndexA];// += pop[forbiddenIndex];
+    ++pop[switchToIndexB];// += pop[forbiddenIndex];
+    --pop[forbiddenIndex];// = 0u;
+    return true;
+  }
   return false;
 }
 
@@ -131,33 +163,37 @@ public:
 
   bool solve()
   {
-    QIWS::solve();
-
-    // make up a constraint
-    size_t idx[2];
-    // disallow idx[1] > idx[0]
-    for (idx[0] = 0; idx[0] < m_t.sizes()[0]; ++idx[0])
-      for (idx[1] = idx[0] + 1; idx[1] < m_t.sizes()[1]; ++idx[1])
-        m_allowedStates[idx] = false;
-
-    // constraining...
     size_t iter = 0;
-    size_t iterLimit = m_t.storageSize();
-    do
+    const size_t iterLimit = m_t.storageSize();
+    for (size_t k = 0; k < 10; ++k)
     {
-      // Loop over all states, until no population in forbidden states
-      for (idx[0] = 0; idx[0] < m_t.sizes()[0]; ++idx[0])
-        for (idx[1] = 0; idx[1] < m_t.sizes()[1]; ++idx[1])
-        {
-          if (!m_allowedStates[idx] && m_t[idx])
-          {
-            if (!switchPop(idx, m_allowedStates, m_t))
-              throw std::runtime_error("unable to correct for forbidden states");
-          }
-        }
-        ++iter;
-    } while(iter < iterLimit && !constraintMet(m_allowedStates, m_t));
+      QIWS::solve();
 
+      // make up a constraint
+      size_t idx[2];
+      // disallow idx[1] > idx[0]
+      for (idx[0] = 0; idx[0] < m_t.sizes()[0]; ++idx[0])
+        for (idx[1] = idx[0] + 1; idx[1] < m_t.sizes()[1]; ++idx[1])
+          m_allowedStates[idx] = false;
+
+      // constraining...
+      do
+      {
+        // Loop over all states, until no population in forbidden states
+        for (idx[0] = 0; idx[0] < m_t.sizes()[0]; ++idx[0])
+          for (idx[1] = 0; idx[1] < m_t.sizes()[1]; ++idx[1])
+          {
+            if (!m_allowedStates[idx] && m_t[idx])
+            {
+              if (!switchPop(idx, m_allowedStates, m_t))
+                throw std::runtime_error("unable to correct for forbidden states");
+            }
+          }
+          ++iter;
+      } while(iter < iterLimit && !constraintMet(m_allowedStates, m_t));
+      if (iter < iterLimit)
+        break;
+    }
     // indicate not converged if iterLimit reached
     if (iter == iterLimit)
       return false;

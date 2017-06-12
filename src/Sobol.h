@@ -31,6 +31,8 @@ public:
   // Skip largest 2^k <= n
   void skip(result_type n);
 
+  void reset(uint32_t nSkip = 0u);
+
   result_type min() const;
 
   result_type max() const;

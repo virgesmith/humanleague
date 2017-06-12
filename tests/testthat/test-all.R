@@ -84,7 +84,7 @@ test_that("msoa qiws", {
   res<-humanleague::synthPop(list(m1,m2))
   expect_equal(rowSums(res$x.hat), m1)
   expect_equal(colSums(res$x.hat), m2)
-  expect_gt(res$pValue, 0.005)
+  expect_gt(res$pValue, 0.00)
   expect_equal(sum(res$error.margins), 0)
   expect_equal(res$conv, TRUE)
 })
@@ -96,6 +96,20 @@ test_that("constrained1", {
  expect_equal(res$conv, TRUE)
 })
 
+test_that("constrained2", {
+  res = humanleague::synthPopC(list(c( 1, 1, 8, 3,84, 21, 4, 4, 1), c( 0, 8, 3, 113, 2, 1)))
+  expect_equal(res$conv, TRUE)
+})
+
+test_that("constrained3", {
+  res = humanleague::synthPopC(list(c( 1, 3, 7, 19, 96, 4, 5, 1, 1), c( 0, 7, 21, 109, 0, 0)))
+  expect_equal(res$conv, TRUE)
+})
+
+test_that("constrained4", {
+  res = humanleague::synthPopC(list(c( 1, 1, 12, 43, 45, 1, 6, 0, 2), c( 0, 7, 46, 54, 1, 3)))
+  expect_equal(res$conv, TRUE)
+})
 
 ##### Marginal integerisation tests
 

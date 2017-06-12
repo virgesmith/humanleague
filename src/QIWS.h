@@ -56,7 +56,7 @@ public:
     m_p.resize(&sizes[0]);
   }
 
-  ~QIWS() { }
+  virtual ~QIWS() { }
 
   bool solve()
   {
@@ -144,7 +144,7 @@ public:
     return m_p;
   }
 
-private:
+protected:
 
   template<size_t O>
   void calcResiduals(std::vector<std::vector<int32_t>>& r)
@@ -177,6 +177,8 @@ private:
   double m_chi2;
   // degrees of freedom (for p-value calculation)
   uint32_t m_dof;
+  // TODO degeneracy S!/Product_k(Tk!)
+  double m_degeneracy;
 };
 
 // TODO helper macro for member template specialisations

@@ -31,15 +31,15 @@ void print(const std::vector<T>& v)
 }
 
 template<typename T>
-void print(T* p, size_t n, size_t breakAt = 1000000)
+void print(T* p, size_t n, size_t breakAt = 1000000, std::ostream& ostr = std::cout)
 {
   for (size_t i = 0; i < n; ++i)
   {
-    std::cout << p[i] << ", ";
+    ostr << p[i] << ", ";
     if (!((i+1) % breakAt))
-      std::cout << std::endl;
+      ostr << std::endl;
   }
-  std::cout << std::endl;
+  ostr << std::endl;
 }
 
 

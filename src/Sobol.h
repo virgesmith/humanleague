@@ -18,6 +18,7 @@ public:
 
   typedef uint32_t result_type;
 
+  // TODO reset (somehow)
   explicit Sobol(uint32_t dim, result_type nSkip = 0u);
 
   ~Sobol();

@@ -48,6 +48,7 @@ template<typename S>
 void doSolve(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m)
 {
   S solver(m);
+  result["method"] = "QIWS";
   result["conv"] = solver.solve();
   result["chiSq"] = solver.chiSq();
   std::pair<double, bool> pVal = solver.pValue();
@@ -74,6 +75,41 @@ void doSolve(List& result, IntegerVector dims, const std::vector<std::vector<uin
   result["x.hat"] = values;
 }
 
+
+void doSolveConstrained(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m)
+{
+  CQIWS solver(m);
+  result["method"] = "QIWS-C";
+  result["conv"] = solver.solve();
+  result["chiSq"] = solver.chiSq();
+  std::pair<double, bool> pVal = solver.pValue();
+  result["pValue"] = pVal.first;
+  if (!pVal.second)
+  {
+    result["warning"] = "p-value may be inaccurate";
+  }
+  result["error.margins"] = std::vector<uint32_t>(solver.residuals(), solver.residuals() + 2);
+  // TODO fix constness
+  const typename QIWS<2>::table_t& t = solver.result();
+
+  // TODO this is wrong
+  const NDArray<2, double>& p = solver.stateProbabilities();
+  Index<2, Index_Unfixed> idx(t.sizes());
+  IntegerVector values(t.storageSize());
+  NumericVector probs(t.storageSize());
+  while (!idx.end())
+  {
+    values[idx.colMajorOffset()] = t[idx];
+    probs[idx.colMajorOffset()] = p[idx];
+    ++idx;
+  }
+  values.attr("dim") = dims;
+  probs.attr("dim") = dims;
+  result["p.hat"] = probs;
+  result["x.hat"] = values;
+}
+
+
 //' Generate a population in n dimensions given n marginals.
 //'
 //' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
@@ -97,7 +133,6 @@ List synthPop(List marginals)
     dims.push_back(iv.size());
   }
   List result;
-  result["method"] = "QIWS";
 
   // Workaround for fact that dimensionality is a template param and thus fixed at compile time
   switch(dim)
@@ -166,13 +201,13 @@ List synthPopC(List marginals)
     dims.push_back(iv.size());
   }
   List result;
-  result["method"] = "CQIWS";
+  result["method"] = "QIWS-C";
 
   // Workaround for fact that dimensionality is a template param and thus fixed at compile time
   switch(dim)
   {
   case 2:
-    doSolve<CQIWS>(result, dims, m);
+    doSolveConstrained(result, dims, m);
     break;
   default:
     throw std::runtime_error("CQIWS invalid dimensionality: " + std::to_string(dim));

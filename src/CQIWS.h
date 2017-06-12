@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "QIWS.h"
 #include "NDArray.h"
 #include "NDArrayUtils.h"
 #include "Sobol.h"
@@ -9,21 +10,88 @@
 #include <cmath>
 
 
+inline bool constraintMet(const NDArray<2, bool>& allowed, QIWS<2>::table_t& t)
+{
+  size_t index[2];
+
+  // Loop over all states, until no population in forbidden states
+  for (index[0] = 0; index[0] < t.sizes()[0]; ++index[0])
+    for (index[1] = 0; index[1] < t.sizes()[1]; ++index[1])
+    {
+      if (!allowed[index] && t[index])
+        return false;
+    }
+    return true;
+}
+
+inline bool switchOne(size_t* forbiddenIndex, const NDArray<2, bool>& allowedStates, QIWS<2>::table_t& pop)
+{
+  // TODO randomise starting index
+  size_t switchFromIndex[2];
+  size_t offset0 = std::rand() % pop.sizes()[0];
+  size_t offset1 = std::rand() % pop.sizes()[1];
+  //Rcout << "Starting indices are " << offset0 << ", " << offset1 << std::endl;
+  for (size_t counter0 = 0; counter0 < pop.sizes()[0]; ++counter0)
+    for (size_t counter1 = 0; counter1 < pop.sizes()[1]; ++counter1)
+    {
+      switchFromIndex[0] = (counter0 + offset0) % pop.sizes()[0];
+      switchFromIndex[1] = (counter1 + offset1) % pop.sizes()[1];
+      // must have different row and column indices to forbiddenIndex
+      if (switchFromIndex[0] == forbiddenIndex[0] || switchFromIndex[1] == forbiddenIndex[1])
+        continue;
+
+      size_t switchToIndexA[2] = { forbiddenIndex[0], switchFromIndex[1] };
+      size_t switchToIndexB[2] = { switchFromIndex[0], forbiddenIndex[1] };
+
+      // TODO relax restriction that both switch-to states are permitted?
+      if ((allowedStates[switchToIndexA] || allowedStates[switchToIndexB])
+            && pop[switchFromIndex]/*only needs to have 1 >= pop[forbiddenIndex]*/)
+      {
+        //Rcout << "Found pairable state at " << switchFromIndex[0] << ", " << switchFromIndex[1] << std::endl;
+        //Rcout << "Found allowed state at " << switchToIndexA[0] << ", " << switchToIndexA[1] << std::endl;
+        //Rcout << "Found allowed state at " << switchToIndexB[0] << ", " << switchToIndexB[1] << std::endl;
+
+        // one at a time
+        --pop[switchFromIndex];// -= pop[forbiddenIndex];
+        ++pop[switchToIndexA];// += pop[forbiddenIndex];
+        ++pop[switchToIndexB];// += pop[forbiddenIndex];
+        --pop[forbiddenIndex];// = 0u;
+        //print(pop.rawData(), pop.storageSize(), pop.sizes()[1], Rcout);
+        return true;
+      }
+    }
+  return false;
+}
+
+inline bool switchPop(size_t* forbiddenIndex, const NDArray<2, bool>& allowedStates, QIWS<2>::table_t& pop)
+{
+
+  //print(pop.rawData(), pop.storageSize(), pop.sizes()[1], Rcout);
+  //Rcout << "Forbidden state populated at " << forbiddenIndex[0] << ", " << forbiddenIndex[1] << std::endl;
+
+  // we move pop from forbiddenIndex and switchFromIndex to switchToIndexA and switchToIndexB
+  // which preserves marginals. The four indices form a rectangle
+
+  while(pop[forbiddenIndex])
+  {
+    //Rcout << pop[forbiddenIndex] << std::endl;
+    if (!switchOne(forbiddenIndex, allowedStates, pop))
+      return false;
+  }
+  // notify if unable to switch
+  return true;
+}
+
+
 // 2-Dimensional constrained quasirandom integer without-replacement sampling
 // constraint is hard-coded (for now) to: idx1 <= idx0
 // TODO rename
 //template<size_t D>
-class CQIWS
+class CQIWS : public QIWS<2>
 {
 public:
 
-  static const size_t Dim = 2;
-
-  typedef NDArray<Dim, uint32_t> table_t;
-
-  typedef std::vector<uint32_t> marginal_t;
-
-  CQIWS(const std::vector<marginal_t>& marginals) : m_marginals(marginals)
+  CQIWS(const std::vector<marginal_t>& marginals) : QIWS<2>(marginals)
   {
     if (m_marginals.size() != Dim)
     {
@@ -55,39 +123,44 @@ public:
     }
     m_t.resize(&sizes[0]);
     m_p.resize(&sizes[0]);
+    m_allowedStates.resize(&sizes[0]);
+    m_allowedStates.assign(true);
   }
 
   ~CQIWS() { }
 
   bool solve()
   {
-    // only initialised on first call, ensures different population each time
-    // will throw when it reaches 2^32 samples
-    static Sobol sobol(Dim, m_sum);
-    //static std::mt19937 sobol(70858048);
+    QIWS::solve();
 
-    std::vector<discrete_distribution_without_replacement<uint32_t>> dists;
-    for (size_t i = 0; i < Dim; ++i)
+    // make up a constraint
+    size_t idx[2];
+    // disallow idx[1] > idx[0]
+    for (idx[0] = 0; idx[0] < m_t.sizes()[0]; ++idx[0])
+      for (idx[1] = idx[0] + 1; idx[1] < m_t.sizes()[1]; ++idx[1])
+        m_allowedStates[idx] = false;
+
+    // constraining...
+    size_t iter = 0;
+    size_t iterLimit = m_t.storageSize();
+    do
     {
-      dists.push_back(discrete_distribution_without_replacement<uint32_t>(m_marginals[i].begin(), m_marginals[i].end()));
-    }
+      // Loop over all states, until no population in forbidden states
+      for (idx[0] = 0; idx[0] < m_t.sizes()[0]; ++idx[0])
+        for (idx[1] = 0; idx[1] < m_t.sizes()[1]; ++idx[1])
+        {
+          if (!m_allowedStates[idx] && m_t[idx])
+          {
+            if (!switchPop(idx, m_allowedStates, m_t))
+              throw std::runtime_error("unable to correct for forbidden states");
+          }
+        }
+        ++iter;
+    } while(iter < iterLimit && !constraintMet(m_allowedStates, m_t));
 
-    m_t.assign(0u);
-
-    size_t idx[Dim];
-
-    for (uint32_t i = 0; i < m_sum; ++i)
-    {
-      idx[0] = dists[0](sobol);
-
-      size_t constraint = idx[0] + 1;
-
-      idx[1] = dists[1].constrainedSample(sobol(), constraint);
-      if (idx[1] == discrete_distribution_without_replacement<uint32_t>::invalid_state)
-        break;
-
-      ++m_t[idx];
-    }
+    // indicate not converged if iterLimit reached
+    if (iter == iterLimit)
+      return false;
 
     std::vector<std::vector<int32_t>> r(Dim);
     calcResiduals<Dim>(r);
@@ -106,97 +179,31 @@ public:
 
     double scale = 1.0 / std::pow(m_sum, Dim-1);
 
+    double psum = 0.0;
     while (!index.end())
     {
       // m is the mean population of this state
       double m = marginalProduct<Dim>(m_marginals, index) * scale;
-      m_p[index] = m / m_sum;
-      m_chi2 += (m_t[index] - m) * (m_t[index] - m) / m;
+      m_p[index] = m / m_sum * m_allowedStates[index];
+      psum += m_p[index];
+      //m_chi2 += (m_t[index] - m) * (m_t[index] - m) / m;
       ++index;
+    }
+
+    Index<Dim, Index_Unfixed> index2(m_p.sizes());
+    while (!index2.end())
+    {
+      m_p[index2] /= psum;
+      ++index2;
     }
 
     return allZero;
   }
 
-  std::pair<double, bool> pValue() const
-  {
-    return ::pValue(m_dof, m_chi2);
-  }
-
-  double chiSq() const
-  {
-    return m_chi2;
-  }
-
-  const table_t& result() const
-  {
-    return m_t;
-  }
-
-  const int32_t* residuals() const
-  {
-    return m_residuals;
-  }
-
-  size_t population() const
-  {
-    return m_sum;
-  }
-
-  // the mean population of each state
-  const NDArray<Dim, double>& stateProbabilities() const
-  {
-    return m_p;
-  }
-
 private:
+  NDArray<2, bool> m_allowedStates;
 
-  template<size_t O>
-  void calcResiduals(std::vector<std::vector<int32_t>>& r)
-  {
-    calcResiduals<O-1>(r);
-    r[O-1] = diff(reduce<Dim, uint32_t, O-1>(m_t), m_marginals[O-1]);
-  }
-
-  // template<size_t O>
-  // void adjust3(std::vector<std::vector<int32_t>>& r)
-  // {
-  //   adjust3<O-1>(r);
-  //   //print(m_t.rawData(), m_t.storageSize());
-  //   calcResiduals<Dim>(r);
-  //   // recalc r
-  //   adjust<Dim, O-1>(r[O-1], m_t, true);
-  //   // TODO check we need the second call to calcResiduals
-  //   calcResiduals<Dim>(r);
-  // }
-
-  const std::vector<marginal_t> m_marginals;
-  table_t m_t;
-  // probabilities for each state
-  NDArray<Dim, double> m_p;
-  // total population
-  size_t m_sum;
-  // difference between table sums (over single dim) and marginal
-  int32_t m_residuals[Dim];
-  // chi-squared statistic
-  double m_chi2;
-  // degrees of freedom (for p-value calculation)
-  uint32_t m_dof;
 };
-
-// TODO helper macro for member template specialisations
-#define SPECIALISE_CALCRESIDUALS(d) \
-  template<> \
-  inline void CQIWS::calcResiduals<1>(std::vector<std::vector<int32_t>>& r) \
-  { \
-    r[0] = diff(reduce<d, uint32_t, 0>(m_t), m_marginals[0]); \
-  }
-
-SPECIALISE_CALCRESIDUALS(2)
-
-
-// remove the macros since this is a header file
-#undef SPECIALISE_CALCRESIDUALS
 
 
 

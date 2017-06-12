@@ -89,6 +89,13 @@ test_that("msoa qiws", {
   expect_equal(res$conv, TRUE)
 })
 
+##### constrained
+
+test_that("constrained1", {
+ res = humanleague::synthPopC(list(c(0, 3, 17, 124, 167, 79, 46, 22),c(15, 165, 238, 33, 7)))
+ expect_equal(res$conv, TRUE)
+})
+
 
 ##### Marginal integerisation tests
 
@@ -152,5 +159,4 @@ test_that("sobol 4d skip", {
   res<-humanleague::sobolSequence(4, 3, 5)
   expect_equal(res, matrix(c(0.1875, 0.6875, 0.9375, 0.3125, 0.8125, 0.0625, 0.3125, 0.8125, 0.5625, 0.6875, 0.1875, 0.9375), nrow=3))
 })
-
 

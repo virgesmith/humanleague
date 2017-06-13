@@ -114,6 +114,35 @@ inline bool switchPop(size_t* forbiddenIndex, const NDArray<2, bool>& allowedSta
   return true;
 }
 
+struct Constrain
+{
+  enum Status { SUCCESS = 0, ITERLIMIT = 1, STUCK = 2 };
+};
+
+inline Constrain::Status constrain(const NDArray<2, bool>& allowedStates, QIWS<2>::table_t& pop, const size_t iterLimit)
+{
+  size_t iter = 0;
+  size_t idx[2];
+  do
+  {
+    // Loop over all states, until no population in forbidden states
+    for (idx[0] = 0; idx[0] < pop.sizes()[0]; ++idx[0])
+      for (idx[1] = 0; idx[1] < pop.sizes()[1]; ++idx[1])
+      {
+        if (!allowedStates[idx] && pop[idx])
+        {
+          if (!switchPop(idx, allowedStates, pop))
+          {
+            //throw std::runtime_error("unable to correct for forbidden states");
+            return Constrain::STUCK;
+          }
+        }
+      }
+      ++iter;
+  } while(iter < iterLimit && !constraintMet(allowedStates, pop));
+
+  return iter == iterLimit ? Constrain::ITERLIMIT : Constrain::SUCCESS;
+}
 
 // 2-Dimensional constrained quasirandom integer without-replacement sampling
 // constraint is hard-coded (for now) to: idx1 <= idx0
@@ -163,40 +192,27 @@ public:
 
   bool solve()
   {
-    size_t iter = 0;
+    size_t iter;
     const size_t iterLimit = m_t.storageSize();
-    for (size_t k = 0; k < 10; ++k)
+
+    // make up a constraint
+    size_t idx[2];
+    // disallow idx[1] > idx[0]
+    for (idx[0] = 0; idx[0] < m_t.sizes()[0]; ++idx[0])
+      for (idx[1] = idx[0] + 1; idx[1] < m_t.sizes()[1]; ++idx[1])
+        m_allowedStates[idx] = false;
+
+    Constrain::Status status;
+    for (size_t k = 0; k < 1; ++k)
     {
       QIWS::solve();
-
-      // make up a constraint
-      size_t idx[2];
-      // disallow idx[1] > idx[0]
-      for (idx[0] = 0; idx[0] < m_t.sizes()[0]; ++idx[0])
-        for (idx[1] = idx[0] + 1; idx[1] < m_t.sizes()[1]; ++idx[1])
-          m_allowedStates[idx] = false;
-
       // constraining...
-      do
-      {
-        // Loop over all states, until no population in forbidden states
-        for (idx[0] = 0; idx[0] < m_t.sizes()[0]; ++idx[0])
-          for (idx[1] = 0; idx[1] < m_t.sizes()[1]; ++idx[1])
-          {
-            if (!m_allowedStates[idx] && m_t[idx])
-            {
-              if (!switchPop(idx, m_allowedStates, m_t))
-                throw std::runtime_error("unable to correct for forbidden states");
-            }
-          }
-          ++iter;
-      } while(iter < iterLimit && !constraintMet(m_allowedStates, m_t));
-      if (iter < iterLimit)
+      status = constrain(m_allowedStates, m_t, iterLimit);
+
+      Rcout << "Attempt " << k << " returned " << status << std::endl;
+      if (status < Constrain::SUCCESS)
         break;
     }
-    // indicate not converged if iterLimit reached
-    if (iter == iterLimit)
-      return false;
 
     std::vector<std::vector<int32_t>> r(Dim);
     calcResiduals<Dim>(r);
@@ -232,6 +248,10 @@ public:
       m_p[index2] /= psum;
       ++index2;
     }
+
+    // indicate not converged if iterLimit reached or stuck
+    if (status != Constrain::SUCCESS)
+      return false;
 
     return allZero;
   }

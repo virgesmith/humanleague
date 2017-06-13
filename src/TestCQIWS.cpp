@@ -6,19 +6,6 @@
 
 #include <Rcpp.h>
 
-// double runCQIWS(const std::vector<std::vector<uint32_t>>& dists)
-// {
-//   size_t tries = 1;
-//   size_t fails = 0;
-//   for (size_t i = 0; i < tries; ++i)
-//   {
-//     CQIWS qiws(dists);
-//
-//     qiws.solve() ? fails : ++fails;
-//   }
-//   return double(fails)/tries;
-// }
-
 void unittest::testConstrainedSampling()
 {
   // simple constraint: rooms >= beds
@@ -80,7 +67,5 @@ void unittest::testConstrainedSampling()
     //Rcpp::Rcout << runCQIWS(dists) << std::endl;
     CQIWS cqiws(dists);
     CHECK(cqiws.solve());
-    print(cqiws.result().rawData(), cqiws.result().storageSize(), cqiws.result().size(1), Rcpp::Rcout);
-
   }
 }

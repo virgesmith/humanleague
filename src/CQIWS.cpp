@@ -145,7 +145,8 @@ Constrain::Status constrain(const NDArray<2, bool>& allowedStates, QIWS<2>::tabl
 }
 
 
-CQIWS::CQIWS(const std::vector<marginal_t>& marginals) : QIWS<2>(marginals)
+CQIWS::CQIWS(const std::vector<marginal_t>& marginals, const NDArray<2, bool>& permittedStates)
+  : QIWS<2>(marginals), m_allowedStates(permittedStates)
 {
   if (m_marginals.size() != Dim)
   {
@@ -177,8 +178,7 @@ CQIWS::CQIWS(const std::vector<marginal_t>& marginals) : QIWS<2>(marginals)
   }
   m_t.resize(&sizes[0]);
   m_p.resize(&sizes[0]);
-  m_allowedStates.resize(&sizes[0]);
-  m_allowedStates.assign(true);
+
 }
 
 bool CQIWS::solve()
@@ -186,12 +186,11 @@ bool CQIWS::solve()
   size_t iter;
   const size_t iterLimit = m_t.storageSize();
 
-  // make up a constraint
-  size_t idx[2];
-  // disallow idx[1] > idx[0]
-  for (idx[0] = 0; idx[0] < m_t.sizes()[0]; ++idx[0])
-    for (idx[1] = idx[0] + 2; idx[1] < m_t.sizes()[1]; ++idx[1])
-      m_allowedStates[idx] = false;
+  // size_t idx[2];
+  // // disallow idx[1] > idx[0]
+  // for (idx[0] = 0; idx[0] < m_t.sizes()[0]; ++idx[0])
+  //   for (idx[1] = idx[0] + 2; idx[1] < m_t.sizes()[1]; ++idx[1])
+  //     m_allowedStates[idx] = false;
 
   Constrain::Status status;
   // this loop appears unnecessary (always succeeds on first attempt is contraint is valid)

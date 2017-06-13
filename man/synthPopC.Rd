@@ -2,21 +2,34 @@
 % Please edit documentation in R/RcppExports.R
 \name{synthPopC}
 \alias{synthPopC}
-\title{Generate a constrained population in 2 dimensions given n marginals.
-Constraint is hard-coded}
+\title{Generate a constrained population in 2 dimensions given 2 marginals and a constraint matrix.}
 \usage{
-synthPopC(marginals)
+synthPopC(marginals, permittedStates)
 }
 \arguments{
 \item{marginals}{a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical}
+
+\item{permittedStates}{a matrix of booleans containing allowed states. The matrix dimensions must be the length of each marginal}
 }
 \value{
 an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
 }
 \description{
 Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
-generates an 2-dimensional population table where elements sum to the input marginals, and supplemental data.
+generates an 2-dimensional population table where elements sum to the input marginals.
+It then uses an iterative algorithm to reassign the population to only the permitted states.
 }
 \examples{
-synthPopC(list(c(1,2,3,4), c(3,4,3)))
+r = c(0, 3, 17, 124, 167, 79, 46, 22)
+# rooms (1,2,3...9+)
+b = c(0, 15, 165, 238, 33, 7) # bedrooms {0, 1,2...5+}
+p = matrix(rep(T,length(r)*length(b)), nrow=length(r)) # all states permitted
+# disallow bedrooms>rooms
+  for (i in 1:length(r)) {
+    for (j in 1:length(b)) {
+      if (j > i + 1)
+        p[i,j] = F;
+    }
+  }
+res = humanleague::synthPopC(list(r,b),p)
 }

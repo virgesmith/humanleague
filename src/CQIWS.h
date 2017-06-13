@@ -17,14 +17,15 @@ class CQIWS : public QIWS<2>
 {
 public:
 
-  CQIWS(const std::vector<marginal_t>& marginals);
+  CQIWS(const std::vector<marginal_t>& marginals, const NDArray<2, bool>& permittedStates);
 
   ~CQIWS() { }
 
   bool solve();
 
 private:
-  NDArray<2, bool> m_allowedStates;
+  // no copy semantics so just store a ref (possibly dangerous)
+  const NDArray<2, bool>& m_allowedStates;
 
 };
 

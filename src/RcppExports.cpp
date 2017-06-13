@@ -17,13 +17,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // synthPopC
-List synthPopC(List marginals);
-RcppExport SEXP humanleague_synthPopC(SEXP marginalsSEXP) {
+List synthPopC(List marginals, LogicalMatrix permittedStates);
+RcppExport SEXP humanleague_synthPopC(SEXP marginalsSEXP, SEXP permittedStatesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
-    rcpp_result_gen = Rcpp::wrap(synthPopC(marginals));
+    Rcpp::traits::input_parameter< LogicalMatrix >::type permittedStates(permittedStatesSEXP);
+    rcpp_result_gen = Rcpp::wrap(synthPopC(marginals, permittedStates));
     return rcpp_result_gen;
 END_RCPP
 }

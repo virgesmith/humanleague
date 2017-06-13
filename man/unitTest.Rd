@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{unitTest}
 \alias{unitTest}
-\title{Entry point to enable runing unit tests in R (e.g. in testthat)}
+\title{Entry point to enable running unit tests within R (e.g. in testthat)}
 \usage{
 unitTest()
 }
@@ -10,7 +10,7 @@ unitTest()
 a List containing, number of tests run, number of failures, and any error messages.
 }
 \description{
-Entry point to enable runing unit tests in R (e.g. in testthat)
+Entry point to enable running unit tests within R (e.g. in testthat)
 }
 \examples{
 unitTest()

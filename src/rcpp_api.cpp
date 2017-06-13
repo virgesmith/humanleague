@@ -76,9 +76,9 @@ void doSolve(List& result, IntegerVector dims, const std::vector<std::vector<uin
 }
 
 
-void doSolveConstrained(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m)
+void doSolveConstrained(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, const NDArray<2, bool>& permitted)
 {
-  CQIWS solver(m);
+  CQIWS solver(m, permitted);
   result["method"] = "QIWS-C";
   result["conv"] = solver.solve();
   result["chiSq"] = solver.chiSq();
@@ -177,41 +177,65 @@ List synthPop(List marginals)
   return result;
 }
 
-//' Generate a constrained population in 2 dimensions given n marginals.
-//' Constraint is hard-coded
+//' Generate a constrained population in 2 dimensions given 2 marginals and a constraint matrix.
 //'
 //' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
-//' generates an 2-dimensional population table where elements sum to the input marginals, and supplemental data.
+//' generates an 2-dimensional population table where elements sum to the input marginals.
+//' It then uses an iterative algorithm to reassign the population to only the permitted states.
 //' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
+//' @param permittedStates a matrix of booleans containing allowed states. The matrix dimensions must be the length of each marginal
 //' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
 //' @examples
-//' synthPopC(list(c(1,2,3,4), c(3,4,3)))
+//' r = c(0, 3, 17, 124, 167, 79, 46, 22)
+//' # rooms (1,2,3...9+)
+//' b = c(0, 15, 165, 238, 33, 7) # bedrooms {0, 1,2...5+}
+//' p = matrix(rep(T,length(r)*length(b)), nrow=length(r)) # all states permitted
+//' # disallow bedrooms>rooms
+//'   for (i in 1:length(r)) {
+//'     for (j in 1:length(b)) {
+//'       if (j > i + 1)
+//'         p[i,j] = F;
+//'     }
+//'   }
+//' res = humanleague::synthPopC(list(r,b),p)
 //' @export
 // [[Rcpp::export]]
-List synthPopC(List marginals)
+List synthPopC(List marginals, LogicalMatrix permittedStates)
 {
-  const size_t dim = marginals.size();
-  std::vector<std::vector<uint32_t>> m(dim);
-  IntegerVector dims;
-  for (size_t i = 0; i < dim; ++i)
+  if (marginals.size() != 2)
+    throw std::runtime_error("CQIWS invalid dimensionality: " + std::to_string(marginals.size()));
+
+  std::vector<std::vector<uint32_t>> m(2);
+
+  const IntegerVector& iv0 = marginals[0];
+  const IntegerVector& iv1 = marginals[1];
+  IntegerVector dims(2);
+  dims[0] = iv0.size();
+  dims[1] = iv1.size();
+  m[0].reserve(dims[0]);
+  m[1].reserve(dims[1]);
+  std::copy(iv0.begin(), iv0.end(), std::back_inserter(m[0]));
+  std::copy(iv1.begin(), iv1.end(), std::back_inserter(m[1]));
+
+
+  if (permittedStates.rows() != dims[0] || permittedStates.cols() != dims[1])
+    throw std::runtime_error("CQIWS invalid permittedStates matrix size");
+
+  size_t d[2] = { (size_t)dims[0], (size_t)dims[1] };
+  NDArray<2,bool> permitted(d);
+
+  for (d[0] = 0; d[0] < dims[0]; ++d[0])
   {
-    const IntegerVector& iv = marginals[i];
-    m[i].reserve(iv.size());
-    std::copy(iv.begin(), iv.end(), std::back_inserter(m[i]));
-    dims.push_back(iv.size());
+    for (d[1] = 0; d[1] < dims[1]; ++d[1])
+    {
+      permitted[d] = permittedStates(d[0],d[1]);
+    }
   }
+
   List result;
   result["method"] = "QIWS-C";
 
-  // Workaround for fact that dimensionality is a template param and thus fixed at compile time
-  switch(dim)
-  {
-  case 2:
-    doSolveConstrained(result, dims, m);
-    break;
-  default:
-    throw std::runtime_error("CQIWS invalid dimensionality: " + std::to_string(dim));
-  }
+  doSolveConstrained(result, dims, m, permitted);
 
   return result;
 }
@@ -275,7 +299,7 @@ NumericMatrix sobolSequence(int dim, int n, int skip = 0)
   return m;
 }
 
-//' Entry point to enable runing unit tests in R (e.g. in testthat)
+//' Entry point to enable running unit tests within R (e.g. in testthat)
 //'
 //' @return a List containing, number of tests run, number of failures, and any error messages.
 //' @examples

@@ -1,19 +1,10 @@
 
 #include "CQIWS.h"
-// #include "NDArray.h"
-// #include "NDArrayUtils.h"
-// #include "Sobol.h"
-// #include "DDWR.h"
-// #include "PValue.h"
-//
 
+ #include <Rcpp.h>
+ using Rcpp::Rcout;
 
-// #include <Rcpp.h>
-// using Rcpp::Rcout;
-
-//#include <cmath>
-
-// private helpers functions for CQIWS
+// private helper functions for CQIWS
 namespace {
 
 bool constraintMet(const NDArray<2, bool>& allowed, QIWS<2>::table_t& t)
@@ -117,7 +108,10 @@ bool switchPop(size_t* forbiddenIndex, const NDArray<2, bool>& allowedStates, QI
   return true;
 }
 
-Constrain::Status constrain(const NDArray<2, bool>& allowedStates, QIWS<2>::table_t& pop, const size_t iterLimit)
+}
+
+// static member function
+Constrain::Status CQIWS::constrain(NDArray<2, uint32_t>& pop, const NDArray<2, bool>& allowedStates, const size_t iterLimit)
 {
   size_t iter = 0;
   size_t idx[2];
@@ -142,7 +136,6 @@ Constrain::Status constrain(const NDArray<2, bool>& allowedStates, QIWS<2>::tabl
   return iter == iterLimit ? Constrain::ITERLIMIT : Constrain::SUCCESS;
 }
 
-}
 
 
 CQIWS::CQIWS(const std::vector<marginal_t>& marginals, const NDArray<2, bool>& permittedStates)
@@ -198,7 +191,7 @@ bool CQIWS::solve()
   {
     QIWS::solve();
     // constraining...
-    status = constrain(m_allowedStates, m_t, iterLimit);
+    status = constrain(m_t, m_allowedStates, iterLimit);
 
     //Rcout << "Attempt " << k << " returned " << status << std::endl;
     if (status < Constrain::SUCCESS)

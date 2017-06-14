@@ -133,6 +133,42 @@ test_that("constrained4", {
   expect_equal(res$conv, TRUE)
 })
 
+test_that("constrained5", {
+  r = c(0, 3, 17, 124, 167, 79, 46, 22)
+  b = c(0, 15, 165, 238, 33, 7)
+  res = humanleague::synthPop(list(r,b))
+  expect_equal(res$conv, TRUE)
+  cres = humanleague::constrain(res$x.hat,makeConstraint(r,b))
+  expect_equal(cres$conv, TRUE)
+})
+
+test_that("constrained6", {
+  r = c( 1, 1, 8, 3,84, 21, 4, 4, 1)
+  b = c( 0, 8, 3, 113, 2, 1)
+  res = humanleague::synthPop(list(r,b))
+  expect_equal(res$conv, TRUE)
+  cres = humanleague::constrain(res$x.hat,makeConstraint(r,b))
+  expect_equal(cres$conv, TRUE)
+})
+
+test_that("constrained7", {
+  r = c( 1, 3, 7, 19, 96, 4, 5, 1, 1)
+  b = c( 0, 7, 21, 109, 0, 0)
+  res = humanleague::synthPop(list(r,b))
+  expect_equal(res$conv, TRUE)
+  cres = humanleague::constrain(res$x.hat,makeConstraint(r,b))
+  expect_equal(cres$conv, TRUE)
+})
+
+test_that("constrained8", {
+  r = c( 1, 1, 12, 43, 45, 1, 6, 0, 2)
+  b = c( 0, 7, 46, 54, 1, 3)
+  res = humanleague::synthPop(list(r,b))
+  expect_equal(res$conv, TRUE)
+  cres = humanleague::constrain(res$x.hat,makeConstraint(r,b))
+  expect_equal(cres$conv, TRUE)
+})
+
 ##### Marginal integerisation tests
 
 test_that("population must be positive", {

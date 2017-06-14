@@ -23,8 +23,8 @@ It then uses an iterative algorithm to reassign the population to only the permi
 r = c(0, 3, 17, 124, 167, 79, 46, 22)
 # rooms (1,2,3...9+)
 b = c(0, 15, 165, 238, 33, 7) # bedrooms {0, 1,2...5+}
-p = matrix(rep(T,length(r)*length(b)), nrow=length(r)) # all states permitted
-# disallow bedrooms>rooms
+p = matrix(rep(TRUE,length(r)*length(b)), nrow=length(r)) # all states permitted
+# now disallow bedrooms>rooms
   for (i in 1:length(r)) {
     for (j in 1:length(b)) {
       if (j > i + 1)

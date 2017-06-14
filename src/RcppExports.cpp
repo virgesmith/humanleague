@@ -28,6 +28,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// constrain
+List constrain(IntegerMatrix population, LogicalMatrix permittedStates);
+RcppExport SEXP humanleague_constrain(SEXP populationSEXP, SEXP permittedStatesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type population(populationSEXP);
+    Rcpp::traits::input_parameter< LogicalMatrix >::type permittedStates(permittedStatesSEXP);
+    rcpp_result_gen = Rcpp::wrap(constrain(population, permittedStates));
+    return rcpp_result_gen;
+END_RCPP
+}
 // prob2IntFreq
 List prob2IntFreq(NumericVector pIn, int pop);
 RcppExport SEXP humanleague_prob2IntFreq(SEXP pInSEXP, SEXP popSEXP) {

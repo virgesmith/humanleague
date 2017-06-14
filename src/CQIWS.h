@@ -23,6 +23,9 @@ public:
 
   bool solve();
 
+  // allow constraining of precomputed populations
+  static Constrain::Status constrain(NDArray<2, uint32_t>& pop, const NDArray<2, bool>& allowedStates, const size_t iterLimit);
+
 private:
   // no copy semantics so just store a ref (possibly dangerous)
   const NDArray<2, bool>& m_allowedStates;

@@ -89,10 +89,8 @@ void doSolveConstrained(List& result, IntegerVector dims, const std::vector<std:
     result["warning"] = "p-value may be inaccurate";
   }
   result["error.margins"] = std::vector<uint32_t>(solver.residuals(), solver.residuals() + 2);
-  // TODO fix constness
   const typename QIWS<2>::table_t& t = solver.result();
 
-  // TODO this is wrong
   const NDArray<2, double>& p = solver.stateProbabilities();
   Index<2, Index_Unfixed> idx(t.sizes());
   IntegerVector values(t.storageSize());
@@ -108,6 +106,44 @@ void doSolveConstrained(List& result, IntegerVector dims, const std::vector<std:
   result["p.hat"] = probs;
   result["x.hat"] = values;
 }
+
+
+void doConstrain(List& result, NDArray<2, uint32_t>& population, const NDArray<2, bool>& permitted)
+{
+  Constrain::Status status = CQIWS::constrain(population, permitted, population.storageSize());
+
+  switch(status)
+  {
+  case Constrain::SUCCESS:
+    result["conv"] = true;
+    break;
+  case Constrain::ITERLIMIT:
+    result["conv"] = false;
+    result["error"] = "iteration limit reached";
+    break;
+  case Constrain::STUCK:
+    result["conv"] = false;
+    result["error"] = "cannot adjust population: check validity of constraint";
+    break;
+  default:
+    result["conv"] = false;
+    result["error"] = "unknown constrain algorithm status invalid. please report this bug";
+  }
+
+  IntegerVector dims;
+  dims.push_back(population.sizes()[0]);
+  dims.push_back(population.sizes()[1]);
+  Index<2, Index_Unfixed> idx(population.sizes());
+  IntegerVector values(population.storageSize());
+  while (!idx.end())
+  {
+    values[idx.colMajorOffset()] = population[idx];
+    ++idx;
+  }
+  values.attr("dim") = dims;
+  result["x.hat"] = values;
+}
+
 
 
 //' Generate a population in n dimensions given n marginals.
@@ -189,8 +225,8 @@ List synthPop(List marginals)
 //' r = c(0, 3, 17, 124, 167, 79, 46, 22)
 //' # rooms (1,2,3...9+)
 //' b = c(0, 15, 165, 238, 33, 7) # bedrooms {0, 1,2...5+}
-//' p = matrix(rep(T,length(r)*length(b)), nrow=length(r)) # all states permitted
-//' # disallow bedrooms>rooms
+//' p = matrix(rep(TRUE,length(r)*length(b)), nrow=length(r)) # all states permitted
+//' # now disallow bedrooms>rooms
 //'   for (i in 1:length(r)) {
 //'     for (j in 1:length(b)) {
 //'       if (j > i + 1)
@@ -236,6 +272,60 @@ List synthPopC(List marginals, LogicalMatrix permittedStates)
   result["method"] = "QIWS-C";
 
   doSolveConstrained(result, dims, m, permitted);
+
+  return result;
+}
+
+
+//' Constrained a pregenerated population in 2 dimensions given a constraint matrix.
+//'
+//' Using an iterative algorithm, this function
+//' adjusts a 2-dimensional population table, reassigning populations in disallowed states to allowed ones, preserving the two marginal distributions
+//' states where elements sum to the input marginals.
+//' Users need to ensure that the supplied constraint matrix permits a valid population to be computed - this is not always obvious from the input data.
+//' @param population an integer matrix containing the population.
+//' @param permittedStates a matrix of booleans containing allowed states. The matrix dimensions must be the length of each marginal
+//' @return an object containing: the adjusted population matrix and a convergence flag.
+//' @examples
+//' r = c(0, 3, 17, 124, 167, 79, 46, 22)
+//' # rooms (1,2,3...9+)
+//' b = c(0, 15, 165, 238, 33, 7) # bedrooms {0, 1,2...5+}
+//' permitted = matrix(rep(TRUE,length(r)*length(b)), nrow=length(r)) # all states permitted
+//' # now disallow bedrooms>rooms
+//'   for (i in 1:length(r)) {
+//'     for (j in 1:length(b)) {
+//'       if (j > i + 1)
+//'         p[i,j] = F;
+//'     }
+//'   }
+//' res = humanleague::constrain(population,permitted)
+//' @export
+// [[Rcpp::export]]
+List constrain(IntegerMatrix population, LogicalMatrix permittedStates)
+{
+  size_t d[2] = { (size_t)population.rows(), (size_t)population.cols() };
+
+  if (permittedStates.rows() != d[0] || permittedStates.cols() != d[1])
+    throw std::runtime_error("CQIWS population / permittedStates matrix size mismatch");
+
+  NDArray<2,bool> permitted(d);
+  NDArray<2,uint32_t> pop(d);
+
+  size_t idx[2];
+
+  for (idx[0] = 0; idx[0] < d[0]; ++idx[0])
+  {
+    for (idx[1] = 0; idx[1] < d[1]; ++idx[1])
+    {
+      pop[idx] = population(idx[0],idx[1]);
+      permitted[idx] = permittedStates(idx[0],idx[1]);
+    }
+  }
+  //
+  List result;
+  doConstrain(result, pop, permitted);
+  //result["population"] = population;
+  //result["permittedStates"] = permittedStates;
 
   return result;
 }

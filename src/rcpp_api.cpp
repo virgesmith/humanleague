@@ -230,7 +230,7 @@ List synthPop(List marginals)
 //'   for (i in 1:length(r)) {
 //'     for (j in 1:length(b)) {
 //'       if (j > i + 1)
-//'         p[i,j] = F;
+//'         p[i,j] = FALSE;
 //'     }
 //'   }
 //' res = humanleague::synthPopC(list(r,b),p)
@@ -295,10 +295,11 @@ List synthPopC(List marginals, LogicalMatrix permittedStates)
 //'   for (i in 1:length(r)) {
 //'     for (j in 1:length(b)) {
 //'       if (j > i + 1)
-//'         p[i,j] = F;
+//'         p[i,j] = FALSE;
 //'     }
 //'   }
-//' res = humanleague::constrain(population,permitted)
+//' res = humanleague::synthPop(list(r,b)) # unconstrained synthesis
+//' res = humanleague::constrain(res$x.hat, permitted)
 //' @export
 // [[Rcpp::export]]
 List constrain(IntegerMatrix population, LogicalMatrix permittedStates)

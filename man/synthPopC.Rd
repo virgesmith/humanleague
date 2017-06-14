@@ -28,7 +28,7 @@ p = matrix(rep(TRUE,length(r)*length(b)), nrow=length(r)) # all states permitted
   for (i in 1:length(r)) {
     for (j in 1:length(b)) {
       if (j > i + 1)
-        p[i,j] = F;
+        p[i,j] = FALSE;
     }
   }
 res = humanleague::synthPopC(list(r,b),p)

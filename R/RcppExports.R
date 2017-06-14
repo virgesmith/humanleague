@@ -31,7 +31,7 @@ synthPop <- function(marginals) {
 #'   for (i in 1:length(r)) {
 #'     for (j in 1:length(b)) {
 #'       if (j > i + 1)
-#'         p[i,j] = F;
+#'         p[i,j] = FALSE;
 #'     }
 #'   }
 #' res = humanleague::synthPopC(list(r,b),p)
@@ -58,10 +58,11 @@ synthPopC <- function(marginals, permittedStates) {
 #'   for (i in 1:length(r)) {
 #'     for (j in 1:length(b)) {
 #'       if (j > i + 1)
-#'         p[i,j] = F;
+#'         p[i,j] = FALSE;
 #'     }
 #'   }
-#' res = humanleague::constrain(population,permitted)
+#' res = humanleague::synthPop(list(r,b)) # unconstrained synthesis
+#' res = humanleague::constrain(res$x.hat, permitted)
 #' @export
 constrain <- function(population, permittedStates) {
     .Call('humanleague_constrain', PACKAGE = 'humanleague', population, permittedStates)

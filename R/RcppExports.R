@@ -17,7 +17,7 @@ synthPop <- function(marginals) {
 #' Generate a constrained population in 2 dimensions given 2 marginals and a constraint matrix.
 #'
 #' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
-#' generates an 2-dimensional population table where elements sum to the input marginals.
+#' generates a 2-dimensional population table where elements sum to the input marginals.
 #' It then uses an iterative algorithm to reassign the population to only the permitted states.
 #' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
 #' @param permittedStates a matrix of booleans containing allowed states. The matrix dimensions must be the length of each marginal
@@ -38,6 +38,20 @@ synthPop <- function(marginals) {
 #' @export
 synthPopC <- function(marginals, permittedStates) {
     .Call('humanleague_synthPopC', PACKAGE = 'humanleague', marginals, permittedStates)
+}
+
+#' Generate a correlated population in 2 dimensions given 2 marginals and a flat correlation.
+#'
+#' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
+#' generates a 2-dimensional population table where elements sum to the input marginals.
+#' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
+#' @param rho correlation
+#' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
+#' @examples
+#' res = humanleague::synthPopR(list(c(10,10,10,10,10),c(10,10,10,10,10)),0.5)
+#' @export
+synthPopR <- function(marginals, rho) {
+    .Call('humanleague_synthPopR', PACKAGE = 'humanleague', marginals, rho)
 }
 
 #' Constrained a pregenerated population in 2 dimensions given a constraint matrix.
@@ -92,6 +106,19 @@ prob2IntFreq <- function(pIn, pop) {
 #' @export
 sobolSequence <- function(dim, n, skip = 0L) {
     .Call('humanleague_sobolSequence', PACKAGE = 'humanleague', dim, n, skip)
+}
+
+#' Generate correlated 2D Sobol' quasirandom sequence
+#'
+#' @param rho correlation
+#' @param n number of variates to sample
+#' @param skip number of variates to skip (actual number skipped will be largest power of 2 less than k)
+#' @return a n-by-2 matrix of uniform correlated probabilities in (0,1).
+#' @examples
+#' correlatedSobol2Sequence(0.2, 1000)
+#' @export
+correlatedSobol2Sequence <- function(rho, n, skip = 0L) {
+    .Call('humanleague_correlatedSobol2Sequence', PACKAGE = 'humanleague', rho, n, skip)
 }
 
 #' Entry point to enable running unit tests within R (e.g. in testthat)

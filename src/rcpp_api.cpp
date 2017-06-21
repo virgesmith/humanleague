@@ -24,6 +24,7 @@ using namespace Rcpp;
 
 #include "QIWS.h"
 #include "CQIWS.h"
+#include "RQIWS.h"
 #include "Integerise.h"
 
 #include "UnitTester.h"
@@ -107,6 +108,37 @@ void doSolveConstrained(List& result, IntegerVector dims, const std::vector<std:
   result["x.hat"] = values;
 }
 
+void doSolveCorrelated(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, double rho)
+{
+  RQIWS solver(m, rho);
+  result["method"] = "QIWS-R";
+  result["conv"] = solver.solve();
+  result["chiSq"] = solver.chiSq();
+  std::pair<double, bool> pVal = solver.pValue();
+  result["pValue"] = pVal.first;
+  if (!pVal.second)
+  {
+    result["warning"] = "p-value may be inaccurate";
+  }
+  result["error.margins"] = std::vector<uint32_t>(solver.residuals(), solver.residuals() + 2);
+  const typename QIWS<2>::table_t& t = solver.result();
+
+  const NDArray<2, double>& p = solver.stateProbabilities();
+  Index<2, Index_Unfixed> idx(t.sizes());
+  IntegerVector values(t.storageSize());
+  NumericVector probs(t.storageSize());
+  while (!idx.end())
+  {
+    values[idx.colMajorOffset()] = t[idx];
+    probs[idx.colMajorOffset()] = p[idx];
+    ++idx;
+  }
+  values.attr("dim") = dims;
+  probs.attr("dim") = dims;
+  result["p.hat"] = probs;
+  result["x.hat"] = values;
+}
+
 
 void doConstrain(List& result, NDArray<2, uint32_t>& population, const NDArray<2, bool>& permitted)
 {
@@ -127,7 +159,7 @@ void doConstrain(List& result, NDArray<2, uint32_t>& population, const NDArray<2
     break;
   default:
     result["conv"] = false;
-    result["error"] = "unknown constrain algorithm status invalid. please report this bug";
+    result["error"] = "constrain algorithm status invalid. please report this bug";
   }
 
   IntegerVector dims;
@@ -161,11 +193,14 @@ List synthPop(List marginals)
   const size_t dim = marginals.size();
   std::vector<std::vector<uint32_t>> m(dim);
   IntegerVector dims;
+  Rcout << "Dimension: " << dim << "\nMarginals:" << std::endl;
   for (size_t i = 0; i < dim; ++i)
   {
     const IntegerVector& iv = marginals[i];
     m[i].reserve(iv.size());
     std::copy(iv.begin(), iv.end(), std::back_inserter(m[i]));
+    Rcout << "[" << std::accumulate(m[i].begin(), m[i].end(), 0) << "] ";
+    print(m[i].data(), m[i].size(), m[i].size(), Rcout);
     dims.push_back(iv.size());
   }
   List result;
@@ -216,7 +251,7 @@ List synthPop(List marginals)
 //' Generate a constrained population in 2 dimensions given 2 marginals and a constraint matrix.
 //'
 //' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
-//' generates an 2-dimensional population table where elements sum to the input marginals.
+//' generates a 2-dimensional population table where elements sum to the input marginals.
 //' It then uses an iterative algorithm to reassign the population to only the permitted states.
 //' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
 //' @param permittedStates a matrix of booleans containing allowed states. The matrix dimensions must be the length of each marginal
@@ -269,9 +304,43 @@ List synthPopC(List marginals, LogicalMatrix permittedStates)
   }
 
   List result;
-  result["method"] = "QIWS-C";
-
   doSolveConstrained(result, dims, m, permitted);
+
+  return result;
+}
+
+//' Generate a correlated population in 2 dimensions given 2 marginals and a flat correlation.
+//'
+//' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
+//' generates a 2-dimensional population table where elements sum to the input marginals.
+//' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
+//' @param rho correlation
+//' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
+//' @examples
+//' res = humanleague::synthPopR(list(c(10,10,10,10,10),c(10,10,10,10,10)),0.5)
+//' @export
+// [[Rcpp::export]]
+List synthPopR(List marginals, double rho)
+{
+  if (marginals.size() != 2)
+    throw std::runtime_error("CQIWS invalid dimensionality: " + std::to_string(marginals.size()));
+
+  std::vector<std::vector<uint32_t>> m(2);
+
+  const IntegerVector& iv0 = marginals[0];
+  const IntegerVector& iv1 = marginals[1];
+  IntegerVector dims(2);
+  dims[0] = iv0.size();
+  dims[1] = iv1.size();
+  m[0].reserve(dims[0]);
+  m[1].reserve(dims[1]);
+  std::copy(iv0.begin(), iv0.end(), std::back_inserter(m[0]));
+  std::copy(iv1.begin(), iv1.end(), std::back_inserter(m[1]));
+
+  size_t d[2] = { (size_t)dims[0], (size_t)dims[1] };
+
+  List result;
+  doSolveCorrelated(result, dims, m, rho);
 
   return result;
 }
@@ -325,8 +394,6 @@ List constrain(IntegerMatrix population, LogicalMatrix permittedStates)
   //
   List result;
   doConstrain(result, pop, permitted);
-  //result["population"] = population;
-  //result["permittedStates"] = permittedStates;
 
   return result;
 }
@@ -386,6 +453,37 @@ NumericMatrix sobolSequence(int dim, int n, int skip = 0)
   for (int j = 0; j <n ; ++j)
     for (int i = 0; i < dim; ++i)
       m(j,i) = s() * scale;
+
+  return m;
+}
+
+
+//' Generate correlated 2D Sobol' quasirandom sequence
+//'
+//' @param rho correlation
+//' @param n number of variates to sample
+//' @param skip number of variates to skip (actual number skipped will be largest power of 2 less than k)
+//' @return a n-by-2 matrix of uniform correlated probabilities in (0,1).
+//' @examples
+//' correlatedSobol2Sequence(0.2, 1000)
+//' @export
+// [[Rcpp::export]]
+NumericMatrix correlatedSobol2Sequence(double rho, int n, int skip = 0)
+{
+  static const double scale = 0.5 / (1ull<<31);
+
+  NumericMatrix m(n, 2);
+
+  Sobol s(2, skip);
+  std::array<double, 4> chol = cholesky(rho);
+
+  const double z = sqrt(1.0 - rho * rho);
+  for (int j = 0; j <n ; ++j)
+  {
+    const std::vector<uint32_t>& buf = correlatePair(s.buf(), rho);
+    m(j,0) = buf[0] * scale;
+    m(j,1) = buf[1] * scale;
+  }
 
   return m;
 }

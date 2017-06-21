@@ -16,13 +16,16 @@ bool unittest::withinTolerance(double x, double y, double tol)
   // this check is symmetric and relative, unless there is an overflow/loss of precision then its absolute
   static const double thresh = std::numeric_limits<double>::min() / std::numeric_limits<double>::epsilon();
 
-  double sum = (x + y);
+  double mean = 0.5 * fabs(x + y);
 
-  if (sum < thresh)
+  //std::cout << x << ", " << y << ", " << mean << ", " << fabs(x-y) << ", " << tol << ", " << thresh << std::endl;
+
+  if (mean < thresh)
   {
-    return fabs(x - y)  < tol * sum;
+    return fabs(x - y)  < tol * mean;
   }
-  return fabs(x - y)/(2 * sum) < tol;
+
+  return fabs(x - y) / mean < tol;
 }
 
 const unittest::Logger& unittest::run()
@@ -41,6 +44,8 @@ const unittest::Logger& unittest::run()
   testNDArray();
   testSobol();
   testDDWR();
+  testCumNorm();
+  testCholesky();
   testPValue();
   testQIWS();
 

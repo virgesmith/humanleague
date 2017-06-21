@@ -73,6 +73,8 @@ namespace unittest {
 void testNDArray();
 void testSobol();
 void testDDWR();
+void testCumNorm();
+void testCholesky();
 void testPValue();
 void testQIWS();
 void testConstrainedSampling();

@@ -16,7 +16,7 @@ an object containing: the population matrix, the occupancy probability matrix, a
 }
 \description{
 Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
-generates an 2-dimensional population table where elements sum to the input marginals.
+generates a 2-dimensional population table where elements sum to the input marginals.
 It then uses an iterative algorithm to reassign the population to only the permitted states.
 }
 \examples{

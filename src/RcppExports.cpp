@@ -28,6 +28,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// synthPopR
+List synthPopR(List marginals, double rho);
+RcppExport SEXP humanleague_synthPopR(SEXP marginalsSEXP, SEXP rhoSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
+    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
+    rcpp_result_gen = Rcpp::wrap(synthPopR(marginals, rho));
+    return rcpp_result_gen;
+END_RCPP
+}
 // constrain
 List constrain(IntegerMatrix population, LogicalMatrix permittedStates);
 RcppExport SEXP humanleague_constrain(SEXP populationSEXP, SEXP permittedStatesSEXP) {
@@ -62,6 +74,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< int >::type skip(skipSEXP);
     rcpp_result_gen = Rcpp::wrap(sobolSequence(dim, n, skip));
+    return rcpp_result_gen;
+END_RCPP
+}
+// correlatedSobol2Sequence
+NumericMatrix correlatedSobol2Sequence(double rho, int n, int skip);
+RcppExport SEXP humanleague_correlatedSobol2Sequence(SEXP rhoSEXP, SEXP nSEXP, SEXP skipSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type skip(skipSEXP);
+    rcpp_result_gen = Rcpp::wrap(correlatedSobol2Sequence(rho, n, skip));
     return rcpp_result_gen;
 END_RCPP
 }

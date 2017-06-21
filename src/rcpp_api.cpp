@@ -127,7 +127,7 @@ void doConstrain(List& result, NDArray<2, uint32_t>& population, const NDArray<2
     break;
   default:
     result["conv"] = false;
-    result["error"] = "unknown constrain algorithm status invalid. please report this bug";
+    result["error"] = "constrain algorithm status invalid. please report this bug";
   }
 
   IntegerVector dims;
@@ -161,11 +161,14 @@ List synthPop(List marginals)
   const size_t dim = marginals.size();
   std::vector<std::vector<uint32_t>> m(dim);
   IntegerVector dims;
+  Rcout << "Dimension: " << dim << "\nMarginals:" << std::endl;
   for (size_t i = 0; i < dim; ++i)
   {
     const IntegerVector& iv = marginals[i];
     m[i].reserve(iv.size());
     std::copy(iv.begin(), iv.end(), std::back_inserter(m[i]));
+    Rcout << "[" << std::accumulate(m[i].begin(), m[i].end(), 0) << "] ";
+    print(m[i].data(), m[i].size(), m[i].size(), Rcout);
     dims.push_back(iv.size());
   }
   List result;
@@ -386,6 +389,44 @@ NumericMatrix sobolSequence(int dim, int n, int skip = 0)
   for (int j = 0; j <n ; ++j)
     for (int i = 0; i < dim; ++i)
       m(j,i) = s() * scale;
+
+  return m;
+}
+
+
+//' Generate correlated 2D Sobol' quasirandom sequence
+//'
+//' @param rho correlation
+//' @param n number of variates to sample
+//' @param skip number of variates to skip (actual number skipped will be largest power of 2 less than k)
+//' @return a n-by-2 matrix of uniform correlated probabilities in (0,1).
+//' @examples
+//' correlatedSobol2Sequence(0.2, 1000)
+//' @export
+// [[Rcpp::export]]
+NumericMatrix correlatedSobol2Sequence(double rho, int n, int skip = 0)
+{
+  static const double scale = 0.5 / (1ull<<31);
+
+  NumericMatrix m(n, 2);
+
+  Sobol s(2, skip);
+  std::array<double, 4> chol = cholesky(rho);
+
+  const double z = sqrt(1.0 - rho * rho);
+  for (int j = 0; j <n ; ++j)
+  {
+    const std::vector<uint32_t>& buf = s.buf();
+    // convert to normal
+    double n0 = invCumNorm(buf[0] * scale);
+    double n1 = invCumNorm(buf[1] * scale);
+    // correlate
+    double c0 = n0;
+    double c1 = n0 * rho + n1 * z;
+    // convert back to uniform
+    m(j,0) = cumNorm(c0);
+    m(j,1) = cumNorm(c1);
+  }
 
   return m;
 }

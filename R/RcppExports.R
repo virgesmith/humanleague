@@ -94,6 +94,19 @@ sobolSequence <- function(dim, n, skip = 0L) {
     .Call('humanleague_sobolSequence', PACKAGE = 'humanleague', dim, n, skip)
 }
 
+#' Generate correlated 2D Sobol' quasirandom sequence
+#'
+#' @param rho correlation
+#' @param n number of variates to sample
+#' @param skip number of variates to skip (actual number skipped will be largest power of 2 less than k)
+#' @return a n-by-2 matrix of uniform correlated probabilities in (0,1).
+#' @examples
+#' correlatedSobol2Sequence(0.2, 1000)
+#' @export
+correlatedSobol2Sequence <- function(rho, n, skip = 0L) {
+    .Call('humanleague_correlatedSobol2Sequence', PACKAGE = 'humanleague', rho, n, skip)
+}
+
 #' Entry point to enable running unit tests within R (e.g. in testthat)
 #'
 #' @return a List containing, number of tests run, number of failures, and any error messages.

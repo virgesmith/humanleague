@@ -5,7 +5,7 @@
 #include "NDArrayUtils.h"
 #include "Sobol.h"
 #include "DDWR.h"
-#include "PValue.h"
+#include "StatFuncs.h"
 #include <cmath>
 
 

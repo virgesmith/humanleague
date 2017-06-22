@@ -54,10 +54,12 @@ bool RQIWS::solve()
 
   m_t.assign(0u);
 
+  double z = cholesky(m_rho)[3];
+
   size_t idx[2];
   for (size_t j = 0; j < m_sum; ++j)
   {
-    const std::vector<uint32_t>& cbuf = correlatePair(sobol.buf(), m_rho);
+    const std::vector<uint32_t>& cbuf = correlatePair(sobol.buf(), m_rho, z);
     idx[0] = dists[0](cbuf[0]);
     idx[1] = dists[1](cbuf[1]);
 

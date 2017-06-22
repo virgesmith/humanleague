@@ -313,6 +313,13 @@ double invCumNorm(const double x)
   return z;
 }
 
+Cholesky::Cholesky(double rho)
+{
+  if (std::fabs(rho) > 1.0)
+    throw std::runtime_error("correlation is not in [-1,1]");
+  m_data[0] = rho;
+  m_data[1] = sqrt(1.0 - rho * rho);
+}
 
 // Cholesky factorisation for single correlation (2x2 matrix)
 std::array<double, 4> cholesky(double rho)
@@ -327,7 +334,7 @@ std::array<double, 4> cholesky(double rho)
   return ret;
 }
 
-std::vector<uint32_t> correlatePair(const std::vector<uint32_t>& u, double rho)
+std::vector<uint32_t> correlatePair(const std::vector<uint32_t>& u, double c01, double c11)
 {
   static const double scale = 0.5 / (1u << 31);
   std::vector<uint32_t> c(2);
@@ -336,7 +343,7 @@ std::vector<uint32_t> correlatePair(const std::vector<uint32_t>& u, double rho)
   double n1 = invCumNorm(u[1] * scale);
   // correlate and convert back to uniform
   c[0] = cumNorm(n0) / scale;
-  c[1] = cumNorm(n0 * rho + n1 * sqrt(1.0 - rho * rho)) / scale;
+  c[1] = cumNorm(n0 * c01 + n1 * c11) / scale;
   return c;
 }
 

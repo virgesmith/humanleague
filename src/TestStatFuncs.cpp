@@ -56,27 +56,30 @@ void unittest::testCumNorm()
 
 void unittest::testCholesky()
 {
-  double rho = 0.0;
+  std::vector<uint32_t> u(2);
+  u[0] = 1234567;
+  u[1] = 8901234;
 
-  auto func = [](double rho){
-    std::array<double, 4> m = cholesky(rho);
-    CHECK(m[0] == 1.0);
-    CHECK(m[1] == 0.0);
-    CHECK(m[2] == rho);
-    CHECK(m[3] == sqrt(1.0-rho*rho));
-  };
-  // std::array<double, 4> m = cholesky(rho);
-  // CHECK(m[0] == 1.0);
-  // CHECK(m[1] == 0.0);
-  // CHECK(m[2] == rho);
-  // CHECK(m[3] == sqrt(1.0-rho*rho));
-  func(-1.0);
-  func(-0.5);
-  func(0.0);
-  func(0.5);
-  func(1.0);
-  CHECK_THROWS(func(2.0), std::exception);
+  {
+    Cholesky cholesky(0.0);
 
+    CHECK(cholesky(u).first == u[0]);
+    CHECK(cholesky(u).second == u[1]);
+  }
+  {
+    Cholesky cholesky(1.0);
+
+    CHECK(cholesky(u).first == u[0]);
+    CHECK(cholesky(u).second == u[0]);
+  }
+  {
+    Cholesky cholesky(-1.0);
+
+    CHECK(cholesky(u).first == u[0]);
+    CHECK(cholesky(u).second == -u[0]);
+  }
+
+  CHECK_THROWS(Cholesky(2.0), std::exception);
 }
 
 void unittest::testPValue()

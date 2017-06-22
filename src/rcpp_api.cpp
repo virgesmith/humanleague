@@ -476,12 +476,12 @@ NumericMatrix correlatedSobol2Sequence(double rho, int n, int skip = 0)
 
   Sobol s(2, skip);
 
-  const double z = cholesky(rho)[3];
+  Cholesky cholesky(rho);
   for (int j = 0; j <n ; ++j)
   {
-    const std::vector<uint32_t>& buf = correlatePair(s.buf(), rho, z);
-    m(j,0) = buf[0] * scale;
-    m(j,1) = buf[1] * scale;
+    const std::pair<uint32_t, uint32_t>& buf = cholesky(s.buf());
+    m(j,0) = buf.first * scale;
+    m(j,1) = buf.second * scale;
   }
 
   return m;

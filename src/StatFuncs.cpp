@@ -321,30 +321,15 @@ Cholesky::Cholesky(double rho)
   m_data[1] = sqrt(1.0 - rho * rho);
 }
 
-// Cholesky factorisation for single correlation (2x2 matrix)
-std::array<double, 4> cholesky(double rho)
-{
-  if (std::fabs(rho) > 1.0)
-    throw std::runtime_error("correlation is not in [-1,1]");
-  std::array<double,4> ret;
-  ret[0] = 1.0;
-  ret[1] = 0.0;
-  ret[2] = rho;
-  ret[3] = sqrt(1.0 - rho * rho);
-  return ret;
-}
-
-std::vector<uint32_t> correlatePair(const std::vector<uint32_t>& u, double c01, double c11)
+std::pair<uint32_t, uint32_t> Cholesky::operator()(const std::vector<uint32_t>& uncorrelated) const
 {
   static const double scale = 0.5 / (1u << 31);
-  std::vector<uint32_t> c(2);
   // convert to normal
-  double n0 = invCumNorm(u[0] * scale);
-  double n1 = invCumNorm(u[1] * scale);
+  double n0 = invCumNorm(uncorrelated[0] * scale);
+  double n1 = invCumNorm(uncorrelated[1] * scale);
   // correlate and convert back to uniform
-  c[0] = cumNorm(n0) / scale;
-  c[1] = cumNorm(n0 * c01 + n1 * c11) / scale;
-  return c;
+  return std::make_pair(cumNorm(n0) / scale,
+                        cumNorm(n0 * m_data[0] + n1 * m_data[1]) / scale);
 }
 
 std::pair<double, bool> pValue(uint32_t dof, double x)

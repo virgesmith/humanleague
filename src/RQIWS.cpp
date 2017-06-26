@@ -1,9 +1,6 @@
 
 #include "RQIWS.h"
 
- #include <Rcpp.h>
- using Rcpp::Rcout;
-
 
 RQIWS::RQIWS(const std::vector<marginal_t>& marginals, double rho)
   : QIWS<2>(marginals), m_rho(rho)

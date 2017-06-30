@@ -74,6 +74,35 @@ void doSolve(List& result, IntegerVector dims, const std::vector<std::vector<uin
   probs.attr("dim") = dims;
   result["p.hat"] = probs;
   result["x.hat"] = values;
+
+  const size_t pop = solver.population();
+
+  std::vector<std::vector<int>> cpop(S::Dim, std::vector<int>(pop));
+  Index<S::Dim, Index_Unfixed> index(t.sizes());
+
+  size_t pindex = 0;
+  while (!index.end() /*&& pindex < 10*/) // TODO fix inf loop!
+  {
+    for (size_t i = 0; i < t[index]; ++i)
+    {
+      for (size_t j = 0; j < S::Dim; ++j)
+      {
+        cpop[j][pindex] = index[j];
+      }
+      ++pindex;
+    }
+    ++index;
+  }
+
+  // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
+  List proxyDf;
+  std::string s("C");
+  for (size_t i = 0; i < S::Dim; ++i)
+  {
+    proxyDf[std::string(s + std::to_string(i)).c_str()] = /*NumericVector*/(cpop[i]);
+  }
+
+  result["pop"] = DataFrame(proxyDf);
 }
 
 
@@ -485,6 +514,30 @@ NumericMatrix correlatedSobol2Sequence(double rho, int n, int skip = 0)
   }
 
   return m;
+}
+
+//' Entry point to enable running unit tests within R (e.g. in testthat)
+//'
+//' @param categories a StringVector of characteristic names
+//' @return a data frame.
+//' @examples
+//'
+//' @export
+// [[Rcpp::export]]
+DataFrame generateTable(StringVector categories, NumericMatrix population)
+{
+  // dimensionality of population should be the number of categories
+  // number of rows in result = sum of population (no column for count)
+
+  // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
+  List tmp;
+  for (size_t i = 0; i < categories.size(); ++i)
+  {
+    tmp[std::string(categories[i]).c_str()] = NumericVector{0,1,2,3};
+  }
+
+  DataFrame df = tmp;
+  return df;
 }
 
 //' Entry point to enable running unit tests within R (e.g. in testthat)

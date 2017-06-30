@@ -90,6 +90,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// generateTable
+DataFrame generateTable(StringVector categories, NumericMatrix population);
+RcppExport SEXP humanleague_generateTable(SEXP categoriesSEXP, SEXP populationSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< StringVector >::type categories(categoriesSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type population(populationSEXP);
+    rcpp_result_gen = Rcpp::wrap(generateTable(categories, population));
+    return rcpp_result_gen;
+END_RCPP
+}
 // unitTest
 List unitTest();
 RcppExport SEXP humanleague_unitTest() {

@@ -44,6 +44,37 @@ using namespace Rcpp;
 // TODO this doesnt seem to work, perhaps another approach (like a separate thread?)
 //void (*oldhandler)(int) = signal(SIGINT, sigint_handler);
 
+// Flatten N-D population array into N*P table
+template<size_t D>
+DataFrame flatten(const size_t pop, const NDArray<D,uint32_t>& t)
+{
+  std::vector<std::vector<int>> cpop(D, std::vector<int>(pop));
+  Index<D, Index_Unfixed> index(t.sizes());
+
+  size_t pindex = 0;
+  while (!index.end() /*&& pindex < 10*/) // TODO fix inf loop!
+  {
+    for (size_t i = 0; i < t[index]; ++i)
+    {
+      for (size_t j = 0; j < D; ++j)
+      {
+        cpop[j][pindex] = index[j];
+      }
+      ++pindex;
+    }
+    ++index;
+  }
+
+  // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
+  List proxyDf;
+  std::string s("C");
+  for (size_t i = 0; i < D; ++i)
+  {
+    proxyDf[std::string(s + std::to_string(i)).c_str()] = /*NumericVector*/(cpop[i]);
+  }
+
+  return DataFrame(proxyDf);
+}
 
 template<typename S>
 void doSolve(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m)
@@ -74,35 +105,7 @@ void doSolve(List& result, IntegerVector dims, const std::vector<std::vector<uin
   probs.attr("dim") = dims;
   result["p.hat"] = probs;
   result["x.hat"] = values;
-
-  const size_t pop = solver.population();
-
-  std::vector<std::vector<int>> cpop(S::Dim, std::vector<int>(pop));
-  Index<S::Dim, Index_Unfixed> index(t.sizes());
-
-  size_t pindex = 0;
-  while (!index.end() /*&& pindex < 10*/) // TODO fix inf loop!
-  {
-    for (size_t i = 0; i < t[index]; ++i)
-    {
-      for (size_t j = 0; j < S::Dim; ++j)
-      {
-        cpop[j][pindex] = index[j];
-      }
-      ++pindex;
-    }
-    ++index;
-  }
-
-  // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
-  List proxyDf;
-  std::string s("C");
-  for (size_t i = 0; i < S::Dim; ++i)
-  {
-    proxyDf[std::string(s + std::to_string(i)).c_str()] = /*NumericVector*/(cpop[i]);
-  }
-
-  result["pop"] = DataFrame(proxyDf);
+  result["pop"] = flatten<S::Dim>(solver.population(), t);
 }
 
 
@@ -135,6 +138,7 @@ void doSolveConstrained(List& result, IntegerVector dims, const std::vector<std:
   probs.attr("dim") = dims;
   result["p.hat"] = probs;
   result["x.hat"] = values;
+  result["pop"] = flatten<2>(solver.population(), t);
 }
 
 void doSolveCorrelated(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, double rho)
@@ -166,6 +170,7 @@ void doSolveCorrelated(List& result, IntegerVector dims, const std::vector<std::
   probs.attr("dim") = dims;
   result["p.hat"] = probs;
   result["x.hat"] = values;
+  result["pop"] = flatten<2>(solver.population(), t);
 }
 
 
@@ -196,13 +201,16 @@ void doConstrain(List& result, NDArray<2, uint32_t>& population, const NDArray<2
   dims.push_back(population.sizes()[1]);
   Index<2, Index_Unfixed> idx(population.sizes());
   IntegerVector values(population.storageSize());
+  size_t pop = 0;
   while (!idx.end())
   {
     values[idx.colMajorOffset()] = population[idx];
+    pop += population[idx];
     ++idx;
   }
   values.attr("dim") = dims;
   result["x.hat"] = values;
+  result["pop"] = flatten<2>(pop, population);
 }
 
 
@@ -222,14 +230,14 @@ List synthPop(List marginals)
   const size_t dim = marginals.size();
   std::vector<std::vector<uint32_t>> m(dim);
   IntegerVector dims;
-  Rcout << "Dimension: " << dim << "\nMarginals:" << std::endl;
+  // TODO verbose flag? Rcout << "Dimension: " << dim << "\nMarginals:" << std::endl;
   for (size_t i = 0; i < dim; ++i)
   {
     const IntegerVector& iv = marginals[i];
     m[i].reserve(iv.size());
     std::copy(iv.begin(), iv.end(), std::back_inserter(m[i]));
-    Rcout << "[" << std::accumulate(m[i].begin(), m[i].end(), 0) << "] ";
-    print(m[i].data(), m[i].size(), m[i].size(), Rcout);
+    //Rcout << "[" << std::accumulate(m[i].begin(), m[i].end(), 0) << "] ";
+    //print(m[i].data(), m[i].size(), m[i].size(), Rcout);
     dims.push_back(iv.size());
   }
   List result;

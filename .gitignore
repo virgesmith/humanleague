@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 build/
+node_modules/
 src/*.o
 src/*.d
 src/*.so

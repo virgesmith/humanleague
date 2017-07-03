@@ -4,18 +4,18 @@
 
 ## Dependencies
 
-- ?
+- Python 2.7
 
 ## Build
 
 ```
-./make.py build
-./make.py install
+user@host:~/dev/humanleague/python$ ./make.py build
+user@host:~/dev/humanleague/python$ ./make.py install
 ```
 Latter command may require admin rights.
-On linux ensure you have group write access to /usr/local/lib 
+On linux ensure you have group write access to /usr/local/lib, or run as root.
 
 ## Test 
 ```
-./test.py
+user@host:~/dev/humanleague/python$ ./test.py
 ```

@@ -21,10 +21,21 @@ app.get('/sobolSequence', function(req, res) {
   res.status(200).send(result);
 }); 
 
-
 app.get('/synthPop', function(req, res) {
   console.log(req.query.args);
   var result = humanleague.synthPop(req.query.args);
+  res.status(200).send(result);
+});
+
+app.get('/synthPopC', function(req, res) {
+  console.log(req.query.args);
+  var result = humanleague.synthPopC(req.query.args);
+  res.status(200).send(result);
+});
+
+app.get('/synthPopR', function(req, res) {
+  console.log(req.query.args);
+  var result = humanleague.synthPopR(req.query.args);
   res.status(200).send(result);
 });
 

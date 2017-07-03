@@ -26,5 +26,6 @@ namespace v8
 
 void sobolSequence(const v8::FunctionCallbackInfo<v8::Value>& args);
 void synthPop(const v8::FunctionCallbackInfo<v8::Value>& args);
+void synthPopC(const v8::FunctionCallbackInfo<v8::Value>& args);
 void synthPopR(const v8::FunctionCallbackInfo<v8::Value>& args);
 

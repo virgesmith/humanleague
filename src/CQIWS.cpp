@@ -1,9 +1,6 @@
 
 #include "CQIWS.h"
 
- #include <Rcpp.h>
- using Rcpp::Rcout;
-
 // private helper functions for CQIWS
 namespace {
 
@@ -176,7 +173,7 @@ CQIWS::CQIWS(const std::vector<marginal_t>& marginals, const NDArray<2, bool>& p
 
 bool CQIWS::solve()
 {
-  size_t iter;
+  //size_t iter;
   const size_t iterLimit = m_t.storageSize();
 
   // size_t idx[2];

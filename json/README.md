@@ -2,8 +2,6 @@
 
 [![License](http://img.shields.io/badge/license-GPL%20%28%3E=%202%29-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html) 
 
-JSON API to humanleague. 
-
 ## Dependencies
 
 - node.js
@@ -15,22 +13,33 @@ JSON API to humanleague.
 ## Build
 
 ```
-node-gyp configure # before first build only
-node-gyp build
+user@host:~/dev/humanleague/json$ node-gyp configure # before first build only
+user@host:~/dev/humanleague/json$ node-gyp build
 ```
 
 ## Test 
 #### Local
 (does not require express or request modules)
 ```
-nodejs test.js
+user@host:~/dev/humanleague/json$ nodejs test.js
 ```
 #### http service
-Server
+Start server
 ```
-nodejs server.js <port>
+user@host:~/dev/humanleague/json$ nodejs server.js <port>
 ```
-Client
+Client (localhost)
 ```
-nodejs test_server.js <hostname:port>
+user@host:~/dev/humanleague/json$ nodejs test_server.js localhost:<port>
 ```
+Client (remote)
+```
+user@otherhost:~/dev/humanleague/json$ nodejs test_server.js <host:port>
+```
+Integrated localhost client-server test
+```
+user@otherhost:~/dev/humanleague/json$ ./run_server_test.sh
+```
+
+
+

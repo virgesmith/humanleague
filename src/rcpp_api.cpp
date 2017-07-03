@@ -48,29 +48,14 @@ using namespace Rcpp;
 template<size_t D>
 DataFrame flatten(const size_t pop, const NDArray<D,uint32_t>& t)
 {
-  std::vector<std::vector<int>> cpop(D, std::vector<int>(pop));
-  Index<D, Index_Unfixed> index(t.sizes());
-
-  size_t pindex = 0;
-  while (!index.end() /*&& pindex < 10*/) // TODO fix inf loop!
-  {
-    for (size_t i = 0; i < t[index]; ++i)
-    {
-      for (size_t j = 0; j < D; ++j)
-      {
-        cpop[j][pindex] = index[j];
-      }
-      ++pindex;
-    }
-    ++index;
-  }
+  std::vector<std::vector<int>> list = listify<D>(pop, t);
 
   // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
   List proxyDf;
   std::string s("C");
   for (size_t i = 0; i < D; ++i)
   {
-    proxyDf[std::string(s + std::to_string(i)).c_str()] = /*NumericVector*/(cpop[i]);
+    proxyDf[std::string(s + std::to_string(i)).c_str()] = list[i];
   }
 
   return DataFrame(proxyDf);
@@ -324,7 +309,6 @@ List synthPopC(List marginals, LogicalMatrix permittedStates)
   m[1].reserve(dims[1]);
   std::copy(iv0.begin(), iv0.end(), std::back_inserter(m[0]));
   std::copy(iv1.begin(), iv1.end(), std::back_inserter(m[1]));
-
 
   if (permittedStates.rows() != dims[0] || permittedStates.cols() != dims[1])
     throw std::runtime_error("CQIWS invalid permittedStates matrix size");

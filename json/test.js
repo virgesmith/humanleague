@@ -8,4 +8,10 @@ console.log(JSON.parse(seq));
 seq = humanleague_api.synthPop(JSON.stringify({marginals:[[1,1,1,1],[1,2,1]]}));
 console.log(JSON.parse(seq));
 
+seq = humanleague_api.synthPopC(JSON.stringify({marginals:[[1,1,1,1],[1,2,1]], 
+                                                permitted:[[true,false,false],[true,true,false],[true,true,true],[true,true,true]]}));
+console.log(JSON.parse(seq));
+
+seq = humanleague_api.synthPopR(JSON.stringify({marginals:[[2,2,2,2,2,2],[2,2,2,2,2,2]], rho: 0.9}));
+console.log(JSON.parse(seq));
 

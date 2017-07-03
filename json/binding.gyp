@@ -8,6 +8,7 @@
                    'Module.cpp',
                    '../src/Sobol.cpp',
                    '../src/SobolImpl.c',
+                   '../src/CQIWS.cpp',
                    '../src/RQIWS.cpp',
                    '../src/StatFuncs.cpp',
                    '../src/NDArrayUtils.cpp'],

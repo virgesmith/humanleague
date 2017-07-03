@@ -66,9 +66,6 @@ inline uint32_t marginalProduct<1>(const std::vector<std::vector<uint32_t>>& m, 
   return m[0][idx[0]];
 }
 
-
-
-
 template<size_t D, typename T, size_t O>
 std::vector<T> reduce(const NDArray<D, T>& input)
 {
@@ -92,6 +89,30 @@ std::vector<T> reduce(const NDArray<D, T>& input)
   return sums;
 }
 
+
+// Converts a D-dimensional population array into a list with D columns and pop rows
+// parameterised on uint32_t only
+template<size_t D>
+std::vector<std::vector<int>> listify(const size_t pop, const NDArray<D,uint32_t>& t)
+{
+  std::vector<std::vector<int>> list(D, std::vector<int>(pop));
+  Index<D, Index_Unfixed> index(t.sizes());
+
+  size_t pindex = 0;
+  while (!index.end() /*&& pindex < 10*/) // TODO fix inf loop!
+  {
+    for (size_t i = 0; i < t[index]; ++i)
+    {
+      for (size_t j = 0; j < D; ++j)
+      {
+        list[j][pindex] = index[j];
+      }
+      ++pindex;
+    }
+    ++index;
+  }
+  return list;
+}
 
 // picks a 1d slice which won't go -ve if you subtract the residual
 template<size_t D, size_t O>

@@ -22,6 +22,7 @@ void sobolSequence(const v8::FunctionCallbackInfo<v8::Value>& args)
     if (!request.is_object())
       throw std::runtime_error("JSON request should be an object");
   
+    // convert values, falling back to conversion from JSON to string to size_t
     size_t dim = request.at("dim");
     size_t length = request.at("length");
     size_t skips = 0;
@@ -75,25 +76,6 @@ void synthPop(const v8::FunctionCallbackInfo<v8::Value>& args)
     
     // TODO multi dim
     QIWS<2> qiws(marginals);
-//    size_t dim = request.at("dim");
-//    size_t length = request.at("length");
-//    size_t skips = 0;
-//    //std::cout << dim << ", " << length << std::endl;
-//    
-//    Sobol sobol(dim, skips);
-//    double scale = 0.5 / (1u << 31);
-//    std::vector<std::vector<double>> seq;
-//    seq.reserve(length);
-//    for (size_t i = 0; i < length; ++i)
-//    {
-//      std::vector<double> v(dim);
-//      const std::vector<uint32_t>& b = sobol.buf();
-//      for (size_t j = 0; j < dim; ++j)
-//      {
-//        v[j] = scale * b[j];
-//      }
-//      seq.push_back(v);
-//    }
 
     response["conv"] = qiws.solve();
     // TODO NDArray conversion. Or better flatten to list

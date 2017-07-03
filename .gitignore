@@ -8,3 +8,4 @@ src/*.o
 src/*.d
 src/*.so
 src/*.dll
+*.log

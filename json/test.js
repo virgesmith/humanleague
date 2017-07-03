@@ -7,3 +7,5 @@ console.log(JSON.parse(seq));
 
 seq = humanleague_api.synthPop(JSON.stringify({marginals:[[1,1,1,1],[1,2,1]]}));
 console.log(JSON.parse(seq));
+
+

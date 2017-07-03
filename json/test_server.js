@@ -10,14 +10,28 @@ var hostport = process.argv[2]
 
 var request = require('request');
 
-//var req1 = { dim: 2, length: 10 };
+args = { dim: 7, length: 10 };
 
-url = "http://" + hostport + "/sobolSequence?dim=2&length=10"
+// Args are always passed as "args=<string>" as this avoids all numeric values being implicitly converted to strings
+url = "http://" + hostport + "/sobolSequence?args=" + JSON.stringify(args);
 console.log(url);
 
 request(encodeURI(url), function(err, resp, res) {
   // TODO some error checking
-  //res = JSON.parse(res);
+  res = JSON.parse(res);
   console.log(res);
 });
+
+args = { marginals: [[1,1,1,1],[1,2,1]] };
+
+// Args are always passed as "args=<string>" as this avoids all numeric values being implicitly converted to strings
+url = "http://" + hostport + "/synthPop?args=" + JSON.stringify(args);
+console.log(url);
+request(encodeURI(url), function(err, resp, res) {
+  // TODO some error checking
+  res = JSON.parse(res);
+  console.log(res);
+});
+
+
 

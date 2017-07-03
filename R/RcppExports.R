@@ -123,17 +123,6 @@ correlatedSobol2Sequence <- function(rho, n, skip = 0L) {
 
 #' Entry point to enable running unit tests within R (e.g. in testthat)
 #'
-#' @param categories a StringVector of characteristic names
-#' @return a data frame.
-#' @examples
-#'
-#' @export
-generateTable <- function(categories, population) {
-    .Call('humanleague_generateTable', PACKAGE = 'humanleague', categories, population)
-}
-
-#' Entry point to enable running unit tests within R (e.g. in testthat)
-#'
 #' @return a List containing, number of tests run, number of failures, and any error messages.
 #' @examples
 #' unitTest()

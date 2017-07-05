@@ -29,7 +29,18 @@ pycpp::List toListList(const NDArray<2, uint32_t>& a)
   return outer;
 }
 
-
+// TODO multidim
+template<typename S>
+void doSolve(pycpp::Dict& result, size_t dims, const std::vector<std::vector<uint32_t>>& m)
+{
+  S qiws(m); 
+  result.set("conv", pycpp::Bool(qiws.solve()));
+  // TODO get flattened result...
+  //result.set("result", toListList(qiws.result()));
+  result.set("p-value", pycpp::Double(qiws.pValue().first));
+  result.set("chiSq", pycpp::Double(qiws.chiSq()));
+  result.set("pop", pycpp::Int(qiws.population()));
+}
 
 // prevents name mangling (but works without this)
 extern "C" PyObject* humanleague_sobol(PyObject *self, PyObject *args)
@@ -89,22 +100,53 @@ extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
     std::vector<size_t> sizes(dim);
     std::vector<std::vector<uint32_t>> marginals(dim);
       
-    //pycpp::List outer(dim);
-
     for (size_t i = 0; i < dim; ++i) 
     {
       pycpp::List l = pycpp::List(list[i]);
       sizes[i] = l.size();
       marginals[i] = l.toVector<uint32_t>();
     }
-    // TODO multidim
-    QIWS<2> qiws(marginals); 
+
     pycpp::Dict retval;
-    retval.set("conv", pycpp::Bool(qiws.solve()));
-    retval.set("result", toListList(qiws.result()));
-    retval.set("p-value", pycpp::Double(qiws.pValue().first));
-    retval.set("chiSq", pycpp::Double(qiws.chiSq()));
-    retval.set("pop", pycpp::Int(qiws.population()));
+
+    switch(dim)
+    {
+    case 2:
+      doSolve<QIWS<2>>(retval, dim, marginals);
+      break;
+    case 3:
+      doSolve<QIWS<3>>(retval, dim, marginals);
+      break;
+    case 4:
+      doSolve<QIWS<4>>(retval, dim, marginals);
+      break;
+    case 5:
+      doSolve<QIWS<5>>(retval, dim, marginals);
+      break;
+    case 6:
+      doSolve<QIWS<6>>(retval, dim, marginals);
+      break;
+    case 7:
+      doSolve<QIWS<7>>(retval, dim, marginals);
+      break;
+    case 8:
+      doSolve<QIWS<8>>(retval, dim, marginals);
+      break;
+    case 9:
+      doSolve<QIWS<9>>(retval, dim, marginals);
+      break;
+    case 10:
+      doSolve<QIWS<10>>(retval, dim, marginals);
+      break;
+    case 11:
+      doSolve<QIWS<11>>(retval, dim, marginals);
+      break;
+    case 12:
+      doSolve<QIWS<12>>(retval, dim, marginals);
+      break;
+    default:
+      throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
+    }
     return retval.release();
   }
   catch(const std::exception& e)

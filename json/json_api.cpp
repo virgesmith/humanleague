@@ -128,7 +128,6 @@ void synthPopC(const v8::FunctionCallbackInfo<v8::Value>& args)
       for (idx[1] = 0; idx[1] < size[1]; ++idx[1])
         permittedStates[idx] = permitted[idx[0]][idx[1]];
         
-    // TODO multi dim
     CQIWS cqiws(marginals, permittedStates);
 
     response["conv"] = cqiws.solve();

@@ -11,7 +11,6 @@ namespace v8
   template<typename T> class FunctionCallbackInfo;
 }
 
-
 //// conversion of scalar types from JSON to T (falling back on converting via a string using function provided)
 //// (JSON values from url query params will always be strings)
 //template<typename T> 

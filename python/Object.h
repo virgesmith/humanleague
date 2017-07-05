@@ -61,8 +61,8 @@ namespace pycpp {
     explicit Int(PyObject* p);
     
     operator int() const;
-    operator uint32_t() const;
     // NB python doesnt have native unsigned type
+    operator uint32_t() const;
     operator size_t() const;
   };
   

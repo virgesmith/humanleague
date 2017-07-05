@@ -9,3 +9,5 @@ Rcpp package for generating synthetic integer populations from integer marginal 
 - Produces statistical data to ascertain the degeneracy of the population.
 
 Also provides functionality to integerise marginals expressed as discrete probabilities, and for direct generation of quasirandom (Sobol) sequences.
+
+Python and node.js APIs are also provided for those who do not use R. 

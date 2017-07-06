@@ -11,21 +11,23 @@
 
 #include <iostream>
 
-pycpp::List toListList(const NDArray<2, uint32_t>& a)
-{
-  const size_t* sizes = a.sizes();
-  size_t idx[2];
-  pycpp::List outer(sizes[0]);
 
-  for (idx[0] = 0; idx[0] < sizes[0]; ++idx[0]) 
+template<size_t D>
+pycpp::List flatten(const size_t pop, const NDArray<D,uint32_t>& t)
+{
+  std::vector<std::vector<int>> list = listify<D>(pop, t);
+
+  pycpp::List outer(D);
+  for (size_t i = 0; i < D; ++i)
   {
-    pycpp::List inner(sizes[1]);
-    for (idx[1] = 0; idx[1] < sizes[1]; ++idx[1]) 
+    pycpp::List inner(list[i].size());
+    for (size_t j = 0; j < list[i].size(); ++j) 
     {
-      inner.set(idx[1], pycpp::Int(a[idx])); // = pycpp::List(list[i]);    
+      inner.set(j, pycpp::Int(list[i][j])); // = pycpp::List(list[i]);    
     }
-    outer.set(idx[0], std::move(inner));
+    outer.set(i, std::move(inner));
   }
+
   return outer;
 }
 
@@ -35,8 +37,7 @@ void doSolve(pycpp::Dict& result, size_t dims, const std::vector<std::vector<uin
 {
   S qiws(m); 
   result.set("conv", pycpp::Bool(qiws.solve()));
-  // TODO get flattened result...
-  //result.set("result", toListList(qiws.result()));
+  result.set("result", flatten(qiws.population(), qiws.result()));
   result.set("p-value", pycpp::Double(qiws.pValue().first));
   result.set("chiSq", pycpp::Double(qiws.chiSq()));
   result.set("pop", pycpp::Int(qiws.population()));
@@ -159,6 +160,44 @@ extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
   }
 }
 
+//// prevents name mangling (but works without this)
+//extern "C" PyObject* humanleague_synthPopC(PyObject *self, PyObject *args)
+//{
+//  try 
+//  {
+//    PyObject* marginal0Arg;
+//    PyObject* marginal1Arg;
+//    double rho;
+
+//    // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
+//    if (!PyArg_ParseTuple(args, "O!O!d", &PyList_Type, &marginal0Arg, 
+//                                         &PyList_Type, &marginal1Arg, &rho))
+//      return nullptr;
+//      
+//    pycpp::List marginal0(marginal0Arg);
+//    pycpp::List marginal1(marginal1Arg);
+//    
+//    std::vector<std::vector<uint32_t>> marginals(2);
+//      
+//    marginals[0] = marginal0.toVector<uint32_t>();
+//    marginals[1] = marginal1.toVector<uint32_t>();
+//    CQIWS cqiws(marginals, rho);
+//    pycpp::Dict retval;
+//    retval.set("conv", pycpp::Bool(rqiws.solve()));
+//    retval.set("result", flatten(rqiws.population(), rqiws.result()));
+//    retval.set("pop", pycpp::Int(rqiws.population()));
+//    return retval.release();
+//  }
+//  catch(const std::exception& e)
+//  {
+//    return &pycpp::String(e.what());
+//  }
+//  catch(...)
+//  {
+//    return &pycpp::String("unexpected exception");
+//  }
+//}
+
 // prevents name mangling (but works without this)
 extern "C" PyObject* humanleague_synthPopR(PyObject *self, PyObject *args)
 {
@@ -183,9 +222,7 @@ extern "C" PyObject* humanleague_synthPopR(PyObject *self, PyObject *args)
     RQIWS rqiws(marginals, rho);
     pycpp::Dict retval;
     retval.set("conv", pycpp::Bool(rqiws.solve()));
-    retval.set("result", toListList(rqiws.result()));
-//    retval.set("p-value", pycpp::Double(rqiws.pValue().first));
-//    retval.set("chiSq", pycpp::Double(rqiws.chiSq()));
+    retval.set("result", flatten(rqiws.population(), rqiws.result()));
     retval.set("pop", pycpp::Int(rqiws.population()));
     return retval.release();
   }

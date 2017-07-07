@@ -20,12 +20,13 @@ pycpp::List flatten(const size_t pop, const NDArray<D,uint32_t>& t)
   pycpp::List outer(D);
   for (size_t i = 0; i < D; ++i)
   {
-    pycpp::List inner(list[i].size());
-    for (size_t j = 0; j < list[i].size(); ++j) 
-    {
-      inner.set(j, pycpp::Int(list[i][j])); // = pycpp::List(list[i]);    
-    }
-    outer.set(i, std::move(inner));
+//    pycpp::List inner(list[i].size());
+//    for (size_t j = 0; j < list[i].size(); ++j) 
+//    {
+//      inner.set(j, pycpp::Int(list[i][j])); // = pycpp::List(list[i]);    
+//    }
+//    outer.set(i, std::move(inner));
+    outer.set(i, pycpp::List(list[i]));
   }
 
   return outer;
@@ -36,11 +37,11 @@ template<typename S>
 void doSolve(pycpp::Dict& result, size_t dims, const std::vector<std::vector<uint32_t>>& m)
 {
   S qiws(m); 
-  result.set("conv", pycpp::Bool(qiws.solve()));
-  result.set("result", flatten(qiws.population(), qiws.result()));
-  result.set("p-value", pycpp::Double(qiws.pValue().first));
-  result.set("chiSq", pycpp::Double(qiws.chiSq()));
-  result.set("pop", pycpp::Int(qiws.population()));
+  result.insert("conv", pycpp::Bool(qiws.solve()));
+  result.insert("result", flatten(qiws.population(), qiws.result()));
+  result.insert("p-value", pycpp::Double(qiws.pValue().first));
+  result.insert("chiSq", pycpp::Double(qiws.chiSq()));
+  result.insert("pop", pycpp::Int(qiws.population()));
 }
 
 // prevents name mangling (but works without this)
@@ -118,33 +119,33 @@ extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
     case 3:
       doSolve<QIWS<3>>(retval, dim, marginals);
       break;
-    case 4:
-      doSolve<QIWS<4>>(retval, dim, marginals);
-      break;
-    case 5:
-      doSolve<QIWS<5>>(retval, dim, marginals);
-      break;
-    case 6:
-      doSolve<QIWS<6>>(retval, dim, marginals);
-      break;
-    case 7:
-      doSolve<QIWS<7>>(retval, dim, marginals);
-      break;
-    case 8:
-      doSolve<QIWS<8>>(retval, dim, marginals);
-      break;
-    case 9:
-      doSolve<QIWS<9>>(retval, dim, marginals);
-      break;
-    case 10:
-      doSolve<QIWS<10>>(retval, dim, marginals);
-      break;
-    case 11:
-      doSolve<QIWS<11>>(retval, dim, marginals);
-      break;
-    case 12:
-      doSolve<QIWS<12>>(retval, dim, marginals);
-      break;
+//    case 4:
+//      doSolve<QIWS<4>>(retval, dim, marginals);
+//      break;
+//    case 5:
+//      doSolve<QIWS<5>>(retval, dim, marginals);
+//      break;
+//    case 6:
+//      doSolve<QIWS<6>>(retval, dim, marginals);
+//      break;
+//    case 7:
+//      doSolve<QIWS<7>>(retval, dim, marginals);
+//      break;
+//    case 8:
+//      doSolve<QIWS<8>>(retval, dim, marginals);
+//      break;
+//    case 9:
+//      doSolve<QIWS<9>>(retval, dim, marginals);
+//      break;
+//    case 10:
+//      doSolve<QIWS<10>>(retval, dim, marginals);
+//      break;
+//    case 11:
+//      doSolve<QIWS<11>>(retval, dim, marginals);
+//      break;
+//    case 12:
+//      doSolve<QIWS<12>>(retval, dim, marginals);
+//      break;
     default:
       throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
     }
@@ -221,9 +222,9 @@ extern "C" PyObject* humanleague_synthPopR(PyObject *self, PyObject *args)
     marginals[1] = marginal1.toVector<uint32_t>();
     RQIWS rqiws(marginals, rho);
     pycpp::Dict retval;
-    retval.set("conv", pycpp::Bool(rqiws.solve()));
-    retval.set("result", flatten(rqiws.population(), rqiws.result()));
-    retval.set("pop", pycpp::Int(rqiws.population()));
+    retval.insert("conv", pycpp::Bool(rqiws.solve()));
+    retval.insert("result", flatten(rqiws.population(), rqiws.result()));
+    retval.insert("pop", pycpp::Int(rqiws.population()));
     return retval.release();
   }
   catch(const std::exception& e)

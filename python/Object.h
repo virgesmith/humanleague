@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <cstddef>
 
 // TODO fix fwd decl
@@ -51,7 +52,7 @@ namespace pycpp {
     operator bool() const;
   };
 
-  template<> struct Type<bool> { typedef Bool PycppType; };
+  template<> struct Type<bool> { typedef Bool PyType; };
 
   class Int : public Object 
   {
@@ -67,9 +68,9 @@ namespace pycpp {
   };
   
   // define C++ types that map to Int
-  template<> struct Type<int> { typedef Int PycppType; };
-  template<> struct Type<uint32_t> { typedef Int PycppType; };
-  template<> struct Type<size_t> { typedef Int PycppType; };
+  template<> struct Type<int> { typedef Int PyType; };
+  template<> struct Type<uint32_t> { typedef Int PyType; };
+  template<> struct Type<size_t> { typedef Int PyType; };
 
   class Double : public Object 
   {
@@ -81,7 +82,7 @@ namespace pycpp {
     operator double() const;
   };
   
-  template<> struct Type<double> { typedef Double PycppType; };
+  template<> struct Type<double> { typedef Double PyType; };
 
   class String : public Object
   {
@@ -93,8 +94,8 @@ namespace pycpp {
     operator std::string() const; 
   };
   
-  template<> struct Type<const char*> { typedef String PycppType; };
-  template<> struct Type<std::string> { typedef String PycppType; };
+  template<> struct Type<const char*> { typedef String PyType; };
+  template<> struct Type<std::string> { typedef String PyType; };
 
   class List : public Object
   {
@@ -103,6 +104,16 @@ namespace pycpp {
     explicit List(size_t length = 0);
     
     explicit List(PyObject* list);
+    
+    // Construct from vector of scalar types that correspond to a pycpp type
+    template<typename T>
+    explicit List(const std::vector<T>& v) : List(v.size())
+    {
+      for (size_t i = 0; i < v.size(); ++i)
+      {
+        set(i, typename Type<T>::PyType(v[i]));
+      }
+    }
     
     // return value given we don't know the actual type??
     PyObject* operator[](size_t i) const;
@@ -116,19 +127,19 @@ namespace pycpp {
     // return value given we don't know the actual type??
     //PyObject* get(int index) const;
     
-    template<typename T, typename P = typename Type<T>::PycppType>
+    template<typename T/*, typename P = typename Type<T>::PyType*/>
     std::vector<T> toVector() const
     {
       const size_t n = size();
       std::vector<uint32_t> v(n);
       for (size_t i = 0; i < n; ++i)
       {
-        v[i] = P(this->operator[](i));
+        v[i] = typename Type<T>::PyType(this->operator[](i));
       }
       return v;
     }
     
-    // appears to be no clear mechanism
+    // appears to be no clear mechanism for lists
     //void clear() const;
 
     int size() const;
@@ -142,11 +153,23 @@ namespace pycpp {
     
     explicit Dict(PyObject* dict);
     
+    // Construct from map of string to scalar types that correspond to a pycpp type
+    template<typename T>
+    explicit Dict(const std::map<std::string, T>& m) : Dict()
+    {
+      for (auto it = m.cbegin(); it != m.cend(); ++it)
+      {
+        insert(it->first.c_str(), typename Type<T>::PyType(it->second));
+      }
+    }
+
     // return value given we don't know the actual type??
     PyObject* operator[](const char*) const;
     
     // set (move semantics)
-    void set(const char*, Object&& obj);
+    void insert(const char*, Object&& obj);
+    
+    // TODO find...
     
     void clear() const;
 

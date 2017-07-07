@@ -173,7 +173,7 @@ PyObject* pycpp::Dict::operator[](const char* k) const
   return PyDict_GetItem(m_obj, pycpp::String(k).release());
 }
 
-void pycpp::Dict::set(const char* k, pycpp::Object&& obj)
+void pycpp::Dict::insert(const char* k, pycpp::Object&& obj)
 {
   // takes over mem mgmt
   PyDict_SetItem(m_obj, pycpp::String(k).release(), obj.release());

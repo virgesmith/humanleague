@@ -1,8 +1,6 @@
 
 #pragma once
 
-//#include <Python.h>
-//#include <stdexcept>
 
 #include <string>
 #include <vector>
@@ -40,7 +38,7 @@ namespace pycpp {
   };
 
   // map C++ scalar type(s) to Object derived type
-  template<typename T> struct Type;
+  template<typename T> struct PyType;
   
   class Bool : public Object 
   {
@@ -52,7 +50,7 @@ namespace pycpp {
     operator bool() const;
   };
 
-  template<> struct Type<bool> { typedef Bool PyType; };
+  template<> struct PyType<bool> { typedef Bool Type; };
 
   class Int : public Object 
   {
@@ -68,9 +66,9 @@ namespace pycpp {
   };
   
   // define C++ types that map to Int
-  template<> struct Type<int> { typedef Int PyType; };
-  template<> struct Type<uint32_t> { typedef Int PyType; };
-  template<> struct Type<size_t> { typedef Int PyType; };
+  template<> struct PyType<int> { typedef Int Type; };
+  template<> struct PyType<uint32_t> { typedef Int Type; };
+  template<> struct PyType<size_t> { typedef Int Type; };
 
   class Double : public Object 
   {
@@ -82,7 +80,7 @@ namespace pycpp {
     operator double() const;
   };
   
-  template<> struct Type<double> { typedef Double PyType; };
+  template<> struct PyType<double> { typedef Double Type; };
 
   class String : public Object
   {
@@ -94,8 +92,8 @@ namespace pycpp {
     operator std::string() const; 
   };
   
-  template<> struct Type<const char*> { typedef String PyType; };
-  template<> struct Type<std::string> { typedef String PyType; };
+  template<> struct PyType<const char*> { typedef String Type; };
+  template<> struct PyType<std::string> { typedef String Type; };
 
   class List : public Object
   {
@@ -111,7 +109,7 @@ namespace pycpp {
     {
       for (size_t i = 0; i < v.size(); ++i)
       {
-        set(i, typename Type<T>::PyType(v[i]));
+        set(i, typename PyType<T>::Type(v[i]));
       }
     }
     
@@ -122,7 +120,7 @@ namespace pycpp {
     void set(int index, Object&& obj);
     
     // append (move semantics)
-    void push(Object&& obj);
+    void push_back(Object&& obj);
 
     // return value given we don't know the actual type??
     //PyObject* get(int index) const;
@@ -134,7 +132,7 @@ namespace pycpp {
       std::vector<uint32_t> v(n);
       for (size_t i = 0; i < n; ++i)
       {
-        v[i] = typename Type<T>::PyType(this->operator[](i));
+        v[i] = typename PyType<T>::Type(this->operator[](i));
       }
       return v;
     }
@@ -159,7 +157,7 @@ namespace pycpp {
     {
       for (auto it = m.cbegin(); it != m.cend(); ++it)
       {
-        insert(it->first.c_str(), typename Type<T>::PyType(it->second));
+        insert(it->first.c_str(), typename PyType<T>::Type(it->second));
       }
     }
 
@@ -176,4 +174,5 @@ namespace pycpp {
     int size() const;
   };
   
+
 }

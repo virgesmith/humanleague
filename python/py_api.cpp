@@ -1,5 +1,6 @@
 
 #include "Object.h"
+#include "Array.h"
 
 #include "humanleague/src/Sobol.h"
 #include "humanleague/src/RQIWS.h"
@@ -237,6 +238,50 @@ extern "C" PyObject* humanleague_synthPopR(PyObject *self, PyObject *args)
   }
 }
 
+// prevents name mangling (but works without this)
+extern "C" PyObject* humanleague_numpytest(PyObject *self, PyObject *args)
+{
+  try 
+  {
+    PyObject* marginal0Arg;
+    PyObject* marginal1Arg;
+    double rho;
+
+    // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
+    if (!PyArg_ParseTuple(args, "O!O!d", &PyList_Type, &marginal0Arg, 
+                                         &PyList_Type, &marginal1Arg, &rho))
+      return nullptr;
+      
+    //npy_intp p[2] = {5,5};
+    //pycpp::Array<double> retval(2, p);
+    
+    size_t sizes[] = {3,3};
+    NDArray<2,int> a(sizes);
+    pycpp::Array<int> array(a);
+    pycpp::Array<int> array2(a);
+
+    pycpp::Dict retval;
+    retval.insert("uninit", std::move(array));
+
+    Index<3, Index_Unfixed> index(sizes);
+    while (!index.end())
+    {
+      array2[pycpp::NumPy::convert(4,index)] = 0;
+      ++index;
+    }
+    retval.insert("init", std::move(array2));
+    
+    return retval.release();
+  }
+  catch(const std::exception& e)
+  {
+    return &pycpp::String(e.what());
+  }
+  catch(...)
+  {
+    return &pycpp::String("unexpected exception");
+  }
+}
 
 namespace {
 
@@ -244,6 +289,7 @@ PyMethodDef entryPoints[] = {
   {"sobolSequence", humanleague_sobol, METH_VARARGS, "Returns a Sobol sequence."},
   {"synthPop", humanleague_synthPop, METH_VARARGS, "Synthpop."},
   {"synthPopR", humanleague_synthPopR, METH_VARARGS, "Synthpop correlated."},
+  {"numpytest", humanleague_numpytest, METH_VARARGS, "numpy test."},
   {nullptr, nullptr, 0, nullptr}        /* terminator */
 };
 

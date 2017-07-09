@@ -14,5 +14,6 @@ print(humanleague.synthPopR([4,2],[1,2,3],0.0))
 print(humanleague.synthPopR([4,2],[1,2,3],1.0))
 print(humanleague.synthPopR([10,10,10,10,10,10,10,10,10,10],[10,10,10,10,10,10,10,10,10,10],0.0))
 print(humanleague.synthPopR([21,0],[1,2,3,4,5,6],3.1))
+print(humanleague.numpytest([21,0],[1,2,3,4,5,6],3.1))
 
 

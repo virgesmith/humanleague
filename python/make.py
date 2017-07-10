@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+import numpy
 from distutils.core import setup, Extension
 
 devroot = os.environ['HOME'] + "/dev"
@@ -8,10 +9,13 @@ devroot = os.environ['HOME'] + "/dev"
 
 module1 = Extension('humanleague',
                     define_macros = [('MAJOR_VERSION', '1'),
-                                     ('MINOR_VERSION', '0')],
+                                     ('MINOR_VERSION', '0'),
+                                     ('NPY_NO_DEPRECATED_API',
+                                     'NPY_1_7_API_VERSION')
+                                     ],
                    extra_compile_args=['-std=c++11'],
 # TODO env vars rather than relative paths....
-                   include_dirs = [devroot, '/usr/local/include'],
+                   include_dirs = [devroot, '/usr/include' '/usr/local/include', numpy.get_include()],
 #                    libraries = [':humanleague.so'],
 #                    library_dirs = ['/usr/local/lib','../src'],
                    sources = ['../src/Sobol.cpp',
@@ -22,7 +26,7 @@ module1 = Extension('humanleague',
                               'Object.cpp',
                               'py_api.cpp'],
 # annoyingly *.h causes a full rebuild every time
-                   depends = ['Object.h', 'make.py'])
+                   depends = ['Object.h', 'Array.h', 'make.py'])
 # devroot + '/CatchDat/humanleague/src/*.h', 
 
 # TODO unit test module?

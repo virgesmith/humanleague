@@ -144,7 +144,7 @@ void pycpp::List::set(int index, pycpp::Object&& obj)
   PyList_SetItem(m_obj, index, obj.release());
 }
 
-void pycpp::List::push(Object&& obj)
+void pycpp::List::push_back(Object&& obj)
 {
   /*int*/PyList_Append(m_obj, obj.release());
 }

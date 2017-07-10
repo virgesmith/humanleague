@@ -13,8 +13,8 @@ public:
 
   typedef I result_type;
 
-  // enforce integral types only
-  static_assert(std::is_integral<I>::value, "discrete_distribution_with_replacement: only integral types supported");
+  // // enforce integral types only
+  // static_assert(std::is_integral<I>::value, "discrete_distribution_with_replacement: only integral types supported");
 
   discrete_distribution_with_replacement(typename std::vector<I>::const_iterator b, typename std::vector<I>::const_iterator e)
   {
@@ -25,12 +25,12 @@ public:
 
   // std::distribution compatibility
   template<typename R>
-  result_type operator()(R& rng)
+  uint32_t operator()(R& rng)
   {
     return operator()(rng());
   }
 
-  result_type operator()(result_type r)
+  uint32_t operator()(uint32_t r)
   {
     // map r [0,2^32) -> [0, m_sum)
     r = (uint32_t)(double(r)/(1ull<<32) * m_sum);
@@ -100,6 +100,8 @@ public:
     return idx;
   }
 
+  const std::vector<I>& freq() const { return m_freq; }
+
   result_type constrainedSample(result_type r, size_t firstForbiddenState/*const std::vector<uint32_t>& allowedStates*/)
   {
     if (!m_sum)
@@ -129,6 +131,12 @@ public:
   bool empty() const
   {
     return m_sum == 0;
+  }
+
+  // hack to allow us to modify the dist
+  result_type& operator[](size_t i)
+  {
+    return m_freq[i];
   }
 
 private:

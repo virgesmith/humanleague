@@ -116,6 +116,8 @@ test_that("constrained1", {
  b = c(0, 15, 165, 238, 33, 7)
  res = humanleague::synthPopC(list(r,b),makeConstraint(r,b))
  expect_equal(res$conv, TRUE)
+ expect_equal(rowSums(res$x.hat), r)
+ expect_equal(colSums(res$x.hat), b)
 })
 
 test_that("constrained2", {
@@ -123,6 +125,8 @@ test_that("constrained2", {
   b = c( 0, 8, 3, 113, 2, 1)
   res = humanleague::synthPopC(list(r,b),makeConstraint(r,b))
   expect_equal(res$conv, TRUE)
+  expect_equal(rowSums(res$x.hat), r)
+  expect_equal(colSums(res$x.hat), b)
 })
 
 test_that("constrained3", {
@@ -130,6 +134,8 @@ test_that("constrained3", {
   b = c( 0, 7, 21, 109, 0, 0)
   res = humanleague::synthPopC(list(r,b),makeConstraint(r,b))
   expect_equal(res$conv, TRUE)
+  expect_equal(rowSums(res$x.hat), r)
+  expect_equal(colSums(res$x.hat), b)
 })
 
 test_that("constrained4", {
@@ -137,6 +143,8 @@ test_that("constrained4", {
   b = c( 0, 7, 46, 54, 1, 3)
   res = humanleague::synthPopC(list(r,b),makeConstraint(r,b))
   expect_equal(res$conv, TRUE)
+  expect_equal(rowSums(res$x.hat), r)
+  expect_equal(colSums(res$x.hat), b)
 })
 
 test_that("constrained5", {
@@ -146,6 +154,8 @@ test_that("constrained5", {
   expect_equal(res$conv, TRUE)
   cres = humanleague::constrain(res$x.hat,makeConstraint(r,b))
   expect_equal(cres$conv, TRUE)
+  expect_equal(rowSums(cres$x.hat), r)
+  expect_equal(colSums(cres$x.hat), b)
 })
 
 test_that("constrained6", {
@@ -155,6 +165,8 @@ test_that("constrained6", {
   expect_equal(res$conv, TRUE)
   cres = humanleague::constrain(res$x.hat,makeConstraint(r,b))
   expect_equal(cres$conv, TRUE)
+  expect_equal(rowSums(cres$x.hat), r)
+  expect_equal(colSums(cres$x.hat), b)
 })
 
 test_that("constrained7", {
@@ -164,6 +176,8 @@ test_that("constrained7", {
   expect_equal(res$conv, TRUE)
   cres = humanleague::constrain(res$x.hat,makeConstraint(r,b))
   expect_equal(cres$conv, TRUE)
+  expect_equal(rowSums(cres$x.hat), r)
+  expect_equal(colSums(cres$x.hat), b)
 })
 
 test_that("constrained8", {
@@ -173,6 +187,8 @@ test_that("constrained8", {
   expect_equal(res$conv, TRUE)
   cres = humanleague::constrain(res$x.hat,makeConstraint(r,b))
   expect_equal(cres$conv, TRUE)
+  expect_equal(rowSums(cres$x.hat), r)
+  expect_equal(colSums(cres$x.hat), b)
 })
 
 ##### Marginal integerisation tests

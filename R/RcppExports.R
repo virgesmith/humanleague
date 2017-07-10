@@ -40,6 +40,10 @@ synthPopC <- function(marginals, permittedStates) {
     .Call('humanleague_synthPopC', PACKAGE = 'humanleague', marginals, permittedStates)
 }
 
+synthPopG <- function(marginals, exoProbsIn) {
+    .Call('humanleague_synthPopG', PACKAGE = 'humanleague', marginals, exoProbsIn)
+}
+
 #' Generate a correlated population in 2 dimensions given 2 marginals and a flat correlation.
 #'
 #' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function

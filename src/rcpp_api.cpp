@@ -25,6 +25,7 @@ using namespace Rcpp;
 #include "QIWS.h"
 #include "CQIWS.h"
 #include "RQIWS.h"
+#include "GQIWS.h"
 #include "Integerise.h"
 
 #include "UnitTester.h"
@@ -122,6 +123,38 @@ void doSolveConstrained(List& result, IntegerVector dims, const std::vector<std:
   values.attr("dim") = dims;
   probs.attr("dim") = dims;
   result["p.hat"] = probs;
+  result["x.hat"] = values;
+  result["pop"] = flatten<2>(solver.population(), t);
+}
+
+void doSolveGeneral(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, const NDArray<2, double>& exoProbs)
+{
+  GQIWS solver(m, exoProbs);
+  result["method"] = "QIWS-G";
+  result["conv"] = solver.solve();
+  //result["chiSq"] = solver.chiSq();
+  //std::pair<double, bool> pVal = solver.pValue();
+  //result["pValue"] = pVal.first;
+  // if (!pVal.second)
+  // {
+  //   result["warning"] = "p-value may be inaccurate";
+  // }
+  //result["error.margins"] = std::vector<uint32_t>(solver.residuals(), solver.residuals() + 2);
+  const typename QIWS<2>::table_t& t = solver.result();
+  //
+  // const NDArray<2, double>& p = solver.stateProbabilities();
+  Index<2, Index_Unfixed> idx(t.sizes());
+  IntegerVector values(t.storageSize());
+  // NumericVector probs(t.storageSize());
+  while (!idx.end())
+  {
+    values[idx.colMajorOffset()] = t[idx];
+  //   probs[idx.colMajorOffset()] = p[idx];
+    ++idx;
+  }
+  values.attr("dim") = dims;
+  // probs.attr("dim") = dims;
+  // result["p.hat"] = probs;
   result["x.hat"] = values;
   result["pop"] = flatten<2>(solver.population(), t);
 }
@@ -329,6 +362,46 @@ List synthPopC(List marginals, LogicalMatrix permittedStates)
 
   return result;
 }
+
+
+// [[Rcpp::export]]
+List synthPopG(List marginals, NumericMatrix exoProbsIn)
+{
+  if (marginals.size() != 2)
+    throw std::runtime_error("CQIWS invalid dimensionality: " + std::to_string(marginals.size()));
+
+  std::vector<std::vector<uint32_t>> m(2);
+
+  const IntegerVector& iv0 = marginals[0];
+  const IntegerVector& iv1 = marginals[1];
+  IntegerVector dims(2);
+  dims[0] = iv0.size();
+  dims[1] = iv1.size();
+  m[0].reserve(dims[0]);
+  m[1].reserve(dims[1]);
+  std::copy(iv0.begin(), iv0.end(), std::back_inserter(m[0]));
+  std::copy(iv1.begin(), iv1.end(), std::back_inserter(m[1]));
+
+  if (exoProbsIn.rows() != dims[0] || exoProbsIn.cols() != dims[1])
+    throw std::runtime_error("CQIWS invalid permittedStates matrix size");
+
+  size_t d[2] = { (size_t)dims[0], (size_t)dims[1] };
+  NDArray<2,double> exoProbs(d);
+
+  for (d[0] = 0; d[0] < dims[0]; ++d[0])
+  {
+    for (d[1] = 0; d[1] < dims[1]; ++d[1])
+    {
+      exoProbs[d] = exoProbsIn(d[0],d[1]);
+    }
+  }
+
+  List result;
+  doSolveGeneral(result, dims, m, exoProbs);
+
+  return result;
+}
+
 
 //' Generate a correlated population in 2 dimensions given 2 marginals and a flat correlation.
 //'

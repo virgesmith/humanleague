@@ -21,13 +21,13 @@ T sum(const std::vector<T>& v)
 }
 
 template<typename T>
-void print(const std::vector<T>& v)
+void print(const std::vector<T>& v, std::ostream& ostr = std::cout)
 {
   for (size_t i = 0; i < v.size(); ++i)
   {
-    std::cout << v[i] << ", ";
+    ostr << v[i] << ", ";
   }
-  std::cout << std::endl;
+  ostr << std::endl;
 }
 
 template<typename T>

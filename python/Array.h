@@ -3,35 +3,36 @@
 
 #include "Object.h"
 #include "humanleague/src/NDArray.h"
+
 #include <Python.h>
 #include <numpy/arrayobject.h>
 
+
 // TODO use boost.python (requires >= 1.63, 16.4 comes with 1.58)
 // or https://github.com/ndarray/Boost.NumPy
-#include <boost/python/numpy.hpp>
+//#include <boost/python/numpy.hpp>
 
 // See https://docs.scipy.org/doc/numpy/reference/c-api.html
 
-
 namespace pycpp {
 
-  inline void numpy_init()
+  // Utilities for numpy API
+  inline void numpy_init() 
   {
     import_array();
   }
-  
-  // Utilities for numpy API
-//  // convert size_t into ints that npy understands
-//  inline npy_intp* convert(size_t n, const size_t* data)
-//  {
-//    // LEAKS! FIX
-//    npy_intp* p = new npy_intp[n];
-//    for (size_t i = 0; i < n; ++i)
-//    {
-//      p[i] = data[i];
-//    }
-//    return p;
-//  };
+    
+  // convert size_t into ints that npy understands
+  static npy_intp* convert(size_t n, const size_t* data)
+  {
+    // LEAKS! FIX
+    npy_intp* p = new npy_intp[n];
+    for (size_t i = 0; i < n; ++i)
+    {
+      p[i] = data[i];
+    }
+    return p;
+  }
 
   template<typename T> struct NpyType;
 
@@ -45,6 +46,7 @@ namespace pycpp {
   {
   public:
     typedef T value_type;
+
     typedef T* pointer;
     typedef const T* const_pointer;
     typedef T& reference;

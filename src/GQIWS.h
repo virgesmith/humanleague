@@ -9,8 +9,7 @@
 // };
 
 
-// 2-Dimensional constrained quasirandom integer without-replacement sampling
-// constraint is hard-coded (for now) to: idx1 <= idx0
+// 2-Dimensional generalised quasirandom integer without-replacement sampling
 // TODO rename
 //template<size_t D>
 class GQIWS : public QIWS<2>
@@ -20,6 +19,8 @@ public:
   GQIWS(const std::vector<marginal_t>& marginals, const NDArray<2, double>& exoProbs);
 
   ~GQIWS() { }
+
+  GQIWS(const GQIWS&) = delete;
 
   bool solve();
 

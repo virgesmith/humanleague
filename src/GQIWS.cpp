@@ -1,7 +1,134 @@
 
 #include "GQIWS.h"
 
-#include <Rcpp.h>
+//#define NO_R
+
+// #ifdef NO_R
+// #include <iostream>
+// #define OSTREAM std::cout
+// #else
+// #include <Rcpp.h>
+// #define OSTREAM Rcpp::Rcout
+// #endif
+
+// TODO >2 dims
+class DynamicSampler
+{
+public:
+  DynamicSampler(const std::vector<std::vector<uint32_t>>& marginals, const NDArray<2,double>& exoProbs)
+    : m_exoProbs(exoProbs), m_p(exoProbs.sizes())
+  {
+    for (size_t i = 0; i < marginals.size(); ++i)
+    {
+      m_dists.push_back(discrete_distribution_without_replacement<uint32_t>(marginals[i].begin(), marginals[i].end()));
+    }
+  }
+
+  DynamicSampler(const DynamicSampler&) = delete;
+
+  bool sample(size_t n, Sobol& sobol, NDArray<2, uint32_t>& pop)
+  {
+    for (size_t i = 0; i < n; ++i)
+    {
+      if (!sampleImpl(sobol, pop))
+        return false;
+    }
+    return true;
+  }
+
+
+private:
+
+  bool sampleImpl(Sobol& sobol, NDArray<2, uint32_t>& pop)
+  {
+    std::vector<double> m0(m_dists[0].freq().size(), 0.0);
+    std::vector<double> m1(m_dists[1].freq().size(), 0.0);
+    // update dynamic probabilities
+    if (!update(m0, m1)) return false;
+    // OSTREAM << "m0: "; print(m_dists[0].freq(), OSTREAM);
+    // OSTREAM << "m1: "; print(m_dists[1].freq(), OSTREAM);
+    // OSTREAM << "p0: "; print(m0, OSTREAM);
+    // //OSTREAM << "p1: "; print(m1, OSTREAM);
+    // print(m_p.rawData(), m_p.storageSize(), m1.size(), OSTREAM);
+
+    // sample
+    discrete_distribution_with_replacement<double> t0(m0.begin(), m0.end());
+
+    size_t idx[2];
+
+    // sample dim 0
+    uint32_t r = sobol();
+    idx[0] = t0(r);
+    //OSTREAM << r * 0.5/(1u<<31) << "->" << idx[0] << std::endl;
+
+    // update m1 for selected given index of m0
+    for (idx[1] = 0; idx[1] < m_dists[1].freq().size(); ++idx[1])
+    {
+      m1[idx[1]] = m_p[idx];
+    }
+    // check sum(m1) and bale if zero
+    if (std::accumulate(m1.begin(), m1.end(), 0.0) == 0.0)
+      return false;
+    // OSTREAM << "p1: "; print(m1,OSTREAM);
+
+    discrete_distribution_with_replacement<double> t1(m1.begin(), m1.end());
+    r = sobol();
+    idx[1] = t1(r);
+    //OSTREAM << r * 0.5/(1u<<31) << "->" << idx[1] << std::endl;
+
+    // OSTREAM << idx[0] << "," << idx[1] << std::endl;
+    --m_dists[0][idx[0]];
+    --m_dists[1][idx[1]];
+
+    ++pop[idx];
+    return true;
+  }
+
+
+  bool update(std::vector<double>& m0, std::vector<double>& m1)
+  {
+    size_t idx[2];
+    // multiply joint dist from current marginal freqs by exogenous probabilities
+    double sum = 0.0;
+    for (idx[0] = 0; idx[0] < m_dists[0].freq().size(); ++idx[0])
+    {
+      for (idx[1] = 0; idx[1] < m_dists[1].freq().size(); ++idx[1])
+      {
+        m_p[idx] = m_exoProbs[idx] * m_dists[0].freq()[idx[0]] * m_dists[1].freq()[idx[1]];
+        sum += m_p[idx];
+        m0[idx[0]] += m_p[idx];
+        m1[idx[1]] += m_p[idx];
+      }
+    }
+
+    if (sum == 0.0)
+      return false;
+    // renomalise probabilities
+    for (idx[0] = 0; idx[0] < m_dists[0].freq().size(); ++idx[0])
+    {
+      for (idx[1] = 0; idx[1] < m_dists[1].freq().size(); ++idx[1])
+      {
+        m_p[idx] /= sum;
+      }
+    }
+    for (idx[0] = 0; idx[0] < m_dists[0].freq().size(); ++idx[0])
+    {
+      m0[idx[0]] /= sum;
+    }
+    for (idx[1] = 0; idx[1] < m_dists[1].freq().size(); ++idx[1])
+    {
+      m1[idx[1]] /= sum;
+    }
+    return true;
+  }
+
+public:
+  std::vector<discrete_distribution_without_replacement<uint32_t>> m_dists;
+  // dodgy ref storage at least efficient
+  const NDArray<2,double>& m_exoProbs;
+  // joint dist incl exo probs
+  NDArray<2, double> m_p;
+};
 
 
 GQIWS::GQIWS(const std::vector<marginal_t>& marginals, const NDArray<2, double>& exoProbs)
@@ -41,115 +168,28 @@ GQIWS::GQIWS(const std::vector<marginal_t>& marginals, const NDArray<2, double>&
 
 bool GQIWS::solve()
 {
+  // TODO wrap a lot of this away in a distribution class...
+
   // only initialised on first call, ensures different population each time
   // will throw when it reaches 2^32 samples
-  static Sobol sobol(Dim, m_sum);
+  static Sobol sobol(Dim/*, m_sum*/);
   //static std::mt19937 sobol(70858048);
 
-  std::vector<discrete_distribution_without_replacement<uint32_t>> dists;
-  for (size_t i = 0; i < Dim; ++i)
+  bool success = false;
+  size_t iter = 0;
+  const size_t limit = 20;
+  while (!success && iter<limit)
   {
-    dists.push_back(discrete_distribution_without_replacement<uint32_t>(m_marginals[i].begin(), m_marginals[i].end()));
+    m_t.assign(0);
+    DynamicSampler sampler(m_marginals, m_exoprobs);
+
+    success = sampler.sample(m_sum, sobol, m_t);
+    ++iter;
   }
 
-  // construct joint dist
-  NDArray<2, double> p(m_exoprobs.sizes());
-
-  size_t idx[Dim];
-  m_t.assign(0u);
-
-  for (size_t j = 0; j < m_sum; ++j)
-  {
-    // multiply joint dist from current marginal freqs by exogenous probabilities
-    double sum = 0.0;
-    std::vector<double> m0(dists[0].freq().size(), 0.0);
-    std::vector<double> m1(dists[1].freq().size(), 0.0);
-    for (idx[0] = 0; idx[0] < dists[0].freq().size(); ++idx[0])
-    {
-      for (idx[1] = 0; idx[1] < dists[1].freq().size(); ++idx[1])
-      {
-        p[idx] = m_exoprobs[idx] * dists[0].freq()[idx[0]] * dists[1].freq()[idx[1]];
-        sum += p[idx];
-        m0[idx[0]] += p[idx];
-        m1[idx[1]] += p[idx];
-      }
-    }
-    for (idx[0] = 0; idx[0] < dists[0].freq().size(); ++idx[0])
-    {
-      for (idx[1] = 0; idx[1] < dists[1].freq().size(); ++idx[1])
-      {
-        p[idx] /= sum;
-      }
-    }
-
-    // double f = std::accumulate(m0.begin(), m0.end(), 0.0);
-    // for (idx[0] = 0; idx[0] < dists[0].freq().size(); ++idx[0])
-    // {
-    //   m0[idx[0]] /= f;
-    // }
-    // for (idx[1] = 0; idx[1] < dists[1].freq().size(); ++idx[1])
-    // {
-    //   m1[idx[1]] /= f;
-    // }
-
-    //print(p.rawData(), p.storageSize(), m_marginals[1].size(), Rcpp::Rcout);
-    print(m0, Rcpp::Rcout);
-    print(m1, Rcpp::Rcout);
-
-    discrete_distribution_with_replacement<double> t0(m0.begin(), m0.end());
-
-    idx[0] = t0(sobol);
-    for (idx[1] = 0; idx[1] < dists[1].freq().size(); ++idx[1])
-    {
-      m1[idx[1]] = p[idx];
-    }
-    print(m1, Rcpp::Rcout);
-    discrete_distribution_with_replacement<double> t1(m1.begin(), m1.end());
-    idx[1] = t1(sobol);
-    Rcpp::Rcout << idx[0] << "," << idx[1] << std::endl;
-    --dists[0][idx[0]];
-    --dists[1][idx[1]];
-    ++m_t[idx];
-  }
-
-  //
-  // for (size_t j = 0; j < m_sum; ++j)
-  // {
-  //   for (size_t i = 0; i < Dim; ++i)
-  //   {
-  //     idx[i] = dists[i](sobol);
-  //   }
-  //   //print(idx, Dim);
-  //   ++m_t[idx];
-  // }
-  //
-  // std::vector<std::vector<int32_t>> r(Dim);
-  // calcResiduals<Dim>(r);
-  //
-  // bool allZero = true;
-  // for (size_t i = 0; i < Dim; ++i)
-  // {
-  //   int32_t m = maxAbsElement(r[i]);
-  //   m_residuals[i] = m;
-  //   allZero = allZero && (m == 0);
-  // }
-  //
-  // m_chi2 = 0.0;
-  //
-  // Index<D, Index_Unfixed> index(m_t.sizes());
-  //
-  // double scale = 1.0 / std::pow(m_sum, Dim-1);
-  //
-  // while (!index.end())
-  // {
-  //   // m is the mean population of this state
-  //   double m = marginalProduct<Dim>(m_marginals, index) * scale;
-  //   m_p[index] = m / m_sum;
-  //   m_chi2 += (m_t[index] - m) * (m_t[index] - m) / m;
-  //   ++index;
-  // }
-
-  return true;
+  // print(m_t.rawData(), m_t.storageSize(), m_marginals[1].size(), OSTREAM);
+  //OSTREAM << iter << " iterations" << std::endl;
+  return success;
 }
 
 

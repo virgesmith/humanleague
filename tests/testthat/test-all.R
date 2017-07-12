@@ -132,7 +132,7 @@ test_that("constrained2", {
 test_that("constrained3", {
   r = c( 1, 3, 7, 19, 96, 4, 5, 1, 1)
   b = c( 0, 7, 21, 109, 0, 0)
-  res = humanleague::synthPopC(list(r,b),makeConstraint(r,b))
+  res = humanleague::synthPopG(list(r,b),makeConstraint(r,b))
   expect_equal(res$conv, TRUE)
   expect_equal(rowSums(res$x.hat), r)
   expect_equal(colSums(res$x.hat), b)

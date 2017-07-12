@@ -3,10 +3,10 @@
 
 #include "QIWS.h"
 
-// struct Constrain
-// {
-//   enum Status { SUCCESS = 0, ITERLIMIT = 1, STUCK = 2 };
-// };
+struct ConstrainG
+{
+  enum Status { SUCCESS = 0, ITERLIMIT = 1, STUCK = 2 };
+};
 
 
 // 2-Dimensional generalised quasirandom integer without-replacement sampling

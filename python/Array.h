@@ -29,18 +29,6 @@ namespace pycpp {
     }();
   }
     
-  // convert size_t into ints that npy understands
-  static npy_intp* convert(size_t n, const size_t* data)
-  {
-    // LEAKS! FIX
-    npy_intp* p = new npy_intp[n];
-    for (size_t i = 0; i < n; ++i)
-    {
-      p[i] = data[i];
-    }
-    return p;
-  }
-
   template<typename T> struct NpyType;
 
   template<> struct NpyType<double> { static const int Type = NPY_DOUBLE; };
@@ -70,9 +58,15 @@ namespace pycpp {
     
     // Construct from NDArray<D,T>. Data is presumed to be copied
     template<size_t D>
-    explicit Array(const NDArray<D, T>& a) 
-      : Object(PyArray_SimpleNewFromData(D, convert(D, a.sizes()), NpyType<T>::Type, const_cast<void*>((const void*)a.rawData()))) 
+    explicit Array(NDArray<D, T>&& a) 
+      : Object(PyArray_SimpleNewFromData(D, 
+                                         const_cast<npy_intp*>(a.sizesl()), 
+                                         NpyType<T>::Type, 
+                                         const_cast<void*>((const void*)a.rawData()))) 
     {
+      // memory ownership transferred?
+      // leak if you dont, memory corruption if you do
+      a.release();
     }
     
     ~Array()

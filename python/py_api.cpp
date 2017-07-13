@@ -55,25 +55,21 @@ extern "C" PyObject* humanleague_sobol(PyObject *self, PyObject *args)
     // args e.g. "s" for string "i" for integer, "d" for double "ss" for 2 strings
     if (!PyArg_ParseTuple(args, "ii|i", &dim, &length, &skips))
       return nullptr;
-      
-    pycpp::List outer(length);
-    if (!outer)
-      return nullptr;
+
+    size_t sizes[2] = { (size_t)length, (size_t)dim };
+    NDArray<2,double> sequence(sizes);
 
     Sobol sobol(dim, skips);
     double scale = 0.5 / (1u << 31);
 
-    for (int n = 0; n < length; ++n)
+    for (Index<2, Index_Unfixed> idx(sizes); !idx.end(); ++idx)
     {
-      std::vector<pycpp::List> inner(length, pycpp::List(dim));
-      const std::vector<unsigned int>& v = sobol.buf();
-      for (int i = 0; i < dim; ++i) 
-      {
-        inner[n].set(i, pycpp::Double(v[i] * scale));
-      }
-      outer.set(n, std::move(inner[n]));
+      sequence[idx] = sobol() * scale;
     }
-    return outer.release();
+    
+    pycpp::Array<double> result(std::move(sequence));
+    
+    return result.release();
   }
   catch(const std::exception& e)
   {
@@ -255,14 +251,16 @@ extern "C" PyObject* humanleague_numpytest(PyObject *self, PyObject *args)
     //npy_intp p[2] = {5,5};
     //pycpp::Array<double> retval(2, p);
     
-    long sizes[] = {4,4};
-    //NDArray<2,int> a(sizes);
-    //pycpp::Array<int> array(a);
-    pycpp::Array<int> array2(2, sizes);
+    long lsizes[] = {5,5};
+    size_t sizes[] = {5,5};
+    NDArray<2,int> a(sizes);
+    a.assign(4);
+    pycpp::Array<int> array(std::move(a));
+    pycpp::Array<int> array2(2, lsizes);
     
     long index[] = { 0, 0 };
-    for (; index[0] <= sizes[0]; ++index[0])
-      for (; index[1] <= sizes[1]; ++index[1])
+    for (; index[0] < lsizes[0]; ++index[0])
+      for (; index[1] < lsizes[1]; ++index[1])
         array2[index] = index[0] * 10 + index[1] * 100;
 
     pycpp::Dict retval;
@@ -289,6 +287,7 @@ extern "C" PyObject* humanleague_numpytest(PyObject *self, PyObject *args)
     std::cout << std::endl;
     
     retval.insert("init", std::move(array2));
+    retval.insert("NDArray", std::move(array));
     
     return retval.release();
   }

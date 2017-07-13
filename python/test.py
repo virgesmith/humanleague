@@ -3,7 +3,8 @@
 import humanleague
 import numpy as np
 
-print(humanleague.sobolSequence(3,10,10))
+print(humanleague.sobolSequence(3,5))
+
 print(humanleague.sobolSequence(6,10))
 
 print(humanleague.synthPop([[4,2],[1,2,3]]))

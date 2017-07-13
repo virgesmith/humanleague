@@ -25,7 +25,7 @@ module1 = Extension('humanleague',
                               'Object.cpp',
                               'py_api.cpp'],
 # annoyingly *.h causes a full rebuild every time
-                   depends = ['Object.h', 'Array.h', 'make.py'])
+                   depends = ['Object.h', 'Array.h', 'setup.py'])
 # devroot + '/CatchDat/humanleague/src/*.h', 
 
 # TODO unit test module?

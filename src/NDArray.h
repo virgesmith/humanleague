@@ -118,6 +118,7 @@ public:
   NDArray() : m_storageSize(0), m_data(0)
   {
     m_sizes[0] = 0;
+    m_sizesl[0] = 0;
   }
 
   NDArray(const size_t* sizes) : m_storageSize(0), m_data(0)
@@ -144,6 +145,12 @@ public:
     return m_sizes;
   }
 
+  // python integration (TODO decide and remove one)
+  const long* sizesl() const
+  {
+    return m_sizesl;
+  }
+
   size_t storageSize() const
   {
     return m_storageSize;
@@ -159,6 +166,7 @@ public:
     size_t oldStorageSize = m_storageSize;
 
     std::copy(sizes, sizes + Dim, m_sizes);
+    std::copy(sizes, sizes + Dim, m_sizesl);
     m_storageSize = sizes[0];
     assert(m_storageSize < MaxSize);
     for (size_t i = 1; i < Dim; ++i)
@@ -199,6 +207,12 @@ public:
   {
     return m_data + m_storageSize;
   }
+  
+  // relinqish ownership
+  void release()
+  {
+    m_data = nullptr;
+  }
 
 private:
 
@@ -229,6 +243,7 @@ private:
 private:
 
   size_t m_sizes[D];
+  long m_sizesl[D];
   size_t m_storageSize;
   T* m_data;
 

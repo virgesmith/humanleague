@@ -4,13 +4,17 @@
 
 ## Dependencies
 
-- Python 2.7
+- Python 3.0 or greater, with numpy and dev tools installed
+
+```
+user@host:~/dev/humanleague/python$ sudo apt install python3-dev python3-numpy
+```
 
 ## Build
 
 ```
-user@host:~/dev/humanleague/python$ ./make.py build
-user@host:~/dev/humanleague/python$ ./make.py install
+user@host:~/dev/humanleague/python$ ./setup.py build
+user@host:~/dev/humanleague/python$ ./setup.py install
 ```
 Latter command may require admin rights.
 On linux ensure you have group write access to /usr/local/lib, or run as root.

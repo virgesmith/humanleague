@@ -56,6 +56,8 @@ namespace pycpp {
   {
   public:
     explicit Int(int x);
+    explicit Int(uint32_t x);
+    explicit Int(size_t x);
     
     explicit Int(PyObject* p);
     

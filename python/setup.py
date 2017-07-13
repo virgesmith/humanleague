@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 import numpy
@@ -10,10 +10,9 @@ devroot = os.environ['HOME'] + "/dev"
 module1 = Extension('humanleague',
                     define_macros = [('MAJOR_VERSION', '1'),
                                      ('MINOR_VERSION', '0'),
-                                     ('NPY_NO_DEPRECATED_API',
-                                     'NPY_1_7_API_VERSION')
+                                     ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
                                      ],
-                   extra_compile_args=['-std=c++11'],
+                   extra_compile_args=['-Wall', '-std=c++11'],
 # TODO env vars rather than relative paths....
                    include_dirs = [devroot, '/usr/include' '/usr/local/include', numpy.get_include()],
 #                    libraries = [':humanleague.so'],

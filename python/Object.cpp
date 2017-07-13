@@ -68,11 +68,15 @@ pycpp::Bool::operator bool() const
   return m_obj == Py_True;
 }
 
-pycpp::Int::Int(int i) : pycpp::Object(PyInt_FromLong(i)) { }
+pycpp::Int::Int(int i) : pycpp::Object(PyLong_FromLong(i)) { }
+
+pycpp::Int::Int(uint32_t i) : pycpp::Object(PyLong_FromUnsignedLong(i)) { }
+
+pycpp::Int::Int(size_t i) : pycpp::Object(PyLong_FromSize_t(i)) { }
 
 pycpp::Int::Int(PyObject* p) : pycpp::Object(p) 
 { 
-  if (!PyLong_Check(m_obj) && !PyInt_Check(m_obj))
+  if (!PyLong_Check(m_obj))
     throw std::runtime_error("object is not an int");
 }
 
@@ -106,17 +110,17 @@ pycpp::Double::operator double() const
 }
 
 
-pycpp::String::String(const char* s) : pycpp::Object(PyString_FromString(s)) { }
+pycpp::String::String(const char* s) : pycpp::Object(PyUnicode_FromString(s)) { }
 
 pycpp::String::String(PyObject* p) : pycpp::Object(p) 
 { 
-  if (!PyString_Check(m_obj))
+  if (!PyUnicode_Check(m_obj))
     throw std::runtime_error("object is not a string");
 }
 
 pycpp::String::operator const char*() const 
 {
-  return PyString_AsString(m_obj);
+  return PyUnicode_AsUTF8(m_obj);
 }
 
 pycpp::List::List(size_t length) : pycpp::Object(PyList_New(length)) { }

@@ -162,43 +162,46 @@ extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
   }
 }
 
-//// prevents name mangling (but works without this)
-//extern "C" PyObject* humanleague_synthPopC(PyObject *self, PyObject *args)
-//{
-//  try 
-//  {
-//    PyObject* marginal0Arg;
-//    PyObject* marginal1Arg;
-//    double rho;
+// prevents name mangling (but works without this)
+extern "C" PyObject* humanleague_synthPopG(PyObject *self, PyObject *args)
+{
+  try 
+  {
+    PyObject* marginal0Arg;
+    PyObject* marginal1Arg;
+    PyObject* exoProbsArg;
 
-//    // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
-//    if (!PyArg_ParseTuple(args, "O!O!d", &PyList_Type, &marginal0Arg, 
-//                                         &PyList_Type, &marginal1Arg, &rho))
-//      return nullptr;
-//      
-//    pycpp::List marginal0(marginal0Arg);
-//    pycpp::List marginal1(marginal1Arg);
-//    
-//    std::vector<std::vector<uint32_t>> marginals(2);
-//      
-//    marginals[0] = marginal0.toVector<uint32_t>();
-//    marginals[1] = marginal1.toVector<uint32_t>();
-//    CQIWS cqiws(marginals, rho);
-//    pycpp::Dict retval;
+    // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
+    if (!PyArg_ParseTuple(args, "O!O!O!", &PyList_Type, &marginal0Arg, 
+                                         &PyList_Type, &marginal1Arg, &exoProbsArg))
+      return nullptr;
+      
+    pycpp::List marginal0(marginal0Arg);
+    pycpp::List marginal1(marginal1Arg);
+    pycpp::List exoProbs(exoProbsArg);
+    
+    std::vector<std::vector<uint32_t>> marginals(2);
+      
+    marginals[0] = marginal0.toVector<uint32_t>();
+    marginals[1] = marginal1.toVector<uint32_t>();
+//    GQIWS cqiws(marginals, rho);
+    pycpp::Dict retval;
 //    retval.set("conv", pycpp::Bool(rqiws.solve()));
 //    retval.set("result", flatten(rqiws.population(), rqiws.result()));
 //    retval.set("pop", pycpp::Int(rqiws.population()));
-//    return retval.release();
-//  }
-//  catch(const std::exception& e)
-//  {
-//    return &pycpp::String(e.what());
-//  }
-//  catch(...)
-//  {
-//    return &pycpp::String("unexpected exception");
-//  }
-//}
+    return retval.release();
+  }
+  catch(const std::exception& e)
+  {
+    return &pycpp::String(e.what());
+  }
+  catch(...)
+  {
+    return &pycpp::String("unexpected exception");
+  }
+}
+
+
 
 // prevents name mangling (but works without this)
 extern "C" PyObject* humanleague_synthPopR(PyObject *self, PyObject *args)
@@ -243,26 +246,23 @@ extern "C" PyObject* humanleague_numpytest(PyObject *self, PyObject *args)
 {
   try 
   {
-    PyObject* marginal0Arg;
-    PyObject* marginal1Arg;
-    double rho;
+    PyObject* arrayArg;
 
     // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
-    if (!PyArg_ParseTuple(args, "O!O!d", &PyList_Type, &marginal0Arg, 
-                                         &PyList_Type, &marginal1Arg, &rho))
+    if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, &arrayArg))
       return nullptr;
       
     //npy_intp p[2] = {5,5};
     //pycpp::Array<double> retval(2, p);
     
-    long sizes[] = {3,3};
+    long sizes[] = {4,4};
     //NDArray<2,int> a(sizes);
     //pycpp::Array<int> array(a);
     pycpp::Array<int> array2(2, sizes);
     
     long index[] = { 0, 0 };
-    for (; index[0] < sizes[0]; ++index[0])
-      for (; index[1] < sizes[1]; ++index[1])
+    for (; index[0] <= sizes[0]; ++index[0])
+      for (; index[1] <= sizes[1]; ++index[1])
         array2[index] = index[0] * 10 + index[1] * 100;
 
     pycpp::Dict retval;
@@ -275,7 +275,7 @@ extern "C" PyObject* humanleague_numpytest(PyObject *self, PyObject *args)
 //      ++index;
 //    }
 
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < 2; ++i)
     {
       std::cout << array2.stride(i) << ", ";
     }
@@ -302,25 +302,57 @@ extern "C" PyObject* humanleague_numpytest(PyObject *self, PyObject *args)
   }
 }
 
+
 namespace {
 
+// Python2.7
 PyMethodDef entryPoints[] = {
   {"sobolSequence", humanleague_sobol, METH_VARARGS, "Returns a Sobol sequence."},
   {"synthPop", humanleague_synthPop, METH_VARARGS, "Synthpop."},
   {"synthPopR", humanleague_synthPopR, METH_VARARGS, "Synthpop correlated."},
+  {"synthPopG", humanleague_synthPopG, METH_VARARGS, "Synthpop generalised."},
   {"numpytest", humanleague_numpytest, METH_VARARGS, "numpy test."},
   {nullptr, nullptr, 0, nullptr}        /* terminator */
 };
 
+PyModuleDef moduleDef =
+{
+  PyModuleDef_HEAD_INIT,
+  "humanleague", /* name of module */
+  "",          /* module documentation, may be NULL */
+  -1,          /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+  entryPoints
+};
+
+//struct ModuleState 
+//{
+//  PyObject *error;
+//};
+
 }
 
-PyMODINIT_FUNC inithumanleague()
+PyMODINIT_FUNC PyInit_humanleague()
 {
-  //pycpp::NumPy numpyApi = Global::instance<pycpp::NumPy>(); 
-  // Initialise the API
-  Py_InitModule("humanleague", entryPoints);
-  // initialise numpy (must be done after the above)
+  PyObject *module = PyModule_Create(&moduleDef);
+
+  if (module == nullptr)
+    return nullptr;
+    
+  PyObject* state = (PyObject*)PyModule_GetState(module);
+  state = PyErr_NewException("humanleague.Error", nullptr, nullptr);
+  if (state == nullptr) 
+  {
+    Py_DECREF(module);
+    return nullptr;
+  }
+
+//  // Initialise the API
+//    Py_InitModule("humanleague", entryPoints);
+//  // initialise numpy (must be done after the above)
   pycpp::numpy_init();
+//  return nullptr;
+
+  return module;
 }
 
 

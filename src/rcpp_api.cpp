@@ -513,7 +513,7 @@ List prob2IntFreq(NumericVector pIn, int pop)
     throw std::runtime_error("population must be strictly positive");
   }
 
-  if (fabs(std::accumulate(p.begin(), p.end(), -1.0)) > std::numeric_limits<double>::epsilon())
+  if (fabs(std::accumulate(p.begin(), p.end(), -1.0)) > 1000*std::numeric_limits<double>::epsilon())
   {
     throw std::runtime_error("probabilities do not sum to unity");
   }

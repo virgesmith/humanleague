@@ -5,15 +5,16 @@
 
 #include <vector>
 #include <algorithm>
+#include <numeric>
 
-template<typename T> 
+template<typename T>
 class discrete_distribution_with_replacement
 {
 public:
 
-  typedef T value_type; 
+  typedef T value_type;
   typedef size_t index_type;
-  typedef uint32_t random_type; 
+  typedef uint32_t random_type;
 
   // // enforce integral types only
   // static_assert(std::is_integral<I>::value, "discrete_distribution_with_replacement: only integral types supported");

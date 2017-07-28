@@ -2,6 +2,7 @@
 #include "Integerise.h"
 
 #include <algorithm>
+#include <numeric>
 
 std::vector<int> integeriseMarginalDistribution(const std::vector<double>& p, int pop, double& mse)
 {

@@ -5,7 +5,9 @@ cache: packages
 
 sudo: false
 
-dist: trusty
+os: osx
+osx_image: xcode8
+
 
 warnings_are_errors: false
 

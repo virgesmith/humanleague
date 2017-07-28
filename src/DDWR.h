@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <stdexcept>
 
 template<typename T>
 class discrete_distribution_with_replacement

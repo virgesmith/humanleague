@@ -6,6 +6,7 @@
 #include "Sobol.h"
 #include "DDWR.h"
 #include "StatFuncs.h"
+#include <stdexcept>
 #include <cmath>
 
 

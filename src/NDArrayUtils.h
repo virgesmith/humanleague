@@ -4,6 +4,7 @@
 #include "Index.h"
 
 #include <vector>
+#include <numeric>
 #include <cassert>
 #include <iostream>
 

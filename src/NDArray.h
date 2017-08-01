@@ -5,6 +5,8 @@
 #include <cstddef>
 #include <cassert>
 
+//#include <Python.h>
+
 // The array storage
 template<size_t D, typename T>
 class NDArray
@@ -115,15 +117,33 @@ public:
     size_t m_idx[D];
   };
 
-  NDArray() : m_storageSize(0), m_data(0)
+  NDArray() : m_storageSize(0), m_data(0), m_owned(true)
   {
     m_sizes[0] = 0;
     m_sizesl[0] = 0;
   }
 
-  NDArray(const size_t* sizes) : m_storageSize(0), m_data(0)
+  NDArray(const size_t* sizes) : m_storageSize(0), m_data(0), m_owned(true)
   {
     resize(sizes);
+  }
+  
+  // Construct with storage managed by some other object
+  // TODO disable stuff like resize
+  NDArray(long int* sizes, T* const storage)
+  {
+    std::copy(sizes, sizes + Dim, m_sizes);
+    std::copy(sizes, sizes + Dim, m_sizesl);
+    m_storageSize = sizes[0];
+    assert(m_storageSize < MaxSize);
+    for (size_t i = 1; i < Dim; ++i)
+    {
+      assert(sizes[i] < MaxSize);
+      m_storageSize *= sizes[i];
+    }
+
+    m_data = storage;
+    m_owned = false;
   }
 
   // Disallow copy
@@ -131,7 +151,8 @@ public:
 
   ~NDArray()
   {
-    deallocate(m_data);
+    if (m_owned)
+      deallocate(m_data);
   }
 
   size_t size(size_t dim) const
@@ -163,23 +184,26 @@ public:
 
   void resize(const size_t* sizes)
   {
-    size_t oldStorageSize = m_storageSize;
-
-    std::copy(sizes, sizes + Dim, m_sizes);
-    std::copy(sizes, sizes + Dim, m_sizesl);
-    m_storageSize = sizes[0];
-    assert(m_storageSize < MaxSize);
-    for (size_t i = 1; i < Dim; ++i)
+    if (m_owned)
     {
-      assert(sizes[i] < MaxSize);
-      m_storageSize *= sizes[i];
-    }
+      size_t oldStorageSize = m_storageSize;
 
-    // no realloc if storageSize unchanged
-    if (m_storageSize > oldStorageSize)
-    {
-      deallocate(m_data);
-      m_data = allocate(m_storageSize);
+      std::copy(sizes, sizes + Dim, m_sizes);
+      std::copy(sizes, sizes + Dim, m_sizesl);
+      m_storageSize = sizes[0];
+      assert(m_storageSize < MaxSize);
+      for (size_t i = 1; i < Dim; ++i)
+      {
+        assert(sizes[i] < MaxSize);
+        m_storageSize *= sizes[i];
+      }
+
+      // no realloc if storageSize unchanged
+      if (m_storageSize > oldStorageSize)
+      {
+        deallocate(m_data);
+        m_data = allocate(m_storageSize);
+      }
     }
   }
 
@@ -207,7 +231,7 @@ public:
   {
     return m_data + m_storageSize;
   }
-  
+
   // relinqish ownership
   void release()
   {
@@ -232,11 +256,13 @@ private:
   T* allocate(size_t size) const
   {
     return new T[size];
+    //return (T*)PyMem_Malloc(size * sizeof(T));
   }
 
   void deallocate(T* p) const
   {
     delete [] p;
+    //PyMem_Free(p);
   }
 
 
@@ -246,7 +272,7 @@ private:
   long m_sizesl[D];
   size_t m_storageSize;
   T* m_data;
-
+  bool m_owned;
 };
 
 // 0d & 1d not implemented for obvious reasons

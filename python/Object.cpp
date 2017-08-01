@@ -72,6 +72,8 @@ pycpp::Int::Int(int i) : pycpp::Object(PyLong_FromLong(i)) { }
 
 pycpp::Int::Int(uint32_t i) : pycpp::Object(PyLong_FromUnsignedLong(i)) { }
 
+pycpp::Int::Int(int64_t i) : pycpp::Object(PyLong_FromLongLong(i)) { }
+
 pycpp::Int::Int(size_t i) : pycpp::Object(PyLong_FromSize_t(i)) { }
 
 pycpp::Int::Int(PyObject* p) : pycpp::Object(p) 

@@ -33,6 +33,8 @@ namespace pycpp {
 
   template<> struct NpyType<double> { static const int Type = NPY_DOUBLE; };
   template<> struct NpyType<int> { static const int Type = NPY_INT; };
+  template<> struct NpyType<uint32_t> { static const int Type = NPY_UINT32; };
+  template<> struct NpyType<int64_t> { static const int Type = NPY_INT64; };
   template<> struct NpyType<bool> { static const int Type = NPY_BOOL; };
 
   // numpy arrays 
@@ -54,7 +56,10 @@ namespace pycpp {
       PyArray_FILLWBYTE((PyArrayObject*)m_obj, 0);
     }
 
-    //explicit Array(PyObject* array);
+    // construct from an incoming numpy object
+    explicit Array(PyObject* array) : Object(array)
+    {
+    }
     
     // Construct from NDArray<D,T>. Data is presumed to be copied
     template<size_t D>
@@ -77,7 +82,7 @@ namespace pycpp {
     // generic n-D access??
     const_reference& operator[](npy_intp* index) const
     {
-      return *(const_pointer)PyArray_GetPtr(const_cast<PyArrayObject*>(m_obj), index);
+      return *(const_pointer)PyArray_GetPtr(const_cast<PyArrayObject*>(reinterpret_cast<const PyArrayObject*>(m_obj)), index);
     }
     
     reference& operator[](npy_intp* index)
@@ -86,11 +91,38 @@ namespace pycpp {
       //return *(value_type*)PyArray_GETPTR2(reinterpret_cast<PyArrayObject*>(m_obj), index[0], index[1]);
     }
     
+    // assumes 1-D
+    template<typename U>
+    std::vector<U> toVector() const
+    {
+      const int n = storageSize();
+      std::vector<U> v(n);
+      npy_intp i[1]; 
+      for (i[0] = 0; i[0] < n; ++i[0])
+      {
+        v[i[0]] = (U)this->operator[](i);
+      }
+      return v;
+    }
+    
+    // TODO dimension
+    int dim() const 
+    {
+      return PyArray_NDIM((PyArrayObject*)m_obj);
+    }
+    
+    npy_intp* shape() const 
+    {
+      return PyArray_SHAPE((PyArrayObject*)m_obj);
+    }
+    
     // total number of elements
     int storageSize() const
     {
       return PyArray_Size(m_obj);
     }
+    
+    //npy_intp* shape() const  
     
     long stride(int d)
     {

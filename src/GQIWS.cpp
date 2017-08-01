@@ -325,36 +325,6 @@ public:
 GQIWS::GQIWS(const std::vector<marginal_t>& marginals, const NDArray<2, double>& exoProbs)
   : QIWS<2>(marginals), m_exoprobs(exoProbs)
 {
-  if (m_marginals.size() != Dim)
-  {
-    throw std::runtime_error("invalid no. of marginals");
-  }
-
-  // check for -ve values have to loop manually and convert to signed value :(
-  for (size_t i = 0; i < m_marginals.size(); ++i)
-  {
-    for (size_t j = 0; j < m_marginals[i].size(); ++j)
-    {
-      if (static_cast<int32_t>(m_marginals[i][j]) < 0)
-        throw std::runtime_error("negative marginal value in marginal " + std::to_string(i) + " element " + std::to_string(j));
-    }
-  }
-
-  size_t sizes[Dim];
-  m_sum = sum(m_marginals[0]);
-  sizes[0] = m_marginals[0].size();
-  m_dof = sizes[0] - 1;
-  for (size_t i = 1; i < m_marginals.size(); ++i)
-  {
-    if (m_sum != sum(m_marginals[i]))
-    {
-      throw std::runtime_error("invalid marginals");
-    }
-    sizes[i] = m_marginals[i].size();
-    m_dof *= sizes[i] - 1;
-  }
-  m_t.resize(&sizes[0]);
-  m_p.resize(&sizes[0]);
 }
 
 bool GQIWS::solve()

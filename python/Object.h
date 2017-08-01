@@ -57,6 +57,7 @@ namespace pycpp {
   public:
     explicit Int(int x);
     explicit Int(uint32_t x);
+    explicit Int(int64_t x);
     explicit Int(size_t x);
     
     explicit Int(PyObject* p);
@@ -64,12 +65,14 @@ namespace pycpp {
     operator int() const;
     // NB python doesnt have native unsigned type
     operator uint32_t() const;
+    operator int64_t() const;
     operator size_t() const;
   };
   
   // define C++ types that map to Int
   template<> struct PyType<int> { typedef Int Type; };
   template<> struct PyType<uint32_t> { typedef Int Type; };
+  template<> struct PyType<int64_t> { typedef Int Type; };
   template<> struct PyType<size_t> { typedef Int Type; };
 
   class Double : public Object 
@@ -131,7 +134,7 @@ namespace pycpp {
     std::vector<T> toVector() const
     {
       const size_t n = size();
-      std::vector<uint32_t> v(n);
+      std::vector<T> v(n);
       for (size_t i = 0; i < n; ++i)
       {
         v[i] = typename PyType<T>::Type(this->operator[](i));

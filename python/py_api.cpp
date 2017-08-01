@@ -4,6 +4,7 @@
 
 #include "humanleague/src/Sobol.h"
 #include "humanleague/src/RQIWS.h"
+#include "humanleague/src/GQIWS.h"
 
 #include <Python.h>
 
@@ -168,23 +169,25 @@ extern "C" PyObject* humanleague_synthPopG(PyObject *self, PyObject *args)
     PyObject* exoProbsArg;
 
     // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
-    if (!PyArg_ParseTuple(args, "O!O!O!", &PyList_Type, &marginal0Arg, 
-                                         &PyList_Type, &marginal1Arg, &exoProbsArg))
+    if (!PyArg_ParseTuple(args, "O!O!O!", &PyArray_Type, &marginal0Arg, &PyArray_Type, &marginal1Arg, &PyArray_Type, &exoProbsArg))
       return nullptr;
       
-    pycpp::List marginal0(marginal0Arg);
-    pycpp::List marginal1(marginal1Arg);
-    pycpp::List exoProbs(exoProbsArg);
-    
+    pycpp::Array<int64_t> marginal0(marginal0Arg);
+    pycpp::Array<int> marginal1(marginal1Arg);
+    pycpp::Array<double> exoProbs(exoProbsArg);
+         
     std::vector<std::vector<uint32_t>> marginals(2);
       
     marginals[0] = marginal0.toVector<uint32_t>();
     marginals[1] = marginal1.toVector<uint32_t>();
-//    GQIWS cqiws(marginals, rho);
+    // HACK 
+    NDArray<2, double> xp(exoProbs.shape(), exoProbs.rawData());
+    GQIWS gqiws(marginals, xp);
     pycpp::Dict retval;
-//    retval.set("conv", pycpp::Bool(rqiws.solve()));
-//    retval.set("result", flatten(rqiws.population(), rqiws.result()));
-//    retval.set("pop", pycpp::Int(rqiws.population()));
+    retval.insert("conv", pycpp::Bool(gqiws.solve()));
+    retval.insert("result", flatten(gqiws.population(), gqiws.result()));
+    //retval.insert("result", pycpp::Array<uint32_t>(std::move(const_cast<NDArray<2,uint32_t>&>(gqiws.result()))));
+    retval.insert("pop", pycpp::Int(gqiws.population()));
     return retval.release();
   }
   catch(const std::exception& e)
@@ -196,8 +199,6 @@ extern "C" PyObject* humanleague_synthPopG(PyObject *self, PyObject *args)
     return &pycpp::String("unexpected exception");
   }
 }
-
-
 
 // prevents name mangling (but works without this)
 extern "C" PyObject* humanleague_synthPopR(PyObject *self, PyObject *args)
@@ -253,9 +254,15 @@ extern "C" PyObject* humanleague_numpytest(PyObject *self, PyObject *args)
     
     long lsizes[] = {5,5};
     size_t sizes[] = {5,5};
+
     NDArray<2,int> a(sizes);
-    a.assign(4);
+    int i = 0;
+    for (Index<2, Index_Unfixed> idx(sizes); !idx.end(); ++idx)
+    {
+      a[idx] = ++i;
+    }
     pycpp::Array<int> array(std::move(a));
+
     pycpp::Array<int> array2(2, lsizes);
     
     long index[] = { 0, 0 };
@@ -265,13 +272,6 @@ extern "C" PyObject* humanleague_numpytest(PyObject *self, PyObject *args)
 
     pycpp::Dict retval;
 //    retval.insert("uninit", std::move(array));
-
-//    Index<3, Index_Unfixed> index(sizes);
-//    while (!index.end())
-//    {
-//      array2[pycpp::convert(4,index)] = 0;
-//      ++index;
-//    }
 
     for (int i = 0; i < 2; ++i)
     {
@@ -323,13 +323,15 @@ PyModuleDef moduleDef =
   entryPoints
 };
 
-//struct ModuleState 
-//{
-//  PyObject *error;
-//};
+PyObject *error;
 
 }
 
+// From http://orb.essex.ac.uk/ce/ce705/python-3.5.1-docs-html/extending/extending.html
+// This function leaks 161k, obvious candidates are module and error but its more complicated than this
+// since removing error completely, and decreffing module doesnt help.
+// But this seems to be the officially sanctioned way of doing things, and you want the module's state to persist,
+// so it's probably ok.
 PyMODINIT_FUNC PyInit_humanleague()
 {
   PyObject *module = PyModule_Create(&moduleDef);
@@ -337,20 +339,11 @@ PyMODINIT_FUNC PyInit_humanleague()
   if (module == nullptr)
     return nullptr;
     
-  PyObject* state = (PyObject*)PyModule_GetState(module);
-  state = PyErr_NewException("humanleague.Error", nullptr, nullptr);
-  if (state == nullptr) 
-  {
-    Py_DECREF(module);
-    return nullptr;
-  }
+  error = PyErr_NewException("humanleague.Error", nullptr, nullptr);
+  Py_INCREF(error);
+  PyModule_AddObject(module, "error", error);
 
-//  // Initialise the API
-//    Py_InitModule("humanleague", entryPoints);
-//  // initialise numpy (must be done after the above)
   pycpp::numpy_init();
-//  return nullptr;
-
   return module;
 }
 

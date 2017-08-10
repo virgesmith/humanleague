@@ -2,9 +2,9 @@
 #include "Object.h"
 #include "Array.h"
 
-#include "humanleague/src/Sobol.h"
-#include "humanleague/src/RQIWS.h"
-#include "humanleague/src/GQIWS.h"
+#include "src/Sobol.h"
+#include "src/RQIWS.h"
+#include "src/GQIWS.h"
 
 #include <Python.h>
 

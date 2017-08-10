@@ -2,7 +2,7 @@
 #pragma once 
 
 #include "Object.h"
-#include "humanleague/src/NDArray.h"
+#include "src/NDArray.h"
 
 #include <Python.h>
 #include <numpy/arrayobject.h>

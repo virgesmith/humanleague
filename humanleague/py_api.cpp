@@ -330,8 +330,8 @@ PyObject *error;
 // From http://orb.essex.ac.uk/ce/ce705/python-3.5.1-docs-html/extending/extending.html
 // This function leaks 161k, obvious candidates are module and error but its more complicated than this
 // since removing error completely, and decreffing module doesnt help.
-// But this seems to be the officially sanctioned way of doing things, and you want the module's state to persist,
-// so it's probably ok.
+// But this seems to be the officially sanctioned way of doing things, and you want the module's state to 
+// persist, so it's probably ok.
 PyMODINIT_FUNC PyInit_humanleague()
 {
   PyObject *module = PyModule_Create(&moduleDef);

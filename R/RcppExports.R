@@ -11,7 +11,7 @@
 #' synthPop(list(c(1,2,3,4), c(3,4,3)))
 #' @export
 synthPop <- function(marginals) {
-    .Call('humanleague_synthPop', PACKAGE = 'humanleague', marginals)
+    .Call('_humanleague_synthPop', PACKAGE = 'humanleague', marginals)
 }
 
 #' Generate a constrained population in 2 dimensions given 2 marginals and a constraint matrix.
@@ -37,11 +37,11 @@ synthPop <- function(marginals) {
 #' res = humanleague::synthPopC(list(r,b),p)
 #' @export
 synthPopC <- function(marginals, permittedStates) {
-    .Call('humanleague_synthPopC', PACKAGE = 'humanleague', marginals, permittedStates)
+    .Call('_humanleague_synthPopC', PACKAGE = 'humanleague', marginals, permittedStates)
 }
 
 synthPopG <- function(marginals, exoProbsIn) {
-    .Call('humanleague_synthPopG', PACKAGE = 'humanleague', marginals, exoProbsIn)
+    .Call('_humanleague_synthPopG', PACKAGE = 'humanleague', marginals, exoProbsIn)
 }
 
 #' Generate a correlated population in 2 dimensions given 2 marginals and a flat correlation.
@@ -55,7 +55,7 @@ synthPopG <- function(marginals, exoProbsIn) {
 #' res = humanleague::synthPopR(list(c(10,10,10,10,10),c(10,10,10,10,10)),0.5)
 #' @export
 synthPopR <- function(marginals, rho) {
-    .Call('humanleague_synthPopR', PACKAGE = 'humanleague', marginals, rho)
+    .Call('_humanleague_synthPopR', PACKAGE = 'humanleague', marginals, rho)
 }
 
 #' Constrained a pregenerated population in 2 dimensions given a constraint matrix.
@@ -83,7 +83,7 @@ synthPopR <- function(marginals, rho) {
 #' res = humanleague::constrain(res$x.hat, p)
 #' @export
 constrain <- function(population, permittedStates) {
-    .Call('humanleague_constrain', PACKAGE = 'humanleague', population, permittedStates)
+    .Call('_humanleague_constrain', PACKAGE = 'humanleague', population, permittedStates)
 }
 
 #' Generate integer frequencies from discrete probabilities and an overall population.
@@ -96,7 +96,7 @@ constrain <- function(population, permittedStates) {
 #' prob2IntFreq(c(0.1,0.2,0.3,0.4), 11)
 #' @export
 prob2IntFreq <- function(pIn, pop) {
-    .Call('humanleague_prob2IntFreq', PACKAGE = 'humanleague', pIn, pop)
+    .Call('_humanleague_prob2IntFreq', PACKAGE = 'humanleague', pIn, pop)
 }
 
 #' Generate Sobol' quasirandom sequence
@@ -109,7 +109,7 @@ prob2IntFreq <- function(pIn, pop) {
 #' sobolSequence(2, 1000, 1000) # will skip 512 numbers!
 #' @export
 sobolSequence <- function(dim, n, skip = 0L) {
-    .Call('humanleague_sobolSequence', PACKAGE = 'humanleague', dim, n, skip)
+    .Call('_humanleague_sobolSequence', PACKAGE = 'humanleague', dim, n, skip)
 }
 
 #' Generate correlated 2D Sobol' quasirandom sequence
@@ -122,7 +122,7 @@ sobolSequence <- function(dim, n, skip = 0L) {
 #' correlatedSobol2Sequence(0.2, 1000)
 #' @export
 correlatedSobol2Sequence <- function(rho, n, skip = 0L) {
-    .Call('humanleague_correlatedSobol2Sequence', PACKAGE = 'humanleague', rho, n, skip)
+    .Call('_humanleague_correlatedSobol2Sequence', PACKAGE = 'humanleague', rho, n, skip)
 }
 
 #' Entry point to enable running unit tests within R (e.g. in testthat)
@@ -132,6 +132,6 @@ correlatedSobol2Sequence <- function(rho, n, skip = 0L) {
 #' unitTest()
 #' @export
 unitTest <- function() {
-    .Call('humanleague_unitTest', PACKAGE = 'humanleague')
+    .Call('_humanleague_unitTest', PACKAGE = 'humanleague')
 }
 

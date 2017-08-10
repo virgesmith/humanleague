@@ -9,3 +9,5 @@ src/*.d
 src/*.so
 src/*.dll
 *.log
+
+__pycache__/

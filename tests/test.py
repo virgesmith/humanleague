@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import humanleague
+import humanleague as hl
 import numpy as np
 
 # temporary
@@ -22,27 +22,36 @@ class Test(TestCase):
     self.assertTrue(False)
 
 
-a = humanleague.sobolSequence(3,5)
+a = hl.sobolSequence(3,5)
 check(a.size == 15)
 check(a.shape == (5,3))
+check(np.array_equal(a[0,:], [ 0.5, 0.5, 0.5]))
 
-print(humanleague.sobolSequence(6,10))
+#print(hl.sobolSequence(6,10))
 
-print(humanleague.synthPop([[4,2],[1,2,3]]))
-print(humanleague.synthPop([[1.0],[1,2,3,4,5,6]]))
-print(humanleague.synthPop(["a",[1,2,3,4,5,6]]))
-print(humanleague.synthPop([[4,2],[1,2,3],[3,3]]))
+p = hl.synthPop([[4,2],[1,2,3]])
+#print(p)
+check(p["conv"])
 
-print(humanleague.synthPopR([4,2],[1,2,3],0.0))
-print(humanleague.synthPopR([4,2],[1,2,3],1.0))
-print(humanleague.synthPopR([10,10,10,10,10,10,10,10,10,10],[10,10,10,10,10,10,10,10,10,10],0.0))
-print(humanleague.synthPopR([21,0],[1,2,3,4,5,6],3.1))
+p = hl.synthPop([[1.0],[1,2,3,4,5,6]])
+check(p == 'object is not an int')
+
+p = hl.synthPop(["a",[1,2,3,4,5,6]])
+check(p == 'object is not a list')
+
+p = hl.synthPop([[4,2],[1,2,3],[3,3]])
+check(p["conv"])
+
+print(hl.synthPopR([4,2],[1,2,3],0.0))
+print(hl.synthPopR([4,2],[1,2,3],1.0))
+print(hl.synthPopR([10,10,10,10,10,10,10,10,10,10],[10,10,10,10,10,10,10,10,10,10],0.0))
+print(hl.synthPopR([21,0],[1,2,3,4,5,6],3.1))
 
 # TODO...
-#print(humanleague.synthPopG(np.array([4,2]),np.array([1,2,3]),np.array([[1.0, 0.9, 0.8],[0.5, 0.6, 0.7]])))
+#print(hl.synthPopG(np.array([4,2]),np.array([1,2,3]),np.array([[1.0, 0.9, 0.8],[0.5, 0.6, 0.7]])))
 
-print(humanleague.numpytest(np.array([[2,3,4],[6,7,8]])))
-#print(humanleague.numpytest([[2,3,4],[6,7,8]]))    self.assertTrue(True)
+print(hl.numpytest(np.array([[2,3,4],[6,7,8]])))
+#print(hl.numpytest([[2,3,4],[6,7,8]]))    self.assertTrue(True)
 
 
 

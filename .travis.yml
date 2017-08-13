@@ -1,7 +1,4 @@
 
-language: r
-  - release
-  - devel
 
 cache: packages
 
@@ -11,8 +8,14 @@ matrix:
   include:
     - os: linux
       dist: trusty
+      language: r
+        - release
+        - devel
     - os: osx
       osx_image: xcode8
+      language: r
+        - release
+        - devel
 
 
 warnings_are_errors: false

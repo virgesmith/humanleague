@@ -10,46 +10,46 @@ matrix:
       dist: trusty
       language: r
       r: release
-      r_packages:
-        - stringi
-        - digest
-        - devtools
-        - Rcpp
-        - roxygen2
-        - htmltools
-        - rmarkdown
-        - knitr
-        - testthat
-        - yaml
+#      r_packages:
+#        - stringi
+#        - digest
+#        - devtools
+#        - Rcpp
+#        - roxygen2
+#        - htmltools
+#        - rmarkdown
+#        - knitr
+#        - testthat
+#        - yaml
 
     - os: linux
       dist: trusty
       language: python
       python: 3.5
-#      install:
-#        - pip install -r requirements.txt
       script:
         - python setup.py build
+        - python humanleague/tests/test.py
 
     - os: linux
       dist: trusty
       language: r
       r: devel
+      
     - os: osx
       osx_image: xcode8
       language: r
       r: release
-      r_packages:
-        - stringi
-        - digest
-        - devtools
-        - Rcpp
-        - roxygen2
-        - htmltools
-        - rmarkdown
-        - knitr
-        - testthat
-        - yaml
+#      r_packages:
+#        - stringi
+#        - digest
+#        - devtools
+#        - Rcpp
+#        - roxygen2
+#        - htmltools
+#        - rmarkdown
+#        - knitr
+#        - testthat
+#        - yaml
 
 
 warnings_are_errors: false

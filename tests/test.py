@@ -10,6 +10,7 @@ def check(cond):
     sys.exit(1)
 
 #TODO proper unit testing
+# best solution is probably to move from distutils to setuptools in setup.py
 from unittest import TestCase
 
 class Test(TestCase):
@@ -21,6 +22,7 @@ class Test(TestCase):
   def test_false(self):
     self.assertTrue(False)
 
+#t = Test()
 
 a = hl.sobolSequence(3,5)
 check(a.size == 15)

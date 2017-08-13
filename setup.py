@@ -2,7 +2,7 @@
 
 import os
 import numpy
-from distutils.core import setup, Extension
+from distutils.core import Extension, setup
 
 cppmodule = Extension(
   'humanleague',
@@ -37,7 +37,5 @@ setup(
 microsynthesis using quasirandom sampling
 ''',
   ext_modules = [cppmodule],
-  #test_suite='nose.collector',
-  #tests_require=['nose'],
 )
 

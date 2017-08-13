@@ -9,13 +9,15 @@ matrix:
     - os: linux
       dist: trusty
       language: r
-        - release
-        - devel
+      r: release
+    - os: linux
+      dist: trusty
+      language: r
+      r: devel
     - os: osx
       osx_image: xcode8
       language: r
-        - release
-        - devel
+      r: release
 
 
 warnings_are_errors: false

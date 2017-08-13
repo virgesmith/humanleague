@@ -10,4 +10,7 @@ src/*.so
 src/*.dll
 *.log
 
+dist/
+*.egg-info/
 __pycache__/
+

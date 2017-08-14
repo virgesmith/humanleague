@@ -39,7 +39,7 @@ matrix:
       python: 3.5
       script:
         - python3 setup.py install
-        - python3 tests/test.py
+        - python3 setup.py test
 
 #    - os: osx
 #      osx_image: xcode8

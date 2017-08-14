@@ -3,6 +3,7 @@
 import os
 import numpy
 from distutils.core import Extension, setup
+import distutils_pytest
 
 cppmodule = Extension(
   'humanleague',
@@ -22,8 +23,9 @@ cppmodule = Extension(
              'src/NDArrayUtils.cpp',
              'humanleague/Object.cpp',
              'humanleague/py_api.cpp'],
-  # annoyingly *.h causes a full rebuild every time
-  depends = ['Object.h', 'Array.h', 'setup.py']
+  # TODO work out how to include all header deps without always triggering a full rebuild
+  # for now safer to put up with full rebuilds every time
+  depends = ['Object.h', 'Array.h']
 )
 
 setup(
@@ -37,5 +39,8 @@ setup(
 microsynthesis using quasirandom sampling
 ''',
   ext_modules = [cppmodule],
+  # these settings appear not to be required
+#  tests_require=['nose'],
+#  test_suite='tests',
 )
 

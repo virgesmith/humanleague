@@ -325,6 +325,11 @@ public:
 GQIWS::GQIWS(const std::vector<marginal_t>& marginals, const NDArray<2, double>& exoProbs)
   : QIWS<2>(marginals), m_exoprobs(exoProbs)
 {
+  for (Index<2, Index_Unfixed> index(exoProbs.sizes()); !index.end(); ++index)
+  {
+    if (m_exoprobs[index] < 0.0 || m_exoprobs[index] > 1.0)
+      throw std::runtime_error("invalid exogenous probability");
+  }
 }
 
 bool GQIWS::solve()

@@ -30,7 +30,7 @@ cppmodule = Extension(
 
 setup(
   name = 'humanleague',
-  version = '0.0',
+  version = '1.0.1',
   description = 'microsynthesis using quasirandom sampling',
   author = 'Andrew Smith',
   author_email = 'a.p.smith@leeds.ac.uk',

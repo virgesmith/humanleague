@@ -61,6 +61,8 @@ namespace pycpp {
     // construct from an incoming numpy object
     explicit Array(PyObject* array) : Object(array)
     {
+      // TODO check contained type of array is compatible with T...
+      // see https://docs.scipy.org/doc/numpy-1.13.0/reference/c-api.array.html
     }
     
     // Construct 1D from vector<T> 
@@ -111,6 +113,7 @@ public:
     template<typename U>
     std::vector<U> toVector() const
     {
+      // TODO test the above assumption!
       const int n = storageSize();
       std::vector<U> v(n);
       npy_intp i[1]; 

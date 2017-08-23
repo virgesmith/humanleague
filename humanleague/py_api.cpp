@@ -147,9 +147,11 @@ extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
       
     for (size_t i = 0; i < dim; ++i) 
     {
-      pycpp::List l = pycpp::List(list[i]);
-      sizes[i] = l.size();
-      marginals[i] = l.toVector<uint32_t>();
+      if (!PyArray_Check(list[i]))
+        throw std::runtime_error("input should be a list of numpy integer arrays");
+      pycpp::Array<int> a = pycpp::Array<int>(list[i]);
+      sizes[i] = a.shape()[0];
+      marginals[i] = a.toVector<uint32_t>();
     }
 
     pycpp::Dict retval;

@@ -19,16 +19,21 @@ class Test(TestCase):
 
   def test_synthPop(self):
 
-    p = hl.synthPop([[4,2],[1,2,3]])
+    p = hl.synthPop([np.array([4,2]),np.array([1,2,3])])
     self.assertTrue(p["conv"])
 
-    p = hl.synthPop([[1.0],[1,2,3,4,5,6]])
-    self.assertTrue(p == 'object is not an int')
+    p = hl.synthPop([np.array([4,1]),np.array([1,2,3])])
+    self.assertTrue(p == "invalid marginals")
 
-    p = hl.synthPop(["a",[1,2,3,4,5,6]])
-    self.assertTrue(p == 'object is not a list')
+    p = hl.synthPop([[4,2],[1,2,3]])
+    self.assertTrue(p == "input should be a list of numpy integer arrays")
 
-    p = hl.synthPop([[4,2],[1,2,3],[3,3]])
+    # TODO check contained type in code...
+#    p = hl.synthPop([np.array([1.0]),np.array([1,2,3,4,5,6])])
+#    print(p)
+#    self.assertTrue(p == 'object is not an int')
+
+    p = hl.synthPop([np.array([4,2]),np.array([1,2,3]),np.array([3,3])])
     self.assertTrue(p["conv"])
 
   def test_synthPopG(self):

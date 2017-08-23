@@ -5,6 +5,7 @@
 #include "src/Sobol.h"
 #include "src/RQIWS.h"
 #include "src/GQIWS.h"
+#include "src/Integerise.h"
 
 #include <Python.h>
 
@@ -44,6 +45,49 @@ void doSolve(pycpp::Dict& result, size_t dims, const std::vector<std::vector<uin
   result.insert("p-value", pycpp::Double(qiws.pValue().first));
   result.insert("chiSq", pycpp::Double(qiws.chiSq()));
   result.insert("pop", pycpp::Int(qiws.population()));
+}
+
+
+extern "C" PyObject* humanleague_prob2IntFreq(PyObject* self, PyObject* args)
+{
+  try 
+  {
+    PyObject* probArg;
+    int pop;
+
+    // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
+    if (!PyArg_ParseTuple(args, "O!i", &PyArray_Type, &probArg, &pop))
+      return nullptr;
+      
+    const std::vector<double>& prob = pycpp::Array<double>(probArg).toVector<double>();
+
+    double var;
+
+    if (pop < 1)
+    {
+      throw std::runtime_error("population must be strictly positive");
+    }
+
+    if (fabs(std::accumulate(prob.begin(), prob.end(), -1.0)) > 1000*std::numeric_limits<double>::epsilon())
+    {
+      throw std::runtime_error("probabilities do not sum to unity");
+    }
+    std::vector<int> f = integeriseMarginalDistribution(prob, pop, var);
+
+    pycpp::Dict result;
+    result.insert("freq", pycpp::Array<int>(f));
+    result.insert("var", pycpp::Double(var));
+
+    return result.release();
+  }
+  catch(const std::exception& e)
+  {
+    return &pycpp::String(e.what());
+  }
+  catch(...)
+  {
+    return &pycpp::String("unexpected exception");
+  }
 }
 
 // prevents name mangling (but works without this)
@@ -94,6 +138,7 @@ extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "O!", &PyList_Type, &arrayArg))
       return nullptr;
     
+    // expects a list of numpy arrays containing int64
     pycpp::List list(arrayArg);
     
     size_t dim = list.size();
@@ -306,6 +351,7 @@ namespace {
 
 // Python2.7
 PyMethodDef entryPoints[] = {
+  {"prob2IntFreq", humanleague_prob2IntFreq, METH_VARARGS, "Returns nearest-integer population given probs and overall population."},
   {"sobolSequence", humanleague_sobol, METH_VARARGS, "Returns a Sobol sequence."},
   {"synthPop", humanleague_synthPop, METH_VARARGS, "Synthpop."},
   {"synthPopR", humanleague_synthPopR, METH_VARARGS, "Synthpop correlated."},

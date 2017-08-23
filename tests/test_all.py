@@ -37,7 +37,24 @@ class Test(TestCase):
     self.assertTrue(p["conv"])
     self.assertTrue(p["pop"] == 6)
     
+  def test_integerise(self):
 
+    # probs not valid
+    r = hl.prob2IntFreq(np.array([0.3,0.3,0.2,0.1]),10)
+    self.assertTrue(r == "probabilities do not sum to unity")
 
+    # pop not valid
+    r = hl.prob2IntFreq(np.array([0.4,0.3,0.2,0.1]),0)
+    self.assertTrue(r == "population must be strictly positive")
+
+    # exact  
+    r = hl.prob2IntFreq(np.array([0.4,0.3,0.2,0.1]),10)
+    self.assertTrue(r["var"] == 0.0)
+    self.assertTrue(np.array_equal(r["freq"], np.array([4,3,2,1])))
+
+    # inexact
+    r = hl.prob2IntFreq(np.array([0.4,0.3,0.2,0.1]),17)
+    self.assertAlmostEqual(r["var"], 0.075)
+    self.assertTrue(np.array_equal(r["freq"], np.array([7,5,3,2])))
 
 

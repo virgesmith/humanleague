@@ -5,6 +5,7 @@ import numpy
 from distutils.core import Extension, setup
 import distutils_pytest
 
+# seems that this will clean build every time, might make more sense to just have a lightweight wrapper & precompiled lib?
 cppmodule = Extension(
   'humanleague',
   define_macros = [('MAJOR_VERSION', '1'),
@@ -21,6 +22,7 @@ cppmodule = Extension(
              'src/GQIWS.cpp',
              'src/StatFuncs.cpp',
              'src/NDArrayUtils.cpp',
+             'src/Integerise.cpp',
              'humanleague/Object.cpp',
              'humanleague/py_api.cpp'],
   # TODO work out how to include all header deps without always triggering a full rebuild

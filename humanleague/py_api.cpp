@@ -14,7 +14,6 @@
 
 #include <iostream>
 
-
 template<size_t D>
 pycpp::List flatten(const size_t pop, const NDArray<D,uint32_t>& t)
 {
@@ -46,7 +45,6 @@ void doSolve(pycpp::Dict& result, size_t dims, const std::vector<std::vector<uin
   result.insert("chiSq", pycpp::Double(qiws.chiSq()));
   result.insert("pop", pycpp::Int(qiws.population()));
 }
-
 
 extern "C" PyObject* humanleague_prob2IntFreq(PyObject* self, PyObject* args)
 {
@@ -348,6 +346,12 @@ extern "C" PyObject* humanleague_numpytest(PyObject *self, PyObject *args)
   }
 }
 
+// until I find a better way...
+extern "C" PyObject* humanleague_version(PyObject*, PyObject*)
+{
+  static pycpp::Int v(MAJOR_VERSION);
+  return v.release();
+}
 
 namespace {
 
@@ -359,6 +363,7 @@ PyMethodDef entryPoints[] = {
   {"synthPopR", humanleague_synthPopR, METH_VARARGS, "Synthpop correlated."},
   {"synthPopG", humanleague_synthPopG, METH_VARARGS, "Synthpop generalised."},
   {"numpytest", humanleague_numpytest, METH_VARARGS, "numpy test."},
+  {"version", humanleague_version, METH_NOARGS, "version info"},
   {nullptr, nullptr, 0, nullptr}        /* terminator */
 };
 

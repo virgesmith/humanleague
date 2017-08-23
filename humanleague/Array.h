@@ -7,6 +7,8 @@
 #include <Python.h>
 #include <numpy/arrayobject.h>
 
+#include <cstring>
+
 
 // TODO use boost.python (requires >= 1.63, 16.4 comes with 1.58)
 // or https://github.com/ndarray/Boost.NumPy
@@ -61,6 +63,20 @@ namespace pycpp {
     {
     }
     
+    // Construct 1D from vector<T> 
+    explicit Array(const std::vector<T>& a) : Array(a, a.size())
+    {
+      // see below constructor
+    }
+
+private: // this is a hack to chain constructors to avoid having to explicitly pass an addressable size value 
+    // Construct 1D from vector<T> 
+    explicit Array(const std::vector<T>& a, npy_intp size) : Array(1, &size)
+    {
+      std::memcpy(PyArray_GETPTR1((PyArrayObject*)m_obj, 0), a.data(), size * sizeof(T));
+    }
+    
+public:
     // Construct from NDArray<D,T>. Data is presumed to be copied
     template<size_t D>
     explicit Array(NDArray<D, T>&& a) 

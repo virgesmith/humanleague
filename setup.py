@@ -8,7 +8,7 @@ import distutils_pytest
 # seems that this will clean build every time, might make more sense to just have a lightweight wrapper & precompiled lib?
 cppmodule = Extension(
   'humanleague',
-  define_macros = [('MAJOR_VERSION', '1'),
+  define_macros = [('MAJOR_VERSION', '2'),
                    ('MINOR_VERSION', '0'),
                    ('PATCH_VERSION', '0'),
                    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
@@ -32,7 +32,7 @@ cppmodule = Extension(
 
 setup(
   name = 'humanleague',
-  version = '1.0.1',
+  version = '2.0.0',
   description = 'microsynthesis using quasirandom sampling',
   author = 'Andrew Smith',
   author_email = 'a.p.smith@leeds.ac.uk',

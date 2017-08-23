@@ -10,6 +10,7 @@ cppmodule = Extension(
   'humanleague',
   define_macros = [('MAJOR_VERSION', '1'),
                    ('MINOR_VERSION', '0'),
+                   ('PATCH_VERSION', '0'),
                    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
                   ],
   extra_compile_args=['-Wall', '-std=c++11'],
@@ -25,7 +26,6 @@ cppmodule = Extension(
              'src/Integerise.cpp',
              'humanleague/Object.cpp',
              'humanleague/py_api.cpp'],
-  # TODO work out how to include all header deps without always triggering a full rebuild
   # for now safer to put up with full rebuilds every time
   depends = ['Object.h', 'Array.h']
 )

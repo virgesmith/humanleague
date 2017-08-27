@@ -4,12 +4,13 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "options": 
+      {
+        "cwd": "${workspaceRoot}/dev"
+      },
       "taskName": "build harness",
       "type": "shell",
-      "command": "g++",
-      "args": [
-        "-g", "-std=c++11", "src/IPF.cpp", "-o test"
-      ],
+      "command": "make",
       "group": {
         "kind": "build",
         "isDefault": true

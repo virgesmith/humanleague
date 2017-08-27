@@ -5,7 +5,7 @@
       "name": "(gdb) Launch",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceRoot}/test",
+      "program": "${workspaceRoot}/dev/humanleague_dev",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceRoot}",

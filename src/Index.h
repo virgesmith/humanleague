@@ -18,9 +18,14 @@ public:
 
   static const size_t Dim = D;
 
-  Index(const size_t* sizes) : m_atEnd(false)
+  // TODO revisit point for >2D
+  Index(const size_t* sizes, size_t point = 0) : m_atEnd(false)
   {
     std::fill(m_idx, m_idx + Dim, 0);
+    if (C != Index_Unfixed) 
+    {
+      m_idx[C] = point;      
+    }
     std::copy(sizes, sizes + Dim, m_sizes);
     m_storageSize = m_sizes[0];
     for (size_t i = 1; i < Dim; ++i)
@@ -53,7 +58,7 @@ public:
   // implicit cast
   operator size_t*()
   {
-    return &m_idx[0];
+    return m_idx;
   }
 
   // NB row-major offset calc is in NDArray itself
@@ -69,6 +74,12 @@ public:
       ret += mult * m_idx[i];
     }
     return ret;
+  }
+
+  void reset()
+  {
+    std::fill(m_idx, m_idx + Dim, 0);
+    m_atEnd = false;
   }
 
   bool end()

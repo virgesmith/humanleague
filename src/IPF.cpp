@@ -3,6 +3,8 @@
 
 #include "NDArrayUtils.h"
 
+#include <algorithm>
+#include <cmath>
 
 IPF::IPF(const NDArray<2, double>& seed, const std::array<std::vector<double>, 2>& marginals) 
   : m_result(seed.sizes()), m_marginals(marginals), m_conv(false)

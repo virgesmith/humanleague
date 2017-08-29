@@ -6,7 +6,7 @@ LDFLAGS=
 
 # TODO header deps?
 
-humanleague_dev: main.cpp ../src/IPF.cpp
+humanleague_dev: main.cpp 
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 clean:

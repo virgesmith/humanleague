@@ -11,7 +11,9 @@
 
 int32_t maxAbsElement(const std::vector<int32_t>& r);
 
+// TODO try to template in T with make_signed<T> return?
 std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vector<uint32_t>& y);
+std::vector<double> diff(const std::vector<double>& x, const std::vector<double>& y);
 
 bool allZeros(const std::vector<std::vector<int32_t>>& r);
 

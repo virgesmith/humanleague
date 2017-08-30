@@ -6,8 +6,11 @@ LDFLAGS=
 
 # TODO header deps?
 
-humanleague_dev: main.cpp 
+humanleague_dev: main.cpp ../src/NDArrayUtils.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+%.d: %.cpp
+	@$(CXX) $(CXXFLAGS) $< -MM -MT $(@:.d=.o) >$@
 
 clean:
 	rm $(PROJECT)

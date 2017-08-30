@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // synthPop
 List synthPop(List marginals);
-RcppExport SEXP _humanleague_synthPop(SEXP marginalsSEXP) {
+RcppExport SEXP humanleague_synthPop(SEXP marginalsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -18,7 +18,7 @@ END_RCPP
 }
 // synthPopC
 List synthPopC(List marginals, LogicalMatrix permittedStates);
-RcppExport SEXP _humanleague_synthPopC(SEXP marginalsSEXP, SEXP permittedStatesSEXP) {
+RcppExport SEXP humanleague_synthPopC(SEXP marginalsSEXP, SEXP permittedStatesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -30,7 +30,7 @@ END_RCPP
 }
 // synthPopG
 List synthPopG(List marginals, NumericMatrix exoProbsIn);
-RcppExport SEXP _humanleague_synthPopG(SEXP marginalsSEXP, SEXP exoProbsInSEXP) {
+RcppExport SEXP humanleague_synthPopG(SEXP marginalsSEXP, SEXP exoProbsInSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -42,7 +42,7 @@ END_RCPP
 }
 // synthPopR
 List synthPopR(List marginals, double rho);
-RcppExport SEXP _humanleague_synthPopR(SEXP marginalsSEXP, SEXP rhoSEXP) {
+RcppExport SEXP humanleague_synthPopR(SEXP marginalsSEXP, SEXP rhoSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -54,7 +54,7 @@ END_RCPP
 }
 // constrain
 List constrain(IntegerMatrix population, LogicalMatrix permittedStates);
-RcppExport SEXP _humanleague_constrain(SEXP populationSEXP, SEXP permittedStatesSEXP) {
+RcppExport SEXP humanleague_constrain(SEXP populationSEXP, SEXP permittedStatesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -66,7 +66,7 @@ END_RCPP
 }
 // prob2IntFreq
 List prob2IntFreq(NumericVector pIn, int pop);
-RcppExport SEXP _humanleague_prob2IntFreq(SEXP pInSEXP, SEXP popSEXP) {
+RcppExport SEXP humanleague_prob2IntFreq(SEXP pInSEXP, SEXP popSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -78,7 +78,7 @@ END_RCPP
 }
 // sobolSequence
 NumericMatrix sobolSequence(int dim, int n, int skip);
-RcppExport SEXP _humanleague_sobolSequence(SEXP dimSEXP, SEXP nSEXP, SEXP skipSEXP) {
+RcppExport SEXP humanleague_sobolSequence(SEXP dimSEXP, SEXP nSEXP, SEXP skipSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -91,7 +91,7 @@ END_RCPP
 }
 // correlatedSobol2Sequence
 NumericMatrix correlatedSobol2Sequence(double rho, int n, int skip);
-RcppExport SEXP _humanleague_correlatedSobol2Sequence(SEXP rhoSEXP, SEXP nSEXP, SEXP skipSEXP) {
+RcppExport SEXP humanleague_correlatedSobol2Sequence(SEXP rhoSEXP, SEXP nSEXP, SEXP skipSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -104,7 +104,7 @@ END_RCPP
 }
 // unitTest
 List unitTest();
-RcppExport SEXP _humanleague_unitTest() {
+RcppExport SEXP humanleague_unitTest() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;

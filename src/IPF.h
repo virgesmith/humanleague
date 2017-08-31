@@ -17,55 +17,7 @@ public:
 
   static const size_t Dim = D;
 
-  IPF(const NDArray<D, double>& seed, const std::vector<std::vector<double>>& marginals)
-    : m_result(seed.sizes()), m_marginals(marginals), m_errors(D), m_conv(false)
-  {
-    m_errors[0].resize(m_marginals[0].size());
-    m_errors[1].resize(m_marginals[1].size());
-    print(m_marginals[0]);
-    print(m_marginals[1]);
-    print(reduce<2, double, 0>(seed));
-    print(reduce<2, double, 1>(seed));
-  
-    std::copy(seed.rawData(), seed.rawData() + seed.storageSize(), m_result.begin());
-    print(reduce<Dim, double, 0>(m_result));
-    print(reduce<Dim, double, 1>(m_result));
-    
-    for (m_iters = 0; !m_conv && m_iters < s_MAXITER; ++m_iters) 
-    {
-      const std::vector<double>& r0 = reduce<Dim, double, 0>(m_result);
-      for (size_t p = 0; p < m_marginals[0].size(); ++p)
-      {
-        Index<2, 0> index(m_result.sizes(), p);
-        for (; !index.end(); ++index) 
-        {
-          m_result[index] *= m_marginals[0][index[0]] / r0[p]; 
-        }
-      }
-      print(m_result.rawData(), m_result.storageSize(), m_marginals[1].size());
-      
-      const std::vector<double>& r1 = reduce<Dim, double, 1>(m_result);
-      // 
-      for (size_t p = 0; p < marginals[1].size(); ++p)
-      {
-        Index<2, 1> index(m_result.sizes(), p);
-        for (; !index.end(); ++index) 
-        {
-          m_result[index] *= m_marginals[1][index[1]] / r1[p]; 
-        }
-      }
-      
-      // inefficient copying
-      std::vector<std::vector<double>> diffs(Dim);
-      // TODO template loop
-      diffs[0] = reduce<Dim, double, 0>(m_result);
-      diffs[1] = reduce<Dim, double, 1>(m_result);
-      
-      m_conv = computeErrors(diffs);
-  
-      print(m_result.rawData(), m_result.storageSize(), m_marginals[1].size());
-    }
-  }
+  IPF(const NDArray<D, double>& seed, const std::vector<std::vector<double>>& marginals);
   
   IPF(const IPF&) = delete;
   IPF(IPF&&) = delete;
@@ -91,6 +43,20 @@ public:
   }
   
 private:
+
+  template<size_t I>
+  void scale()
+  {
+    const size_t Direction = I;
+    const std::vector<double>& r = reduce<Dim, double, Direction>(m_result);
+    for (size_t p = 0; p < m_marginals[Direction].size(); ++p)
+    {
+      for (Index<Dim, Direction> index(m_result.sizes(), p); !index.end(); ++index) 
+      {
+        m_result[index] *= m_marginals[Direction][index[Direction]] / r[p]; 
+      }
+    }
+  }
 
   // TODO might be more efficient to directly calc errors (not sure we really need the sign of the values)
   template<size_t O>
@@ -127,6 +93,74 @@ private:
   const double m_tol = 1e-8;
   
 };
+
+// TODO generalise
+template<>
+IPF<2>::IPF(const NDArray<2, double>& seed, const std::vector<std::vector<double>>& marginals)
+  : m_result(seed.sizes()), m_marginals(marginals), m_errors(2), m_conv(false)
+{
+  m_errors[0].resize(m_marginals[0].size());
+  m_errors[1].resize(m_marginals[1].size());
+  print(m_marginals[0]);
+  print(m_marginals[1]);
+
+  std::copy(seed.rawData(), seed.rawData() + seed.storageSize(), m_result.begin());
+  print(reduce<Dim, double, 0>(m_result));
+  print(reduce<Dim, double, 1>(m_result));
+
+  for (m_iters = 0; !m_conv && m_iters < s_MAXITER; ++m_iters) 
+  {
+    scale<0>();
+    //print(m_result.rawData(), m_result.storageSize(), m_marginals[1].size());      
+    scale<1>();
+    // inefficient copying
+    std::vector<std::vector<double>> diffs(Dim);
+    // TODO template loop
+    diffs[0] = reduce<Dim, double, 0>(m_result);
+    diffs[1] = reduce<Dim, double, 1>(m_result);
+    
+    m_conv = computeErrors(diffs);
+
+    print(m_result.rawData(), m_result.storageSize(), m_marginals[1].size());
+  }
+}
+
+template<>
+IPF<3>::IPF(const NDArray<3, double>& seed, const std::vector<std::vector<double>>& marginals)
+  : m_result(seed.sizes()), m_marginals(marginals), m_errors(3), m_conv(false)
+{
+  m_errors[0].resize(m_marginals[0].size());
+  m_errors[1].resize(m_marginals[1].size());
+  m_errors[2].resize(m_marginals[1].size());
+  print(m_marginals[0]);
+  print(m_marginals[1]);
+  print(m_marginals[2]);
+  
+  std::copy(seed.rawData(), seed.rawData() + seed.storageSize(), m_result.begin());
+  print(reduce<Dim, double, 0>(m_result));
+  print(reduce<Dim, double, 1>(m_result));
+  print(reduce<Dim, double, 2>(m_result));
+  
+  for (m_iters = 0; !m_conv && m_iters < s_MAXITER; ++m_iters) 
+  {
+    scale<0>();
+    scale<0>();
+    //print(m_result.rawData(), m_result.storageSize(), m_marginals[1].size());      
+    scale<1>();
+    scale<2>();
+    // inefficient copying
+    std::vector<std::vector<double>> diffs(Dim);
+    // TODO template loop
+    diffs[0] = reduce<Dim, double, 0>(m_result);
+    diffs[1] = reduce<Dim, double, 1>(m_result);
+    diffs[2] = reduce<Dim, double, 1>(m_result);
+    
+    m_conv = computeErrors(diffs);
+
+    print(m_result.rawData(), m_result.storageSize(), m_marginals[1].size());
+  }
+}
+
 
 // disable 
 template<> class IPF<0>;

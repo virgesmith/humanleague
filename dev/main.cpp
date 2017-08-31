@@ -15,8 +15,8 @@ void do2d()
 
   NDArray<2, double> s(size);
   s.assign(1.0);
-  Index<2,Index_Unfixed> index(s.sizes());
-  s[index] = 0.5;
+  //Index<2,Index_Unfixed> index(s.sizes());
+  //s[index] = 0.5;
 
   IPF<2> ipf(s, m);
 
@@ -26,30 +26,30 @@ void do2d()
   std::cout << ipf.conv() << ":" << ipf.iters() << std::endl;
 }
 
-// void do3d()
-// {
-//   std::array<std::vector<double>, 3> m = {std::vector<double>{52, 48}, 
-//                                           std::vector<double>{87, 13},
-//                                           std::vector<double>{45, 55}};
+void do3d()
+{
+  std::vector<std::vector<double>> m = {std::vector<double>{52, 48}, 
+                                          std::vector<double>{87, 13},
+                                          std::vector<double>{55, 45}};
 
-//   size_t size[3] = { m[0].size(), m[1].size(), m[2].size() };                                        
+  size_t size[3] = { m[0].size(), m[1].size(), m[2].size() };                                        
 
-//   NDArray<3, double> s(size);
-//   s.assign(1.0);
-//   //Index<3,Index_Unfixed> index(s.sizes());
-//   //s[index] = 0.5;
+  NDArray<3, double> s(size);
+  s.assign(1.0);
+  //Index<3,Index_Unfixed> index(s.sizes());
+  //s[index] = 0.5;
 
-//   IPF<3> ipf(s, m);
+  IPF<3> ipf(s, m);
 
-//   auto e = ipf.errors();
-//   print(e[0]);
-//   print(e[1]);
-//   print(e[2]);
-//   std::cout << ipf.conv() << ":" << ipf.iters() << std::endl;
-// }
+  auto e = ipf.errors();
+  print(e[0]);
+  print(e[1]);
+  print(e[2]);
+  std::cout << ipf.conv() << ":" << ipf.iters() << std::endl;
+}
 
 int main()
 {
   do2d();
-
+  do3d();
 }

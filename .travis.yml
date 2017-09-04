@@ -47,7 +47,7 @@ matrix:
       before_install:
         - brew update
         - brew install python3
-        - pip3 install numpy distutils_pytest
+        - pip3 install numpy distutils_pytest pytest
       script:
         - python3 setup.py install
         - python3 setup.py test

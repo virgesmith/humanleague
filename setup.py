@@ -18,7 +18,7 @@ cppmodule = Extension(
 #             libraries = [':humanleague.so'],
 #             library_dirs = ['/usr/local/lib','../src'],
   sources = ['src/Sobol.cpp',
-             'src/SobolImpl.c',
+             'src/SobolImpl.cpp',
              'src/RQIWS.cpp',
              'src/GQIWS.cpp',
              'src/StatFuncs.cpp',

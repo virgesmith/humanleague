@@ -48,6 +48,8 @@
    the critical numbers).  Please cite them.  Just that I needed
    a free/open-source implementation. */
 
+extern "C" {
+
 #include "SobolImpl.h"
 #include <stdlib.h>
 
@@ -232,5 +234,7 @@ void nlopt_sobol_skip(SobolData* s, uint32_t n, uint32_t *x)
 	  while (k*2 < n) k *= 2;
 	  while (k-- > 0) sobol_gen(s, x);
   }
+}
+
 }
 

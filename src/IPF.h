@@ -23,14 +23,14 @@ public:
     // TODO checks on marginals, dimensions etc
     m_population = std::accumulate(m_marginals[0].begin(), m_marginals[0].end(), 0);
 
-    print(seed.rawData(), seed.storageSize(), m_marginals[1].size());
+    //print(seed.rawData(), seed.storageSize(), m_marginals[1].size());
     std::copy(seed.rawData(), seed.rawData() + seed.storageSize(), const_cast<double*>(m_result.rawData()));
     for (size_t d = 0; d < Dim; ++d)
     {
       m_errors[d].resize(m_marginals[d].size());
-      print(m_marginals[d]);
+      //print(m_marginals[d]);
     }
-    print(m_result.rawData(), m_result.storageSize(), m_marginals[1].size());
+    //print(m_result.rawData(), m_result.storageSize(), m_marginals[1].size());
     
     for (m_iters = 0; !m_conv && m_iters < s_MAXITER; ++m_iters) 
     {

@@ -30,9 +30,9 @@ class Test(TestCase):
     self.assertTrue(p == "input should be a list of numpy integer arrays")
 
     # TODO check contained type in code...
-#    p = hl.synthPop([np.array([1.0]),np.array([1,2,3,4,5,6])])
-#    print(p)
-#    self.assertTrue(p == 'object is not an int')
+    p = hl.synthPop([np.array([1.0]),np.array([1,2,3,4,5,6])])
+    print(p)
+    self.assertTrue(p == 'python array contains invalid type: 12 when expecting 7')
 
     p = hl.synthPop([np.array([4,2]),np.array([1,2,3]),np.array([3,3])])
     self.assertTrue(p["conv"])
@@ -66,14 +66,34 @@ class Test(TestCase):
     self.assertTrue(np.array_equal(r["freq"], np.array([7,5,3,2])))
 
   def test_IPF(self):
-    s = np.array([[1.0, 1.0],[1.0, 1.0]])
     m0 = np.array([52.0, 48.0])
     m1 = np.array([87.0, 13.0])
     m2 = np.array([55.0, 45.0])
 
-    #s[1,1,1] = 0.7
-
-    #r=Ipfp(s,list(1,2,3),list(m0,m1,m2))
+    s = np.array([[1.0, 1.0],[1.0, 1.0]])
     p = hl.ipf(s, [m0, m1])
-    print(p)
+    #print(p)
     self.assertTrue(p["conv"])
+    self.assertTrue(p["pop"] == 100)
+    self.assertTrue(np.array_equal(p["result"], np.array([[45.24, 6.76],[41.76, 6.24]])))
+
+    s[0,0] = 0.7
+    p = hl.ipf(s, [m0, m1])
+    #print(np.sum(p["result"], 0))
+    self.assertTrue(p["conv"])
+    # check overall population and marginals correct
+    self.assertTrue(np.sum(p["result"]) == p["pop"])
+    self.assertTrue(np.allclose(np.sum(p["result"], 0), m1))
+    self.assertTrue(np.allclose(np.sum(p["result"], 1), m0))
+
+    s = np.array([[[1.0, 1.0],[1.0, 1.0]],[[1.0, 1.0],[1.0, 1.0]]])
+    p = hl.ipf(s, [m0, m1, m2])
+    print(np.sum(p["result"], (0, 1)))
+    print(np.sum(p["result"], (1, 2)))
+    print(np.sum(p["result"], (2, 0)))
+    self.assertTrue(p["conv"])
+    # check overall population and marginals correct
+    self.assertTrue(np.sum(p["result"]) == p["pop"])
+    self.assertTrue(np.allclose(np.sum(p["result"], (0, 1)), m2))
+    self.assertTrue(np.allclose(np.sum(p["result"], (1, 2)), m0))
+    self.assertTrue(np.allclose(np.sum(p["result"], (2, 0)), m1))

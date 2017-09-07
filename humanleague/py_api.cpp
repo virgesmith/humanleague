@@ -175,9 +175,36 @@ extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
     case 2:
       doSolveIPF<2>(retval, dim, std::move(seed.toNDArray<2>()), marginals);
       break;
-    // case 3:
-    //   doSolveIPF<3>(retval, dim, seed.toNDArray<3>(), marginals);
-    //   break;
+    case 3:
+      doSolveIPF<3>(retval, dim, std::move(seed.toNDArray<3>()), marginals);
+      break;
+    case 4:
+      doSolveIPF<4>(retval, dim, std::move(seed.toNDArray<4>()), marginals);
+      break;
+    case 5:
+      doSolveIPF<5>(retval, dim, std::move(seed.toNDArray<5>()), marginals);
+      break;
+    case 6:
+      doSolveIPF<6>(retval, dim, std::move(seed.toNDArray<6>()), marginals);
+      break;
+    case 7:
+      doSolveIPF<7>(retval, dim, std::move(seed.toNDArray<7>()), marginals);
+      break;
+    case 8:
+      doSolveIPF<8>(retval, dim, std::move(seed.toNDArray<8>()), marginals);
+      break;
+    case 9:
+      doSolveIPF<9>(retval, dim, std::move(seed.toNDArray<9>()), marginals);
+      break;
+    case 10:
+      doSolveIPF<10>(retval, dim, std::move(seed.toNDArray<10>()), marginals);
+      break;
+    case 11:
+      doSolveIPF<11>(retval, dim, std::move(seed.toNDArray<11>()), marginals);
+      break;
+    case 12:
+      doSolveIPF<12>(retval, dim, std::move(seed.toNDArray<12>()), marginals);
+      break;
     default:
       throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
     }

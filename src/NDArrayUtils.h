@@ -94,9 +94,8 @@ std::vector<T> reduce(const NDArray<D, T>& input)
 
 
 // Converts a D-dimensional population array into a list with D columns and pop rows
-// parameterised on uint32_t only
 template<size_t D>
-std::vector<std::vector<int>> listify(const size_t pop, const NDArray<D,uint32_t>& t)
+std::vector<std::vector<int>> listify(const size_t pop, const NDArray<D, uint32_t>& t)
 {
   std::vector<std::vector<int>> list(D, std::vector<int>(pop));
   Index<D, Index_Unfixed> index(t.sizes());

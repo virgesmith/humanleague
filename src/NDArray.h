@@ -149,6 +149,17 @@ public:
   // Disallow copy
   NDArray(const NDArray&) = delete;
 
+  // But allow move
+  NDArray(NDArray&& a)
+  {
+    std::copy(a.m_sizes, a.m_sizes + Dim, m_sizes);
+    std::copy(a.m_sizesl, a.m_sizesl + Dim, m_sizesl);
+    m_storageSize = a.m_storageSize;
+    m_data = a.m_data;
+    m_owned = a.m_owned;
+    a.m_owned = false;
+  }
+
   ~NDArray()
   {
     if (m_owned)

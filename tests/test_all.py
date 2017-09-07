@@ -20,6 +20,7 @@ class Test(TestCase):
   def test_synthPop(self):
 
     p = hl.synthPop([np.array([4,2]),np.array([1,2,3])])
+    print(p)
     self.assertTrue(p["conv"])
 
     p = hl.synthPop([np.array([4,1]),np.array([1,2,3])])
@@ -39,6 +40,7 @@ class Test(TestCase):
   def test_synthPopG(self):
   
     p = hl.synthPopG(np.array([4,2]),np.array([1,2,3]),np.array([[1.0, 0.9, 0.8],[0.5, 0.6, 0.7]]))
+    print(p)
     self.assertTrue(p["conv"])
     self.assertTrue(p["pop"] == 6)
     
@@ -55,6 +57,7 @@ class Test(TestCase):
     # exact  
     r = hl.prob2IntFreq(np.array([0.4,0.3,0.2,0.1]),10)
     self.assertTrue(r["var"] == 0.0)
+    print(r)
     self.assertTrue(np.array_equal(r["freq"], np.array([4,3,2,1])))
 
     # inexact
@@ -62,4 +65,15 @@ class Test(TestCase):
     self.assertAlmostEqual(r["var"], 0.075)
     self.assertTrue(np.array_equal(r["freq"], np.array([7,5,3,2])))
 
+  def test_IPF(self):
+    s = np.array([[1.0, 1.0],[1.0, 1.0]])
+    m0 = np.array([52.0, 48.0])
+    m1 = np.array([87.0, 13.0])
+    m2 = np.array([55.0, 45.0])
 
+    #s[1,1,1] = 0.7
+
+    #r=Ipfp(s,list(1,2,3),list(m0,m1,m2))
+    p = hl.ipf(s, [m0, m1])
+    print(p)
+    self.assertTrue(p["conv"])

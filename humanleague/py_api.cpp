@@ -6,6 +6,7 @@
 #include "src/RQIWS.h"
 #include "src/GQIWS.h"
 #include "src/Integerise.h"
+#include "src/IPF.h"
 
 #include <Python.h>
 
@@ -15,10 +16,10 @@
 #include <iostream>
 
 template<size_t D>
-pycpp::List flatten(const size_t pop, const NDArray<D,uint32_t>& t)
+pycpp::List flatten(const size_t pop, const NDArray<D, uint32_t>& t)
 {
-  std::vector<std::vector<int>> list = listify<D>(pop, t);
-
+  print(t.rawData(), t.storageSize(), t.sizes()[1]);
+  const std::vector<std::vector<int>>& list = listify<D>(pop, t);
   pycpp::List outer(D);
   for (size_t i = 0; i < D; ++i)
   {
@@ -46,6 +47,18 @@ void doSolve(pycpp::Dict& result, size_t dims, const std::vector<std::vector<uin
   result.insert("pop", pycpp::Int(qiws.population()));
 }
 
+// TODO merge with above when APIs are consistent
+template<size_t D>
+void doSolveIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& seed, const std::vector<std::vector<double>>& m)
+{
+  IPF<D> ipf(seed, m); 
+  result.insert("conv", pycpp::Bool(ipf.conv()));
+  result.insert("result", pycpp::Array<double>(std::move(const_cast<NDArray<D, double>&>(ipf.result()))));
+  // result.insert("p-value", pycpp::Double(qiws.pValue().first));
+  // result.insert("chiSq", pycpp::Double(qiws.chiSq()));
+  result.insert("pop", pycpp::Int(ipf.population()));
+}
+
 extern "C" PyObject* humanleague_prob2IntFreq(PyObject* self, PyObject* args)
 {
   try 
@@ -66,14 +79,14 @@ extern "C" PyObject* humanleague_prob2IntFreq(PyObject* self, PyObject* args)
       throw std::runtime_error("population must be strictly positive");
     }
 
-    if (fabs(std::accumulate(prob.begin(), prob.end(), -1.0)) > 1000*std::numeric_limits<double>::epsilon())
+    if (std::fabs(std::accumulate(prob.begin(), prob.end(), -1.0)) > 1000*std::numeric_limits<double>::epsilon())
     {
       throw std::runtime_error("probabilities do not sum to unity");
     }
     std::vector<int> f = integeriseMarginalDistribution(prob, pop, var);
 
     pycpp::Dict result;
-    result.insert("freq", pycpp::Array<int>(f));
+    result.insert("freq", pycpp::Array<int64_t>(f));
     result.insert("var", pycpp::Double(var));
 
     return result.release();
@@ -124,6 +137,61 @@ extern "C" PyObject* humanleague_sobol(PyObject *self, PyObject *args)
   }
 }
 
+// prevents name mangling (but works without this)
+extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
+{
+  try 
+  {
+    PyObject* arrayArg;
+    PyObject* seedArg;
+    
+    // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
+    if (!PyArg_ParseTuple(args, "O!O!", &PyArray_Type, & seedArg, &PyList_Type, &arrayArg))
+      return nullptr;
+    
+    // seed
+    pycpp::Array<double> seed(seedArg);
+    // expects a list of numpy arrays containing int64
+    pycpp::List list(arrayArg);
+    
+    size_t dim = list.size();
+    std::vector<size_t> sizes(dim);
+    std::vector<std::vector<double>> marginals(dim);
+      
+    for (size_t i = 0; i < dim; ++i) 
+    {
+      if (!PyArray_Check(list[i]))
+        throw std::runtime_error("input should be a list of numpy integer arrays");
+      pycpp::Array<double> a(list[i]);
+      sizes[i] = a.shape()[0];
+      marginals[i] = a.toVector<double>();
+    }
+
+    pycpp::Dict retval;
+    //const NDArray<2, double>& x = seed.toNDArray<2>();
+
+    switch(dim)
+    {
+    case 2:
+      doSolveIPF<2>(retval, dim, std::move(seed.toNDArray<2>()), marginals);
+      break;
+    // case 3:
+    //   doSolveIPF<3>(retval, dim, seed.toNDArray<3>(), marginals);
+    //   break;
+    default:
+      throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
+    }
+    return retval.release();
+  }
+  catch(const std::exception& e)
+  {
+    return &pycpp::String(e.what());
+  }
+  catch(...)
+  {
+    return &pycpp::String("unexpected exception");
+  }
+}
 
 // prevents name mangling (but works without this)
 extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
@@ -147,7 +215,7 @@ extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
     {
       if (!PyArray_Check(list[i]))
         throw std::runtime_error("input should be a list of numpy integer arrays");
-      pycpp::Array<int> a = pycpp::Array<int>(list[i]);
+      pycpp::Array<int64_t> a = pycpp::Array<int64_t>(list[i]);
       sizes[i] = a.shape()[0];
       marginals[i] = a.toVector<uint32_t>();
     }
@@ -218,7 +286,7 @@ extern "C" PyObject* humanleague_synthPopG(PyObject *self, PyObject *args)
       return nullptr;
       
     pycpp::Array<int64_t> marginal0(marginal0Arg);
-    pycpp::Array<int> marginal1(marginal1Arg);
+    pycpp::Array<int64_t> marginal1(marginal1Arg);
     pycpp::Array<double> exoProbs(exoProbsArg);
          
     std::vector<std::vector<uint32_t>> marginals(2);
@@ -300,15 +368,15 @@ extern "C" PyObject* humanleague_numpytest(PyObject *self, PyObject *args)
     long lsizes[] = {5,5};
     size_t sizes[] = {5,5};
 
-    NDArray<2,int> a(sizes);
+    NDArray<2,int64_t> a(sizes);
     int i = 0;
     for (Index<2, Index_Unfixed> idx(sizes); !idx.end(); ++idx)
     {
       a[idx] = ++i;
     }
-    pycpp::Array<int> array(std::move(a));
+    pycpp::Array<int64_t> array(std::move(a));
 
-    pycpp::Array<int> array2(2, lsizes);
+    pycpp::Array<int64_t> array2(2, lsizes);
     
     long index[] = { 0, 0 };
     for (; index[0] < lsizes[0]; ++index[0])
@@ -318,13 +386,13 @@ extern "C" PyObject* humanleague_numpytest(PyObject *self, PyObject *args)
     pycpp::Dict retval;
 //    retval.insert("uninit", std::move(array));
 
-    for (int i = 0; i < 2; ++i)
+    for (ssize_t i = 0; i < 2; ++i)
     {
       std::cout << array2.stride(i) << ", ";
     }
     std::cout << std::endl;
-    int* p = array2.rawData();
-    for (int i = 0; i < array2.storageSize(); ++i)
+    int64_t* p = array2.rawData();
+    for (ssize_t i = 0; i < array2.storageSize(); ++i)
     {
       std::cout << p[i] << ", ";
       p[i] = i;
@@ -360,6 +428,7 @@ PyMethodDef entryPoints[] = {
   {"prob2IntFreq", humanleague_prob2IntFreq, METH_VARARGS, "Returns nearest-integer population given probs and overall population."},
   {"sobolSequence", humanleague_sobol, METH_VARARGS, "Returns a Sobol sequence."},
   {"synthPop", humanleague_synthPop, METH_VARARGS, "Synthpop."},
+  {"ipf", humanleague_ipf, METH_VARARGS, "Synthpop (IPF)."},
   {"synthPopR", humanleague_synthPopR, METH_VARARGS, "Synthpop correlated."},
   {"synthPopG", humanleague_synthPopG, METH_VARARGS, "Synthpop generalised."},
   {"numpytest", humanleague_numpytest, METH_VARARGS, "numpy test."},

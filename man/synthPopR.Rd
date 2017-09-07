@@ -18,6 +18,3 @@ an object containing: the population matrix, the occupancy probability matrix, a
 Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
 generates a 2-dimensional population table where elements sum to the input marginals.
 }
-\examples{
-res = humanleague::synthPopR(list(c(10,10,10,10,10),c(10,10,10,10,10)),0.5)
-}

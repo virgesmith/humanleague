@@ -13,7 +13,7 @@ cppmodule = Extension(
                    ('PATCH_VERSION', '0'),
                    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
                   ],
-  extra_compile_args=['-Wall', '-std=c++11'],
+  extra_compile_args=['-O0', '-Wall', '-std=c++11'],
   include_dirs = ['.', '/usr/include', '/usr/local/include', numpy.get_include()],
 #             libraries = [':humanleague.so'],
 #             library_dirs = ['/usr/local/lib','../src'],

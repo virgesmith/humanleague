@@ -9,7 +9,6 @@
 
 #include <cstring>
 
-
 // TODO use boost.python (requires >= 1.63, 16.4 comes with 1.58)
 // or https://github.com/ndarray/Boost.NumPy
 //#include <boost/python/numpy.hpp>
@@ -33,16 +32,21 @@ namespace pycpp {
     
   template<typename T> struct NpyType;
 
-  template<> struct NpyType<double> { static const int Type = NPY_DOUBLE; };
-  template<> struct NpyType<int> { static const int Type = NPY_INT; };
-  template<> struct NpyType<uint32_t> { static const int Type = NPY_UINT32; };
-  template<> struct NpyType<int64_t> { static const int Type = NPY_INT64; };
-  template<> struct NpyType<bool> { static const int Type = NPY_BOOL; };
+  // due to inconsistencies with integer sizes, only int64_t is supported
+  template<> struct NpyType<double> { static const int Type = NPY_DOUBLE; static const int Size = NPY_SIZEOF_DOUBLE; };
+  //template<> struct NpyType<int> { static const int Type = NPY_LONG; }; // value may be incorrect
+  //template<> struct NpyType<uint32_t> { static const int Type = NPY_ULONG; }; // value may be incorrect
+  // TODO This may cause issues on LLP64 / 32bit platforms
+  template<> struct NpyType<int64_t> { static const int Type = NPY_LONG;  static const int Size = NPY_SIZEOF_LONG; };
+  template<> struct NpyType<bool> { static const int Type = NPY_BOOL;     static const int Size = 4 /*guess as no NPY_SIZEOF_BOOL*/; };
 
   // numpy arrays 
   template<typename T>
   class Array : public Object
   {
+    // ensure compilation error if invalid integer type in template param
+    //enum { DUMMY = NpyType<T>::Type };
+
   public:
     typedef T value_type;
 
@@ -61,31 +65,47 @@ namespace pycpp {
     // construct from an incoming numpy object
     explicit Array(PyObject* array) : Object(array)
     {
-      // TODO check contained type of array is compatible with T...
       // see https://docs.scipy.org/doc/numpy-1.13.0/reference/c-api.array.html
+      if (PyArray_TYPE((PyArrayObject*)array) != NpyType<T>::Type)
+        throw std::runtime_error("python array contains invalid type: " + std::to_string(PyArray_TYPE((PyArrayObject*)array)) 
+          + " when expecting " + std::to_string(NpyType<T>::Type));
     }
     
-    // Construct 1D from vector<T> 
-    explicit Array(const std::vector<T>& a) : Array(a, a.size())
+    // "Construct" 1D from vector<U> where U must be implicitly convertible to T
+    template<typename U>
+    explicit Array(const std::vector<U>& a) : Array(a, a.size())
     {
       // see below constructor
     }
 
-private: // this is a hack to chain constructors to avoid having to explicitly pass an addressable size value 
-    // Construct 1D from vector<T> 
-    explicit Array(const std::vector<T>& a, npy_intp size) : Array(1, &size)
-    {
-      std::memcpy(PyArray_GETPTR1((PyArrayObject*)m_obj, 0), a.data(), size * sizeof(T));
-    }
+  private: // this is a hack to chain constructors to avoid having to explicitly pass an addressable size value 
     
-public:
+    // Construct 1D from vector<U> 
+    template<typename U>
+    Array(const std::vector<U>& a, npy_intp size) : Array(1, &size)
+    {
+      // potentially breaks because sizeof(T) might not be size of contained type
+      // std::memcpy(PyArray_GETPTR1((PyArrayObject*)m_obj, 0), a.data(), size * sizeof(T));
+      // temporary "solution" is to permit only int64_t integers
+      // need to know size of NPY_LONG 
+      // still need to be careful sizeof(T) is correct
+      T* p = (T*)PyArray_GETPTR1((PyArrayObject*)m_obj, 0);
+      for (size_t i = 0; i < a.size(); ++i, ++p)
+      {
+        *p = a[i];
+        //p += NpyType<T>::Size;
+      }
+    }
+  
+  public:
+
     // Construct from NDArray<D,T>. Data is presumed to be copied
     template<size_t D>
     explicit Array(NDArray<D, T>&& a) 
       : Object(PyArray_SimpleNewFromData(D, 
                                          const_cast<npy_intp*>(a.sizesl()), 
                                          NpyType<T>::Type, 
-                                         const_cast<void*>((const void*)a.rawData()))) 
+                                         const_cast<T*>((const T*)a.rawData()))) 
     {
       // memory ownership transferred?
       // leak if you dont, memory corruption if you do
@@ -113,15 +133,27 @@ public:
     template<typename U>
     std::vector<U> toVector() const
     {
-      // TODO test the above assumption!
+      if (dim() != 1)
+        throw std::runtime_error("cannot convert multidimensional array to vector");
       const int n = storageSize();
       std::vector<U> v(n);
       npy_intp i[1]; 
       for (i[0] = 0; i[0] < n; ++i[0])
       {
-        v[i[0]] = (U)this->operator[](i);
+        v[i[0]] = this->operator[](i);
       }
       return v;
+    }
+
+    template<size_t D>
+    NDArray<D, T> toNDArray() const
+    {
+      size_t sizes[D];
+      for (size_t i = 0; i < D; ++i)
+        sizes[i] = shape()[i];
+      NDArray<D, T> tmp(sizes);
+      std::copy(rawData(), rawData() + tmp.storageSize(), const_cast<T*>(tmp.rawData()));
+      return tmp;
     }
     
     // TODO dimension
@@ -148,7 +180,7 @@ public:
       return PyArray_STRIDE((PyArrayObject*)m_obj, d);
     }
     
-    T* rawData() 
+    T* rawData() const
     {
       return (T*)PyArray_DATA((PyArrayObject*)m_obj);
     }
@@ -156,5 +188,3 @@ public:
   };
   
 }
-
-

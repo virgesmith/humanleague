@@ -410,8 +410,6 @@ List synthPopG(List marginals, NumericMatrix exoProbsIn)
 //' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
 //' @param rho correlation
 //' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
-//' @examples
-//' res = humanleague::synthPopR(list(c(10,10,10,10,10),c(10,10,10,10,10)),0.5)
 //' @export
 // [[Rcpp::export]]
 List synthPopR(List marginals, double rho)

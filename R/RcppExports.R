@@ -56,6 +56,17 @@ synthPopR <- function(marginals, rho) {
     .Call('humanleague_synthPopR', PACKAGE = 'humanleague', marginals, rho)
 }
 
+#' IPF
+#'
+#' C++ IPF implementation
+#' @param seed seed
+#' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
+#' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
+#' @export
+ipf <- function(seedIn, marginals) {
+    .Call('humanleague_ipf', PACKAGE = 'humanleague', seedIn, marginals)
+}
+
 #' Constrained a pregenerated population in 2 dimensions given a constraint matrix.
 #'
 #' Using an iterative algorithm, this function

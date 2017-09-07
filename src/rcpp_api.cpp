@@ -26,6 +26,7 @@ using namespace Rcpp;
 #include "CQIWS.h"
 #include "RQIWS.h"
 #include "GQIWS.h"
+#include "IPF.h"
 #include "Integerise.h"
 
 #include "UnitTester.h"
@@ -435,6 +436,66 @@ List synthPopR(List marginals, double rho)
   doSolveCorrelated(result, dims, m, rho);
 
   return result;
+}
+
+//' IPF
+//'
+//' C++ IPF implementation
+//' @param seed seed
+//' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
+//' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
+//' @export
+// [[Rcpp::export]]
+List ipf(NumericMatrix seedIn, List marginals)
+{
+  const size_t dim = marginals.size();
+  if (dim != 2)
+    throw std::runtime_error("IPF only works for 2D for now");
+
+  std::vector<std::vector<double>> m(dim);
+  IntegerVector dims;
+
+  for (size_t i = 0; i < dim; ++i)
+  {
+    const NumericVector& iv = marginals[i];
+    m[i].reserve(iv.size());
+    std::copy(iv.begin(), iv.end(), std::back_inserter(m[i]));
+    dims.push_back(iv.size());
+  }
+
+  if (seedIn.rows() != dims[0] || seedIn.cols() != dims[1])
+    throw std::runtime_error("IPF invalid seed matrix size");
+
+  size_t d[2] = { (size_t)dims[0], (size_t)dims[1] };
+  NDArray<2,double> seed(d);
+
+  for (d[0] = 0; d[0] < dims[0]; ++d[0])
+  {
+    for (d[1] = 0; d[1] < dims[1]; ++d[1])
+    {
+      seed[d] = seedIn(d[0],d[1]);
+    }
+  }
+
+  IPF<2> ipf(seed, m);
+  // convert
+  NumericMatrix r(seedIn);
+  const NDArray<2, double>& res = ipf.result();
+  for (d[0] = 0; d[0] < dims[0]; ++d[0])
+  {
+    for (d[1] = 0; d[1] < dims[1]; ++d[1])
+    {
+      r(d[0],d[1]) = res[d];
+    }
+  }
+
+  List result;
+  result["conv"] = ipf.conv();
+  result["result"] = r;
+  result["pop"] = ipf.population();
+
+  return result;
+
 }
 
 

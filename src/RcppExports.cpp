@@ -52,6 +52,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// ipf
+List ipf(NumericMatrix seedIn, List marginals);
+RcppExport SEXP humanleague_ipf(SEXP seedInSEXP, SEXP marginalsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type seedIn(seedInSEXP);
+    Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
+    rcpp_result_gen = Rcpp::wrap(ipf(seedIn, marginals));
+    return rcpp_result_gen;
+END_RCPP
+}
 // constrain
 List constrain(IntegerMatrix population, LogicalMatrix permittedStates);
 RcppExport SEXP humanleague_constrain(SEXP populationSEXP, SEXP permittedStatesSEXP) {

@@ -95,6 +95,44 @@ test_that("msoa qiws", {
   expect_equal(res$conv, TRUE)
 })
 
+##### IPF
+
+
+test_that("IPF 2d unity seed", {
+
+  m0=c(52,48)
+  m1=c(87,13)
+  m2=c(55,45)
+
+  s2=array(rep(1,4),c(2,2))
+  #r2=Ipfp(s2,list(1,2),list(m0,m1))
+  t2=ipf(s2,list(m0,m1))
+  expect_equal(t2$conv, TRUE)
+  expect_equal(t2$pop, 100)
+  expect_equal(sum(t2$result), t2$pop)
+  expect_equal(rowSums(t2$result), m0)
+  expect_equal(colSums(t2$result), m1)
+
+})
+
+test_that("IPF 2d nonunity seed", {
+
+  m0=c(52,48)
+  m1=c(87,13)
+  m2=c(55,45)
+
+  s2=array(rep(1,4),c(2,2))
+  s2[1,1] = 0.7
+  #r2=Ipfp(s2,list(1,2),list(m0,m1))
+  t2=ipf(s2,list(m0,m1))
+  expect_equal(t2$conv, TRUE)
+  expect_equal(t2$pop, 100)
+  expect_equal(sum(t2$result), t2$pop)
+  expect_equal(rowSums(t2$result), m0)
+  expect_equal(colSums(t2$result), m1)
+})
+
+
 ##### constrained
 
 # bedrooms cannot exceed rooms

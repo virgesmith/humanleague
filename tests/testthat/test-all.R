@@ -110,8 +110,8 @@ test_that("IPF 2d unity seed", {
   expect_equal(t2$conv, TRUE)
   expect_equal(t2$pop, 100)
   expect_equal(sum(t2$result), t2$pop)
-  expect_equal(rowSums(t2$result), m0)
-  expect_equal(colSums(t2$result), m1)
+  expect_equal(rowSums(t2$result), m1)
+  expect_equal(colSums(t2$result), m0)
 
 })
 
@@ -128,8 +128,8 @@ test_that("IPF 2d nonunity seed", {
   expect_equal(t2$conv, TRUE)
   expect_equal(t2$pop, 100)
   expect_equal(sum(t2$result), t2$pop)
-  expect_equal(rowSums(t2$result), m0)
-  expect_equal(colSums(t2$result), m1)
+  expect_equal(rowSums(t2$result), m1)
+  expect_equal(colSums(t2$result), m0)
 })
 
 

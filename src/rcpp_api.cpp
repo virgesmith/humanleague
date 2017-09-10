@@ -441,53 +441,41 @@ List synthPopR(List marginals, double rho)
 //' IPF
 //'
 //' C++ IPF implementation
-//' @param seed seed
-//' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
-//' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
+//' @param seed an n-dimensional array of seed values
+//' @param marginals a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical
+//' @return an object containing: ...
 //' @export
 // [[Rcpp::export]]
-List ipf(NumericMatrix seedIn, List marginals)
+List ipf(NumericVector seed, List marginals)
 {
   const size_t dim = marginals.size();
   if (dim != 2)
     throw std::runtime_error("IPF only works for 2D for now");
 
+  IntegerVector sizes = seed.attr("dim");
   std::vector<std::vector<double>> m(dim);
-  IntegerVector dims;
+  std::vector<long> s(dim);
 
   for (size_t i = 0; i < dim; ++i)
   {
     const NumericVector& iv = marginals[i];
     m[i].reserve(iv.size());
     std::copy(iv.begin(), iv.end(), std::back_inserter(m[i]));
-    dims.push_back(iv.size());
+    s[i] = sizes[i];
   }
 
-  if (seedIn.rows() != dims[0] || seedIn.cols() != dims[1])
-    throw std::runtime_error("IPF invalid seed matrix size");
+  //print(s);
 
-  size_t d[2] = { (size_t)dims[0], (size_t)dims[1] };
-  NDArray<2,double> seed(d);
+  // Read-only shallow copy of seed for seed
+  const NDArray<2, double> seedwrapper(&s[0], (double*)&seed[0]);
+  // Deep copy of seed for result (preserves diimesion, values will be overwritten)
+  NumericVector r(seed);
 
-  for (d[0] = 0; d[0] < dims[0]; ++d[0])
-  {
-    for (d[1] = 0; d[1] < dims[1]; ++d[1])
-    {
-      seed[d] = seedIn(d[0],d[1]);
-    }
-  }
-
-  IPF<2> ipf(seed, m);
-  // convert
-  NumericMatrix r(seedIn);
-  const NDArray<2, double>& res = ipf.result();
-  for (d[0] = 0; d[0] < dims[0]; ++d[0])
-  {
-    for (d[1] = 0; d[1] < dims[1]; ++d[1])
-    {
-      r(d[0],d[1]) = res[d];
-    }
-  }
+  // Do IPF
+  IPF<2> ipf(seedwrapper, m);
+  // Copy result data into R array
+  const NDArray<2, double>& tmp = ipf.result();
+  std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
 
   List result;
   result["conv"] = ipf.conv();
@@ -495,9 +483,43 @@ List ipf(NumericMatrix seedIn, List marginals)
   result["pop"] = ipf.population();
 
   return result;
-
 }
 
+// // a = array(rep(1,16), c(2,2,2,2))
+// // b = test(a)
+// // [[Rcpp::export]]
+// List test(NumericVector ndarray)
+// {
+//   IntegerVector sizes = ndarray.attr("dim");
+//   NumericVector copy(ndarray.begin(), ndarray.end());
+//   copy.attr("dim") = sizes;
+//
+//   std::vector<long> s(4);
+//   for (size_t i = 0; i < 4; ++i)
+//   {
+//     s[i] = sizes[i];
+//   }
+//
+//   //print(s);
+//
+//   // Shallow copy of "copy"
+//   NDArray<4, double> wrapper(&s[0], (double*)&copy[0]);
+//   double x = 0.0;
+//   for (Index<4, Index_Unfixed> i(wrapper.sizes()); !i.end(); ++i)
+//   {
+//     wrapper[i] = x;
+//     x += 0.1;
+//   }
+//
+//   //std::vector<double> cpparray(ndarray.begin(), ndarray.end());
+//   List result;
+//   result["dim"] =   s.size();
+//   result["sizes"] =   s;
+//   // TODO set dim attr...
+//   result["ndarray"] = copy;
+//
+//   return result;
+// }
 
 //' Constrained a pregenerated population in 2 dimensions given a constraint matrix.
 //'

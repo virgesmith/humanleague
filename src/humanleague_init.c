@@ -19,6 +19,7 @@ extern SEXP _humanleague_ipf(SEXP, SEXP);
 extern SEXP _humanleague_constrain(SEXP, SEXP);
 extern SEXP _humanleague_correlatedSobol2Sequence(SEXP, SEXP, SEXP);
 extern SEXP _humanleague_unitTest();
+//extern SEXP _humanleague_test(SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
   {"humanleague_prob2IntFreq",  (DL_FUNC) &_humanleague_prob2IntFreq,  2},
@@ -31,6 +32,7 @@ static const R_CallMethodDef CallEntries[] = {
   {"humanleague_constrain",      (DL_FUNC) &_humanleague_constrain,      2},
   {"humanleague_correlatedSobol2Sequence", (DL_FUNC) &_humanleague_correlatedSobol2Sequence,      3},
   {"humanleague_unitTest",       (DL_FUNC) &_humanleague_unitTest,      0},
+  //{"humanleague_test",       (DL_FUNC) &_humanleague_test,      1},
   {NULL, NULL, 0}
 };
 

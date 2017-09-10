@@ -53,14 +53,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // ipf
-List ipf(NumericMatrix seedIn, List marginals);
-RcppExport SEXP _humanleague_ipf(SEXP seedInSEXP, SEXP marginalsSEXP) {
+List ipf(NumericVector seed, List marginals);
+RcppExport SEXP _humanleague_ipf(SEXP seedSEXP, SEXP marginalsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type seedIn(seedInSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type seed(seedSEXP);
     Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
-    rcpp_result_gen = Rcpp::wrap(ipf(seedIn, marginals));
+    rcpp_result_gen = Rcpp::wrap(ipf(seed, marginals));
     return rcpp_result_gen;
 END_RCPP
 }

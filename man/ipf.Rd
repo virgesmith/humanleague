@@ -4,15 +4,15 @@
 \alias{ipf}
 \title{IPF}
 \usage{
-ipf(seedIn, marginals)
+ipf(seed, marginals)
 }
 \arguments{
-\item{marginals}{a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical}
+\item{seed}{an n-dimensional array of seed values}
 
-\item{seed}{seed}
+\item{marginals}{a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical}
 }
 \value{
-an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
+an object containing: ...
 }
 \description{
 C++ IPF implementation

@@ -97,41 +97,74 @@ test_that("msoa qiws", {
 
 ##### IPF
 
-
 test_that("IPF 2d unity seed", {
 
-  m0=c(52,48)
+  m0=c(52,28,20)
   m1=c(87,13)
-  m2=c(55,45)
-
-  s2=array(rep(1,4),c(2,2))
-  #r2=Ipfp(s2,list(1,2),list(m0,m1))
-  t2=ipf(s2,list(m0,m1))
-  expect_equal(t2$conv, TRUE)
-  expect_equal(t2$pop, 100)
-  expect_equal(sum(t2$result), t2$pop)
-  expect_equal(rowSums(t2$result), m1)
-  expect_equal(colSums(t2$result), m0)
-
+  sizes=c(length(m0), length(m1))
+  s=array(rep(1,prod(sizes)),sizes)
+  t=ipf(s,list(m0,m1))
+  expect_equal(t$conv, TRUE)
+  expect_equal(t$pop, 100)
+  expect_equal(sum(t$result), t$pop)
+  expect_equal(apply(t$result, c(1), sum), m0)
+  expect_equal(apply(t$result, c(2), sum), m1)
 })
 
 test_that("IPF 2d nonunity seed", {
 
   m0=c(52,48)
   m1=c(87,13)
-  m2=c(55,45)
 
   s2=array(rep(1,4),c(2,2))
   s2[1,1] = 0.7
-  #r2=Ipfp(s2,list(1,2),list(m0,m1))
-  t2=ipf(s2,list(m0,m1))
-  expect_equal(t2$conv, TRUE)
-  expect_equal(t2$pop, 100)
-  expect_equal(sum(t2$result), t2$pop)
-  expect_equal(rowSums(t2$result), m1)
-  expect_equal(colSums(t2$result), m0)
+  t=ipf(s2,list(m0,m1))
+  expect_equal(t$conv, TRUE)
+  expect_equal(t$pop, 100)
+  expect_equal(sum(t$result), t$pop)
+  expect_equal(apply(t$result, c(1), sum), m0)
+  expect_equal(apply(t$result, c(2), sum), m1)
 })
 
+test_that("IPF 3d unity seed", {
+
+  m0=c(52,48)
+  m1=c(10,77,13)
+  m2=c(50,5,40,5)
+
+  sizes = c(length(m0), length(m1), length(m2))
+
+  s3=array(rep(1,prod(sizes)),sizes)
+  t3=ipf(s3,list(m0,m1,m2))
+  expect_equal(t3$conv, TRUE)
+  expect_equal(t3$pop, 100)
+  expect_equal(sum(t3$result), t3$pop)
+  expect_equal(apply(t3$result, c(1), sum), m0)
+  expect_equal(apply(t3$result, c(2), sum), m1)
+  expect_equal(apply(t3$result, c(3), sum), m2)
+
+})
+
+test_that("IPF 4d unity seed", {
+
+  m0=c(52,48)
+  m1=c(10,77,13)
+  m2=c(50,5,40,5)
+  m3=c(20,20,20,20,20)
+
+  sizes = c(length(m0), length(m1), length(m2), length(m3))
+
+  s=array(rep(1,prod(sizes)),sizes)
+  t=ipf(s,list(m0,m1,m2,m3))
+  expect_equal(t$conv, TRUE)
+  expect_equal(t$pop, 100)
+  expect_equal(sum(t$result), t$pop)
+  expect_equal(apply(t$result, c(1), sum), m0)
+  expect_equal(apply(t$result, c(2), sum), m1)
+  expect_equal(apply(t$result, c(3), sum), m2)
+  expect_equal(apply(t$result, c(4), sum), m3)
+
+})
 
 ##### constrained
 

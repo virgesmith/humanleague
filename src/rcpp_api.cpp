@@ -438,6 +438,26 @@ List synthPopR(List marginals, double rho)
   return result;
 }
 
+template<size_t D>
+void doIPF(const std::vector<long>& s, NumericVector seed, NumericVector r, const std::vector<std::vector<double>>& m,
+List& result)
+{
+  // Read-only shallow copy of seed
+  const NDArray<D, double> seedwrapper(const_cast<long*>(&s[0]), (double*)&seed[0]);
+  // Do IPF
+  IPF<D> ipf(seedwrapper, m);
+  // Copy result data into R array
+  const NDArray<D, double>& tmp = ipf.result();
+  std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
+  result["conv"] = ipf.conv();
+  result["result"] = r;
+  result["pop"] = ipf.population();
+  result["iterations"] = ipf.iters();
+  result["errors"] = ipf.errors();
+  result["maxError"] = ipf.maxError();
+}
+
+
 //' IPF
 //'
 //' C++ IPF implementation
@@ -449,38 +469,70 @@ List synthPopR(List marginals, double rho)
 List ipf(NumericVector seed, List marginals)
 {
   const size_t dim = marginals.size();
-  if (dim != 2)
-    throw std::runtime_error("IPF only works for 2D for now");
 
   IntegerVector sizes = seed.attr("dim");
   std::vector<std::vector<double>> m(dim);
   std::vector<long> s(dim);
 
+  if (sizes.size() != dim)
+    throw std::runtime_error("no. of marginals not equal to seed dimension");
+
+  // insert marginals in reverse order
   for (size_t i = 0; i < dim; ++i)
   {
     const NumericVector& iv = marginals[i];
-    m[i].reserve(iv.size());
-    std::copy(iv.begin(), iv.end(), std::back_inserter(m[i]));
-    s[i] = sizes[i];
+    if (iv.size() != sizes[i])
+      throw std::runtime_error("seed-marginal size mismatch");
+    s[dim-i-1] = sizes[i];
+    m[dim-i-1].reserve(iv.size());
+    std::copy(iv.begin(), iv.end(), std::back_inserter(m[dim-i-1]));
   }
 
   //print(s);
 
-  // Read-only shallow copy of seed for seed
-  const NDArray<2, double> seedwrapper(&s[0], (double*)&seed[0]);
   // Deep copy of seed for result (preserves diimesion, values will be overwritten)
   NumericVector r(seed);
 
-  // Do IPF
-  IPF<2> ipf(seedwrapper, m);
-  // Copy result data into R array
-  const NDArray<2, double>& tmp = ipf.result();
-  std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
-
   List result;
-  result["conv"] = ipf.conv();
-  result["result"] = r;
-  result["pop"] = ipf.population();
+  // Workaround for fact that dimensionality is a template param and thus fixed at compile time
+  switch(dim)
+  {
+  case 2:
+    doIPF<2>(s, seed, r, m, result);
+    break;
+  case 3:
+    doIPF<3>(s, seed, r, m, result);
+    break;
+  case 4:
+    doIPF<4>(s, seed, r, m, result);
+    break;
+  case 5:
+    doIPF<5>(s, seed, r, m, result);
+    break;
+  case 6:
+    doIPF<6>(s, seed, r, m, result);
+    break;
+  case 7:
+    doIPF<7>(s, seed, r, m, result);
+    break;
+  case 8:
+    doIPF<8>(s, seed, r, m, result);
+    break;
+  case 9:
+    doIPF<9>(s, seed, r, m, result);
+    break;
+  case 10:
+    doIPF<10>(s, seed, r, m, result);
+    break;
+  case 11:
+    doIPF<11>(s, seed, r, m, result);
+    break;
+  case 12:
+    doIPF<12>(s, seed, r, m, result);
+    break;
+  default:
+    throw std::runtime_error("IPF only works for 2D - 12D problems");
+  }
 
   return result;
 }

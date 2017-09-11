@@ -9,7 +9,7 @@
 void do2d()
 {
   std::vector<std::vector<double>> m = {std::vector<double>{52, 48}, 
-                                        std::vector<double>{87, 13}};
+                                        std::vector<double>{10, 77, 13}};
 
   size_t size[2] = { m[0].size(), m[1].size() };                                        
 
@@ -29,9 +29,10 @@ void do2d()
 
 void do3d()
 {
-  std::vector<std::vector<double>> m = {std::vector<double>{52, 48}, 
-                                          std::vector<double>{87, 13},
-                                          std::vector<double>{55, 45}};
+  std::vector<std::vector<double>> m = {std::vector<double>{52, 40, 4, 4}, 
+                                          std::vector<double>{87, 10, 3},
+                                          // SIGABORT if increase size by 1...
+                                          std::vector<double>{55, 15, 6,6,6,6,6}};
 
   size_t size[3] = { m[0].size(), m[1].size(), m[2].size() };                                        
 
@@ -79,5 +80,5 @@ int main()
 {
   do2d();
   do3d();
-  do4d();
+  //do4d();
 }

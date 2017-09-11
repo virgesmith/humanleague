@@ -70,7 +70,7 @@ class Test(TestCase):
     m1 = np.array([87.0, 13.0])
     m2 = np.array([55.0, 45.0])
 
-    s = np.array([[1.0, 1.0],[1.0, 1.0]])
+    s = np.ones([len(m0), len(m1)])
     p = hl.ipf(s, [m0, m1])
     #print(p)
     self.assertTrue(p["conv"])

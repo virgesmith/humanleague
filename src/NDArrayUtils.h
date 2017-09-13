@@ -92,6 +92,50 @@ std::vector<T> reduce(const NDArray<D, T>& input)
   return sums;
 }
 
+// take a D-1 dimensional slice at element index in orientation O
+template<size_t D, typename T, size_t O>
+NDArray<D-1, T> slice(const NDArray<D, T>& input, size_t index)
+{
+  if (index >= input.sizes()[O])
+    throw std::runtime_error("index out of bounds in slice");
+
+  size_t remainingSizes[D-1];
+  for (size_t i = 0, j = 0; i < D; ++i)
+  {
+    if (i != O) 
+    {
+      remainingSizes[j] = input.sizes()[i];
+      ++j;
+    }
+  }
+  NDArray<D-1, T> output(remainingSizes);
+  Index<D, O> inputIndex(input.sizes(), index);
+  Index<D-1, Index_Unfixed> outputIndex(output.sizes());
+  for(;!inputIndex.end(); ++inputIndex, ++outputIndex)
+  {
+    output[outputIndex] = input[inputIndex];
+  }
+  return output;
+}
+
+template<typename T, size_t O>
+std::vector<double> slice(const NDArray<2, T>& input, size_t index)
+{
+  if (index >= input.sizes()[O])
+    throw std::runtime_error("index out of bounds in slice");
+
+  // 1-O will give the non-orientation size for D=2
+  size_t remainingSize = input.sizes()[1 - O];
+
+  std::vector<T> output(remainingSize);
+  Index<2, O> inputIndex(input.sizes(), index);
+  for(size_t outputIndex = 0;!inputIndex.end(); ++inputIndex, ++outputIndex)
+  {
+    output[outputIndex] = input[inputIndex];
+  }
+  return output;
+}
+
 
 // Converts a D-dimensional population array into a list with D columns and pop rows
 template<size_t D>

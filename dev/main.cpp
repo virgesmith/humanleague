@@ -3,8 +3,26 @@
 #include "src/NDArrayUtils.h"
 #include "src/Index.h"
 #include "src/QIWS.h"
+#include "src/Sobol.h"
 
 #include <iostream>
+
+// TODO move somewhere appropriate
+size_t pick(const std::vector<double>& dist, double r)
+{
+  // sum of dist should be 1, but we relax this
+  // r is in (0,1) so scale up r by sum of dist
+  r *= std::accumulate(dist.begin(), dist.end(), 0.0);
+  double runningSum = 0.0;
+  for (size_t i = 0; i < dist.size(); ++i)
+  {
+    runningSum += dist[i];
+    if (r < runningSum)
+      return i;
+  }
+  throw std::runtime_error("pick failed");
+
+}
 
 void do2d()
 {
@@ -29,10 +47,12 @@ void do2d()
 
 void do3d()
 {
-  std::vector<std::vector<double>> m = {std::vector<double>{52, 40, 4, 4}, 
-                                          std::vector<double>{87, 10, 3},
-                                          // SIGABORT if increase size by 1...
-                                          std::vector<double>{55, 15, 6,6,6,6,6}};
+  // std::vector<std::vector<double>> m = {std::vector<double>{52, 40, 4, 4}, 
+  //                                       std::vector<double>{87, 10, 3},
+  //                                       std::vector<double>{55, 15, 6,12, 12}};
+  std::vector<std::vector<double>> m = {std::vector<double>{32, 32, 32, 32}, 
+                                        std::vector<double>{126, 1, 1},
+                                        std::vector<double>{64, 64}};
 
   size_t size[3] = { m[0].size(), m[1].size(), m[2].size() };                                        
 
@@ -49,6 +69,124 @@ void do3d()
   print(e[2]);
   std::cout << ipf.conv() << ":" << ipf.iters() << std::endl;
   print(ipf.result().rawData(), ipf.result().storageSize(), m[1].size());
+
+  // Sample without replacement of static IPF 
+  size_t n = ipf.population();
+  NDArray<3, double>& pop = const_cast<NDArray<3, double>&>(ipf.result());
+  NDArray<3, uint32_t> sample(pop.sizes());
+  sample.assign(0);
+  Sobol qrng(3);
+  const double scale = 0.5 / (1u<<31); 
+  for (size_t i = 0; i < n; ++i)
+  {
+    const std::vector<uint32_t>& r = qrng.buf();
+    size_t index[3] = {0};
+    //for (size_t i = 0; i < n; ++i)
+
+    // reduce dim 0
+    const std::vector<double>& r0 = reduce<3, double, 0>(pop);
+    // pick an index
+    index[0] = pick(r0, r[0] * scale);
+
+    // take slice Dim 0/index 
+    NDArray<2, double> slice0 = slice<3, double, 0>(pop, index[0]);
+    // reduce dim 1 (now 0)
+    const std::vector<double>& r1 = reduce<2, double, 0>(slice0);
+    // pick an index
+    index[1] = pick(r1, r[1] * scale);
+
+    // slice dim 2 (now 0)
+    const std::vector<double>& r2 = slice<double, 0>(slice0, index[1]);
+    // no reduction required
+    // pick an index
+    index[2] = pick(r2, r[2] * scale);
+
+    // without replacement
+    pop[index] = std::max(pop[index] - 1.0, 0.0);
+
+    ++sample[index];
+    //print(index, 3);
+  }
+
+  //print(pop.rawData(), pop.storageSize(), pop.sizes()[1]);
+  print(sample.rawData(), sample.storageSize(), sample.sizes()[1]);
+  print(reduce<3, uint32_t, 0>(sample));
+  print(reduce<3, uint32_t, 1>(sample));
+  print(reduce<3, uint32_t, 2>(sample));
+ 
+}
+
+void do3d_dynamic()
+{
+  std::vector<std::vector<double>> m = {std::vector<double>{52, 40, 4, 4}, 
+                                        std::vector<double>{87, 10, 3},
+                                        std::vector<double>{55, 15, 6,12, 12}};
+  // std::vector<std::vector<double>> m = {std::vector<double>{32, 32, 32, 32}, 
+  //                                       std::vector<double>{126, 1, 1},
+  //                                       std::vector<double>{64, 64}};
+
+  size_t size[3] = { m[0].size(), m[1].size(), m[2].size() };                                        
+
+  NDArray<3, double> s(size);
+  s.assign(1.0);
+
+  IPF<3> ipf(s, m);
+
+  auto e = ipf.errors();
+  print(e[0]);
+  print(e[1]);
+  print(e[2]);
+  std::cout << ipf.conv() << ":" << ipf.iters() << std::endl;
+  print(ipf.result().rawData(), ipf.result().storageSize(), m[1].size());
+
+  // Sample without replacement of static IPF 
+  size_t n = ipf.population();
+  //NDArray<3, double>& pop = const_cast<NDArray<3, double>&>(ipf.result());
+  NDArray<3, uint32_t> sample(ipf.result().sizes());
+  sample.assign(0);
+  Sobol qrng(3);
+  const double scale = 0.5 / (1u<<31); 
+  for (size_t i = 0; i < n; ++i)
+  {
+    IPF<3> ipf_d(s, m);
+    NDArray<3, double>& pop = const_cast<NDArray<3, double>&>(ipf_d.result());
+    const std::vector<uint32_t>& r = qrng.buf();
+    size_t index[3] = {0};
+    //for (size_t i = 0; i < n; ++i)
+
+    // reduce dim 0
+    const std::vector<double>& r0 = reduce<3, double, 0>(pop);
+    // pick an index
+    index[0] = pick(r0, r[0] * scale);
+
+    // take slice Dim 0/index 
+    NDArray<2, double> slice0 = slice<3, double, 0>(pop, index[0]);
+    // reduce dim 1 (now 0)
+    const std::vector<double>& r1 = reduce<2, double, 0>(slice0);
+    // pick an index
+    index[1] = pick(r1, r[1] * scale);
+
+    // slice dim 2 (now 0)
+    const std::vector<double>& r2 = slice<double, 0>(slice0, index[1]);
+    // no reduction required
+    // pick an index
+    index[2] = pick(r2, r[2] * scale);
+
+    // without replacement
+    --m[0][index[0]];
+    --m[1][index[1]];
+    --m[2][index[2]];
+    
+    ++sample[index];
+    //print(index, 3);
+  }
+
+  //print(pop.rawData(), pop.storageSize(), pop.sizes()[1]);
+  print(sample.rawData(), sample.storageSize(), sample.sizes()[1]);
+  print(reduce<3, uint32_t, 0>(sample));
+  print(reduce<3, uint32_t, 1>(sample));
+  print(reduce<3, uint32_t, 2>(sample));
+
 }
 
 void do4d()
@@ -80,5 +218,6 @@ int main()
 {
   do2d();
   do3d();
+  do3d_dynamic();
   //do4d();
 }

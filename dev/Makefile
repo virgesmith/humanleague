@@ -6,7 +6,7 @@ LDFLAGS=
 
 # TODO header deps?
 
-humanleague_dev: main.cpp ../src/NDArrayUtils.cpp
+humanleague_dev: main.cpp ../src/NDArrayUtils.cpp ../src/Sobol.cpp ../src/SobolImpl.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 %.d: %.cpp

@@ -23,7 +23,7 @@ public:
 
   typedef std::vector<uint32_t> marginal_t;
 
-  QIWS(const std::vector<marginal_t>& marginals) : m_marginals(marginals)
+  explicit QIWS(const std::vector<marginal_t>& marginals) : m_marginals(marginals)
   {
     if (m_marginals.size() != Dim)
     {
@@ -55,6 +55,10 @@ public:
     }
     m_t.resize(&sizes[0]);
     m_p.resize(&sizes[0]);
+
+    // keep lint happy
+    m_chi2 = 0.0;
+    m_degeneracy = 0.0;
   }
 
   virtual ~QIWS() { }
@@ -74,7 +78,7 @@ public:
 
     m_t.assign(0u);
 
-    size_t idx[Dim];
+    size_t idx[Dim] = {0};
     for (size_t j = 0; j < m_sum; ++j)
     {
       for (size_t i = 0; i < Dim; ++i)
@@ -95,8 +99,6 @@ public:
       m_residuals[i] = m;
       allZero = allZero && (m == 0);
     }
-
-    m_chi2 = 0.0;
 
     Index<D, Index_Unfixed> index(m_t.sizes());
 

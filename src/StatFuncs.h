@@ -17,7 +17,7 @@ double invCumNorm(double x);
 class Cholesky
 {
 public:
-  Cholesky(double rho);
+  explicit Cholesky(double rho);
 
   // generate correlated pair in [0,2^32) from uncorrelated pair in [0,2^32)
   // perhaps not the best type to pass in, but the most efficient

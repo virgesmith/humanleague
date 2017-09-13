@@ -123,7 +123,7 @@ public:
     m_sizesl[0] = 0;
   }
 
-  NDArray(const size_t* sizes) : m_storageSize(0), m_data(0), m_owned(true)
+  explicit NDArray(const size_t* sizes) : m_storageSize(0), m_data(0), m_owned(true)
   {
     resize(sizes);
   }

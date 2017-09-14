@@ -52,6 +52,9 @@ matrix:
         - python3 setup.py install
         - python3 setup.py test
 
+  allow_failures:
+    - r: devel
+
 warnings_are_errors: false
 
 notifications:

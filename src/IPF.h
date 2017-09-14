@@ -22,6 +22,13 @@ public:
   {
     if (marginals.size() != Dim)
       throw std::runtime_error("no. of marginals doesnt match dimensionalty");
+    solve(seed);
+  }
+
+  void solve(const NDArray<D, double>& seed)
+  {
+    // reset convergence flag
+    m_conv = false;
     m_population = std::accumulate(m_marginals[0].begin(), m_marginals[0].end(), 0.0);
     // checks on marginals, dimensions etc
     for (size_t i = 0; i < Dim; ++i)
@@ -93,7 +100,7 @@ public:
     return m_iters;
   }
 
-private:
+protected:
 
   template<size_t I>
   static void rScale(NDArray<D, double>& result, const std::vector<std::vector<double>>& marginals)
@@ -104,7 +111,13 @@ private:
     {
       for (Index<Dim, Direction> index(result.sizes(), p); !index.end(); ++index)
       {
-        result[index] *= marginals[Direction][index[Direction]] / r[p];
+        // avoid division by zero (assume 0/0 -> 0)
+        if (r[p] == 0.0 && marginals[Direction][index[Direction]] != 0.0)
+          throw std::runtime_error("div0 in rScale with m>0");
+        if (r[p] != 0.0)
+          result[index] *= marginals[Direction][index[Direction]] / r[p];
+        else
+          result[index] = 0.0;
       }
     }
     rScale<I-1>(result, marginals);

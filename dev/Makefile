@@ -1,7 +1,7 @@
 #PROJECT:=humanleague_dev
 
 CXX=g++
-CXXFLAGS=-Wall -Werror -g -std=c++11 -I.. 
+CXXFLAGS=-Wall -Werror -g -O0 -std=c++11 -I.. 
 LDFLAGS=
 
 # TODO header deps?

@@ -38,14 +38,12 @@ namespace pycpp {
   //template<> struct NpyType<uint32_t> { static const int Type = NPY_ULONG; }; // value may be incorrect
   // TODO This may cause issues on LLP64 / 32bit platforms
   template<> struct NpyType<int64_t> { static const int Type = NPY_LONG;  static const int Size = NPY_SIZEOF_LONG; };
-  template<> struct NpyType<bool> { static const int Type = NPY_BOOL;     static const int Size = 4 /*guess as no NPY_SIZEOF_BOOL*/; };
+  //template<> struct NpyType<bool> { static const int Type = NPY_BOOL;     static const int Size = 4 /*guess as no NPY_SIZEOF_BOOL*/; };
 
   // numpy arrays 
   template<typename T>
   class Array : public Object
   {
-    // ensure compilation error if invalid integer type in template param
-    //enum { DUMMY = NpyType<T>::Type };
 
   public:
     typedef T value_type;
@@ -93,7 +91,6 @@ namespace pycpp {
       for (size_t i = 0; i < a.size(); ++i, ++p)
       {
         *p = a[i];
-        //p += NpyType<T>::Size;
       }
     }
   
@@ -126,7 +123,6 @@ namespace pycpp {
     reference& operator[](npy_intp* index)
     {
       return *(pointer)PyArray_GetPtr(reinterpret_cast<PyArrayObject*>(m_obj), index);
-      //return *(value_type*)PyArray_GETPTR2(reinterpret_cast<PyArrayObject*>(m_obj), index[0], index[1]);
     }
     
     // assumes 1-D
@@ -172,8 +168,6 @@ namespace pycpp {
     {
       return PyArray_Size(m_obj);
     }
-    
-    //npy_intp* shape() const  
     
     long stride(int d)
     {

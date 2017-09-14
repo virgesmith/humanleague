@@ -7,6 +7,7 @@
 #include "src/GQIWS.h"
 #include "src/Integerise.h"
 #include "src/IPF.h"
+#include "src/QSIPF.h"
 
 #include <Python.h>
 
@@ -57,6 +58,18 @@ void doSolveIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& seed
   // result.insert("p-value", pycpp::Double(qiws.pValue().first));
   // result.insert("chiSq", pycpp::Double(qiws.chiSq()));
   result.insert("pop", pycpp::Int(ipf.population()));
+}
+
+// TODO merge with above when APIs are consistent
+template<size_t D>
+void doSolveQSIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& seed, const std::vector<std::vector<double>>& m)
+{
+  QSIPF<D> qsipf(seed, m); 
+  result.insert("conv", pycpp::Bool(qsipf.conv()));
+  result.insert("result", pycpp::Array<int64_t>(std::move(const_cast<NDArray<D, int64_t>&>(qsipf.sample()))));
+  // result.insert("p-value", pycpp::Double(qiws.pValue().first));
+  // result.insert("chiSq", pycpp::Double(qiws.chiSq()));
+  result.insert("pop", pycpp::Int(qsipf.population()));
 }
 
 extern "C" PyObject* humanleague_prob2IntFreq(PyObject* self, PyObject* args)
@@ -219,6 +232,90 @@ extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
     return &pycpp::String("unexpected exception");
   }
 }
+
+// prevents name mangling (but works without this)
+extern "C" PyObject* humanleague_qsipf(PyObject *self, PyObject *args)
+{
+  try 
+  {
+    PyObject* arrayArg;
+    PyObject* seedArg;
+    
+    // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
+    if (!PyArg_ParseTuple(args, "O!O!", &PyArray_Type, & seedArg, &PyList_Type, &arrayArg))
+      return nullptr;
+    
+    // seed
+    pycpp::Array<double> seed(seedArg);
+    // expects a list of numpy arrays containing int64
+    pycpp::List list(arrayArg);
+    
+    size_t dim = list.size();
+    std::vector<size_t> sizes(dim);
+    std::vector<std::vector<double>> marginals(dim);
+      
+    for (size_t i = 0; i < dim; ++i) 
+    {
+      if (!PyArray_Check(list[i]))
+        throw std::runtime_error("input should be a list of numpy integer arrays");
+      pycpp::Array<double> a(list[i]);
+      sizes[i] = a.shape()[0];
+      marginals[i] = a.toVector<double>();
+    }
+
+    pycpp::Dict retval;
+    //const NDArray<2, double>& x = seed.toNDArray<2>();
+
+    switch(dim)
+    {
+    case 2:
+      doSolveQSIPF<2>(retval, dim, std::move(seed.toNDArray<2>()), marginals);
+      break;
+    case 3:
+      doSolveQSIPF<3>(retval, dim, std::move(seed.toNDArray<3>()), marginals);
+      break;
+    case 4:
+      doSolveQSIPF<4>(retval, dim, std::move(seed.toNDArray<4>()), marginals);
+      break;
+    case 5:
+      doSolveQSIPF<5>(retval, dim, std::move(seed.toNDArray<5>()), marginals);
+      break;
+    case 6:
+      doSolveQSIPF<6>(retval, dim, std::move(seed.toNDArray<6>()), marginals);
+      break;
+    case 7:
+      doSolveQSIPF<7>(retval, dim, std::move(seed.toNDArray<7>()), marginals);
+      break;
+    case 8:
+      doSolveQSIPF<8>(retval, dim, std::move(seed.toNDArray<8>()), marginals);
+      break;
+    case 9:
+      doSolveQSIPF<9>(retval, dim, std::move(seed.toNDArray<9>()), marginals);
+      break;
+    case 10:
+      doSolveQSIPF<10>(retval, dim, std::move(seed.toNDArray<10>()), marginals);
+      break;
+    case 11:
+      doSolveQSIPF<11>(retval, dim, std::move(seed.toNDArray<11>()), marginals);
+      break;
+    case 12:
+      doSolveQSIPF<12>(retval, dim, std::move(seed.toNDArray<12>()), marginals);
+      break;
+    default:
+      throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
+    }
+    return retval.release();
+  }
+  catch(const std::exception& e)
+  {
+    return &pycpp::String(e.what());
+  }
+  catch(...)
+  {
+    return &pycpp::String("unexpected exception");
+  }
+}
+
 
 // prevents name mangling (but works without this)
 extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
@@ -456,6 +553,7 @@ PyMethodDef entryPoints[] = {
   {"sobolSequence", humanleague_sobol, METH_VARARGS, "Returns a Sobol sequence."},
   {"synthPop", humanleague_synthPop, METH_VARARGS, "Synthpop."},
   {"ipf", humanleague_ipf, METH_VARARGS, "Synthpop (IPF)."},
+  {"qsipf", humanleague_qsipf, METH_VARARGS, "Synthpop (quasirandom sampled IPF)."},
   {"synthPopR", humanleague_synthPopR, METH_VARARGS, "Synthpop correlated."},
   {"synthPopG", humanleague_synthPopG, METH_VARARGS, "Synthpop generalised."},
   {"numpytest", humanleague_numpytest, METH_VARARGS, "numpy test."},

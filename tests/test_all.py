@@ -97,3 +97,32 @@ class Test(TestCase):
     self.assertTrue(np.allclose(np.sum(p["result"], (0, 1)), m2))
     self.assertTrue(np.allclose(np.sum(p["result"], (1, 2)), m0))
     self.assertTrue(np.allclose(np.sum(p["result"], (2, 0)), m1))
+
+  def test_QSIPF(self):
+    m0 = np.array([52., 48.]) 
+    m1 = np.array([10., 77., 13.])
+
+    s = np.ones([len(m0), len(m1)])
+    p = hl.qsipf(s, [m0, m1])
+    #self.assertTrue(p["conv"])
+    #self.assertTrue(p["pop"] == 100)
+    self.assertTrue(np.array_equal(p["result"], np.array([[5, 40, 7],[5, 37, 6]])))
+
+    m0 = np.array([52., 40., 4., 4.]) 
+    m1 = np.array([87., 10., 3.])
+    m2 = np.array([55., 15., 6., 12., 12.])
+
+    s = np.ones([len(m0), len(m1), len(m2)])
+    p = hl.qsipf(s, [m0, m1, m2])
+    print(p)
+
+    m0 = np.array([52, 48]) 
+    m1 = np.array([87, 13])
+    m2 = np.array([67, 33])
+    m3 = np.array([55, 45])
+
+    s = np.ones([len(m0), len(m1), len(m2), len(m3)])
+    p = hl.qsipf(s, [m0, m1, m2, m3])
+    print(p)
+
+    #self.assertTrue(p["pop"] == 100)

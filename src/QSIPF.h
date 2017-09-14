@@ -78,13 +78,14 @@ void getIndex<2>(const NDArray<2, double>& p, const std::vector<uint32_t>& r, si
 }  
 
 
+// TODO IPF should be member not super
 template<size_t D>
 class QSIPF : public IPF<D>
 {
 public:
+  // TODO marginal values must be integers
   QSIPF(const NDArray<D, double>& seed, const std::vector<std::vector<double>>& marginals)
   : IPF<D>(seed, marginals), m_sample(seed.sizes()) 
-  //m_result(seed.sizes()), m_marginals(marginals), m_errors(D), m_conv(false)
   {
     if (!this->m_conv)
       throw std::runtime_error("Initial IPF failed to converge, check seed and marginals");
@@ -145,13 +146,13 @@ public:
     }
   }
 
-  const NDArray<D, uint32_t>& sample() const 
+  const NDArray<D, int64_t>& sample() const 
   {
     return m_sample;
   }
 
 private:
 
-  NDArray<D, uint32_t> m_sample;
+  NDArray<D, int64_t> m_sample;
 
 };

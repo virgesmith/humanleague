@@ -7,6 +7,8 @@
 
 #include <iostream>
 
+// TODO integer marginals
+
 void do2d()
 {
   std::vector<std::vector<double>> m = {std::vector<double>{52, 48}, 
@@ -27,8 +29,8 @@ void do2d()
   std::cout << qsipf.conv() << ":" << qsipf.iters() << std::endl;
   print(qsipf.result().rawData(), qsipf.result().storageSize(), m[1].size());
   print(qsipf.sample().rawData(), qsipf.sample().storageSize(), qsipf.sample().sizes()[1]);
-  print(reduce<2, uint32_t, 0>(qsipf.sample()));
-  print(reduce<2, uint32_t, 1>(qsipf.sample()));
+  print(reduce<2, int64_t, 0>(qsipf.sample()));
+  print(reduce<2, int64_t, 1>(qsipf.sample()));
 }
 
 
@@ -60,9 +62,9 @@ void do3d()
 
   //print(pop.rawData(), pop.storageSize(), pop.sizes()[1]);
   print(qsipf.sample().rawData(), qsipf.sample().storageSize(), qsipf.sample().sizes()[1]);
-  print(reduce<3, uint32_t, 0>(qsipf.sample()));
-  print(reduce<3, uint32_t, 1>(qsipf.sample()));
-  print(reduce<3, uint32_t, 2>(qsipf.sample()));
+  print(reduce<3, int64_t, 0>(qsipf.sample()));
+  print(reduce<3, int64_t, 1>(qsipf.sample()));
+  print(reduce<3, int64_t, 2>(qsipf.sample()));
 }
 
 void do4d()
@@ -88,10 +90,10 @@ void do4d()
   print(e[3]);
   //std::cout << qsipf.conv() << ":" << qsipf.iters() << std::endl;
   print(qsipf.sample().rawData(), qsipf.sample().storageSize(), m[1].size());
-  print(reduce<4, uint32_t, 0>(qsipf.sample()));
-  print(reduce<4, uint32_t, 1>(qsipf.sample()));
-  print(reduce<4, uint32_t, 2>(qsipf.sample()));
-  print(reduce<4, uint32_t, 3>(qsipf.sample()));
+  print(reduce<4, int64_t, 0>(qsipf.sample()));
+  print(reduce<4, int64_t, 1>(qsipf.sample()));
+  print(reduce<4, int64_t, 2>(qsipf.sample()));
+  print(reduce<4, int64_t, 3>(qsipf.sample()));
 }
 
 int main()

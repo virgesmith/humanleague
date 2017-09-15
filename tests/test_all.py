@@ -98,23 +98,37 @@ class Test(TestCase):
     self.assertTrue(np.allclose(np.sum(p["result"], (1, 2)), m0))
     self.assertTrue(np.allclose(np.sum(p["result"], (2, 0)), m1))
 
-  def test_QSIPF(self):
-    m0 = np.array([52., 48.]) 
-    m1 = np.array([10., 77., 13.])
+    # 12D
+    s = np.ones([2,2,2,2,2,2,2,2,2,2,2,2])
+    m = np.array([2048.,2048.])
+    p = hl.ipf(s,[m,m,m,m,m,m,m,m,m,m,m,m])
+    print(p)
+    self.assertTrue(p["pop"] == 4096)
 
+  def test_QSIPF(self):
+    m0 = np.array([52, 48]) 
+    m1 = np.array([10, 77, 13])
+
+    # nonunity seed
     s = np.ones([len(m0), len(m1)])
+    s[0,0] = 0.7
+    s[1,1] = 1.3
     p = hl.qsipf(s, [m0, m1])
     #self.assertTrue(p["conv"])
     #self.assertTrue(p["pop"] == 100)
-    self.assertTrue(np.array_equal(p["result"], np.array([[5, 40, 7],[5, 37, 6]])))
+    self.assertTrue(np.allclose(np.sum(p["result"], 0), m1))
+    self.assertTrue(np.allclose(np.sum(p["result"], 1), m0))
+    #self.assertTrue(np.array_equal(p["result"], np.array([[5, 40, 7],[5, 37, 6]])))
 
-    m0 = np.array([52., 40., 4., 4.]) 
-    m1 = np.array([87., 10., 3.])
-    m2 = np.array([55., 15., 6., 12., 12.])
+    m0 = np.array([52, 40, 4, 4]) 
+    m1 = np.array([87, 10, 3])
+    m2 = np.array([55, 15, 6, 12, 12])
 
     s = np.ones([len(m0), len(m1), len(m2)])
     p = hl.qsipf(s, [m0, m1, m2])
-    print(p)
+    self.assertTrue(np.allclose(np.sum(p["result"], (0, 1)), m2))
+    self.assertTrue(np.allclose(np.sum(p["result"], (1, 2)), m0))
+    self.assertTrue(np.allclose(np.sum(p["result"], (2, 0)), m1))
 
     m0 = np.array([52, 48]) 
     m1 = np.array([87, 13])
@@ -123,6 +137,8 @@ class Test(TestCase):
 
     s = np.ones([len(m0), len(m1), len(m2), len(m3)])
     p = hl.qsipf(s, [m0, m1, m2, m3])
-    print(p)
+    self.assertTrue(np.allclose(np.sum(p["result"], (0, 1, 2)), m3))
+    self.assertTrue(np.allclose(np.sum(p["result"], (1, 2, 3)), m0))
+    self.assertTrue(np.allclose(np.sum(p["result"], (2, 3, 0)), m1))
+    self.assertTrue(np.allclose(np.sum(p["result"], (3, 0, 1)), m2))
 
-    #self.assertTrue(p["pop"] == 100)

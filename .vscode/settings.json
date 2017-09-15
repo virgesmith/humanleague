@@ -34,6 +34,13 @@
     "system_error": "cpp",
     "tuple": "cpp",
     "type_traits": "cpp",
-    "typeinfo": "cpp"
+    "typeinfo": "cpp",
+    "csignal": "cpp",
+    "cstdarg": "cpp",
+    "atomic": "cpp",
+    "codecvt": "cpp",
+    "condition_variable": "cpp",
+    "slist": "cpp",
+    "thread": "cpp"
   }
 }

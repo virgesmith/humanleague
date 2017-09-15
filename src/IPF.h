@@ -18,14 +18,27 @@ public:
   static const size_t Dim = D;
 
   IPF(const NDArray<D, double>& seed, const std::vector<std::vector<double>>& marginals)
-    : m_result(seed.sizes()), m_marginals(marginals), m_errors(D), m_conv(false)
+  : m_result(seed.sizes()), m_marginals(marginals), m_errors(D), m_conv(false)
   {
-    if (marginals.size() != Dim)
+    if (m_marginals.size() != Dim)
       throw std::runtime_error("no. of marginals doesnt match dimensionalty");
     solve(seed);
   }
 
-  void solve(const NDArray<D, double>& seed)
+  IPF(const NDArray<D, double>& seed, const std::vector<std::vector<int64_t>>& marginals)
+  : m_result(seed.sizes()), m_marginals(D), m_errors(D), m_conv(false)
+  {
+    if (marginals.size() != Dim)
+      throw std::runtime_error("no. of marginals doesnt match dimensionalty");
+    for (size_t d = 0; d < Dim; ++d)
+    {
+      m_marginals[d].reserve(marginals[d].size());
+      std::copy(marginals[d].begin(), marginals[d].end(), std::back_inserter(m_marginals[d]));
+    }
+    solve(seed);
+  }
+
+void solve(const NDArray<D, double>& seed)
   {
     // reset convergence flag
     m_conv = false;

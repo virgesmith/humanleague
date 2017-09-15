@@ -11,8 +11,8 @@
 
 void do2d()
 {
-  std::vector<std::vector<double>> m = {std::vector<double>{52, 48}, 
-                                        std::vector<double>{10, 77, 13}};
+  std::vector<std::vector<int64_t>> m = {std::vector<int64_t>{52, 48}, 
+                                        std::vector<int64_t>{10, 77, 13}};
 
   size_t size[2] = { m[0].size(), m[1].size() };                                        
 
@@ -36,12 +36,12 @@ void do2d()
 
 void do3d()
 {
-  std::vector<std::vector<double>> m = {std::vector<double>{52, 40, 4, 4}, 
-                                        std::vector<double>{87, 10, 3},
-                                        std::vector<double>{55, 15, 6,12, 12}};
-  // std::vector<std::vector<double>> m = {std::vector<double>{32, 32, 32, 32}, 
-  //                                       std::vector<double>{126, 1, 1},
-  //                                       std::vector<double>{64, 64}};
+  std::vector<std::vector<int64_t>> m = {std::vector<int64_t>{52, 40, 4, 4}, 
+                                        std::vector<int64_t>{87, 10, 3},
+                                        std::vector<int64_t>{55, 15, 6,12, 12}};
+  // std::vector<std::vector<double>> m = {std::vector<int64_t>{32, 32, 32, 32}, 
+  //                                       std::vector<int64_t>{126, 1, 1},
+  //                                       std::vector<int64_t>{64, 64}};
 
   size_t size[3] = { m[0].size(), m[1].size(), m[2].size() };                                        
 
@@ -69,10 +69,10 @@ void do3d()
 
 void do4d()
 {
-  std::vector<std::vector<double>> m = {std::vector<double>{52, 48}, 
-                                        std::vector<double>{87, 13},
-                                        std::vector<double>{67, 33},
-                                        std::vector<double>{55, 45}};
+  std::vector<std::vector<int64_t>> m = {std::vector<int64_t>{52, 48}, 
+                                        std::vector<int64_t>{87, 13},
+                                        std::vector<int64_t>{67, 33},
+                                        std::vector<int64_t>{55, 45}};
 
   size_t size[4] = { m[0].size(), m[1].size(), m[2].size(), m[3].size() };                                        
 

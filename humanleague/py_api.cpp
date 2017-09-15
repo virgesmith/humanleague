@@ -62,7 +62,7 @@ void doSolveIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& seed
 
 // TODO merge with above when APIs are consistent
 template<size_t D>
-void doSolveQSIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& seed, const std::vector<std::vector<double>>& m)
+void doSolveQSIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& seed, const std::vector<std::vector<int64_t>>& m)
 {
   QSIPF<D> qsipf(seed, m); 
   result.insert("conv", pycpp::Bool(qsipf.conv()));
@@ -252,15 +252,15 @@ extern "C" PyObject* humanleague_qsipf(PyObject *self, PyObject *args)
     
     size_t dim = list.size();
     std::vector<size_t> sizes(dim);
-    std::vector<std::vector<double>> marginals(dim);
+    std::vector<std::vector<int64_t>> marginals(dim);
       
     for (size_t i = 0; i < dim; ++i) 
     {
       if (!PyArray_Check(list[i]))
         throw std::runtime_error("input should be a list of numpy integer arrays");
-      pycpp::Array<double> a(list[i]);
+      pycpp::Array<int64_t> a(list[i]);
       sizes[i] = a.shape()[0];
-      marginals[i] = a.toVector<double>();
+      marginals[i] = a.toVector<int64_t>();
     }
 
     pycpp::Dict retval;

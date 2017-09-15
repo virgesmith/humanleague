@@ -84,7 +84,7 @@ class QSIPF : public IPF<D>
 {
 public:
   // TODO marginal values must be integers
-  QSIPF(const NDArray<D, double>& seed, const std::vector<std::vector<double>>& marginals)
+  QSIPF(const NDArray<D, double>& seed, const std::vector<std::vector<int64_t>>& marginals)
   : IPF<D>(seed, marginals), m_sample(seed.sizes()) 
   {
     if (!this->m_conv)

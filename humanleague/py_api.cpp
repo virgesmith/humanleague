@@ -264,8 +264,7 @@ extern "C" PyObject* humanleague_qsipf(PyObject *self, PyObject *args)
     }
 
     pycpp::Dict retval;
-    //const NDArray<2, double>& x = seed.toNDArray<2>();
-
+    
     switch(dim)
     {
     case 2:

@@ -67,6 +67,17 @@ ipf <- function(seed, marginals) {
     .Call('_humanleague_ipf', PACKAGE = 'humanleague', seed, marginals)
 }
 
+#' IPF
+#'
+#' C++ IPF implementation
+#' @param seed an n-dimensional array of seed values
+#' @param marginals a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical
+#' @return an object containing: ...
+#' @export
+qsipf <- function(seed, marginals) {
+    .Call('_humanleague_qsipf', PACKAGE = 'humanleague', seed, marginals)
+}
+
 #' Constrained a pregenerated population in 2 dimensions given a constraint matrix.
 #'
 #' Using an iterative algorithm, this function

@@ -27,6 +27,7 @@ using namespace Rcpp;
 #include "RQIWS.h"
 #include "GQIWS.h"
 #include "IPF.h"
+#include "QSIPF.h"
 #include "Integerise.h"
 
 #include "UnitTester.h"
@@ -440,7 +441,7 @@ List synthPopR(List marginals, double rho)
 
 template<size_t D>
 void doIPF(const std::vector<long>& s, NumericVector seed, NumericVector r, const std::vector<std::vector<double>>& m,
-List& result)
+           List& result)
 {
   // Read-only shallow copy of seed
   const NDArray<D, double> seedwrapper(const_cast<long*>(&s[0]), (double*)&seed[0]);
@@ -455,6 +456,25 @@ List& result)
   result["iterations"] = ipf.iters();
   result["errors"] = ipf.errors();
   result["maxError"] = ipf.maxError();
+}
+
+template<size_t D>
+void doQSIPF(const std::vector<long>& s, NumericVector seed, IntegerVector r, const std::vector<std::vector<long>>& m,
+           List& result)
+{
+  // Read-only shallow copy of seed
+  const NDArray<D, double> seedwrapper(const_cast<long*>(&s[0]), (double*)&seed[0]);
+  // Do IPF
+  QSIPF<D> qsipf(seedwrapper, m);
+  // Copy result data into R array
+  const NDArray<D, long>& tmp = qsipf.sample();
+  std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
+  result["conv"] = qsipf.conv();
+  result["result"] = r;
+  result["pop"] = qsipf.population();
+  result["iterations"] = qsipf.iters();
+  result["errors"] = qsipf.errors();
+  result["maxError"] = qsipf.maxError();
 }
 
 
@@ -532,6 +552,85 @@ List ipf(NumericVector seed, List marginals)
     break;
   default:
     throw std::runtime_error("IPF only works for 2D - 12D problems");
+  }
+
+  return result;
+}
+
+//' IPF
+//'
+//' C++ IPF implementation
+//' @param seed an n-dimensional array of seed values
+//' @param marginals a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical
+//' @return an object containing: ...
+//' @export
+// [[Rcpp::export]]
+List qsipf(NumericVector seed, List marginals)
+{
+  const size_t dim = marginals.size();
+
+  IntegerVector sizes = seed.attr("dim");
+  std::vector<std::vector<long>> m(dim);
+  std::vector<long> s(dim);
+
+  if (sizes.size() != dim)
+    throw std::runtime_error("no. of marginals not equal to seed dimension");
+
+  // insert marginals in reverse order
+  for (size_t i = 0; i < dim; ++i)
+  {
+    const IntegerVector& iv = marginals[i];
+    if (iv.size() != sizes[i])
+      throw std::runtime_error("seed-marginal size mismatch");
+    s[dim-i-1] = sizes[i];
+    m[dim-i-1].reserve(iv.size());
+    std::copy(iv.begin(), iv.end(), std::back_inserter(m[dim-i-1]));
+  }
+
+  //print(s);
+
+  // Deep copy of seed for result (preserves diimesion, values will be overwritten)
+  IntegerVector r(seed);
+
+  List result;
+  // Workaround for fact that dimensionality is a template param and thus fixed at compile time
+  switch(dim)
+  {
+  case 2:
+    doQSIPF<2>(s, seed, r, m, result);
+    break;
+  case 3:
+    doQSIPF<3>(s, seed, r, m, result);
+    break;
+  case 4:
+    doQSIPF<4>(s, seed, r, m, result);
+    break;
+  case 5:
+    doQSIPF<5>(s, seed, r, m, result);
+    break;
+  case 6:
+    doQSIPF<6>(s, seed, r, m, result);
+    break;
+  case 7:
+    doQSIPF<7>(s, seed, r, m, result);
+    break;
+  case 8:
+    doQSIPF<8>(s, seed, r, m, result);
+    break;
+  case 9:
+    doQSIPF<9>(s, seed, r, m, result);
+    break;
+  case 10:
+    doQSIPF<10>(s, seed, r, m, result);
+    break;
+  case 11:
+    doQSIPF<11>(s, seed, r, m, result);
+    break;
+  case 12:
+    doQSIPF<12>(s, seed, r, m, result);
+    break;
+  default:
+    throw std::runtime_error("QSIPF only works for 2D - 12D problems");
   }
 
   return result;

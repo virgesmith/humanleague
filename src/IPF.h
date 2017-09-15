@@ -38,7 +38,15 @@ public:
     solve(seed);
   }
 
-void solve(const NDArray<D, double>& seed)
+  IPF(const IPF&) = delete;
+  IPF(IPF&&) = delete;
+
+  IPF& operator=(const IPF&) = delete;
+  IPF& operator=(IPF&&) = delete;
+
+  virtual ~IPF() { }
+
+  void solve(const NDArray<D, double>& seed)
   {
     // reset convergence flag
     m_conv = false;
@@ -75,15 +83,7 @@ void solve(const NDArray<D, double>& seed)
     }
   }
 
-  IPF(const IPF&) = delete;
-  IPF(IPF&&) = delete;
-
-  IPF& operator=(const IPF&) = delete;
-  IPF& operator=(IPF&&) = delete;
-
-  virtual ~IPF() { }
-
-  size_t population() const
+  virtual size_t population() const
   {
     return m_population;
   }

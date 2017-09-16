@@ -17,6 +17,7 @@ public:
 
   static const size_t Dim = D;
 
+  // construct from factional marginals
   IPF(const NDArray<D, double>& seed, const std::vector<std::vector<double>>& marginals)
   : m_result(seed.sizes()), m_marginals(marginals), m_errors(D), m_conv(false)
   {
@@ -25,6 +26,7 @@ public:
     solve(seed);
   }
 
+  // construct from integer marginals
   IPF(const NDArray<D, double>& seed, const std::vector<std::vector<int64_t>>& marginals)
   : m_result(seed.sizes()), m_marginals(D), m_errors(D), m_conv(false)
   {
@@ -103,12 +105,12 @@ public:
     return m_maxError;
   }
 
-  bool conv() const
+  virtual bool conv() const
   {
     return m_conv;
   }
 
-  size_t iters() const
+  virtual size_t iters() const
   {
     return m_iters;
   }

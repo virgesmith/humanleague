@@ -473,6 +473,7 @@ void doQSIPF(const std::vector<long>& s, NumericVector seed, IntegerVector r, co
   result["result"] = r;
   result["pop"] = qsipf.population();
   result["iterations"] = qsipf.iters();
+  result["chiSq"] = qsipf.chiSq();
   result["errors"] = qsipf.errors();
   result["maxError"] = qsipf.maxError();
 }

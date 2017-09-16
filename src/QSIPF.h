@@ -85,10 +85,14 @@ class QSIPF : public IPF<D>
 public:
   // TODO marginal values must be integers
   QSIPF(const NDArray<D, double>& seed, const std::vector<std::vector<int64_t>>& marginals)
-  : IPF<D>(seed, marginals), m_sample(seed.sizes())
+  : IPF<D>(seed, marginals), m_sample(seed.sizes()), m_ipfSolution(seed.sizes()), m_recalcs(0)
   {
+    m_originalPopulation = this->m_population;
+    std::copy(this->m_result.rawData(), this->m_result.rawData() + this->m_result.storageSize(), const_cast<double*>(m_ipfSolution.rawData()));
+
     if (!this->m_conv)
       throw std::runtime_error("Initial IPF failed to converge, check seed and marginals");
+
     doit(seed);
   }
 
@@ -96,18 +100,17 @@ public:
   {
   }
 
+private:
   void doit(const NDArray<D, double>& seed)
   {
     // Sample without replacement of static IPF
     // the original population (IPF::m_population will reduce as we sample)
-    m_originalPopulation = this->m_population;
     m_sample.assign(0);
     Sobol qrng(D);
     //const double scale = 0.5 / (1u<<31);
     size_t index[D] = {0};
     for (size_t i = 0; i < m_originalPopulation; ++i)
     {
-      this->solve(seed);
       if (!this->m_conv)
         throw std::runtime_error("IPF convergence failure");
       //const std::vector<uint32_t>& r = qrng.buf();
@@ -123,10 +126,20 @@ public:
       decrementMarginals<D>(this->m_marginals, index);
 
       ++m_sample[index];
-      //print(index, 3);
+      --this->m_result[index];
+      // only recompute IPF solution when a probability goes negative
+      if (this->m_result[index] < 0) 
+      {
+        ++m_recalcs;
+        this->solve(seed);
+        // give up if IPF doesnt converge
+        if (!this->m_conv)
+          break;
+      }
     }
   }
 
+public:
   const NDArray<D, int64_t>& sample() const
   {
     return m_sample;
@@ -137,9 +150,29 @@ public:
     return m_originalPopulation;
   }
 
+  // This returns the number of times the IPF population was recalculated
+  virtual size_t iters() const
+  {
+    return m_recalcs;
+  }
+
+  // chi-squared stat vs the IPF solution
+  double chiSq() const 
+  {
+    double chisq = 0.0;
+    for (Index<D, Index_Unfixed> index(m_sample.sizes()); !index.end(); ++index)
+    {
+      // m is the mean population of this state
+      chisq += (m_sample[index] - m_ipfSolution[index]) * (m_sample[index] - m_ipfSolution[index]) / m_ipfSolution[index];
+    }
+    return chisq;
+  }
+
 private:
 
   size_t m_originalPopulation;
   NDArray<D, int64_t> m_sample;
-
+  NDArray<D, double> m_ipfSolution;
+  size_t m_recalcs;
+  //double m_chi2;
 };

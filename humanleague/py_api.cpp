@@ -54,10 +54,11 @@ void doSolveIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& seed
 {
   IPF<D> ipf(seed, m); 
   result.insert("conv", pycpp::Bool(ipf.conv()));
-  result.insert("result", pycpp::Array<double>(std::move(const_cast<NDArray<D, double>&>(ipf.result()))));
   // result.insert("p-value", pycpp::Double(qiws.pValue().first));
   // result.insert("chiSq", pycpp::Double(qiws.chiSq()));
   result.insert("pop", pycpp::Int(ipf.population()));
+  // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
+  result.insert("result", pycpp::Array<double>(std::move(const_cast<NDArray<D, double>&>(ipf.result()))));
 }
 
 // TODO merge with above when APIs are consistent
@@ -66,10 +67,11 @@ void doSolveQSIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& se
 {
   QSIPF<D> qsipf(seed, m); 
   result.insert("conv", pycpp::Bool(qsipf.conv()));
-  result.insert("result", pycpp::Array<int64_t>(std::move(const_cast<NDArray<D, int64_t>&>(qsipf.sample()))));
-  // result.insert("p-value", pycpp::Double(qiws.pValue().first));
-  // result.insert("chiSq", pycpp::Double(qiws.chiSq()));
+  result.insert("chiSq", pycpp::Double(qsipf.chiSq()));
   result.insert("pop", pycpp::Int(qsipf.population()));
+  // result.insert("p-value", pycpp::Double(qiws.pValue().first));
+  // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
+  result.insert("result", pycpp::Array<int64_t>(std::move(const_cast<NDArray<D, int64_t>&>(qsipf.sample()))));
 }
 
 extern "C" PyObject* humanleague_prob2IntFreq(PyObject* self, PyObject* args)

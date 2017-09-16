@@ -13,7 +13,7 @@ void do2d()
 {
   std::vector<std::vector<int64_t>> m = {std::vector<int64_t>{52, 48}, 
                                         std::vector<int64_t>{10, 77, 13}};
-
+                                    
   size_t size[2] = { m[0].size(), m[1].size() };                                        
 
   NDArray<2, double> s(size);
@@ -26,7 +26,7 @@ void do2d()
   auto e = qsipf.errors();
   print(e[0]);
   print(e[1]);
-  std::cout << qsipf.conv() << ":" << qsipf.iters() << std::endl;
+  std::cout << qsipf.conv() << ":" << qsipf.iters() << ":" << qsipf.chiSq() << std::endl;
   print(qsipf.result().rawData(), qsipf.result().storageSize(), m[1].size());
   print(qsipf.sample().rawData(), qsipf.sample().storageSize(), qsipf.sample().sizes()[1]);
   print(reduce<2, int64_t, 0>(qsipf.sample()));
@@ -57,7 +57,7 @@ void do3d()
   print(e[1]);
   print(e[2]);
   // conv/iters/errors needs a rethink
-  std::cout << qsipf.conv() << ":" << qsipf.iters() << std::endl;
+  std::cout << qsipf.conv() << ":" << qsipf.iters() << ":" << qsipf.chiSq() << std::endl;
   //print(qsipf.result().rawData(), qsipf.result().storageSize(), m[1].size());
 
   //print(pop.rawData(), pop.storageSize(), pop.sizes()[1]);
@@ -88,7 +88,7 @@ void do4d()
   print(e[1]);
   print(e[2]);
   print(e[3]);
-  //std::cout << qsipf.conv() << ":" << qsipf.iters() << std::endl;
+  std::cout << qsipf.conv() << ":" << qsipf.iters() << ":" << qsipf.chiSq() << std::endl;
   print(qsipf.sample().rawData(), qsipf.sample().storageSize(), m[1].size());
   print(reduce<4, int64_t, 0>(qsipf.sample()));
   print(reduce<4, int64_t, 1>(qsipf.sample()));

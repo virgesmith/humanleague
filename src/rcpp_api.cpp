@@ -34,6 +34,8 @@ using namespace Rcpp;
 
 #include <vector>
 
+#include <cstdint>
+
 //#include <csignal>
 
 // // Handler for ctrl-C
@@ -459,7 +461,7 @@ void doIPF(const std::vector<long>& s, NumericVector seed, NumericVector r, cons
 }
 
 template<size_t D>
-void doQSIPF(const std::vector<long>& s, NumericVector seed, IntegerVector r, const std::vector<std::vector<long>>& m,
+void doQSIPF(const std::vector<long>& s, NumericVector seed, IntegerVector r, const std::vector<std::vector<int64_t>>& m,
            List& result)
 {
   // Read-only shallow copy of seed
@@ -571,7 +573,7 @@ List qsipf(NumericVector seed, List marginals)
   const size_t dim = marginals.size();
 
   IntegerVector sizes = seed.attr("dim");
-  std::vector<std::vector<long>> m(dim);
+  std::vector<std::vector<int64_t>> m(dim);
   std::vector<long> s(dim);
 
   if (sizes.size() != dim)

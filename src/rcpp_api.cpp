@@ -469,7 +469,7 @@ void doQSIPF(const std::vector<long>& s, NumericVector seed, IntegerVector r, co
   // Do IPF
   QSIPF<D> qsipf(seedwrapper, m);
   // Copy result data into R array
-  const NDArray<D, long>& tmp = qsipf.sample();
+  const NDArray<D, int64_t>& tmp = qsipf.sample();
   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
   result["conv"] = qsipf.conv();
   result["result"] = r;

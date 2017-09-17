@@ -5,6 +5,10 @@
 #include "src/Index.h"
 #include "src/Sobol.h"
 
+// work-in-progress
+#include "src/NDArray2.h"
+#include "src/Index2.h"
+#include "src/NDArrayUtils.h"
 #include <iostream>
 
 // TODO integer marginals
@@ -103,6 +107,23 @@ int main()
     do2d();
     do3d();
     do4d();
+
+    std::vector<int64_t> s{3,2,5};
+    wip::NDArray<double> a(s);
+    a.assign(1.0);
+    for (wip::Index index(a.sizes(), {0,1}); !index.end(); ++index)
+    {
+      ++a[index];
+    }
+    for (wip::Index index(a.sizes(), {1,0}); !index.end(); ++index)
+    {
+      ++a[index];
+    }
+    for (wip::Index index(a.sizes(), {2,2}); !index.end(); ++index)
+    {
+      ++a[index];
+    }
+    print(a.rawData(), a.storageSize(), s[2]);
   }
   catch(const std::exception& e)
   {

@@ -27,6 +27,7 @@ using namespace Rcpp;
 #include "RQIWS.h"
 #include "GQIWS.h"
 #include "IPF.h"
+#include "IPF2.h"
 #include "QSIPF.h"
 #include "Integerise.h"
 
@@ -560,9 +561,53 @@ List ipf(NumericVector seed, List marginals)
   return result;
 }
 
-//' IPF
+List ipf2(NumericVector seed, List marginals)
+{
+  const size_t dim = marginals.size();
+
+  IntegerVector sizes = seed.attr("dim");
+  std::vector<std::vector<double>> m(dim);
+  std::vector<long> s(dim);
+
+  if (sizes.size() != dim)
+    throw std::runtime_error("no. of marginals not equal to seed dimension");
+
+  // insert marginals in reverse order
+  for (size_t i = 0; i < dim; ++i)
+  {
+    const NumericVector& iv = marginals[i];
+    if (iv.size() != sizes[i])
+      throw std::runtime_error("seed-marginal size mismatch");
+    s[dim-i-1] = sizes[i];
+    m[dim-i-1].reserve(iv.size());
+    std::copy(iv.begin(), iv.end(), std::back_inserter(m[dim-i-1]));
+  }
+
+  // Deep copy of seed for result (preserves diimesion, values will be overwritten)
+  NumericVector r(seed);
+
+  List result;
+  // Read-only shallow copy of seed
+  const wip::NDArray<double> seedwrapper(s, (double*)&seed[0]);
+  // Do IPF
+  wip::IPF ipf(seedwrapper, m);
+  // Copy result data into R array
+  const wip::NDArray<double>& tmp = ipf.result();
+  std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
+  result["conv"] = ipf.conv();
+  result["result"] = r;
+  result["pop"] = ipf.population();
+  result["iterations"] = ipf.iters();
+  result["errors"] = ipf.errors();
+  result["maxError"] = ipf.maxError();
+
+  return result;
+}
+
+
+//' QSIPF
 //'
-//' C++ IPF implementation
+//' C++ QSIPF implementation
 //' @param seed an n-dimensional array of seed values
 //' @param marginals a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical
 //' @return an object containing: ...

@@ -1,7 +1,8 @@
 #PROJECT:=humanleague_dev
 
 CXX=g++
-CXXFLAGS=-Wall -Werror -g -O0 -std=c++11 -I.. -D_GLIBCXX_DEBUG
+CXXFLAGS=-Wall -Werror -g -O0 -std=c++11 -I.. 
+#-D_GLIBCXX_DEBUG
 LDFLAGS=
 
 # TODO header deps

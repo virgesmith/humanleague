@@ -9,6 +9,7 @@
 #include "src/NDArray2.h"
 #include "src/Index2.h"
 #include "src/NDArrayUtils2.h"
+#include "src/IPF2.h"
 
 #include <iostream>
 
@@ -36,6 +37,29 @@ void do2d()
   print(qsipf.sample().rawData(), qsipf.sample().storageSize(), qsipf.sample().sizes()[1]);
   print(reduce<2, int64_t, 0>(qsipf.sample()));
   print(reduce<2, int64_t, 1>(qsipf.sample()));
+}
+
+void do2dIPF()
+{
+  std::vector<std::vector<double>> m = {std::vector<double>{12, 40, 48}, 
+                                        std::vector<double>{87, 13}};
+                                    
+  std::vector<int64_t> size{ (int64_t)m[0].size(), (int64_t)m[1].size() };                                        
+
+  wip::NDArray<double> s(size);
+  s.assign(1.0);
+  //Index<2,Index_Unfixed> index(s.sizes());
+  //s[index] = 0.5;
+
+  wip::IPF ipf(s, m);
+
+  auto e = ipf.errors();
+  print(e[0]);
+  print(e[1]);
+  std::cout << ipf.conv() << ":" << ipf.iters() << std::endl;
+  print(ipf.result().rawData(), ipf.result().storageSize(), m[1].size());
+  print(wip::reduce(ipf.result(), 0));
+  print(wip::reduce(ipf.result(), 1));
 }
 
 
@@ -71,6 +95,34 @@ void do3d()
   print(reduce<3, int64_t, 1>(qsipf.sample()));
   print(reduce<3, int64_t, 2>(qsipf.sample()));
 }
+
+void do3dIPF()
+{
+  std::vector<std::vector<double>> m = {std::vector<double>{52, 48}, 
+                                        std::vector<double>{10, 77, 13},
+                                        std::vector<double>{20, 27, 30, 23}};
+  
+  std::vector<int64_t> size{ (int64_t)m[0].size(), (int64_t)m[1].size(), (int64_t)m[2].size() };                                        
+
+  wip::NDArray<double> s(size);
+  s.assign(1.0);
+  //Index<2,Index_Unfixed> index(s.sizes());
+  //s[index] = 0.5;
+
+  wip::IPF ipf(s, m);
+
+  auto e = ipf.errors();
+  print(e[0]);
+  print(e[1]);
+  print(e[2]);
+  std::cout << ipf.conv() << ":" << ipf.iters() << std::endl;
+  print(ipf.result().rawData(), ipf.result().storageSize(), m[1].size());
+  print(wip::reduce(ipf.result(), 0));
+  print(wip::reduce(ipf.result(), 1));
+  print(wip::reduce(ipf.result(), 2));
+}
+
+
 
 void do4d()
 {
@@ -138,6 +190,9 @@ int main()
         print(a00.rawData(), a00.storageSize());//, a00.sizes()[1]);
       }
     }
+
+    do2dIPF();
+    do3dIPF();
   }
 
   catch(const std::exception& e)

@@ -8,7 +8,8 @@
 // work-in-progress
 #include "src/NDArray2.h"
 #include "src/Index2.h"
-#include "src/NDArrayUtils.h"
+#include "src/NDArrayUtils2.h"
+
 #include <iostream>
 
 // TODO integer marginals
@@ -124,7 +125,21 @@ int main()
       ++a[index];
     }
     print(a.rawData(), a.storageSize(), s[2]);
+
+    print(wip::reduce(a, 0));
+    print(wip::reduce(a, 1));
+    print(wip::reduce(a, 2));
+
+    for (size_t d = 0; d < a.dim(); ++d)
+    {
+      for (int64_t i = 0; i < a.sizes()[d]; ++i)
+      {
+        wip::NDArray<double> a00 = wip::slice(a, {d,i});
+        print(a00.rawData(), a00.storageSize());//, a00.sizes()[1]);
+      }
+    }
   }
+
   catch(const std::exception& e)
   {
     std::cout << e.what() << std::endl;

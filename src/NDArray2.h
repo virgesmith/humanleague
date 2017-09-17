@@ -22,46 +22,45 @@ public:
 
   typedef T& reference;
 
-//   // RW iterator over one dimension (O) of an n-D array given an index
-//   class ConstIterator
-//   {
-//   public:
+  // RW iterator over one dimension (O) of an n-D array given an index
+  class ConstIterator
+  {
+  public:
 
-//     ConstIterator(const NDArray<T>& a, size_t* idx) : m_a(a)
-//     {
-//       // copy indices
-//       std::copy(idx, idx + D, m_idx);
-//       // set index of orientation dimension to zero
-//       m_idx[O] = 0;
-//     }
+    ConstIterator(const NDArray<T>& a, int64_t orient, const std::vector<int64_t>& idx) : m_a(a), m_orient(orient), m_idx(idx)
+    {
+      // set index of orientation dimension to zero
+      m_idx[orient] = 0;
+    }
 
-//     ~ConstIterator() { }
+    ~ConstIterator() { }
 
-//     const size_t* idx() const
-//     {
-//       return m_idx;
-//     }
+    const std::vector<int64_t>& idx() const
+    {
+      return m_idx;
+    }
 
-//     ConstIterator& operator++()
-//     {
-//       ++m_idx[Orient];
-//       return *this;
-//     }
+    ConstIterator& operator++()
+    {
+      ++m_idx[m_orient];
+      return *this;
+    }
 
-//     bool end() const
-//     {
-//       return m_idx[Orient] >= m_a.size(Orient);
-//     }
+    bool end() const
+    {
+      return (size_t)m_idx[m_orient] >= m_a.size(m_orient);
+    }
 
-//     const_reference operator*() const
-//     {
-//       return m_a[m_idx];
-//     }
+    const_reference operator*() const
+    {
+      return m_a[m_idx];
+    }
 
-//   private:
-//     const NDArray& m_a;
-//     size_t m_idx[D];
-//   };
+  private:
+    const NDArray& m_a;
+    int64_t m_orient;
+    std::vector<int64_t> m_idx;
+  };
 
 //   // RO iterator over one dimension (O) of an n-D array given an index
 //   template<size_t O>
@@ -157,6 +156,11 @@ public:
   {
     if (m_owned)
       deallocate(m_data);
+  }
+
+  size_t dim() const 
+  {
+    return m_dim;
   }
 
   size_t size(size_t dim) const

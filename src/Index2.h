@@ -51,7 +51,7 @@ public:
   }
 
   // Implicitly cast to index vector
-  operator const std::vector<int64_t>&()
+  operator const std::vector<int64_t>&() const
   {
     return m_idx;
   }

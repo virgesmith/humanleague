@@ -113,7 +113,7 @@ namespace pycpp {
     // Construct from NDArray<D,T>. Data is presumed to be copied
     explicit Array(wip::NDArray<T>&& a) 
       : Object(PyArray_SimpleNewFromData(a.dim(), 
-                                         const_cast<npy_intp*>(a.sizes().data()), 
+                                         const_cast<npy_intp*>((npy_intp*)a.sizes().data()), 
                                          NpyType<T>::Type, 
                                          const_cast<T*>((const T*)a.rawData()))) 
     {

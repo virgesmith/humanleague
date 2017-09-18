@@ -130,7 +130,7 @@ public:
   
   // Construct with storage managed by some other object
   // TODO disable stuff like resize
-  NDArray(long int* sizes, T* const storage)
+  NDArray(int64_t* sizes, T* const storage)
   {
     std::copy(sizes, sizes + Dim, m_sizes);
     std::copy(sizes, sizes + Dim, m_sizesl);

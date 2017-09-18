@@ -578,7 +578,7 @@ List ipf(NumericVector seed, List marginals)
   if (sizes.size() != dim)
     throw std::runtime_error("no. of marginals not equal to seed dimension");
 
-  // insert marginals in reverse order
+  // insert marginals in reverse order (R being column-major)
   for (size_t i = 0; i < dim; ++i)
   {
     const NumericVector& iv = marginals[i];

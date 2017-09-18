@@ -435,7 +435,7 @@ extern "C" PyObject* humanleague_synthPopG(PyObject *self, PyObject *args)
     marginals[0] = marginal0.toVector<uint32_t>();
     marginals[1] = marginal1.toVector<uint32_t>();
     // HACK 
-    NDArray<2, double> xp(exoProbs.shape(), exoProbs.rawData());
+    NDArray<2, double> xp((int64_t*)exoProbs.shape(), exoProbs.rawData());
     GQIWS gqiws(marginals, xp);
     pycpp::Dict retval;
     retval.insert("conv", pycpp::Bool(gqiws.solve()));

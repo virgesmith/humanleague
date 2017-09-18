@@ -8,7 +8,7 @@
 // constraint is hard-coded (for now) to: idx1 <= idx0
 // TODO rename
 //template<size_t D>
-class RQIWS : public QIWS<2>
+class RQIWS : public QIWS
 {
 public:
 

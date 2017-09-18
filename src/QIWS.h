@@ -165,11 +165,3 @@ protected:
   double m_degeneracy;
 };
 
-// // TODO helper macro for member template specialisations
-// #define SPECIALISE_CALCRESIDUALS(d) \
-//   template<> \
-//   template<> \
-//   inline void QIWS<d>::calcResiduals<1>(std::vector<std::vector<int32_t>>& r) \
-//   { \
-//     r[0] = diff(reduce<d, uint32_t, 0>(m_t), m_marginals[0]); \
-//   }

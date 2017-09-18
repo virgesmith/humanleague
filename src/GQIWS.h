@@ -13,7 +13,7 @@ struct ConstrainG
 // 2-Dimensional generalised quasirandom integer without-replacement sampling
 // TODO rename
 //template<size_t D>
-class GQIWS : public QIWS<2>
+class GQIWS : public QIWS
 {
 public:
 
@@ -35,7 +35,6 @@ private:
 };
 
 
-#endif
 
 
 

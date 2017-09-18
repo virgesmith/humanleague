@@ -31,11 +31,11 @@ class Test(TestCase):
     p = hl.synthPop([np.array([4, 2]), np.array([1, 2, 3]), np.array([3, 3])])
     self.assertTrue(p["conv"])
 
-  def test_synthPopG(self):
+  # def test_synthPopG(self):
 
-    p = hl.synthPopG(np.array([4, 2]), np.array([1, 2, 3]), np.array([[1.0, 0.9, 0.8], [0.5, 0.6, 0.7]]))
-    self.assertTrue(p["conv"])
-    self.assertTrue(p["pop"] == 6)
+  #   p = hl.synthPopG(np.array([4, 2]), np.array([1, 2, 3]), np.array([[1.0, 0.9, 0.8], [0.5, 0.6, 0.7]]))
+  #   self.assertTrue(p["conv"])
+  #   self.assertTrue(p["pop"] == 6)
 
   def test_integerise(self):
 

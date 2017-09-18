@@ -3,14 +3,13 @@
 #include "Array.h"
 
 #include "src/Sobol.h"
+#include "src/QIWS.h"
 #include "src/RQIWS.h"
 #include "src/GQIWS.h"
 #include "src/Integerise.h"
 #include "src/IPF.h"
 #include "src/QSIPF.h"
 #include "src/IPF2.h"
-
-#define USE_NEW_NDARRAY
 
 #include <Python.h>
 
@@ -22,47 +21,52 @@
 template<size_t D>
 pycpp::List flatten(const size_t pop, const NDArray<D, uint32_t>& t)
 {
-  print(t.rawData(), t.storageSize(), t.sizes()[1]);
+  //print(t.rawData(), t.storageSize(), t.sizes()[1]);
   const std::vector<std::vector<int>>& list = listify<D>(pop, t);
   pycpp::List outer(D);
   for (size_t i = 0; i < D; ++i)
   {
-//    pycpp::List inner(list[i].size());
-//    for (size_t j = 0; j < list[i].size(); ++j) 
-//    {
-//      inner.set(j, pycpp::Int(list[i][j])); // = pycpp::List(list[i]);    
-//    }
-//    outer.set(i, std::move(inner));
     outer.set(i, pycpp::List(list[i]));
   }
-
   return outer;
 }
 
-// TODO multidim
-template<typename S>
-void doSolve(pycpp::Dict& result, size_t dims, const std::vector<std::vector<uint32_t>>& m)
+pycpp::List flatten(const size_t pop, const wip::NDArray<uint32_t>& t)
 {
-  S qiws(m); 
-  result.insert("conv", pycpp::Bool(qiws.solve()));
-  result.insert("result", flatten(qiws.population(), qiws.result()));
-  result.insert("p-value", pycpp::Double(qiws.pValue().first));
-  result.insert("chiSq", pycpp::Double(qiws.chiSq()));
-  result.insert("pop", pycpp::Int(qiws.population()));
+  //print(t.rawData(), t.storageSize(), t.sizes()[1]);
+  const std::vector<std::vector<int>>& list = wip::listify(pop, t);
+  pycpp::List outer(t.dim());
+  for (size_t i = 0; i < t.dim(); ++i)
+  {
+    outer.set(i, pycpp::List(list[i]));
+  }
+  return outer;
 }
 
-// TODO merge with above when APIs are consistent
-template<size_t D>
-void doSolveIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& seed, const std::vector<std::vector<double>>& m)
-{
-  IPF<D> ipf(seed, m); 
-  result.insert("conv", pycpp::Bool(ipf.conv()));
-  // result.insert("p-value", pycpp::Double(qiws.pValue().first));
-  // result.insert("chiSq", pycpp::Double(qiws.chiSq()));
-  result.insert("pop", pycpp::Double(ipf.population()));
-  // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
-  result.insert("result", pycpp::Array<double>(std::move(const_cast<NDArray<D, double>&>(ipf.result()))));
-}
+// // TODO multidim
+// template<typename S>
+// void doSolve(pycpp::Dict& result, size_t dims, const std::vector<std::vector<uint32_t>>& m)
+// {
+//   S qiws(m); 
+//   result.insert("conv", pycpp::Bool(qiws.solve()));
+//   result.insert("result", flatten(qiws.population(), qiws.result()));
+//   result.insert("p-value", pycpp::Double(qiws.pValue().first));
+//   result.insert("chiSq", pycpp::Double(qiws.chiSq()));
+//   result.insert("pop", pycpp::Int(qiws.population()));
+// }
+
+// // TODO merge with above when APIs are consistent
+// template<size_t D>
+// void doSolveIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& seed, const std::vector<std::vector<double>>& m)
+// {
+//   IPF<D> ipf(seed, m); 
+//   result.insert("conv", pycpp::Bool(ipf.conv()));
+//   // result.insert("p-value", pycpp::Double(qiws.pValue().first));
+//   // result.insert("chiSq", pycpp::Double(qiws.chiSq()));
+//   result.insert("pop", pycpp::Double(ipf.population()));
+//   // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
+//   result.insert("result", pycpp::Array<double>(std::move(const_cast<NDArray<D, double>&>(ipf.result()))));
+// }
 
 // TODO merge with above when APIs are consistent
 template<size_t D>
@@ -188,57 +192,15 @@ extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
     pycpp::Dict retval;
     //const NDArray<2, double>& x = seed.toNDArray<2>();
 
-#ifdef USE_NEW_NDARRAY
-
 //void doSolveIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& seed, const std::vector<std::vector<double>>& m)
-  wip::IPF ipf(seed.toWipNDArray(), marginals); 
-  retval.insert("conv", pycpp::Bool(ipf.conv()));
-  // result.insert("p-value", pycpp::Double(qiws.pValue().first));
-  // result.insert("chiSq", pycpp::Double(qiws.chiSq()));
-  retval.insert("pop", pycpp::Double(ipf.population()));
-  // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
-  retval.insert("result", pycpp::Array<double>(std::move(const_cast<wip::NDArray<double>&>(ipf.result()))));
+    wip::IPF ipf(seed.toWipNDArray(), marginals); 
+    retval.insert("conv", pycpp::Bool(ipf.conv()));
+    // result.insert("p-value", pycpp::Double(qiws.pValue().first));
+    // result.insert("chiSq", pycpp::Double(qiws.chiSq()));
+    retval.insert("pop", pycpp::Double(ipf.population()));
+    // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
+    retval.insert("result", pycpp::Array<double>(std::move(const_cast<wip::NDArray<double>&>(ipf.result()))));
 
-#else
-    switch(dim)
-    {
-    case 2:
-      doSolveIPF<2>(retval, dim, std::move(seed.toNDArray<2>()), marginals);
-      break;
-    case 3:
-      doSolveIPF<3>(retval, dim, std::move(seed.toNDArray<3>()), marginals);
-      break;
-    case 4:
-      doSolveIPF<4>(retval, dim, std::move(seed.toNDArray<4>()), marginals);
-      break;
-    case 5:
-      doSolveIPF<5>(retval, dim, std::move(seed.toNDArray<5>()), marginals);
-      break;
-    case 6:
-      doSolveIPF<6>(retval, dim, std::move(seed.toNDArray<6>()), marginals);
-      break;
-    case 7:
-      doSolveIPF<7>(retval, dim, std::move(seed.toNDArray<7>()), marginals);
-      break;
-    case 8:
-      doSolveIPF<8>(retval, dim, std::move(seed.toNDArray<8>()), marginals);
-      break;
-    case 9:
-      doSolveIPF<9>(retval, dim, std::move(seed.toNDArray<9>()), marginals);
-      break;
-    case 10:
-      doSolveIPF<10>(retval, dim, std::move(seed.toNDArray<10>()), marginals);
-      break;
-    case 11:
-      doSolveIPF<11>(retval, dim, std::move(seed.toNDArray<11>()), marginals);
-      break;
-    case 12:
-      doSolveIPF<12>(retval, dim, std::move(seed.toNDArray<12>()), marginals);
-      break;
-    default:
-      throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
-    }
-#endif
     return retval.release();
   }
   catch(const std::exception& e)
@@ -362,45 +324,12 @@ extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
     }
 
     pycpp::Dict retval;
-
-    switch(dim)
-    {
-    case 2:
-      doSolve<QIWS<2>>(retval, dim, marginals);
-      break;
-    case 3:
-      doSolve<QIWS<3>>(retval, dim, marginals);
-      break;
-    case 4:
-      doSolve<QIWS<4>>(retval, dim, marginals);
-      break;
-    case 5:
-      doSolve<QIWS<5>>(retval, dim, marginals);
-      break;
-    case 6:
-      doSolve<QIWS<6>>(retval, dim, marginals);
-      break;
-    case 7:
-      doSolve<QIWS<7>>(retval, dim, marginals);
-      break;
-    case 8:
-      doSolve<QIWS<8>>(retval, dim, marginals);
-      break;
-    case 9:
-      doSolve<QIWS<9>>(retval, dim, marginals);
-      break;
-    case 10:
-      doSolve<QIWS<10>>(retval, dim, marginals);
-      break;
-    case 11:
-      doSolve<QIWS<11>>(retval, dim, marginals);
-      break;
-    case 12:
-      doSolve<QIWS<12>>(retval, dim, marginals);
-      break;
-    default:
-      throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
-    }
+    QIWS qiws(marginals); 
+    retval.insert("conv", pycpp::Bool(qiws.solve()));
+    retval.insert("result", flatten(qiws.population(), qiws.result()));
+    retval.insert("p-value", pycpp::Double(qiws.pValue().first));
+    retval.insert("chiSq", pycpp::Double(qiws.chiSq()));
+    retval.insert("pop", pycpp::Int(qiws.population()));
     return retval.release();
   }
   catch(const std::exception& e)
@@ -413,84 +342,84 @@ extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
   }
 }
 
-// prevents name mangling (but works without this)
-extern "C" PyObject* humanleague_synthPopG(PyObject *self, PyObject *args)
-{
-  try 
-  {
-    PyObject* marginal0Arg;
-    PyObject* marginal1Arg;
-    PyObject* exoProbsArg;
+// // prevents name mangling (but works without this)
+// extern "C" PyObject* humanleague_synthPopG(PyObject *self, PyObject *args)
+// {
+//   try 
+//   {
+//     PyObject* marginal0Arg;
+//     PyObject* marginal1Arg;
+//     PyObject* exoProbsArg;
 
-    // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
-    if (!PyArg_ParseTuple(args, "O!O!O!", &PyArray_Type, &marginal0Arg, &PyArray_Type, &marginal1Arg, &PyArray_Type, &exoProbsArg))
-      return nullptr;
+//     // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
+//     if (!PyArg_ParseTuple(args, "O!O!O!", &PyArray_Type, &marginal0Arg, &PyArray_Type, &marginal1Arg, &PyArray_Type, &exoProbsArg))
+//       return nullptr;
       
-    pycpp::Array<int64_t> marginal0(marginal0Arg);
-    pycpp::Array<int64_t> marginal1(marginal1Arg);
-    pycpp::Array<double> exoProbs(exoProbsArg);
+//     pycpp::Array<int64_t> marginal0(marginal0Arg);
+//     pycpp::Array<int64_t> marginal1(marginal1Arg);
+//     pycpp::Array<double> exoProbs(exoProbsArg);
          
-    std::vector<std::vector<uint32_t>> marginals(2);
+//     std::vector<std::vector<uint32_t>> marginals(2);
       
-    marginals[0] = marginal0.toVector<uint32_t>();
-    marginals[1] = marginal1.toVector<uint32_t>();
-    // HACK 
-    NDArray<2, double> xp((int64_t*)exoProbs.shape(), exoProbs.rawData());
-    GQIWS gqiws(marginals, xp);
-    pycpp::Dict retval;
-    retval.insert("conv", pycpp::Bool(gqiws.solve()));
-    retval.insert("result", flatten(gqiws.population(), gqiws.result()));
-    //retval.insert("result", pycpp::Array<uint32_t>(std::move(const_cast<NDArray<2,uint32_t>&>(gqiws.result()))));
-    retval.insert("pop", pycpp::Int(gqiws.population()));
-    return retval.release();
-  }
-  catch(const std::exception& e)
-  {
-    return &pycpp::String(e.what());
-  }
-  catch(...)
-  {
-    return &pycpp::String("unexpected exception");
-  }
-}
+//     marginals[0] = marginal0.toVector<uint32_t>();
+//     marginals[1] = marginal1.toVector<uint32_t>();
+//     // HACK 
+//     NDArray<2, double> xp((int64_t*)exoProbs.shape(), exoProbs.rawData());
+//     GQIWS gqiws(marginals, xp);
+//     pycpp::Dict retval;
+//     retval.insert("conv", pycpp::Bool(gqiws.solve()));
+//     retval.insert("result", flatten(gqiws.population(), gqiws.result()));
+//     //retval.insert("result", pycpp::Array<uint32_t>(std::move(const_cast<NDArray<2,uint32_t>&>(gqiws.result()))));
+//     retval.insert("pop", pycpp::Int(gqiws.population()));
+//     return retval.release();
+//   }
+//   catch(const std::exception& e)
+//   {
+//     return &pycpp::String(e.what());
+//   }
+//   catch(...)
+//   {
+//     return &pycpp::String("unexpected exception");
+//   }
+// }
 
-// prevents name mangling (but works without this)
-extern "C" PyObject* humanleague_synthPopR(PyObject *self, PyObject *args)
-{
-  try 
-  {
-    PyObject* marginal0Arg;
-    PyObject* marginal1Arg;
-    double rho;
+// // prevents name mangling (but works without this)
+// extern "C" PyObject* humanleague_synthPopR(PyObject *self, PyObject *args)
+// {
+//   try 
+//   {
+//     PyObject* marginal0Arg;
+//     PyObject* marginal1Arg;
+//     double rho;
 
-    // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
-    if (!PyArg_ParseTuple(args, "O!O!d", &PyList_Type, &marginal0Arg, 
-                                         &PyList_Type, &marginal1Arg, &rho))
-      return nullptr;
+//     // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
+//     if (!PyArg_ParseTuple(args, "O!O!d", &PyList_Type, &marginal0Arg, 
+//                                          &PyList_Type, &marginal1Arg, &rho))
+//       return nullptr;
       
-    pycpp::List marginal0(marginal0Arg);
-    pycpp::List marginal1(marginal1Arg);
+//     pycpp::List marginal0(marginal0Arg);
+//     pycpp::List marginal1(marginal1Arg);
     
-    std::vector<std::vector<uint32_t>> marginals(2);
+//     std::vector<std::vector<uint32_t>> marginals(2);
       
-    marginals[0] = marginal0.toVector<uint32_t>();
-    marginals[1] = marginal1.toVector<uint32_t>();
-    RQIWS rqiws(marginals, rho);
-    pycpp::Dict retval;
-    retval.insert("conv", pycpp::Bool(rqiws.solve()));
-    retval.insert("result", flatten(rqiws.population(), rqiws.result()));
-    retval.insert("pop", pycpp::Int(rqiws.population()));
-    return retval.release();
-  }
-  catch(const std::exception& e)
-  {
-    return &pycpp::String(e.what());
-  }
-  catch(...)
-  {
-    return &pycpp::String("unexpected exception");
-  }
-}
+//     marginals[0] = marginal0.toVector<uint32_t>();
+//     marginals[1] = marginal1.toVector<uint32_t>();
+//     RQIWS rqiws(marginals, rho);
+//     pycpp::Dict retval;
+//     retval.insert("conv", pycpp::Bool(rqiws.solve()));
+//     retval.insert("result", flatten(rqiws.population(), rqiws.result()));
+//     retval.insert("pop", pycpp::Int(rqiws.population()));
+//     return retval.release();
+//   }
+//   catch(const std::exception& e)
+//   {
+//     return &pycpp::String(e.what());
+//   }
+//   catch(...)
+//   {
+//     return &pycpp::String("unexpected exception");
+//   }
+// }
 
 // prevents name mangling (but works without this)
 extern "C" PyObject* humanleague_numpytest(PyObject *self, PyObject *args)
@@ -571,8 +500,8 @@ PyMethodDef entryPoints[] = {
   {"synthPop", humanleague_synthPop, METH_VARARGS, "Synthpop."},
   {"ipf", humanleague_ipf, METH_VARARGS, "Synthpop (IPF)."},
   {"qsipf", humanleague_qsipf, METH_VARARGS, "Synthpop (quasirandom sampled IPF)."},
-  {"synthPopR", humanleague_synthPopR, METH_VARARGS, "Synthpop correlated."},
-  {"synthPopG", humanleague_synthPopG, METH_VARARGS, "Synthpop generalised."},
+//  {"synthPopR", humanleague_synthPopR, METH_VARARGS, "Synthpop correlated."},
+//  {"synthPopG", humanleague_synthPopG, METH_VARARGS, "Synthpop generalised."},
   {"numpytest", humanleague_numpytest, METH_VARARGS, "numpy test."},
   {"version", humanleague_version, METH_NOARGS, "version info"},
   {nullptr, nullptr, 0, nullptr}        /* terminator */

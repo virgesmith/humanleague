@@ -105,7 +105,7 @@ test_that("IPF 2d unity seed", {
   s=array(rep(1,prod(sizes)),sizes)
   t=ipf(s,list(m0,m1))
   expect_equal(t$conv, TRUE)
-  expect_equal(t$pop, 100)
+  expect_equal(t$pop, 100.0)
   expect_equal(sum(t$result), t$pop)
   expect_equal(apply(t$result, c(1), sum), m0)
   expect_equal(apply(t$result, c(2), sum), m1)
@@ -120,7 +120,7 @@ test_that("IPF 2d nonunity seed", {
   s2[1,1] = 0.7
   t=ipf(s2,list(m0,m1))
   expect_equal(t$conv, TRUE)
-  expect_equal(t$pop, 100)
+  expect_equal(t$pop, 100.0)
   expect_equal(sum(t$result), t$pop)
   expect_equal(apply(t$result, c(1), sum), m0)
   expect_equal(apply(t$result, c(2), sum), m1)

@@ -3,6 +3,7 @@
 
 #include "Object.h"
 #include "src/NDArray.h"
+#include "src/NDArray2.h"
 
 #include <Python.h>
 #include <numpy/arrayobject.h>
@@ -109,6 +110,18 @@ namespace pycpp {
       a.release();
     }
     
+    // Construct from NDArray<D,T>. Data is presumed to be copied
+    explicit Array(wip::NDArray<T>&& a) 
+      : Object(PyArray_SimpleNewFromData(a.dim(), 
+                                         const_cast<npy_intp*>(a.sizes().data()), 
+                                         NpyType<T>::Type, 
+                                         const_cast<T*>((const T*)a.rawData()))) 
+    {
+      // memory ownership transferred?
+      // leak if you dont, memory corruption if you do
+      a.release();
+    }
+    
     ~Array()
     {
       // do we need to delete/decref?
@@ -148,6 +161,17 @@ namespace pycpp {
       for (size_t i = 0; i < D; ++i)
         sizes[i] = shape()[i];
       NDArray<D, T> tmp(sizes);
+      std::copy(rawData(), rawData() + tmp.storageSize(), const_cast<T*>(tmp.rawData()));
+      return tmp;
+    }
+    
+    wip::NDArray<T> toWipNDArray() const
+    {
+      const size_t dim = this->dim();
+      std::vector<int64_t> sizes(dim);
+      for (size_t i = 0; i < dim; ++i)
+        sizes[i] = shape()[i];
+      wip::NDArray<T> tmp(sizes);
       std::copy(rawData(), rawData() + tmp.storageSize(), const_cast<T*>(tmp.rawData()));
       return tmp;
     }

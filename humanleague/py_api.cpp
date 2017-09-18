@@ -8,6 +8,9 @@
 #include "src/Integerise.h"
 #include "src/IPF.h"
 #include "src/QSIPF.h"
+#include "src/IPF2.h"
+
+#define USE_NEW_NDARRAY
 
 #include <Python.h>
 
@@ -56,7 +59,7 @@ void doSolveIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& seed
   result.insert("conv", pycpp::Bool(ipf.conv()));
   // result.insert("p-value", pycpp::Double(qiws.pValue().first));
   // result.insert("chiSq", pycpp::Double(qiws.chiSq()));
-  result.insert("pop", pycpp::Int(ipf.population()));
+  result.insert("pop", pycpp::Double(ipf.population()));
   // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
   result.insert("result", pycpp::Array<double>(std::move(const_cast<NDArray<D, double>&>(ipf.result()))));
 }
@@ -185,6 +188,18 @@ extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
     pycpp::Dict retval;
     //const NDArray<2, double>& x = seed.toNDArray<2>();
 
+#ifdef USE_NEW_NDARRAY
+
+//void doSolveIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& seed, const std::vector<std::vector<double>>& m)
+  wip::IPF ipf(seed.toWipNDArray(), marginals); 
+  retval.insert("conv", pycpp::Bool(ipf.conv()));
+  // result.insert("p-value", pycpp::Double(qiws.pValue().first));
+  // result.insert("chiSq", pycpp::Double(qiws.chiSq()));
+  retval.insert("pop", pycpp::Double(ipf.population()));
+  // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
+  retval.insert("result", pycpp::Array<double>(std::move(const_cast<wip::NDArray<double>&>(ipf.result()))));
+
+#else
     switch(dim)
     {
     case 2:
@@ -223,6 +238,7 @@ extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
     default:
       throw std::runtime_error("invalid dimensionality: " + std::to_string(dim));
     }
+#endif
     return retval.release();
   }
   catch(const std::exception& e)

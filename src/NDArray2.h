@@ -119,13 +119,12 @@ public:
   {
     resize(sizes);
   }
-  
+
   // Construct with storage managed by some other object
   NDArray(const std::vector<int64_t>& sizes, T* const storage)
+    : m_dim(sizes.size()), m_sizes(sizes)
   {
-    assert(sizes.size());
-    m_dim = sizes.size();
-    m_sizes = m_sizes;
+    assert(m_sizes.size());
     m_storageSize = sizes[0];
     assert(m_storageSize < MaxSize);
     for (size_t i = 1; i < m_dim; ++i)
@@ -158,7 +157,7 @@ public:
       deallocate(m_data);
   }
 
-  size_t dim() const 
+  size_t dim() const
   {
     return m_dim;
   }
@@ -169,7 +168,6 @@ public:
     return m_sizes[dim];
   }
 
-  // python integration (TODO decide and remove one)
   const std::vector<int64_t>&  sizes() const
   {
     return m_sizes;
@@ -207,7 +205,7 @@ public:
         m_data = allocate(m_storageSize);
       }
     }
-    else 
+    else
     {
       throw std::runtime_error("resizing not permitted when memory is not owned");
     }

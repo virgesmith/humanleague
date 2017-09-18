@@ -66,7 +66,7 @@ class Test(TestCase):
     p = hl.ipf(s, [m0, m1])
     #print(p)
     self.assertTrue(p["conv"])
-    self.assertTrue(p["pop"] == 100)
+    self.assertEqual(p["pop"], 100.0)
     self.assertTrue(np.array_equal(p["result"], np.array([[45.24, 6.76], [41.76, 6.24]])))
 
     s[0, 0] = 0.7
@@ -74,7 +74,7 @@ class Test(TestCase):
     #print(np.sum(p["result"], 0))
     self.assertTrue(p["conv"])
     # check overall population and marginals correct
-    self.assertTrue(np.sum(p["result"]) == p["pop"])
+    self.assertEqual(np.sum(p["result"]), p["pop"])
     self.assertTrue(np.allclose(np.sum(p["result"], 0), m1))
     self.assertTrue(np.allclose(np.sum(p["result"], 1), m0))
 
@@ -85,7 +85,7 @@ class Test(TestCase):
     print(np.sum(p["result"], (2, 0)))
     self.assertTrue(p["conv"])
     # check overall population and marginals correct
-    self.assertTrue(np.sum(p["result"]) == p["pop"])
+    self.assertAlmostEqual(np.sum(p["result"]), p["pop"]) # default is 7d.p.
     self.assertTrue(np.allclose(np.sum(p["result"], (0, 1)), m2))
     self.assertTrue(np.allclose(np.sum(p["result"], (1, 2)), m0))
     self.assertTrue(np.allclose(np.sum(p["result"], (2, 0)), m1))
@@ -107,8 +107,8 @@ class Test(TestCase):
     s[1,1] = 1.3
     p = hl.qsipf(s, [m0, m1])
     self.assertTrue(p["conv"])
-    self.assertTrue(p["chiSq"] < 0.1) # ~0.091
-    self.assertTrue(p["pop"] == 100)
+    self.assertLess(p["chiSq"], 0.1) # ~0.091
+    self.assertEqual(p["pop"], 100.0)
     self.assertTrue(np.allclose(np.sum(p["result"], 0), m1))
     self.assertTrue(np.allclose(np.sum(p["result"], 1), m0))
     #self.assertTrue(np.array_equal(p["result"], np.array([[5, 40, 7],[5, 37, 6]])))
@@ -120,8 +120,8 @@ class Test(TestCase):
     s = np.ones([len(m0), len(m1), len(m2)])
     p = hl.qsipf(s, [m0, m1, m2])
     self.assertTrue(p["conv"])
-    self.assertTrue(p["chiSq"] < 70) # TODO seems a bit high (probably )
-    self.assertTrue(p["pop"] == 100)
+    self.assertLess(p["chiSq"], 70) # TODO seems a bit high (probably )
+    self.assertEqual(p["pop"], 100.0)
     self.assertTrue(np.allclose(np.sum(p["result"], (0, 1)), m2))
     self.assertTrue(np.allclose(np.sum(p["result"], (1, 2)), m0))
     self.assertTrue(np.allclose(np.sum(p["result"], (2, 0)), m1))
@@ -134,8 +134,8 @@ class Test(TestCase):
     s = np.ones([len(m0), len(m1), len(m2), len(m3)])
     p = hl.qsipf(s, [m0, m1, m2, m3])
     self.assertTrue(p["conv"])
-    self.assertTrue(p["chiSq"] < 5.25) # 
-    self.assertTrue(p["pop"] == 100)
+    self.assertLess(p["chiSq"], 5.25) 
+    self.assertEqual(p["pop"], 100)
     self.assertTrue(np.allclose(np.sum(p["result"], (0, 1, 2)), m3))
     self.assertTrue(np.allclose(np.sum(p["result"], (1, 2, 3)), m0))
     self.assertTrue(np.allclose(np.sum(p["result"], (2, 3, 0)), m1))

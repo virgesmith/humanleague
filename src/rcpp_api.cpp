@@ -443,11 +443,11 @@ List synthPopR(List marginals, double rho)
 }
 
 template<size_t D>
-void doIPF(const std::vector<long>& s, NumericVector seed, NumericVector r, const std::vector<std::vector<double>>& m,
+void doIPF(const std::vector<int64_t>& s, NumericVector seed, NumericVector r, const std::vector<std::vector<double>>& m,
            List& result)
 {
   // Read-only shallow copy of seed
-  const NDArray<D, double> seedwrapper(const_cast<long*>(&s[0]), (double*)&seed[0]);
+  const NDArray<D, double> seedwrapper(const_cast<int64_t*>(&s[0]), (double*)&seed[0]);
   // Do IPF
   IPF<D> ipf(seedwrapper, m);
   // Copy result data into R array
@@ -462,11 +462,11 @@ void doIPF(const std::vector<long>& s, NumericVector seed, NumericVector r, cons
 }
 
 template<size_t D>
-void doQSIPF(const std::vector<long>& s, NumericVector seed, IntegerVector r, const std::vector<std::vector<int64_t>>& m,
+void doQSIPF(const std::vector<int64_t>& s, NumericVector seed, IntegerVector r, const std::vector<std::vector<int64_t>>& m,
            List& result)
 {
   // Read-only shallow copy of seed
-  const NDArray<D, double> seedwrapper(const_cast<long*>(&s[0]), (double*)&seed[0]);
+  const NDArray<D, double> seedwrapper(const_cast<int64_t*>(&s[0]), (double*)&seed[0]);
   // Do IPF
   QSIPF<D> qsipf(seedwrapper, m);
   // Copy result data into R array
@@ -496,7 +496,7 @@ List ipf(NumericVector seed, List marginals)
 
   IntegerVector sizes = seed.attr("dim");
   std::vector<std::vector<double>> m(dim);
-  std::vector<long> s(dim);
+  std::vector<int64_t> s(dim);
 
   if (sizes.size() != dim)
     throw std::runtime_error("no. of marginals not equal to seed dimension");
@@ -567,7 +567,7 @@ List ipf2(NumericVector seed, List marginals)
 
   IntegerVector sizes = seed.attr("dim");
   std::vector<std::vector<double>> m(dim);
-  std::vector<long> s(dim);
+  std::vector<int64_t> s(dim);
 
   if (sizes.size() != dim)
     throw std::runtime_error("no. of marginals not equal to seed dimension");
@@ -619,7 +619,7 @@ List qsipf(NumericVector seed, List marginals)
 
   IntegerVector sizes = seed.attr("dim");
   std::vector<std::vector<int64_t>> m(dim);
-  std::vector<long> s(dim);
+  std::vector<int64_t> s(dim);
 
   if (sizes.size() != dim)
     throw std::runtime_error("no. of marginals not equal to seed dimension");

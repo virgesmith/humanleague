@@ -15,25 +15,25 @@ public:
   static const int64_t Unfixed = -1;
 
   // Omit the second argument to loop over all elements
-  explicit Index(const std::vector<int64_t>& sizes, const std::pair<int64_t, int64_t>& fixed = {-1, -1}) 
+  explicit Index(const std::vector<int64_t>& sizes, const std::pair<int64_t, int64_t>& fixed = {-1, -1})
     : m_dim(sizes.size()), m_idx(sizes.size(), 0), m_sizes(sizes), m_fixed(fixed), m_atEnd(false)
   {
     assert(m_sizes.size());
-    if (m_fixed.first != Unfixed) 
+    if (m_fixed.first != Unfixed)
     {
-      m_idx[m_fixed.first] = m_fixed.second;      
+      m_idx[m_fixed.first] = m_fixed.second;
     }
     m_storageSize = m_sizes[0];
     for (size_t i = 1; i < m_dim; ++i)
       m_storageSize *= m_sizes[i];
   }
 
-  Index(const Index& rhs) 
+  Index(const Index& rhs)
     : m_dim(rhs.m_dim), m_idx(rhs.m_idx), m_sizes(rhs.m_sizes), m_fixed(rhs.m_fixed), m_storageSize(rhs.m_storageSize), m_atEnd(rhs.m_atEnd)
   {
   }
 
-  /*const?*/ std::vector<int64_t>& operator++()
+  const std::vector<int64_t>& operator++()
   {
     for (int64_t i = m_dim - 1; i != -1ll; --i)
     {
@@ -54,6 +54,12 @@ public:
   operator const std::vector<int64_t>&() const
   {
     return m_idx;
+  }
+
+  // allow modification of individual values
+  int64_t& operator[](size_t i)
+  {
+    return m_idx[i];
   }
 
   // NB row-major offset calc is in NDArray itself

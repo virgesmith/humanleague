@@ -117,19 +117,19 @@ protected:
   // template<size_t I>
   static void rScale(wip::NDArray<double>& result, const std::vector<std::vector<double>>& marginals)
   {
-    for (size_t Direction = 0; Direction < result.dim(); ++Direction)
+    for (size_t d = 0; d < result.dim(); ++d)
     {
-      const std::vector<double>& r = reduce<double>(result, Direction);
-      for (size_t p = 0; p < marginals[Direction].size(); ++p)
+      const std::vector<double>& r = reduce<double>(result, d);
+      for (size_t p = 0; p < marginals[d].size(); ++p)
       {
-        for (wip::Index/*<Dim, Direction>*/ index(result.sizes(), { Direction, p }); !index.end(); ++index)
+        for (wip::Index index(result.sizes(), { d, p }); !index.end(); ++index)
         {
           const std::vector<int64_t>& ref = index;
           // avoid division by zero (assume 0/0 -> 0)
-          if (r[p] == 0.0 && marginals[Direction][ref[Direction]] != 0.0)
+          if (r[p] == 0.0 && marginals[d][ref[d]] != 0.0)
             throw std::runtime_error("div0 in rScale with m>0");
           if (r[p] != 0.0)
-            result[index] *= marginals[Direction][ref[Direction]] / r[p];
+            result[index] *= marginals[d][ref[d]] / r[p];
           else
             result[index] = 0.0;
         }
@@ -147,7 +147,6 @@ protected:
   // this is close to repeating the above
   bool computeErrors(std::vector<std::vector<double>>& diffs)
   {
-    //calcResiduals<Dim>(diffs);
     m_maxError = -std::numeric_limits<double>::max();
     for (size_t d = 0; d < m_result.dim(); ++d)
     {

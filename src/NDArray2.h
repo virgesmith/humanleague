@@ -2,6 +2,8 @@
 #pragma once
 
 #include <algorithm>
+#include <stdexcept>
+
 #include <cstddef>
 #include <cassert>
 
@@ -187,6 +189,7 @@ public:
   {
     if (m_owned)
     {
+      m_dim = sizes.size();
       size_t oldStorageSize = m_storageSize;
 
       m_sizes = sizes;

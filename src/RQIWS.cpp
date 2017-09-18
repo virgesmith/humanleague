@@ -1,4 +1,6 @@
 
+#if 0
+
 #include "RQIWS.h"
 
 RQIWS::RQIWS(const std::vector<marginal_t>& marginals, double rho)
@@ -93,6 +95,6 @@ bool RQIWS::solve()
   return allZero;
 }
 
-
+#endif
 
 

@@ -1,4 +1,5 @@
 
+
 #pragma once
 
 #include "QIWS.h"
@@ -33,6 +34,8 @@ private:
 
 };
 
+
+#endif
 
 
 

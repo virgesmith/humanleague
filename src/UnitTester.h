@@ -77,7 +77,7 @@ void testCumNorm();
 void testCholesky();
 void testPValue();
 void testQIWS();
-void testConstrainedSampling();
+//void testConstrainedSampling();
 
 const Logger& run();
 

@@ -1,3 +1,4 @@
+#if 0
 
 #include "GQIWS.h"
 #include "Index.h"
@@ -370,7 +371,7 @@ bool GQIWS::solve()
   return success;
 }
 
-
+#endif
 
 
 

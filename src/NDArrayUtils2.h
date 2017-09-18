@@ -17,10 +17,11 @@ T marginalProduct(const std::vector<std::vector<T>>& m, const std::vector<int64_
   assert(m.size() == idx.size());
   T p = T(1);
 
-  for (size_t i = 0; i < m.size(); ++i)
+  for (size_t d = 0; d < m.size(); ++d)
   {
-    p *= m[i][idx[i]]; 
+    p *= m[d][idx[d]];
   }
+  return p;
 }
 
 template<typename T>
@@ -35,8 +36,8 @@ std::vector<T> reduce(const wip::NDArray<T>& input, size_t orient)
 
   for (; !indexer.end(); ++indexer)
   {
-    // Pass index in directly to avoid 
-    typename NDArray<T>::ConstIterator it(input, orient, indexer/*.operator const std::vector<int64_t>&()*/);
+    // Pass index in directly to avoid
+    typename NDArray<T>::ConstIterator it(input, orient, indexer);
     for(size_t i = 0; !it.end(); ++it, ++i)
     {
       sums[i] += *it;
@@ -59,7 +60,7 @@ wip::NDArray<T> slice(const wip::NDArray<T>& input, std::pair<int64_t, int64_t> 
   remainingSizes.reserve(input.dim() - 1);
   for (size_t i = 0; i < input.dim(); ++i)
   {
-    if (i != (size_t)index.first) 
+    if (i != (size_t)index.first)
     {
       remainingSizes.push_back(input.sizes()[i]);
     }
@@ -104,7 +105,7 @@ inline std::vector<std::vector<int>> listify(const size_t pop, const wip::NDArra
   {
     for (size_t i = 0; i < t[index]; ++i)
     {
-      const std::vector<int64_t>& ref = index; 
+      const std::vector<int64_t>& ref = index;
       for (size_t j = 0; j < t.dim(); ++j)
       {
         list[j][pindex] = ref[j];

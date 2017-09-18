@@ -1,4 +1,4 @@
-
+#if 0
 
 #include "UnitTester.h"
 #include "CQIWS.h"
@@ -73,3 +73,5 @@ void unittest::testConstrainedSampling()
   //   CHECK(cqiws.solve());
   // }
 }
+
+#endif

@@ -16,42 +16,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// synthPopC
-List synthPopC(List marginals, LogicalMatrix permittedStates);
-RcppExport SEXP _humanleague_synthPopC(SEXP marginalsSEXP, SEXP permittedStatesSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
-    Rcpp::traits::input_parameter< LogicalMatrix >::type permittedStates(permittedStatesSEXP);
-    rcpp_result_gen = Rcpp::wrap(synthPopC(marginals, permittedStates));
-    return rcpp_result_gen;
-END_RCPP
-}
-// synthPopG
-List synthPopG(List marginals, NumericMatrix exoProbsIn);
-RcppExport SEXP _humanleague_synthPopG(SEXP marginalsSEXP, SEXP exoProbsInSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type exoProbsIn(exoProbsInSEXP);
-    rcpp_result_gen = Rcpp::wrap(synthPopG(marginals, exoProbsIn));
-    return rcpp_result_gen;
-END_RCPP
-}
-// synthPopR
-List synthPopR(List marginals, double rho);
-RcppExport SEXP _humanleague_synthPopR(SEXP marginalsSEXP, SEXP rhoSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
-    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
-    rcpp_result_gen = Rcpp::wrap(synthPopR(marginals, rho));
-    return rcpp_result_gen;
-END_RCPP
-}
 // ipf
 List ipf(NumericVector seed, List marginals);
 RcppExport SEXP _humanleague_ipf(SEXP seedSEXP, SEXP marginalsSEXP) {
@@ -73,18 +37,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type seed(seedSEXP);
     Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
     rcpp_result_gen = Rcpp::wrap(qsipf(seed, marginals));
-    return rcpp_result_gen;
-END_RCPP
-}
-// constrain
-List constrain(IntegerMatrix population, LogicalMatrix permittedStates);
-RcppExport SEXP _humanleague_constrain(SEXP populationSEXP, SEXP permittedStatesSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerMatrix >::type population(populationSEXP);
-    Rcpp::traits::input_parameter< LogicalMatrix >::type permittedStates(permittedStatesSEXP);
-    rcpp_result_gen = Rcpp::wrap(constrain(population, permittedStates));
     return rcpp_result_gen;
 END_RCPP
 }

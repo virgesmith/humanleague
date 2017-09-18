@@ -1,10 +1,12 @@
 
+#if 0
+
 #include "CQIWS.h"
 
 // private helper functions for CQIWS
 namespace {
 
-bool constraintMet(const NDArray<2, bool>& allowed, QIWS<2>::table_t& t)
+bool constraintMet(const NDArray<2, bool>& allowed, QIWS::table_t& t)
 {
   size_t index[2];
 
@@ -237,6 +239,7 @@ bool CQIWS::solve()
   return allZero;
 }
 
+#endif
 
 
 

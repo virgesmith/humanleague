@@ -193,6 +193,28 @@ int main()
 
     do2dIPF();
     do3dIPF();
+
+    {
+      wip::NDArray<double> r = reduce(a, std::vector<int64_t>{0,1});
+
+      std::cout << r.dim() << std::endl;
+      print(r.sizes());
+      print(r.rawData(), r.storageSize(), r.sizes()[1]);
+    }
+    {
+      wip::NDArray<double> r = reduce(a, std::vector<int64_t>{1,2});
+
+      std::cout << r.dim() << std::endl;
+      print(r.sizes());
+      print(r.rawData(), r.storageSize(), r.sizes()[1]);
+    }
+    {
+      wip::NDArray<double> r = reduce(a, std::vector<int64_t>{2, 0});
+
+      std::cout << r.dim() << std::endl;
+      print(r.sizes());
+      print(r.rawData(), r.storageSize(), r.sizes()[1]);
+    }
   }
 
   catch(const std::exception& e)

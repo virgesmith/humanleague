@@ -56,6 +56,11 @@ public:
     return m_idx;
   }
 
+  size_t size() const 
+  {
+    return m_idx.size();
+  }
+
   // allow modification of individual values
   int64_t& operator[](size_t i)
   {

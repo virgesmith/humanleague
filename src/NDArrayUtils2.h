@@ -47,6 +47,55 @@ std::vector<T> reduce(const wip::NDArray<T>& input, size_t orient)
   return sums;
 }
 
+template<typename T>
+wip::NDArray<T> reduce(const wip::NDArray<T>& input, const std::vector<int64_t>& preservedDims)
+{
+  const size_t reducedDim = preservedDims.size();
+  // check valid orientation
+  assert(reducedDim < input.dim());
+
+  std::vector<int64_t> preservedSizes(reducedDim);
+  for (size_t d = 0; d < reducedDim; ++d)
+  {
+    preservedSizes[d] = input.sizes()[preservedDims[d]];
+  }
+
+  wip::NDArray<T> reduced(preservedSizes);
+  reduced.assign(T(0));
+
+  Index rIndex(preservedSizes);
+  int64_t isize = input.dim();
+  for (Index index(input.sizes()); !index.end(); ++index)
+  {
+    // create smaller index
+    // TODO this only works for ordered indices
+    for (int64_t i = 0, j = 0; i < isize; ++i)
+    {
+      if (i == preservedDims[j])
+      {
+        rIndex[j] = index[i]; 
+        ++j;
+      }
+    }
+    //print((std::vector<int64_t>)rIndex);
+    reduced[rIndex] += input[index];
+  }
+  // Index indexer(input.sizes(), { orient, 0 });
+
+  // for (; !indexer.end(); ++indexer)
+  // {
+  //   // Pass index in directly to avoid
+  //   typename NDArray<T>::ConstIterator it(input, orient, indexer);
+  //   for(size_t i = 0; !it.end(); ++it, ++i)
+  //   {
+  //     sums[i] += *it;
+  //   }
+  // }
+
+  return reduced;
+}
+
+
 // take a D-1 dimensional slice at element index in orientation O
 template<typename T>
 wip::NDArray<T> slice(const wip::NDArray<T>& input, std::pair<int64_t, int64_t> index)

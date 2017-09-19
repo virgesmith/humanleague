@@ -2,7 +2,7 @@
 
 // Quasirandomly sampled IPF
 
-#include "IPF.h"
+#include "IPFOld.h"
 #include "Sobol.h"
 
 // TODO move somewhere appropriate (doesnt need to be member)

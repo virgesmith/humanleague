@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include "NDArray2.h"
-#include "NDArrayUtils2.h"
-#include "Index2.h"
+#include "NDArray.h"
+#include "NDArrayUtils.h"
+#include "Index.h"
 #include "Sobol.h"
 #include "DDWR.h"
 #include "StatFuncs.h"

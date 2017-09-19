@@ -22,7 +22,7 @@ cppmodule = Extension(
              'src/RQIWS.cpp',
              'src/GQIWS.cpp',
              'src/StatFuncs.cpp',
-             'src/NDArrayUtils2.cpp',
+             'src/NDArrayUtils.cpp',
              'src/Integerise.cpp',
              'humanleague/Object.cpp',
              'humanleague/py_api.cpp'],

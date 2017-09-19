@@ -7,9 +7,9 @@
 #include "src/RQIWS.h"
 #include "src/GQIWS.h"
 #include "src/Integerise.h"
-#include "src/IPF.h"
+#include "src/IPFOld.h"
 #include "src/QSIPF.h"
-#include "src/IPF2.h"
+#include "src/IPF.h"
 
 #include <Python.h>
 

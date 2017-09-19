@@ -4,14 +4,14 @@
 #include "src/Sobol.h"
 
 // deprecated
-#include "src/NDArrayUtils.h"
-#include "src/Index.h"
+#include "src/NDArrayUtilsOld.h"
+#include "src/IndexOld.h"
 
 // work-in-progress
-#include "src/NDArray2.h"
-#include "src/Index2.h"
-#include "src/NDArrayUtils2.h"
-#include "src/IPF2.h"
+#include "src/NDArray.h"
+#include "src/Index.h"
+#include "src/NDArrayUtils.h"
+#include "src/IPF.h"
 
 #include <iostream>
 

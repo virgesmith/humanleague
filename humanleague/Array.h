@@ -3,7 +3,7 @@
 
 #include "Object.h"
 #include "src/NDArray.h"
-#include "src/NDArray2.h"
+#include "src/NDArrayOld.h"
 
 #include <Python.h>
 #include <numpy/arrayobject.h>

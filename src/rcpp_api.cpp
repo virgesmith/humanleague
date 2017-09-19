@@ -28,7 +28,7 @@ using namespace Rcpp;
 // #include "RQIWS.h"
 // #include "GQIWS.h"
 //#include "IPF.h"
-#include "IPF2.h"
+#include "IPF.h"
 #include "QSIPF.h"
 #include "Integerise.h"
 

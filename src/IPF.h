@@ -42,11 +42,6 @@ public:
 
 protected:
 
-  static void rScale(NDArray<double>& result, const std::vector<std::vector<double>>& marginals);
-
-  static void rDiff(std::vector<std::vector<double>>& diffs, const NDArray<double>& result, const std::vector<std::vector<double>>& marginals);
-
-  // this is close to repeating the above
   bool computeErrors(std::vector<std::vector<double>>& diffs);
 
   static const size_t s_MAXITER = 10;

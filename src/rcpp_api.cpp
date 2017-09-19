@@ -70,37 +70,6 @@ DataFrame flatten(const size_t pop, const NDArray<uint32_t>& t)
   return DataFrame(proxyDf);
 }
 
-// template<typename S>
-// void doSolve(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m)
-// {
-//   S solver(m);
-//   result["method"] = "QIWS";
-//   result["conv"] = solver.solve();
-//   result["chiSq"] = solver.chiSq();
-//   std::pair<double, bool> pVal = solver.pValue();
-//   result["pValue"] = pVal.first;
-//   if (!pVal.second)
-//   {
-//     result["warning"] = "p-value may be inaccurate";
-//   }
-//   result["error.margins"] = std::vector<uint32_t>(solver.residuals(), solver.residuals() + S::Dim);
-//   const typename S::table_t& t = solver.result();
-//   const NDArray<S::Dim, double>& p = solver.stateProbabilities();
-//   Index<S::Dim, Index_Unfixed> idx(t.sizes());
-//   IntegerVector values(t.storageSize());
-//   NumericVector probs(t.storageSize());
-//   while (!idx.end())
-//   {
-//     values[idx.colMajorOffset()] = t[idx];
-//     probs[idx.colMajorOffset()] = p[idx];
-//     ++idx;
-//   }
-//   values.attr("dim") = dims;
-//   probs.attr("dim") = dims;
-//   result["p.hat"] = probs;
-//   result["x.hat"] = values;
-//   result["pop"] = flatten<S::Dim>(solver.population(), t);
-// }
 
 // void doSolveConstrained(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, const NDArray<2, bool>& permitted)
 // {
@@ -139,14 +108,7 @@ void doSolveGeneral(List& result, IntegerVector dims, const std::vector<std::vec
   GQIWS solver(m, exoProbs);
   result["method"] = "QIWS-G";
   result["conv"] = solver.solve();
-  //result["chiSq"] = solver.chiSq();
-  //std::pair<double, bool> pVal = solver.pValue();
-  //result["pValue"] = pVal.first;
-  // if (!pVal.second)
-  // {
-  //   result["warning"] = "p-value may be inaccurate";
-  // }
-  //result["error.margins"] = std::vector<uint32_t>(solver.residuals(), solver.residuals() + 2);
+
   const typename QIWS::table_t& t = solver.result();
   //
   // const NDArray<2, double>& p = solver.stateProbabilities();
@@ -435,44 +397,6 @@ List synthPopG(List marginals, NumericMatrix exoProbsIn)
 //   return result;
 // }
 
-// template<size_t D>
-// void doIPF(const std::vector<int64_t>& s, NumericVector seed, NumericVector r, const std::vector<std::vector<double>>& m,
-//            List& result)
-// {
-//   // Read-only shallow copy of seed
-//   const old::NDArray<D, double> seedwrapper(const_cast<int64_t*>(&s[0]), (double*)&seed[0]);
-//   // Do IPF
-//   old::IPF<D> ipf(seedwrapper, m);
-//   // Copy result data into R array
-//   const old::NDArray<D, double>& tmp = ipf.result();
-//   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
-//   result["conv"] = ipf.conv();
-//   result["result"] = r;
-//   result["pop"] = ipf.population();
-//   result["iterations"] = ipf.iters();
-//   result["errors"] = ipf.errors();
-//   result["maxError"] = ipf.maxError();
-// }
-//
-// template<size_t D>
-// void doQSIPF(const std::vector<int64_t>& s, NumericVector seed, IntegerVector r, const std::vector<std::vector<int64_t>>& m,
-//            List& result)
-// {
-//   // Read-only shallow copy of seed
-//   const old::NDArray<D, double> seedwrapper(const_cast<int64_t*>(&s[0]), (double*)&seed[0]);
-//   // Do IPF
-//   QSIPF<D> qsipf(seedwrapper, m);
-//   // Copy result data into R array
-//   const old::NDArray<D, int64_t>& tmp = qsipf.sample();
-//   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
-//   result["conv"] = qsipf.conv();
-//   result["result"] = r;
-//   result["pop"] = qsipf.population();
-//   result["iterations"] = qsipf.iters();
-//   result["chiSq"] = qsipf.chiSq();
-//   result["errors"] = qsipf.errors();
-//   result["maxError"] = qsipf.maxError();
-// }
 
 //' IPF
 //'
@@ -576,46 +500,6 @@ List qsipf(NumericVector seed, List marginals)
   result["errors"] = qsipf.errors();
   result["maxError"] = qsipf.maxError();
 
-  // // Workaround for fact that dimensionality is a template param and thus fixed at compile time
-  // switch(dim)
-  // {
-  // case 2:
-  //   doQSIPF<2>(s, seed, r, m, result);
-  //   break;
-  // case 3:
-  //   doQSIPF<3>(s, seed, r, m, result);
-  //   break;
-  // case 4:
-  //   doQSIPF<4>(s, seed, r, m, result);
-  //   break;
-  // case 5:
-  //   doQSIPF<5>(s, seed, r, m, result);
-  //   break;
-  // case 6:
-  //   doQSIPF<6>(s, seed, r, m, result);
-  //   break;
-  // case 7:
-  //   doQSIPF<7>(s, seed, r, m, result);
-  //   break;
-  // case 8:
-  //   doQSIPF<8>(s, seed, r, m, result);
-  //   break;
-  // case 9:
-  //   doQSIPF<9>(s, seed, r, m, result);
-  //   break;
-  // case 10:
-  //   doQSIPF<10>(s, seed, r, m, result);
-  //   break;
-  // case 11:
-  //   doQSIPF<11>(s, seed, r, m, result);
-  //   break;
-  // case 12:
-  //   doQSIPF<12>(s, seed, r, m, result);
-  //   break;
-  // default:
-  //   throw std::runtime_error("QSIPF only works for 2D - 12D problems");
-  // }
-
   return result;
 }
 
@@ -655,7 +539,7 @@ List qsipf(NumericVector seed, List marginals)
 //   return result;
 // }
 
-// ' Constrained a pregenerated population in 2 dimensions given a constraint matrix.
+// ' Constraine a pre-generated population in 2 dimensions given a constraint matrix.
 // '
 // ' Using an iterative algorithm, this function
 // ' adjusts a 2-dimensional population table, reassigning populations in disallowed states to allowed ones, preserving the two marginal distributions

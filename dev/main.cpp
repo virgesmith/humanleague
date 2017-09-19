@@ -25,7 +25,7 @@ void do2d()
 
   NDArray<double> s(size);
   s.assign(1.0);
-  //Index<2,Index_Unfixed> index(s.sizes());
+  //Index index(s.sizes());
   //s[index] = 0.5;
 
   QSIPF qsipf(s, m);
@@ -49,7 +49,7 @@ void do2dIPF()
 
   NDArray<double> s(size);
   s.assign(1.0);
-  //Index<2,Index_Unfixed> index(s.sizes());
+  //Index index(s.sizes());
   //s[index] = 0.5;
 
   IPF ipf(s, m);
@@ -107,7 +107,7 @@ void do3dIPF()
 
   NDArray<double> s(size);
   s.assign(1.0);
-  //Index<2,Index_Unfixed> index(s.sizes());
+  //Index index(s.sizes());
   //s[index] = 0.5;
 
   IPF ipf(s, m);
@@ -136,7 +136,7 @@ void do4d()
 
   NDArray<double> s(size);
   s.assign(1.0);
-  //Index<3,Index_Unfixed> index(s.sizes());
+  //Index index(s.sizes());
   //s[index] = 0.7;
 
   QSIPF qsipf(s, m);

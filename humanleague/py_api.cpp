@@ -460,7 +460,7 @@ PyMethodDef entryPoints[] = {
   {"ipf", humanleague_ipf, METH_VARARGS, "Synthpop (IPF)."},
   {"qsipf", humanleague_qsipf, METH_VARARGS, "Synthpop (quasirandom sampled IPF)."},
 //  {"synthPopR", humanleague_synthPopR, METH_VARARGS, "Synthpop correlated."},
-//  {"synthPopG", humanleague_synthPopG, METH_VARARGS, "Synthpop generalised."},
+  {"synthPopG", humanleague_synthPopG, METH_VARARGS, "Synthpop generalised."},
   {"numpytest", humanleague_numpytest, METH_VARARGS, "numpy test."},
   {"version", humanleague_version, METH_NOARGS, "version info"},
   {nullptr, nullptr, 0, nullptr}        /* terminator */

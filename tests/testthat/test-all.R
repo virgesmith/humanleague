@@ -199,8 +199,8 @@ test_that("QSIPF 2d nonunity seed", {
 
 test_that("QSIPF 3d unity seed", {
 
-  m0=c(52,48)
-  m1=c(10,77,13)
+  m0=c(10,77,13)
+  m1=c(52,48)
   m2=c(50,5,40,5)
 
   sizes = c(length(m0), length(m1), length(m2))
@@ -220,8 +220,8 @@ test_that("QSIPF 4d unity seed", {
 
   m0=c(52,48)
   m1=c(10,77,13)
-  m2=c(50,5,40,5)
-  m3=c(20,20,20,20,20)
+  m2=c(20,20,20,20,20)
+  m3=c(50,5,40,5)
 
   sizes = c(length(m0), length(m1), length(m2), length(m3))
 

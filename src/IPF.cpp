@@ -7,6 +7,38 @@
 
 #include <cmath>
 
+namespace {
+
+void rScale(NDArray<double>& result, const std::vector<std::vector<double>>& marginals)
+{
+  for (size_t d = 0; d < result.dim(); ++d)
+  {
+    const std::vector<double>& r = reduce<double>(result, d);
+    for (size_t p = 0; p < marginals[d].size(); ++p)
+    {
+      for (Index index(result.sizes(), { d, p }); !index.end(); ++index)
+      {
+        const std::vector<int64_t>& ref = index;
+        // avoid division by zero (assume 0/0 -> 0)
+        if (r[p] == 0.0 && marginals[d][ref[d]] != 0.0)
+          throw std::runtime_error("div0 in rScale with m>0");
+        if (r[p] != 0.0)
+          result[index] *= marginals[d][ref[d]] / r[p];
+        else
+          result[index] = 0.0;
+      }
+    }
+  }
+}
+
+void rDiff(std::vector<std::vector<double>>& diffs, const NDArray<double>& result, const std::vector<std::vector<double>>& marginals)
+{
+  int64_t n = result.dim();
+  for (int64_t d = 0; d < n; ++d)
+    diffs[d] = diff(reduce<double>(result, d), marginals[d]);
+}
+
+}
 
 // construct from fractional marginals
 IPF::IPF(const NDArray<double>& seed, const std::vector<std::vector<double>>& marginals)
@@ -98,39 +130,6 @@ size_t IPF::iters() const
   return m_iters;
 }
 
-
-// TODO move out of class
-void IPF::rScale(NDArray<double>& result, const std::vector<std::vector<double>>& marginals)
-{
-  for (size_t d = 0; d < result.dim(); ++d)
-  {
-    const std::vector<double>& r = reduce<double>(result, d);
-    for (size_t p = 0; p < marginals[d].size(); ++p)
-    {
-      for (Index index(result.sizes(), { d, p }); !index.end(); ++index)
-      {
-        const std::vector<int64_t>& ref = index;
-        // avoid division by zero (assume 0/0 -> 0)
-        if (r[p] == 0.0 && marginals[d][ref[d]] != 0.0)
-          throw std::runtime_error("div0 in rScale with m>0");
-        if (r[p] != 0.0)
-          result[index] *= marginals[d][ref[d]] / r[p];
-        else
-          result[index] = 0.0;
-      }
-    }
-  }
-}
-
-// TODO move out of class
-void IPF::rDiff(std::vector<std::vector<double>>& diffs, const NDArray<double>& result, const std::vector<std::vector<double>>& marginals)
-{
-  int64_t n = result.dim();
-  for (int64_t d = 0; d < n; ++d)
-    diffs[d] = diff(reduce<double>(result, d), marginals[d]);
-}
-
-// this is close to repeating the above
 bool IPF::computeErrors(std::vector<std::vector<double>>& diffs)
 {
   m_maxError = -std::numeric_limits<double>::max();

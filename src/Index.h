@@ -6,6 +6,8 @@
 #include <cstddef>
 #include <cassert>
 
+namespace old {
+
 // this may need to be moved to a cpp file to avoid linker errors
 static const size_t Index_Unfixed = std::numeric_limits<size_t>::max();
 
@@ -98,3 +100,4 @@ public:
 template<size_t C> class Index<0, C>;
 template<size_t C> class Index<1, C>;
 
+}

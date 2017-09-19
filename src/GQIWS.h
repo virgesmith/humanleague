@@ -17,7 +17,7 @@ class GQIWS : public QIWS
 {
 public:
 
-  GQIWS(const std::vector<marginal_t>& marginals, const NDArray<2, double>& exoProbs);
+  GQIWS(const std::vector<marginal_t>& marginals, const old::NDArray<2, double>& exoProbs);
 
   ~GQIWS() { }
 
@@ -30,7 +30,7 @@ public:
 
 private:
   // no copy semantics so just store a ref (possibly dangerous)
-  const NDArray<2, double>& m_exoprobs;
+  const old::NDArray<2, double>& m_exoprobs;
 
 };
 

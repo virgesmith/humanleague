@@ -5,8 +5,8 @@
 #include <cstddef>
 #include <cassert>
 
-//#include <Python.h>
-
+namespace old {
+  
 // The array storage
 template<size_t D, typename T>
 class NDArray
@@ -290,4 +290,4 @@ private:
 template<typename T> class NDArray<0, T>;
 template<typename T> class NDArray<1, T>;
 
-
+}

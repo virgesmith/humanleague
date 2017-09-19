@@ -61,6 +61,12 @@ public:
     return m_idx.size();
   }
 
+  // allow read-only access to individual values
+  const int64_t& operator[](size_t i) const
+  {
+    return m_idx[i];
+  }
+
   // allow modification of individual values
   int64_t& operator[](size_t i)
   {
@@ -103,16 +109,21 @@ public:
   bool m_atEnd;
 };
 
-// TODO mapped index containing pointers or refs to main index
 
+// Contains a mapping from a higher dimensionality to a lower one
 class MappedIndex
 {
 public:
   MappedIndex(Index& idx, const std::vector<int64_t>& mappedDimensions)
     : m_mappedIndex(mappedDimensions.size())
   {
+    int64_t n = idx.size();
+    (void)n; // avoid compiler warning about unused variable when assert exands to nothing
+    // TODO check mappedDimensions are unique 
     for (size_t d = 0; d < m_mappedIndex.size(); ++d)
     {
+      // check mappedDimensions are within dimension of index
+      assert(mappedDimensions[d] < n);
       m_mappedIndex[d] = &idx[mappedDimensions[d]];
     }
   }

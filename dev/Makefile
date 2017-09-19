@@ -1,6 +1,6 @@
-#PROJECT:=humanleague_dev
+PROJECT:=humanleague_dev
 
-src = main.cpp ../src/NDArrayUtils.cpp ../src/Sobol.cpp ../src/SobolImpl.cpp
+src = main.cpp ../src/NDArrayUtils2.cpp ../src/Sobol.cpp ../src/SobolImpl.cpp
 obj = $(src:.cpp=.o)
 dep = $(obj:.o=.d)
 
@@ -19,10 +19,9 @@ all: humanleague_dev
 
 #humanleague_dev: main.cpp ../src/NDArrayUtils.cpp ../src/Sobol.cpp ../src/SobolImpl.cpp
 humanleague_dev: $(obj)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LDFLAGS)
 
-#humanleague_dev32: main.cpp ../src/NDArrayUtils.cpp ../src/Sobol.cpp ../src/SobolImpl.cpp
-#	$(CXX) $(CXXFLAGS) -m32 -o $@ $^ $(LDFLAGS)
+# rule to make object files is somehow explicit
 
 %.d: %.cpp
 	@$(CXX) $(CXXFLAGS) $< -MM -MT $(@:.d=.o) >$@
@@ -31,7 +30,7 @@ humanleague_dev: $(obj)
 
 
 clean:
-	rm $(PROJECT) $(obj) $(dep)
+	rm -f $(PROJECT) $(obj) $(dep)
 
 .PHONY: all clean install
 

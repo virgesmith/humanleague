@@ -8,8 +8,55 @@
 #include <cassert>
 #include <iostream>
 
-namespace wip {
 
+int32_t maxAbsElement(const std::vector<int32_t>& r);
+
+std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vector<uint32_t>& y);
+std::vector<double> diff(const std::vector<double>& x, const std::vector<double>& y);
+
+bool allZeros(const std::vector<std::vector<int32_t>>& r);
+
+template<typename T>
+T sum(const std::vector<T>& v)
+{
+  return std::accumulate(v.begin(), v.end(), 0);
+}
+
+template<typename T>
+void print(const std::vector<T>& v, std::ostream& ostr = std::cout)
+{
+  for (size_t i = 0; i < v.size(); ++i)
+  {
+    ostr << v[i] << ", ";
+  }
+  ostr << std::endl;
+}
+
+template<typename T>
+void print(T* p, size_t n, size_t breakAt = 1000000, std::ostream& ostr = std::cout)
+{
+  for (size_t i = 0; i < n; ++i)
+  {
+    ostr << p[i] << ", ";
+    if (!((i+1) % breakAt))
+      ostr << std::endl;
+  }
+  ostr << std::endl;
+}
+
+
+template<typename T>
+bool isZero(const std::vector<T>& v)
+{
+  for (size_t i = 0; i < v.size(); ++i)
+  {
+    if (v[i] != 0)
+      return false;
+  }
+  return true;
+}
+
+namespace wip {
 
 template<typename T>
 T marginalProduct(const std::vector<std::vector<T>>& m, const std::vector<int64_t>& idx)
@@ -24,6 +71,7 @@ T marginalProduct(const std::vector<std::vector<T>>& m, const std::vector<int64_
   return p;
 }
 
+// Reduce n-D array to 1-D sums
 template<typename T>
 std::vector<T> reduce(const wip::NDArray<T>& input, size_t orient)
 {
@@ -47,6 +95,7 @@ std::vector<T> reduce(const wip::NDArray<T>& input, size_t orient)
   return sums;
 }
 
+// Reduce n-D array to m-D sums (where m<n)
 template<typename T>
 wip::NDArray<T> reduce(const wip::NDArray<T>& input, const std::vector<int64_t>& preservedDims)
 {
@@ -69,17 +118,6 @@ wip::NDArray<T> reduce(const wip::NDArray<T>& input, const std::vector<int64_t>&
   {
     reduced[rIndex] += input[index];
   }
-  // Index indexer(input.sizes(), { orient, 0 });
-
-  // for (; !indexer.end(); ++indexer)
-  // {
-  //   // Pass index in directly to avoid
-  //   typename NDArray<T>::ConstIterator it(input, orient, indexer);
-  //   for(size_t i = 0; !it.end(); ++it, ++i)
-  //   {
-  //     sums[i] += *it;
-  //   }
-  // }
 
   return reduced;
 }
@@ -112,24 +150,6 @@ wip::NDArray<T> slice(const wip::NDArray<T>& input, std::pair<int64_t, int64_t> 
   }
   return output;
 }
-
-// template<typename T, size_t O>
-// std::vector<double> slice(const NDArray<2, T>& input, size_t index)
-// {
-//   if (index >= input.sizes()[O])
-//     throw std::runtime_error("index out of bounds in slice");
-
-//   // 1-O will give the non-orientation size for D=2
-//   size_t remainingSize = input.sizes()[1 - O];
-
-//   std::vector<T> output(remainingSize);
-//   Index<2, O> inputIndex(input.sizes(), index);
-//   for(size_t outputIndex = 0;!inputIndex.end(); ++inputIndex, ++outputIndex)
-//   {
-//     output[outputIndex] = input[inputIndex];
-//   }
-//   return output;
-// }
 
 
 // Converts a D-dimensional population array into a list with D columns and pop rows

@@ -1,9 +1,11 @@
 
 #include "src/IPF.h"
 #include "src/QSIPF.h"
+#include "src/Sobol.h"
+
+// deprecated
 #include "src/NDArrayUtils.h"
 #include "src/Index.h"
-#include "src/Sobol.h"
 
 // work-in-progress
 #include "src/NDArray2.h"
@@ -22,7 +24,7 @@ void do2d()
                                     
   size_t size[2] = { m[0].size(), m[1].size() };                                        
 
-  NDArray<2, double> s(size);
+  old::NDArray<2, double> s(size);
   s.assign(1.0);
   //Index<2,Index_Unfixed> index(s.sizes());
   //s[index] = 0.5;
@@ -35,8 +37,8 @@ void do2d()
   std::cout << qsipf.conv() << ":" << qsipf.iters() << ":" << qsipf.chiSq() << std::endl;
   print(qsipf.result().rawData(), qsipf.result().storageSize(), m[1].size());
   print(qsipf.sample().rawData(), qsipf.sample().storageSize(), qsipf.sample().sizes()[1]);
-  print(reduce<2, int64_t, 0>(qsipf.sample()));
-  print(reduce<2, int64_t, 1>(qsipf.sample()));
+  print(old::reduce<2, int64_t, 0>(qsipf.sample()));
+  print(old::reduce<2, int64_t, 1>(qsipf.sample()));
 }
 
 void do2dIPF()
@@ -74,9 +76,9 @@ void do3d()
 
   size_t size[3] = { m[0].size(), m[1].size(), m[2].size() };                                        
 
-  NDArray<3, double> s(size);
+  old::NDArray<3, double> s(size);
   s.assign(1.0);
-  Index<3, Index_Unfixed> i(s.sizes());
+  old::Index<3, old::Index_Unfixed> i(s.sizes());
   s[i] = 1.0;
 
   QSIPF<3> qsipf(s, m);
@@ -91,9 +93,9 @@ void do3d()
 
   //print(pop.rawData(), pop.storageSize(), pop.sizes()[1]);
   print(qsipf.sample().rawData(), qsipf.sample().storageSize(), qsipf.sample().sizes()[1]);
-  print(reduce<3, int64_t, 0>(qsipf.sample()));
-  print(reduce<3, int64_t, 1>(qsipf.sample()));
-  print(reduce<3, int64_t, 2>(qsipf.sample()));
+  print(old::reduce<3, int64_t, 0>(qsipf.sample()));
+  print(old::reduce<3, int64_t, 1>(qsipf.sample()));
+  print(old::reduce<3, int64_t, 2>(qsipf.sample()));
 }
 
 void do3dIPF()
@@ -133,7 +135,7 @@ void do4d()
 
   size_t size[4] = { m[0].size(), m[1].size(), m[2].size(), m[3].size() };                                        
 
-  NDArray<4, double> s(size);
+  old::NDArray<4, double> s(size);
   s.assign(1.0);
   //Index<3,Index_Unfixed> index(s.sizes());
   //s[index] = 0.7;
@@ -147,10 +149,10 @@ void do4d()
   print(e[3]);
   std::cout << qsipf.conv() << ":" << qsipf.iters() << ":" << qsipf.chiSq() << std::endl;
   print(qsipf.sample().rawData(), qsipf.sample().storageSize(), m[1].size());
-  print(reduce<4, int64_t, 0>(qsipf.sample()));
-  print(reduce<4, int64_t, 1>(qsipf.sample()));
-  print(reduce<4, int64_t, 2>(qsipf.sample()));
-  print(reduce<4, int64_t, 3>(qsipf.sample()));
+  print(old::reduce<4, int64_t, 0>(qsipf.sample()));
+  print(old::reduce<4, int64_t, 1>(qsipf.sample()));
+  print(old::reduce<4, int64_t, 2>(qsipf.sample()));
+  print(old::reduce<4, int64_t, 3>(qsipf.sample()));
 }
 
 int main()
@@ -196,6 +198,7 @@ int main()
 
     {
       wip::NDArray<double> r = reduce(a, std::vector<int64_t>{0,1});
+
 
       std::cout << r.dim() << std::endl;
       print(r.sizes());

@@ -437,11 +437,11 @@ void doIPF(const std::vector<int64_t>& s, NumericVector seed, NumericVector r, c
            List& result)
 {
   // Read-only shallow copy of seed
-  const NDArray<D, double> seedwrapper(const_cast<int64_t*>(&s[0]), (double*)&seed[0]);
+  const old::NDArray<D, double> seedwrapper(const_cast<int64_t*>(&s[0]), (double*)&seed[0]);
   // Do IPF
   IPF<D> ipf(seedwrapper, m);
   // Copy result data into R array
-  const NDArray<D, double>& tmp = ipf.result();
+  const old::NDArray<D, double>& tmp = ipf.result();
   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
   result["conv"] = ipf.conv();
   result["result"] = r;
@@ -456,11 +456,11 @@ void doQSIPF(const std::vector<int64_t>& s, NumericVector seed, IntegerVector r,
            List& result)
 {
   // Read-only shallow copy of seed
-  const NDArray<D, double> seedwrapper(const_cast<int64_t*>(&s[0]), (double*)&seed[0]);
+  const old::NDArray<D, double> seedwrapper(const_cast<int64_t*>(&s[0]), (double*)&seed[0]);
   // Do IPF
   QSIPF<D> qsipf(seedwrapper, m);
   // Copy result data into R array
-  const NDArray<D, int64_t>& tmp = qsipf.sample();
+  const old::NDArray<D, int64_t>& tmp = qsipf.sample();
   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
   result["conv"] = qsipf.conv();
   result["result"] = r;

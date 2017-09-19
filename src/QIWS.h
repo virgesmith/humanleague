@@ -2,7 +2,6 @@
 #pragma once
 
 #include "NDArray2.h"
-#include "NDArrayUtils.h"
 #include "NDArrayUtils2.h"
 #include "Index2.h"
 #include "Sobol.h"
@@ -99,7 +98,7 @@ public:
     for (wip::Index index(m_t.sizes()); !index.end(); ++index)
     {
       // m is the mean population of this state
-      double m = marginalProduct<uint32_t>(m_marginals, index) * scale;
+      double m = wip::marginalProduct<uint32_t>(m_marginals, index) * scale;
       m_p[index] = m / m_sum;
       m_chi2 += (m_t[index] - m) * (m_t[index] - m) / m;
     }
@@ -144,7 +143,7 @@ protected:
   {
     for (size_t d = 0; d < r.size(); ++d)
     {
-      r[d] = diff(reduce<uint32_t>(m_t, d), m_marginals[d]);
+      r[d] = diff(wip::reduce<uint32_t>(m_t, d), m_marginals[d]);
     }
   }
 

@@ -3,6 +3,8 @@
 #include "NDArray.h"
 #include "NDArrayUtils.h"
 
+#include "NDArrayUtils2.h"
+
 #include <algorithm>
 #include <vector>
 //#include <array> sadly cant use this (easily) as length is defined in type
@@ -18,7 +20,7 @@ public:
   static const size_t Dim = D;
 
   // construct from factional marginals
-  IPF(const NDArray<D, double>& seed, const std::vector<std::vector<double>>& marginals)
+  IPF(const old::NDArray<D, double>& seed, const std::vector<std::vector<double>>& marginals)
   : m_result(seed.sizes()), m_marginals(marginals), m_errors(D), m_conv(false)
   {
     if (m_marginals.size() != Dim)
@@ -27,7 +29,7 @@ public:
   }
 
   // construct from integer marginals
-  IPF(const NDArray<D, double>& seed, const std::vector<std::vector<int64_t>>& marginals)
+  IPF(const old::NDArray<D, double>& seed, const std::vector<std::vector<int64_t>>& marginals)
   : m_result(seed.sizes()), m_marginals(D), m_errors(D), m_conv(false)
   {
     if (marginals.size() != Dim)
@@ -48,7 +50,7 @@ public:
 
   virtual ~IPF() { }
 
-  void solve(const NDArray<D, double>& seed)
+  void solve(const old::NDArray<D, double>& seed)
   {
     // reset convergence flag
     m_conv = false;
@@ -90,7 +92,7 @@ public:
     return m_population;
   }
 
-  const NDArray<Dim, double>& result() const
+  const old::NDArray<Dim, double>& result() const
   {
     return m_result;
   }
@@ -118,13 +120,13 @@ public:
 protected:
 
   template<size_t I>
-  static void rScale(NDArray<D, double>& result, const std::vector<std::vector<double>>& marginals)
+  static void rScale(old::NDArray<D, double>& result, const std::vector<std::vector<double>>& marginals)
   {
     const size_t Direction = I - 1;
-    const std::vector<double>& r = reduce<D, double, Direction>(result);
+    const std::vector<double>& r = old::reduce<D, double, Direction>(result);
     for (size_t p = 0; p < marginals[Direction].size(); ++p)
     {
-      for (Index<Dim, Direction> index(result.sizes(), p); !index.end(); ++index)
+      for (old::Index<Dim, Direction> index(result.sizes(), p); !index.end(); ++index)
       {
         // avoid division by zero (assume 0/0 -> 0)
         if (r[p] == 0.0 && marginals[Direction][index[Direction]] != 0.0)
@@ -139,10 +141,10 @@ protected:
   }
 
   template<size_t I>
-  static void rDiff(std::vector<std::vector<double>>& diffs, const NDArray<D, double>& result, const std::vector<std::vector<double>>& marginals)
+  static void rDiff(std::vector<std::vector<double>>& diffs, const old::NDArray<D, double>& result, const std::vector<std::vector<double>>& marginals)
   {
     const size_t Direction = I - 1;
-    diffs[Direction] = diff(reduce<Dim, double, Direction>(result), marginals[Direction]);
+    diffs[Direction] = diff(old::reduce<Dim, double, Direction>(result), marginals[Direction]);
     rDiff<I-1>(diffs, result, marginals);
   }
 
@@ -165,7 +167,7 @@ protected:
 
   static const size_t s_MAXITER = 10;
 
-  NDArray<Dim, double> m_result;
+  old::NDArray<Dim, double> m_result;
   std::vector<std::vector<double>> m_marginals;
   std::vector<std::vector<double>> m_errors;
   size_t m_population;
@@ -180,7 +182,7 @@ protected:
 # define SPECIALISE_RSCALE(d) \
 template<> \
 template<> \
-void IPF<d>::rScale<0>(NDArray<d, double>&, const std::vector<std::vector<double>>&) { }
+void IPF<d>::rScale<0>(old::NDArray<d, double>&, const std::vector<std::vector<double>>&) { }
 
 SPECIALISE_RSCALE(2)
 SPECIALISE_RSCALE(3)
@@ -198,7 +200,7 @@ SPECIALISE_RSCALE(12)
 # define SPECIALISE_RDIFF(d) \
 template<> \
 template<> \
-void IPF<d>::rDiff<0>(std::vector<std::vector<double>>&, const NDArray<d, double>&, const std::vector<std::vector<double>>&) { }
+void IPF<d>::rDiff<0>(std::vector<std::vector<double>>&, const old::NDArray<d, double>&, const std::vector<std::vector<double>>&) { }
 
 SPECIALISE_RDIFF(2)
 SPECIALISE_RDIFF(3)

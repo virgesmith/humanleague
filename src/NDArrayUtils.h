@@ -8,20 +8,7 @@
 #include <cassert>
 #include <iostream>
 
-
-int32_t maxAbsElement(const std::vector<int32_t>& r);
-
-// TODO try to template in T with make_signed<T> return?
-std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vector<uint32_t>& y);
-std::vector<double> diff(const std::vector<double>& x, const std::vector<double>& y);
-
-bool allZeros(const std::vector<std::vector<int32_t>>& r);
-
-template<typename T>
-T sum(const std::vector<T>& v)
-{
-  return std::accumulate(v.begin(), v.end(), 0);
-}
+namespace old {
 
 template<typename T>
 void print(const std::vector<T>& v, std::ostream& ostr = std::cout)
@@ -243,3 +230,4 @@ bool adjust(const std::vector<std::vector<int32_t>>& rs, NDArray<D, uint32_t>& t
   return !floored;
 }
 
+}

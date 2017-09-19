@@ -19,10 +19,10 @@
 #include <iostream>
 
 template<size_t D>
-pycpp::List flatten(const size_t pop, const NDArray<D, uint32_t>& t)
+pycpp::List flatten(const size_t pop, const old::NDArray<D, uint32_t>& t)
 {
   //print(t.rawData(), t.storageSize(), t.sizes()[1]);
-  const std::vector<std::vector<int>>& list = listify<D>(pop, t);
+  const std::vector<std::vector<int>>& list = old::listify<D>(pop, t);
   pycpp::List outer(D);
   for (size_t i = 0; i < D; ++i)
   {
@@ -70,7 +70,7 @@ pycpp::List flatten(const size_t pop, const wip::NDArray<uint32_t>& t)
 
 // TODO merge with above when APIs are consistent
 template<size_t D>
-void doSolveQSIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& seed, const std::vector<std::vector<int64_t>>& m)
+void doSolveQSIPF(pycpp::Dict& result, size_t dims, const old::NDArray<D, double>& seed, const std::vector<std::vector<int64_t>>& m)
 {
   QSIPF<D> qsipf(seed, m); 
   result.insert("conv", pycpp::Bool(qsipf.conv()));
@@ -78,7 +78,7 @@ void doSolveQSIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& se
   result.insert("pop", pycpp::Int(qsipf.population()));
   // result.insert("p-value", pycpp::Double(qiws.pValue().first));
   // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
-  result.insert("result", pycpp::Array<int64_t>(std::move(const_cast<NDArray<D, int64_t>&>(qsipf.sample()))));
+  result.insert("result", pycpp::Array<int64_t>(std::move(const_cast<old::NDArray<D, int64_t>&>(qsipf.sample()))));
 }
 
 extern "C" PyObject* humanleague_prob2IntFreq(PyObject* self, PyObject* args)
@@ -135,12 +135,12 @@ extern "C" PyObject* humanleague_sobol(PyObject *self, PyObject *args)
       return nullptr;
 
     size_t sizes[2] = { (size_t)length, (size_t)dim };
-    NDArray<2,double> sequence(sizes);
+    old::NDArray<2,double> sequence(sizes);
 
     Sobol sobol(dim, skips);
     double scale = 0.5 / (1u << 31);
 
-    for (Index<2, Index_Unfixed> idx(sizes); !idx.end(); ++idx)
+    for (old::Index<2, old::Index_Unfixed> idx(sizes); !idx.end(); ++idx)
     {
       sequence[idx] = sobol() * scale;
     }
@@ -438,9 +438,9 @@ extern "C" PyObject* humanleague_numpytest(PyObject *self, PyObject *args)
     long lsizes[] = {5,5};
     size_t sizes[] = {5,5};
 
-    NDArray<2,int64_t> a(sizes);
+    old::NDArray<2,int64_t> a(sizes);
     int i = 0;
-    for (Index<2, Index_Unfixed> idx(sizes); !idx.end(); ++idx)
+    for (old::Index<2, old::Index_Unfixed> idx(sizes); !idx.end(); ++idx)
     {
       a[idx] = ++i;
     }

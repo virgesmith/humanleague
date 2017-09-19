@@ -8,7 +8,7 @@ void unittest::testNDArray()
 {
   size_t s[3] = {5,2,3};
 
-  NDArray<3, uint32_t> a(s);
+  old::NDArray<3, uint32_t> a(s);
 
   CHECK(a.size(0) == 5);
   CHECK(a.size(1) == 2);
@@ -47,7 +47,7 @@ void unittest::testNDArray()
   {
     //std::cout << "dir0" << std::endl;
     size_t v[3] = { 0, a.size(1)-1, a.size(2)-1 };
-    NDArray<3, uint32_t>::ConstIterator<0> it(a, v);
+    old::NDArray<3, uint32_t>::ConstIterator<0> it(a, v);
     CHECK(*it == 12);
     CHECK(*++it == 112);
     CHECK(*++it == 212);
@@ -57,24 +57,24 @@ void unittest::testNDArray()
   {
     //std::cout << "dir1" << std::endl;
     size_t v[3] = { a.size(0)-1, 0, a.size(2)-1 };
-    NDArray<3, uint32_t>::ConstIterator<1> it(a, v);
+    old::NDArray<3, uint32_t>::ConstIterator<1> it(a, v);
     CHECK(*it == 402);
     CHECK(*++it == 412);
   }
   {
     //std::cout << "dir2" << std::endl;
     size_t v[3] = { a.size(0)-1, a.size(1)-1, 0 };
-    NDArray<3, uint32_t>::ConstIterator<2> it(a, v);
+    old::NDArray<3, uint32_t>::ConstIterator<2> it(a, v);
     CHECK(*it == 410);
     CHECK(*++it == 411);
     CHECK(*++it == 412);
   }
 
   size_t v[3] = {1, 1, 1};
-  NDArray<3, uint32_t>::Iterator<0> it(a,v);
+  old::NDArray<3, uint32_t>::Iterator<0> it(a,v);
   *it = 5;
   {
-    NDArray<3, uint32_t>::ConstIterator<0> it(a, v);
+    old::NDArray<3, uint32_t>::ConstIterator<0> it(a, v);
     CHECK(*it == 5);
     CHECK(*++it == 111);
     CHECK(*++it == 211);
@@ -83,6 +83,6 @@ void unittest::testNDArray()
   }
 
   std::vector<size_t> m(20,2); // 2^20 elements = ~4MB
-  NDArray<10, uint32_t> multid(&m[0]);
+  old::NDArray<10, uint32_t> multid(&m[0]);
 };
 

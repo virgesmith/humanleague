@@ -99,7 +99,7 @@ namespace pycpp {
 
     // Construct from NDArray<D,T>. Data is presumed to be copied
     template<size_t D>
-    explicit Array(NDArray<D, T>&& a) 
+    explicit Array(old::NDArray<D, T>&& a) 
       : Object(PyArray_SimpleNewFromData(D, 
                                          const_cast<npy_intp*>(a.sizesl()), 
                                          NpyType<T>::Type, 
@@ -155,12 +155,12 @@ namespace pycpp {
     }
 
     template<size_t D>
-    NDArray<D, T> toNDArray() const
+    old::NDArray<D, T> toNDArray() const
     {
       size_t sizes[D];
       for (size_t i = 0; i < D; ++i)
         sizes[i] = shape()[i];
-      NDArray<D, T> tmp(sizes);
+      old::NDArray<D, T> tmp(sizes);
       std::copy(rawData(), rawData() + tmp.storageSize(), const_cast<T*>(tmp.rawData()));
       return tmp;
     }

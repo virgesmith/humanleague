@@ -11,6 +11,7 @@
 
 #include <cmath>
 
+namespace old {
 
 template<size_t D>
 class IPF
@@ -221,3 +222,5 @@ template<> class IPF<1>;
 // remove macro pollution
 #undef SPECIALISE_RSCALE
 #undef SPECIALISE_RDIFF
+
+}

@@ -31,10 +31,10 @@ pycpp::List flatten(const size_t pop, const old::NDArray<D, uint32_t>& t)
   return outer;
 }
 
-pycpp::List flatten(const size_t pop, const wip::NDArray<uint32_t>& t)
+pycpp::List flatten(const size_t pop, const NDArray<uint32_t>& t)
 {
   //print(t.rawData(), t.storageSize(), t.sizes()[1]);
-  const std::vector<std::vector<int>>& list = wip::listify(pop, t);
+  const std::vector<std::vector<int>>& list = listify(pop, t);
   pycpp::List outer(t.dim());
   for (size_t i = 0; i < t.dim(); ++i)
   {
@@ -193,13 +193,13 @@ extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
     //const NDArray<2, double>& x = seed.toNDArray<2>();
 
 //void doSolveIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& seed, const std::vector<std::vector<double>>& m)
-    wip::IPF ipf(seed.toWipNDArray(), marginals); 
+    IPF ipf(seed.toWipNDArray(), marginals); 
     retval.insert("conv", pycpp::Bool(ipf.conv()));
     // result.insert("p-value", pycpp::Double(qiws.pValue().first));
     // result.insert("chiSq", pycpp::Double(qiws.chiSq()));
     retval.insert("pop", pycpp::Double(ipf.population()));
     // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
-    retval.insert("result", pycpp::Array<double>(std::move(const_cast<wip::NDArray<double>&>(ipf.result()))));
+    retval.insert("result", pycpp::Array<double>(std::move(const_cast<NDArray<double>&>(ipf.result()))));
 
     return retval.release();
   }

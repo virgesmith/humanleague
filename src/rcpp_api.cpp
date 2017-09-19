@@ -52,9 +52,9 @@ using namespace Rcpp;
 //void (*oldhandler)(int) = signal(SIGINT, sigint_handler);
 
 // Flatten N-D population array into N*P table
-DataFrame flatten(const size_t pop, const wip::NDArray<uint32_t>& t)
+DataFrame flatten(const size_t pop, const NDArray<uint32_t>& t)
 {
-  std::vector<std::vector<int>> list = wip::listify(pop, t);
+  std::vector<std::vector<int>> list = listify(pop, t);
 
   // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
   List proxyDf;
@@ -277,14 +277,14 @@ List synthPop(List marginals)
   }
   result["error.margins"] = solver.residuals();
   const typename QIWS::table_t& t = solver.result();
-  const wip::NDArray<double>& p = solver.stateProbabilities();
+  const NDArray<double>& p = solver.stateProbabilities();
 
   // Rcpp::Rcout << t.storageSize() << std::endl;
   // print(t.sizes(), Rcpp::Rcout);
 
   IntegerVector values(t.storageSize());
   NumericVector probs(t.storageSize());
-  for (wip::Index idx(t.sizes()); !idx.end(); ++idx)
+  for (Index idx(t.sizes()); !idx.end(); ++idx)
   {
     values[idx.colMajorOffset()] = t[idx];
     probs[idx.colMajorOffset()] = p[idx];
@@ -439,7 +439,7 @@ void doIPF(const std::vector<int64_t>& s, NumericVector seed, NumericVector r, c
   // Read-only shallow copy of seed
   const old::NDArray<D, double> seedwrapper(const_cast<int64_t*>(&s[0]), (double*)&seed[0]);
   // Do IPF
-  IPF<D> ipf(seedwrapper, m);
+  old::IPF<D> ipf(seedwrapper, m);
   // Copy result data into R array
   const old::NDArray<D, double>& tmp = ipf.result();
   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());

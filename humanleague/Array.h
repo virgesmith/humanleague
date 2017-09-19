@@ -111,7 +111,7 @@ namespace pycpp {
     }
     
     // Construct from NDArray<D,T>. Data is presumed to be copied
-    explicit Array(wip::NDArray<T>&& a) 
+    explicit Array(NDArray<T>&& a) 
       : Object(PyArray_SimpleNewFromData(a.dim(), 
                                          const_cast<npy_intp*>((npy_intp*)a.sizes().data()), 
                                          NpyType<T>::Type, 
@@ -165,13 +165,13 @@ namespace pycpp {
       return tmp;
     }
     
-    wip::NDArray<T> toWipNDArray() const
+    NDArray<T> toWipNDArray() const
     {
       const size_t dim = this->dim();
       std::vector<int64_t> sizes(dim);
       for (size_t i = 0; i < dim; ++i)
         sizes[i] = shape()[i];
-      wip::NDArray<T> tmp(sizes);
+      NDArray<T> tmp(sizes);
       std::copy(rawData(), rawData() + tmp.storageSize(), const_cast<T*>(tmp.rawData()));
       return tmp;
     }

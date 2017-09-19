@@ -57,7 +57,7 @@ void unittest::testQIWS()
       CHECK(qiws.solve());
       CHECK(qiws.pValue().first > 0.005);
 
-      const wip::NDArray<uint32_t>& a = qiws.result();
+      const NDArray<uint32_t>& a = qiws.result();
 
       CHECK(std::accumulate(a.rawData(), a.rawData() + a.storageSize(), 0) == std::accumulate(m[0].begin(), m[0].end(), 0));
     }
@@ -81,7 +81,7 @@ void unittest::testQIWS()
       // TODO investigate why this case consistently results in such a low p value
       //CHECK(qiws.pValue().first > 0.005);
 
-      const wip::NDArray<uint32_t>& a = qiws.result();
+      const NDArray<uint32_t>& a = qiws.result();
       CHECK(std::accumulate(a.rawData(), a.rawData() + a.storageSize(), 0) == std::accumulate(m[0].begin(), m[0].end(), 0));
     }
     {
@@ -91,7 +91,7 @@ void unittest::testQIWS()
       CHECK(qiws.solve());
       //CHECK(qiws.pValue().first > 0.005);
 
-      const wip::NDArray<uint32_t>& a = qiws.result();
+      const NDArray<uint32_t>& a = qiws.result();
       CHECK(std::accumulate(a.rawData(), a.rawData() + a.storageSize(), 0) == std::accumulate(m[0].begin(), m[0].end(), 0));
     }
     {
@@ -101,7 +101,7 @@ void unittest::testQIWS()
       CHECK(qiws.solve());
       CHECK(qiws.pValue().first > 0.005);
 
-      const wip::NDArray<uint32_t>& a = qiws.result();
+      const NDArray<uint32_t>& a = qiws.result();
       CHECK(std::accumulate(a.rawData(), a.rawData() + a.storageSize(), 0) == std::accumulate(m[0].begin(), m[0].end(), 0));
 
     }
@@ -116,7 +116,7 @@ void unittest::testQIWS()
       CHECK(qiws.solve());
       //CHECK(qiws.pValue().first  > 0.005); // arbitrary
 
-      const wip::NDArray<uint32_t>& a = qiws.result();
+      const NDArray<uint32_t>& a = qiws.result();
       CHECK(std::accumulate(a.rawData(), a.rawData() + a.storageSize(), 0) == std::accumulate(m[0].begin(), m[0].end(), 0));
     }
 
@@ -130,7 +130,7 @@ void unittest::testQIWS()
       CHECK(qiws.solve());
       //CHECK(qiws.pValue().first > 0.001); // arbitrary
 
-      const wip::NDArray<uint32_t>& a = qiws.result();
+      const NDArray<uint32_t>& a = qiws.result();
       CHECK(std::accumulate(a.rawData(), a.rawData() + a.storageSize(), 0) == std::accumulate(m[0].begin(), m[0].end(), 0));
     }
 

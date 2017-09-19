@@ -11,7 +11,6 @@
 #include "src/NDArray.h"
 #include "src/Index.h"
 #include "src/NDArrayUtils.h"
-#include "src/IPF.h"
 
 #include <iostream>
 
@@ -48,20 +47,20 @@ void do2dIPF()
                                     
   std::vector<int64_t> size{ (int64_t)m[0].size(), (int64_t)m[1].size() };                                        
 
-  wip::NDArray<double> s(size);
+  NDArray<double> s(size);
   s.assign(1.0);
   //Index<2,Index_Unfixed> index(s.sizes());
   //s[index] = 0.5;
 
-  wip::IPF ipf(s, m);
+  IPF ipf(s, m);
 
   auto e = ipf.errors();
   print(e[0]);
   print(e[1]);
   std::cout << ipf.conv() << ":" << ipf.iters() << std::endl;
   print(ipf.result().rawData(), ipf.result().storageSize(), m[1].size());
-  print(wip::reduce(ipf.result(), 0));
-  print(wip::reduce(ipf.result(), 1));
+  print(reduce(ipf.result(), 0));
+  print(reduce(ipf.result(), 1));
 }
 
 
@@ -106,12 +105,12 @@ void do3dIPF()
   
   std::vector<int64_t> size{ (int64_t)m[0].size(), (int64_t)m[1].size(), (int64_t)m[2].size() };                                        
 
-  wip::NDArray<double> s(size);
+  NDArray<double> s(size);
   s.assign(1.0);
   //Index<2,Index_Unfixed> index(s.sizes());
   //s[index] = 0.5;
 
-  wip::IPF ipf(s, m);
+  IPF ipf(s, m);
 
   auto e = ipf.errors();
   print(e[0]);
@@ -119,9 +118,9 @@ void do3dIPF()
   print(e[2]);
   std::cout << ipf.conv() << ":" << ipf.iters() << std::endl;
   print(ipf.result().rawData(), ipf.result().storageSize(), m[1].size());
-  print(wip::reduce(ipf.result(), 0));
-  print(wip::reduce(ipf.result(), 1));
-  print(wip::reduce(ipf.result(), 2));
+  print(reduce(ipf.result(), 0));
+  print(reduce(ipf.result(), 1));
+  print(reduce(ipf.result(), 2));
 }
 
 
@@ -164,31 +163,31 @@ int main()
     do4d();
 
     std::vector<int64_t> s{3,2,5};
-    wip::NDArray<double> a(s);
+    NDArray<double> a(s);
     a.assign(1.0);
-    for (wip::Index index(a.sizes(), {0,1}); !index.end(); ++index)
+    for (Index index(a.sizes(), {0,1}); !index.end(); ++index)
     {
       ++a[index];
     }
-    for (wip::Index index(a.sizes(), {1,0}); !index.end(); ++index)
+    for (Index index(a.sizes(), {1,0}); !index.end(); ++index)
     {
       ++a[index];
     }
-    for (wip::Index index(a.sizes(), {2,2}); !index.end(); ++index)
+    for (Index index(a.sizes(), {2,2}); !index.end(); ++index)
     {
       ++a[index];
     }
     print(a.rawData(), a.storageSize(), s[2]);
 
-    print(wip::reduce(a, 0));
-    print(wip::reduce(a, 1));
-    print(wip::reduce(a, 2));
+    print(reduce(a, 0));
+    print(reduce(a, 1));
+    print(reduce(a, 2));
 
     for (size_t d = 0; d < a.dim(); ++d)
     {
       for (int64_t i = 0; i < a.sizes()[d]; ++i)
       {
-        wip::NDArray<double> a00 = wip::slice(a, {d,i});
+        NDArray<double> a00 = slice(a, {d,i});
         print(a00.rawData(), a00.storageSize());//, a00.sizes()[1]);
       }
     }
@@ -197,7 +196,7 @@ int main()
     do3dIPF();
 
     {
-      wip::NDArray<double> r = reduce(a, std::vector<int64_t>{0,1});
+      NDArray<double> r = reduce(a, std::vector<int64_t>{0,1});
 
 
       std::cout << r.dim() << std::endl;
@@ -205,14 +204,14 @@ int main()
       print(r.rawData(), r.storageSize(), r.sizes()[1]);
     }
     {
-      wip::NDArray<double> r = reduce(a, std::vector<int64_t>{1,2});
+      NDArray<double> r = reduce(a, std::vector<int64_t>{1,2});
 
       std::cout << r.dim() << std::endl;
       print(r.sizes());
       print(r.rawData(), r.storageSize(), r.sizes()[1]);
     }
     {
-      wip::NDArray<double> r = reduce(a, std::vector<int64_t>{2, 0});
+      NDArray<double> r = reduce(a, std::vector<int64_t>{2, 0});
 
       std::cout << r.dim() << std::endl;
       print(r.sizes());

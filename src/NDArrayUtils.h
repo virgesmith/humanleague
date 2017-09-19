@@ -44,7 +44,6 @@ void print(T* p, size_t n, size_t breakAt = 1000000, std::ostream& ostr = std::c
   ostr << std::endl;
 }
 
-
 template<typename T>
 bool isZero(const std::vector<T>& v)
 {
@@ -55,8 +54,6 @@ bool isZero(const std::vector<T>& v)
   }
   return true;
 }
-
-namespace wip {
 
 template<typename T>
 T marginalProduct(const std::vector<std::vector<T>>& m, const std::vector<int64_t>& idx)
@@ -73,7 +70,7 @@ T marginalProduct(const std::vector<std::vector<T>>& m, const std::vector<int64_
 
 // Reduce n-D array to 1-D sums
 template<typename T>
-std::vector<T> reduce(const wip::NDArray<T>& input, size_t orient)
+std::vector<T> reduce(const NDArray<T>& input, size_t orient)
 {
   // check valid orientation
   assert(orient < input.dim());
@@ -97,7 +94,7 @@ std::vector<T> reduce(const wip::NDArray<T>& input, size_t orient)
 
 // Reduce n-D array to m-D sums (where m<n)
 template<typename T>
-wip::NDArray<T> reduce(const wip::NDArray<T>& input, const std::vector<int64_t>& preservedDims)
+NDArray<T> reduce(const NDArray<T>& input, const std::vector<int64_t>& preservedDims)
 {
   const size_t reducedDim = preservedDims.size();
   // check valid orientation
@@ -109,7 +106,7 @@ wip::NDArray<T> reduce(const wip::NDArray<T>& input, const std::vector<int64_t>&
     preservedSizes[d] = input.sizes()[preservedDims[d]];
   }
 
-  wip::NDArray<T> reduced(preservedSizes);
+  NDArray<T> reduced(preservedSizes);
   reduced.assign(T(0));
 
   Index index(input.sizes());
@@ -125,7 +122,7 @@ wip::NDArray<T> reduce(const wip::NDArray<T>& input, const std::vector<int64_t>&
 
 // take a D-1 dimensional slice at element index in orientation O
 template<typename T>
-wip::NDArray<T> slice(const wip::NDArray<T>& input, std::pair<int64_t, int64_t> index)
+NDArray<T> slice(const NDArray<T>& input, std::pair<int64_t, int64_t> index)
 {
   if ((size_t)index.first >= input.dim())
     throw std::runtime_error("dimension out of bounds in slice");
@@ -153,27 +150,4 @@ wip::NDArray<T> slice(const wip::NDArray<T>& input, std::pair<int64_t, int64_t> 
 
 
 // Converts a D-dimensional population array into a list with D columns and pop rows
-inline std::vector<std::vector<int>> listify(const size_t pop, const wip::NDArray<uint32_t>& t)
-{
-  std::vector<std::vector<int>> list(t.dim(), std::vector<int>(pop));
-  wip::Index index(t.sizes());
-
-  size_t pindex = 0;
-  while (!index.end())
-  {
-    for (size_t i = 0; i < t[index]; ++i)
-    {
-      const std::vector<int64_t>& ref = index;
-      for (size_t j = 0; j < t.dim(); ++j)
-      {
-        list[j][pindex] = ref[j];
-      }
-      ++pindex;
-    }
-    ++index;
-  }
-  return list;
-}
-
-
-}
+std::vector<std::vector<int>> listify(const size_t pop, const NDArray<uint32_t>& t);

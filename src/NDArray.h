@@ -7,8 +7,6 @@
 #include <cstddef>
 #include <cassert>
 
-namespace wip {
-
 // The array storage
 template<typename T>
 class NDArray
@@ -24,7 +22,7 @@ public:
 
   typedef T& reference;
 
-  // RW iterator over one dimension (O) of an n-D array given an index
+  // RO iterator over one dimension (O) of an n-D array given an index
   class ConstIterator
   {
   public:
@@ -64,7 +62,7 @@ public:
     std::vector<int64_t> m_idx;
   };
 
-//   // RO iterator over one dimension (O) of an n-D array given an index
+//   // RW iterator over one dimension (O) of an n-D array given an index
 //   template<size_t O>
 //   class Iterator
 //   {
@@ -302,5 +300,3 @@ private:
   bool m_owned;
 };
 
-
-}

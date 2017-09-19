@@ -15,7 +15,7 @@ class QIWS
 {
 public:
 
-  typedef wip::NDArray<uint32_t> table_t;
+  typedef NDArray<uint32_t> table_t;
 
   typedef std::vector<uint32_t> marginal_t;
 
@@ -71,7 +71,7 @@ public:
 
     m_t.assign(0u);
 
-    wip::Index idx(m_t.sizes());
+    Index idx(m_t.sizes());
     for (size_t j = 0; j < m_sum; ++j)
     {
       for (size_t i = 0; i < m_dim; ++i)
@@ -95,10 +95,10 @@ public:
 
     double scale = 1.0 / std::pow(m_sum, m_dim-1);
 
-    for (wip::Index index(m_t.sizes()); !index.end(); ++index)
+    for (Index index(m_t.sizes()); !index.end(); ++index)
     {
       // m is the mean population of this state
-      double m = wip::marginalProduct<uint32_t>(m_marginals, index) * scale;
+      double m = marginalProduct<uint32_t>(m_marginals, index) * scale;
       m_p[index] = m / m_sum;
       m_chi2 += (m_t[index] - m) * (m_t[index] - m) / m;
     }
@@ -132,7 +132,7 @@ public:
   }
 
   // the mean population of each state
-  const wip::NDArray<double>& stateProbabilities() const
+  const NDArray<double>& stateProbabilities() const
   {
     return m_p;
   }
@@ -143,7 +143,7 @@ protected:
   {
     for (size_t d = 0; d < r.size(); ++d)
     {
-      r[d] = diff(wip::reduce<uint32_t>(m_t, d), m_marginals[d]);
+      r[d] = diff(reduce<uint32_t>(m_t, d), m_marginals[d]);
     }
   }
 
@@ -151,7 +151,7 @@ protected:
   const std::vector<marginal_t> m_marginals;
   table_t m_t;
   // probabilities for each state
-  wip::NDArray<double> m_p;
+  NDArray<double> m_p;
   // total population
   size_t m_sum;
   // difference between table sums (over single dim) and marginal sum

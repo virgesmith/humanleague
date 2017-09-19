@@ -80,12 +80,12 @@ void getIndex<2>(const old::NDArray<2, double>& p, const std::vector<uint32_t>& 
 
 // TODO IPF should be member not super
 template<size_t D>
-class QSIPF : public IPF<D>
+class QSIPF : public old::IPF<D>
 {
 public:
   // TODO marginal values must be integers
   QSIPF(const old::NDArray<D, double>& seed, const std::vector<std::vector<int64_t>>& marginals)
-  : IPF<D>(seed, marginals), m_sample(seed.sizes()), m_ipfSolution(seed.sizes()), m_recalcs(0)
+  : old::IPF<D>(seed, marginals), m_sample(seed.sizes()), m_ipfSolution(seed.sizes()), m_recalcs(0)
   {
     m_originalPopulation = this->m_population;
     std::copy(this->m_result.rawData(), this->m_result.rawData() + this->m_result.storageSize(), const_cast<double*>(m_ipfSolution.rawData()));

@@ -1,7 +1,9 @@
-#if 0
 
 #include "GQIWS.h"
+
 #include "Index.h"
+#include "Sobol.h"
+#include "DDWR.h"
 
 //#define NO_R
 
@@ -16,36 +18,33 @@
 // private helper functions for CQIWS
 namespace {
 
-bool constraintMet(const NDArray<2, bool>& allowed, QIWS<2>::table_t& t)
+bool constraintMet(const NDArray<bool>& allowed, QIWS::table_t& t)
 {
-  size_t index[2];
-
-  // Loop over all states, until no population in forbidden states
-  for (index[0] = 0; index[0] < t.sizes()[0]; ++index[0])
-    for (index[1] = 0; index[1] < t.sizes()[1]; ++index[1])
-    {
-      if (!allowed[index] && t[index])
-        return false;
-    }
-    return true;
+  for (Index index(t.sizes()); !index.end(); ++index)
+  {
+    if (!allowed[index] && t[index])
+    return false;
+  }
+  return true;
 }
 
-bool switchOne(size_t* forbiddenIndex, const NDArray<2, bool>& allowedStates, QIWS<2>::table_t& pop)
+bool switchOne(const Index& forbiddenIndex, const NDArray<bool>& allowedStates, QIWS::table_t& pop)
 {
+  // TODO why 1000?
   if (pop[forbiddenIndex] > 1000) return true;
 
   // TODO randomise starting index
-  size_t switchFromIndex[2];
+  std::vector<int64_t> switchFromIndex(2);
   size_t offset0 = std::rand() % pop.sizes()[0];
   size_t offset1 = std::rand() % pop.sizes()[1];
   //print(pop.rawData(), pop.storageSize(), pop.sizes()[1], Rcout);
   //Rcout << "Forbidden state is " << forbiddenIndex[0] << ", " << forbiddenIndex[1] << " value " << pop[forbiddenIndex] << std::endl;
   //Rcout << "Starting indices are " << offset0 << ", " << offset1 << std::endl;
   bool haveCachedSwitchState = false;
-  size_t cachedSwitchFromIndex[2];
-  for (size_t counter0 = 0; counter0 < pop.sizes()[0]; ++counter0)
+  std::vector<int64_t> cachedSwitchFromIndex(2);
+  for (int64_t counter0 = 0; counter0 < pop.sizes()[0]; ++counter0)
   {
-    for (size_t counter1 = 0; counter1 < pop.sizes()[1]; ++counter1)
+    for (int64_t counter1 = 0; counter1 < pop.sizes()[1]; ++counter1)
     {
       switchFromIndex[0] = (counter0 + offset0) % pop.sizes()[0];
       switchFromIndex[1] = (counter1 + offset1) % pop.sizes()[1];
@@ -53,8 +52,8 @@ bool switchOne(size_t* forbiddenIndex, const NDArray<2, bool>& allowedStates, QI
       if (switchFromIndex[0] == forbiddenIndex[0] || switchFromIndex[1] == forbiddenIndex[1])
         continue;
 
-      size_t switchToIndexA[2] = { forbiddenIndex[0], switchFromIndex[1] };
-      size_t switchToIndexB[2] = { switchFromIndex[0], forbiddenIndex[1] };
+      std::vector<int64_t> switchToIndexA{ forbiddenIndex[0], switchFromIndex[1] };
+      std::vector<int64_t> switchToIndexB{ switchFromIndex[0], forbiddenIndex[1] };
 
       // Prefer if both switch-to states are allowed
       if ((allowedStates[switchToIndexA] && allowedStates[switchToIndexB])
@@ -84,8 +83,8 @@ bool switchOne(size_t* forbiddenIndex, const NDArray<2, bool>& allowedStates, QI
   }
   if (haveCachedSwitchState)
   {
-    size_t switchToIndexA[2] = { forbiddenIndex[0], cachedSwitchFromIndex[1] };
-    size_t switchToIndexB[2] = { cachedSwitchFromIndex[0], forbiddenIndex[1] };
+    std::vector<int64_t> switchToIndexA{ forbiddenIndex[0], cachedSwitchFromIndex[1] };
+    std::vector<int64_t> switchToIndexB{ cachedSwitchFromIndex[0], forbiddenIndex[1] };
     // Rcout << "Found pairable state at " << cachedSwitchFromIndex[0] << ", " << cachedSwitchFromIndex[1] << std::endl;
     // Rcout << "Found 1/2 allowed state at " << switchToIndexA[0] << ", " << switchToIndexA[1] << std::endl;
     // Rcout << "Found 1/2 allowed state at " << switchToIndexB[0] << ", " << switchToIndexB[1] << std::endl;
@@ -98,7 +97,7 @@ bool switchOne(size_t* forbiddenIndex, const NDArray<2, bool>& allowedStates, QI
   return false;
 }
 
-bool switchPop(size_t* forbiddenIndex, const NDArray<2, bool>& allowedStates, QIWS<2>::table_t& pop)
+bool switchPop(const Index& forbiddenIndex, const NDArray<bool>& allowedStates, QIWS::table_t& pop)
 {
   //print(pop.rawData(), pop.storageSize(), pop.sizes()[1], Rcout);
   //Rcout << "Forbidden state populated at " << forbiddenIndex[0] << ", " << forbiddenIndex[1] << std::endl;
@@ -117,26 +116,25 @@ bool switchPop(size_t* forbiddenIndex, const NDArray<2, bool>& allowedStates, QI
 }
 
 // stat
-ConstrainG::Status constrain(NDArray<2, uint32_t>& pop, const NDArray<2, bool>& allowedStates, const size_t iterLimit)
+ConstrainG::Status constrain(NDArray<uint32_t>& pop, const NDArray<bool>& allowedStates, const size_t iterLimit)
 {
   size_t iter = 0;
-  size_t idx[2];
   do
   {
+    
     // Loop over all states, until no population in forbidden states
-    for (idx[0] = 0; idx[0] < pop.sizes()[0]; ++idx[0])
-      for (idx[1] = 0; idx[1] < pop.sizes()[1]; ++idx[1])
+    for (Index idx(pop.sizes()); !idx.end(); ++idx)
+    {
+      if (!allowedStates[idx] && pop[idx])
       {
-        if (!allowedStates[idx] && pop[idx])
+        if (!switchPop(idx, allowedStates, pop))
         {
-          if (!switchPop(idx, allowedStates, pop))
-          {
-            //throw std::runtime_error("unable to correct for forbidden states");
-            return ConstrainG::STUCK;
-          }
+          //throw std::runtime_error("unable to correct for forbidden states");
+          return ConstrainG::STUCK;
         }
       }
-      ++iter;
+    }
+    ++iter;
   } while(iter < iterLimit && !constraintMet(allowedStates, pop));
 
   return iter == iterLimit ? ConstrainG::ITERLIMIT : ConstrainG::SUCCESS;
@@ -149,7 +147,7 @@ ConstrainG::Status constrain(NDArray<2, uint32_t>& pop, const NDArray<2, bool>& 
 class DynamicSampler
 {
 public:
-  DynamicSampler(const std::vector<std::vector<uint32_t>>& marginals, const NDArray<2,double>& exoProbs)
+  DynamicSampler(const std::vector<std::vector<uint32_t>>& marginals, const NDArray<double>& exoProbs)
     : m_exoProbs(exoProbs), m_p(exoProbs.sizes())
   {
     for (size_t i = 0; i < marginals.size(); ++i)
@@ -160,7 +158,7 @@ public:
 
   DynamicSampler(const DynamicSampler&) = delete;
 
-  bool sample(size_t n, Sobol& sobol, NDArray<2, uint32_t>& pop)
+  bool sample(size_t n, Sobol& sobol, NDArray<uint32_t>& pop)
   {
     m_marginalIntegrity = true;
     for (size_t i = 0; i < n; ++i)
@@ -177,7 +175,7 @@ public:
 
 private:
 
-  void sampleImpl(Sobol& sobol, NDArray<2, uint32_t>& pop)
+  void sampleImpl(Sobol& sobol, NDArray<uint32_t>& pop)
   {
     std::vector<double> m0(m_dists[0].size(), 0.0);
     std::vector<double> m1(m_dists[1].size(), 0.0);
@@ -193,7 +191,7 @@ private:
     // sample
     discrete_distribution_with_replacement<double> t0(m0.begin(), m0.end());
 
-    size_t idx[2];
+    std::vector<int64_t> idx(2);
 
     // sample dim 0
     uint32_t r = sobol();
@@ -204,7 +202,7 @@ private:
     if (m_marginalIntegrity)
     {
       // update m1 for selected given index of m0
-      for (idx[1] = 0; idx[1] < m_dists[1].size(); ++idx[1])
+      for (idx[1] = 0; idx[1] < (int64_t)m_dists[1].size(); ++idx[1])
       {
         m1[idx[1]] = m_p[idx];
       }
@@ -245,12 +243,12 @@ private:
   // TODO just return m0 (m1 is not worth computing at this stage)
   bool update(std::vector<double>& m0, std::vector<double>& m1)
   {
-    size_t idx[2];
+    std::vector<int64_t> idx(2);
     // multiply joint dist from current marginal freqs by exogenous probabilities
     double sum = 0.0;
-    for (idx[0] = 0; idx[0] < m_dists[0].size(); ++idx[0])
+    for (idx[0] = 0; idx[0] < (int64_t)m_dists[0].size(); ++idx[0])
     {
-      for (idx[1] = 0; idx[1] < m_dists[1].size(); ++idx[1])
+      for (idx[1] = 0; idx[1] < (int64_t)m_dists[1].size(); ++idx[1])
       {
         // marginals can go -ve, need these as zero probabilities
         m_p[idx] = m_exoProbs[idx] * std::max(0,m_dists[0][idx[0]]) * std::max(0,m_dists[1][idx[1]]);
@@ -281,9 +279,9 @@ private:
     if (sum == 0.0)
     {
       m_marginalIntegrity = false;
-      for (idx[0] = 0; idx[0] < m_dists[0].size(); ++idx[0])
+      for (idx[0] = 0; idx[0] < (int64_t)m_dists[0].size(); ++idx[0])
       {
-        for (idx[1] = 0; idx[1] < m_dists[1].size(); ++idx[1])
+        for (idx[1] = 0; idx[1] < (int64_t)m_dists[1].size(); ++idx[1])
         {
           // marginals can go -ve, need these as zero probabilities
           m_p[idx] = std::max(0,m_dists[0][idx[0]]) * std::max(0,m_dists[1][idx[1]]);
@@ -294,18 +292,18 @@ private:
       std::copy(m_dists[1].begin(), m_dists[1].end(), m1.begin());
     }
     //renomalise probabilities
-    for (idx[0] = 0; idx[0] < m_dists[0].size(); ++idx[0])
+    for (idx[0] = 0; idx[0] < (int64_t)m_dists[0].size(); ++idx[0])
     {
-      for (idx[1] = 0; idx[1] < m_dists[1].size(); ++idx[1])
+      for (idx[1] = 0; idx[1] < (int64_t)m_dists[1].size(); ++idx[1])
       {
         m_p[idx] /= sum;
       }
     }
-    for (idx[0] = 0; idx[0] < m_dists[0].size(); ++idx[0])
+    for (idx[0] = 0; idx[0] < (int64_t)m_dists[0].size(); ++idx[0])
     {
       m0[idx[0]] /= sum;
     }
-    for (idx[1] = 0; idx[1] < m_dists[1].size(); ++idx[1])
+    for (idx[1] = 0; idx[1] < (int64_t)m_dists[1].size(); ++idx[1])
     {
       m1[idx[1]] /= sum;
     }
@@ -315,18 +313,18 @@ private:
 public:
   std::vector<std::vector<int32_t>> m_dists;
   // dodgy ref storage at least efficient
-  const NDArray<2,double>& m_exoProbs;
+  const NDArray<double>& m_exoProbs;
   // joint dist incl exo probs
-  NDArray<2, double> m_p;
+  NDArray<double> m_p;
   // flag to indicate whether sampling has violated marginal constraints
   bool m_marginalIntegrity;
 };
 
 
-GQIWS::GQIWS(const std::vector<marginal_t>& marginals, const NDArray<2, double>& exoProbs)
-  : QIWS<2>(marginals), m_exoprobs(exoProbs)
+GQIWS::GQIWS(const std::vector<marginal_t>& marginals, const NDArray<double>& exoProbs)
+  : QIWS(marginals), m_exoprobs(exoProbs)
 {
-  for (Index<2, Index_Unfixed> index(exoProbs.sizes()); !index.end(); ++index)
+  for (Index index(exoProbs.sizes()); !index.end(); ++index)
   {
     if (m_exoprobs[index] < 0.0 || m_exoprobs[index] > 1.0)
       throw std::runtime_error("invalid exogenous probability");
@@ -337,7 +335,7 @@ bool GQIWS::solve()
 {
   // only initialised on first call, ensures different population each time
   // will throw when it reaches 2^32 samples
-  static Sobol sobol(Dim/*, m_sum*/);
+  static Sobol sobol(m_dim/*, m_sum*/);
   //static std::mt19937 sobol(70858048);
 
   bool success = false;
@@ -355,9 +353,9 @@ bool GQIWS::solve()
   // switch population out of zero-probability states
   if (!success)
   {
-    NDArray<2,bool> permitted(m_t.sizes());
+    NDArray<bool> permitted(m_t.sizes());
 
-    for (Index<2, Index_Unfixed> index(permitted.sizes()); !index.end(); ++index)
+    for (Index index(permitted.sizes()); !index.end(); ++index)
     {
       permitted[index] = m_exoprobs[index] > 0.0;
     }
@@ -371,7 +369,6 @@ bool GQIWS::solve()
   return success;
 }
 
-#endif
 
 
 

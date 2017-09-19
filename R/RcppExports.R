@@ -14,6 +14,10 @@ synthPop <- function(marginals) {
     .Call('_humanleague_synthPop', PACKAGE = 'humanleague', marginals)
 }
 
+synthPopG <- function(marginals, exoProbsIn) {
+    .Call('_humanleague_synthPopG', PACKAGE = 'humanleague', marginals, exoProbsIn)
+}
+
 #' IPF
 #'
 #' C++ IPF implementation

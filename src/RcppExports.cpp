@@ -16,6 +16,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// synthPopG
+List synthPopG(List marginals, NumericMatrix exoProbsIn);
+RcppExport SEXP _humanleague_synthPopG(SEXP marginalsSEXP, SEXP exoProbsInSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type exoProbsIn(exoProbsInSEXP);
+    rcpp_result_gen = Rcpp::wrap(synthPopG(marginals, exoProbsIn));
+    return rcpp_result_gen;
+END_RCPP
+}
 // ipf
 List ipf(NumericVector seed, List marginals);
 RcppExport SEXP _humanleague_ipf(SEXP seedSEXP, SEXP marginalsSEXP) {

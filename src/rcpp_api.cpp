@@ -26,11 +26,11 @@ using namespace Rcpp;
 #include "QIWS.h"
 // #include "CQIWS.h"
 // #include "RQIWS.h"
-// #include "GQIWS.h"
-//#include "IPF.h"
+#include "GQIWS.h"
 #include "IPF.h"
 #include "QSIPF.h"
 #include "Integerise.h"
+#include "StatFuncs.h"
 
 #include "UnitTester.h"
 
@@ -131,38 +131,38 @@ DataFrame flatten(const size_t pop, const NDArray<uint32_t>& t)
 //   result["pop"] = flatten<2>(solver.population(), t);
 // }
 //
-// void doSolveGeneral(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, const NDArray<2, double>& exoProbs)
-// {
-//   GQIWS solver(m, exoProbs);
-//   result["method"] = "QIWS-G";
-//   result["conv"] = solver.solve();
-//   //result["chiSq"] = solver.chiSq();
-//   //std::pair<double, bool> pVal = solver.pValue();
-//   //result["pValue"] = pVal.first;
-//   // if (!pVal.second)
-//   // {
-//   //   result["warning"] = "p-value may be inaccurate";
-//   // }
-//   //result["error.margins"] = std::vector<uint32_t>(solver.residuals(), solver.residuals() + 2);
-//   const typename QIWS<2>::table_t& t = solver.result();
-//   //
-//   // const NDArray<2, double>& p = solver.stateProbabilities();
-//   Index<2, Index_Unfixed> idx(t.sizes());
-//   IntegerVector values(t.storageSize());
-//   // NumericVector probs(t.storageSize());
-//   while (!idx.end())
-//   {
-//     values[idx.colMajorOffset()] = t[idx];
-//   //   probs[idx.colMajorOffset()] = p[idx];
-//     ++idx;
-//   }
-//   values.attr("dim") = dims;
-//   // probs.attr("dim") = dims;
-//   // result["p.hat"] = probs;
-//   result["x.hat"] = values;
-//   result["pop"] = flatten<2>(solver.population(), t);
-// }
-//
+void doSolveGeneral(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, const NDArray<double>& exoProbs)
+{
+  GQIWS solver(m, exoProbs);
+  result["method"] = "QIWS-G";
+  result["conv"] = solver.solve();
+  //result["chiSq"] = solver.chiSq();
+  //std::pair<double, bool> pVal = solver.pValue();
+  //result["pValue"] = pVal.first;
+  // if (!pVal.second)
+  // {
+  //   result["warning"] = "p-value may be inaccurate";
+  // }
+  //result["error.margins"] = std::vector<uint32_t>(solver.residuals(), solver.residuals() + 2);
+  const typename QIWS::table_t& t = solver.result();
+  //
+  // const NDArray<2, double>& p = solver.stateProbabilities();
+  Index idx(t.sizes());
+  IntegerVector values(t.storageSize());
+  // NumericVector probs(t.storageSize());
+  while (!idx.end())
+  {
+    values[idx.colMajorOffset()] = t[idx];
+  //   probs[idx.colMajorOffset()] = p[idx];
+    ++idx;
+  }
+  values.attr("dim") = dims;
+  // probs.attr("dim") = dims;
+  // result["p.hat"] = probs;
+  result["x.hat"] = values;
+  result["pop"] = flatten(solver.population(), t);
+}
+
 // void doSolveCorrelated(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, double rho)
 // {
 //   RQIWS solver(m, rho);
@@ -357,47 +357,47 @@ List synthPop(List marginals)
 //
 //   return result;
 // }
-//
-//
-// // [[Rcpp::export]]
-// List synthPopG(List marginals, NumericMatrix exoProbsIn)
-// {
-//   if (marginals.size() != 2)
-//     throw std::runtime_error("CQIWS invalid dimensionality: " + std::to_string(marginals.size()));
-//
-//   std::vector<std::vector<uint32_t>> m(2);
-//
-//   const IntegerVector& iv0 = marginals[0];
-//   const IntegerVector& iv1 = marginals[1];
-//   IntegerVector dims(2);
-//   dims[0] = iv0.size();
-//   dims[1] = iv1.size();
-//   m[0].reserve(dims[0]);
-//   m[1].reserve(dims[1]);
-//   std::copy(iv0.begin(), iv0.end(), std::back_inserter(m[0]));
-//   std::copy(iv1.begin(), iv1.end(), std::back_inserter(m[1]));
-//
-//   if (exoProbsIn.rows() != dims[0] || exoProbsIn.cols() != dims[1])
-//     throw std::runtime_error("CQIWS invalid permittedStates matrix size");
-//
-//   size_t d[2] = { (size_t)dims[0], (size_t)dims[1] };
-//   NDArray<2,double> exoProbs(d);
-//
-//   for (d[0] = 0; d[0] < dims[0]; ++d[0])
-//   {
-//     for (d[1] = 0; d[1] < dims[1]; ++d[1])
-//     {
-//       exoProbs[d] = exoProbsIn(d[0],d[1]);
-//     }
-//   }
-//
-//   List result;
-//   doSolveGeneral(result, dims, m, exoProbs);
-//
-//   return result;
-// }
-//
-//
+
+
+// [[Rcpp::export]]
+List synthPopG(List marginals, NumericMatrix exoProbsIn)
+{
+  if (marginals.size() != 2)
+    throw std::runtime_error("CQIWS invalid dimensionality: " + std::to_string(marginals.size()));
+
+  std::vector<std::vector<uint32_t>> m(2);
+
+  const IntegerVector& iv0 = marginals[0];
+  const IntegerVector& iv1 = marginals[1];
+  IntegerVector dims(2);
+  dims[0] = iv0.size();
+  dims[1] = iv1.size();
+  m[0].reserve(dims[0]);
+  m[1].reserve(dims[1]);
+  std::copy(iv0.begin(), iv0.end(), std::back_inserter(m[0]));
+  std::copy(iv1.begin(), iv1.end(), std::back_inserter(m[1]));
+
+  if (exoProbsIn.rows() != dims[0] || exoProbsIn.cols() != dims[1])
+    throw std::runtime_error("CQIWS invalid permittedStates matrix size");
+
+  std::vector<int64_t> d{ dims[0], dims[1] };
+  NDArray<double> exoProbs(d);
+
+  for (d[0] = 0; d[0] < dims[0]; ++d[0])
+  {
+    for (d[1] = 0; d[1] < dims[1]; ++d[1])
+    {
+      exoProbs[d] = exoProbsIn(d[0],d[1]);
+    }
+  }
+
+  List result;
+  doSolveGeneral(result, dims, m, exoProbs);
+
+  return result;
+}
+
+
 // //' Generate a correlated population in 2 dimensions given 2 marginals and a flat correlation.
 // //'
 // //' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
@@ -471,8 +471,6 @@ void doQSIPF(const std::vector<int64_t>& s, NumericVector seed, IntegerVector r,
   result["maxError"] = qsipf.maxError();
 }
 
-#ifndef USE_NEW_NDARRAY
-
 //' IPF
 //'
 //' C++ IPF implementation
@@ -481,79 +479,6 @@ void doQSIPF(const std::vector<int64_t>& s, NumericVector seed, IntegerVector r,
 //' @return an object containing: ...
 //' @export
 // [[Rcpp::export]]
-List ipf(NumericVector seed, List marginals)
-{
-  const size_t dim = marginals.size();
-
-  IntegerVector sizes = seed.attr("dim");
-  std::vector<std::vector<double>> m(dim);
-  std::vector<int64_t> s(dim);
-
-  if (sizes.size() != dim)
-    throw std::runtime_error("no. of marginals not equal to seed dimension");
-
-  // insert marginals in reverse order
-  for (size_t i = 0; i < dim; ++i)
-  {
-    const NumericVector& iv = marginals[i];
-    if (iv.size() != sizes[i])
-      throw std::runtime_error("seed-marginal size mismatch");
-    s[dim-i-1] = sizes[i];
-    m[dim-i-1].reserve(iv.size());
-    std::copy(iv.begin(), iv.end(), std::back_inserter(m[dim-i-1]));
-  }
-
-  //print(s);
-
-  // Deep copy of seed for result (preserves diimesion, values will be overwritten)
-  NumericVector r(seed);
-
-  List result;
-  // Workaround for fact that dimensionality is a template param and thus fixed at compile time
-  switch(dim)
-  {
-  case 2:
-    doIPF<2>(s, seed, r, m, result);
-    break;
-  case 3:
-    doIPF<3>(s, seed, r, m, result);
-    break;
-  case 4:
-    doIPF<4>(s, seed, r, m, result);
-    break;
-  case 5:
-    doIPF<5>(s, seed, r, m, result);
-    break;
-  case 6:
-    doIPF<6>(s, seed, r, m, result);
-    break;
-  case 7:
-    doIPF<7>(s, seed, r, m, result);
-    break;
-  case 8:
-    doIPF<8>(s, seed, r, m, result);
-    break;
-  case 9:
-    doIPF<9>(s, seed, r, m, result);
-    break;
-  case 10:
-    doIPF<10>(s, seed, r, m, result);
-    break;
-  case 11:
-    doIPF<11>(s, seed, r, m, result);
-    break;
-  case 12:
-    doIPF<12>(s, seed, r, m, result);
-    break;
-  default:
-    throw std::runtime_error("IPF only works for 2D - 12D problems");
-  }
-
-  return result;
-}
-
-#else
-
 List ipf(NumericVector seed, List marginals)
 {
   const size_t dim = marginals.size();
@@ -581,11 +506,11 @@ List ipf(NumericVector seed, List marginals)
 
   List result;
   // Read-only shallow copy of seed
-  const wip::NDArray<double> seedwrapper(s, (double*)&seed[0]);
+  const NDArray<double> seedwrapper(s, (double*)&seed[0]);
   // Do IPF
-  wip::IPF ipf(seedwrapper, m);
+  IPF ipf(seedwrapper, m);
   // Copy result data into R array
-  const wip::NDArray<double>& tmp = ipf.result();
+  const NDArray<double>& tmp = ipf.result();
   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
   result["conv"] = ipf.conv();
   result["result"] = r;
@@ -595,8 +520,6 @@ List ipf(NumericVector seed, List marginals)
   result["maxError"] = ipf.maxError();
   return result;
 }
-
-#endif
 
 //' QSIPF
 //'

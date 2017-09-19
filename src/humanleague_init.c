@@ -14,7 +14,7 @@ extern SEXP _humanleague_sobolSequence(SEXP, SEXP, SEXP);
 extern SEXP _humanleague_synthPop(SEXP);
 //extern SEXP _humanleague_synthPopC(SEXP, SEXP);
 //extern SEXP _humanleague_synthPopR(SEXP, SEXP);
-//extern SEXP _humanleague_synthPopG(SEXP, SEXP);
+extern SEXP _humanleague_synthPopG(SEXP, SEXP);
 extern SEXP _humanleague_ipf(SEXP, SEXP);
 extern SEXP _humanleague_qsipf(SEXP, SEXP);
 //extern SEXP _humanleague_constrain(SEXP, SEXP);
@@ -28,7 +28,7 @@ static const R_CallMethodDef CallEntries[] = {
   {"humanleague_synthPop",      (DL_FUNC) &_humanleague_synthPop,      1},
 //  {"humanleague_synthPopC",      (DL_FUNC) &_humanleague_synthPopC,      2},
 //  {"humanleague_synthPopR",      (DL_FUNC) &_humanleague_synthPopC,      2},
-//  {"humanleague_synthPopG",      (DL_FUNC) &_humanleague_synthPopG,      2},
+  {"humanleague_synthPopG",      (DL_FUNC) &_humanleague_synthPopG,      2},
   {"humanleague_ipf",            (DL_FUNC) &_humanleague_ipf,            2},
   {"humanleague_qsipf",            (DL_FUNC) &_humanleague_qsipf,            2},
 //  {"humanleague_constrain",      (DL_FUNC) &_humanleague_constrain,      2},

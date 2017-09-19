@@ -240,55 +240,55 @@ test_that("QSIPF 4d unity seed", {
 
 ##### constrained
 
-# # bedrooms cannot exceed rooms
-# # assumes rooms={1,2...9+} and bedrooms={0,1...5+}
-# makeConstraint = function(r, b) {
-#   p = matrix(rep(T,length(r)*length(b)), nrow=length(r))
-#   for (i in 1:length(r)) {
-#     for (j in 1:length(b)) {
-#       if (j > i + 1)
-#         p[i,j] = F;
-#     }
-#   }
-#   return(p);
-# }
-#
-#
-# test_that("constrained1", {
-#  r = c(0, 3, 17, 124, 167, 79, 46, 22)
-#  b = c(0, 15, 165, 238, 33, 7)
-#  res = humanleague::synthPopG(list(r,b),makeConstraint(r,b))
-#  expect_equal(res$conv, TRUE)
-#  expect_equal(rowSums(res$x.hat), r)
-#  expect_equal(colSums(res$x.hat), b)
-# })
-#
-# test_that("constrained2", {
-#   r = c( 1, 1, 8, 3,84, 21, 4, 4, 1)
-#   b = c( 0, 8, 3, 113, 2, 1)
-#   res = humanleague::synthPopG(list(r,b),makeConstraint(r,b))
-#   expect_equal(res$conv, TRUE)
-#   expect_equal(rowSums(res$x.hat), r)
-#   expect_equal(colSums(res$x.hat), b)
-# })
-#
-# test_that("constrained3", {
-#   r = c( 1, 3, 7, 19, 96, 4, 5, 1, 1)
-#   b = c( 0, 7, 21, 109, 0, 0)
-#   res = humanleague::synthPopG(list(r,b),makeConstraint(r,b))
-#   expect_equal(res$conv, TRUE)
-#   expect_equal(rowSums(res$x.hat), r)
-#   expect_equal(colSums(res$x.hat), b)
-# })
-#
-# test_that("constrained4", {
-#   r = c( 1, 1, 12, 43, 45, 1, 6, 0, 2)
-#   b = c( 0, 7, 46, 54, 1, 3)
-#   res = humanleague::synthPopG(list(r,b),makeConstraint(r,b))
-#   expect_equal(res$conv, TRUE)
-#   expect_equal(rowSums(res$x.hat), r)
-#   expect_equal(colSums(res$x.hat), b)
-# })
+# bedrooms cannot exceed rooms
+# assumes rooms={1,2...9+} and bedrooms={0,1...5+}
+makeConstraint = function(r, b) {
+  p = matrix(rep(T,length(r)*length(b)), nrow=length(r))
+  for (i in 1:length(r)) {
+    for (j in 1:length(b)) {
+      if (j > i + 1)
+        p[i,j] = F;
+    }
+  }
+  return(p);
+}
+
+
+test_that("constrained1", {
+ r = c(0, 3, 17, 124, 167, 79, 46, 22)
+ b = c(0, 15, 165, 238, 33, 7)
+ res = humanleague::synthPopG(list(r,b),makeConstraint(r,b))
+ expect_equal(res$conv, TRUE)
+ expect_equal(rowSums(res$x.hat), r)
+ expect_equal(colSums(res$x.hat), b)
+})
+
+test_that("constrained2", {
+  r = c( 1, 1, 8, 3,84, 21, 4, 4, 1)
+  b = c( 0, 8, 3, 113, 2, 1)
+  res = humanleague::synthPopG(list(r,b),makeConstraint(r,b))
+  expect_equal(res$conv, TRUE)
+  expect_equal(rowSums(res$x.hat), r)
+  expect_equal(colSums(res$x.hat), b)
+})
+
+test_that("constrained3", {
+  r = c( 1, 3, 7, 19, 96, 4, 5, 1, 1)
+  b = c( 0, 7, 21, 109, 0, 0)
+  res = humanleague::synthPopG(list(r,b),makeConstraint(r,b))
+  expect_equal(res$conv, TRUE)
+  expect_equal(rowSums(res$x.hat), r)
+  expect_equal(colSums(res$x.hat), b)
+})
+
+test_that("constrained4", {
+  r = c( 1, 1, 12, 43, 45, 1, 6, 0, 2)
+  b = c( 0, 7, 46, 54, 1, 3)
+  res = humanleague::synthPopG(list(r,b),makeConstraint(r,b))
+  expect_equal(res$conv, TRUE)
+  expect_equal(rowSums(res$x.hat), r)
+  expect_equal(colSums(res$x.hat), b)
+})
 #
 # test_that("constrained5", {
 #   r = c(0, 3, 17, 124, 167, 79, 46, 22)

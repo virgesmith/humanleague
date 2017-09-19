@@ -229,6 +229,16 @@ public:
     return m_data[offset(index)];
   }
 
+  reference operator[](const std::vector<int64_t*>& index)
+  {
+    return m_data[offset(index)];
+  }
+
+  const_reference operator[](const std::vector<int64_t*>& index) const
+  {
+    return m_data[offset(index)];
+  }
+
   value_type* begin() const
   {
     return m_data;
@@ -256,6 +266,19 @@ private:
     {
       mult /= m_sizes[i];
       ret += mult * idx[i];
+    }
+    return ret;
+  }
+
+  size_t offset(const std::vector<int64_t*>& idx) const
+  {
+    // TODO this is pretty horrible, but it works.
+    size_t ret = 0;
+    size_t mult = m_storageSize;
+    for (size_t i = 0; i < m_dim; ++i)
+    {
+      mult /= m_sizes[i];
+      ret += mult * *idx[i];
     }
     return ret;
   }

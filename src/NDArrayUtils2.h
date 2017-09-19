@@ -63,21 +63,10 @@ wip::NDArray<T> reduce(const wip::NDArray<T>& input, const std::vector<int64_t>&
   wip::NDArray<T> reduced(preservedSizes);
   reduced.assign(T(0));
 
-  Index rIndex(preservedSizes);
-  int64_t isize = input.dim();
-  for (Index index(input.sizes()); !index.end(); ++index)
+  Index index(input.sizes());
+  MappedIndex rIndex(index, preservedDims);
+  for (; !index.end(); ++index)
   {
-    // create smaller index
-    // TODO this only works for ordered indices
-    for (int64_t i = 0, j = 0; i < isize; ++i)
-    {
-      if (i == preservedDims[j])
-      {
-        rIndex[j] = index[i]; 
-        ++j;
-      }
-    }
-    //print((std::vector<int64_t>)rIndex);
     reduced[rIndex] += input[index];
   }
   // Index indexer(input.sizes(), { orient, 0 });

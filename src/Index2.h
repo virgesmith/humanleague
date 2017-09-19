@@ -103,4 +103,28 @@ public:
   bool m_atEnd;
 };
 
+// TODO mapped index containing pointers or refs to main index
+
+class MappedIndex
+{
+public:
+  MappedIndex(Index& idx, const std::vector<int64_t>& mappedDimensions)
+    : m_mappedIndex(mappedDimensions.size())
+  {
+    for (size_t d = 0; d < m_mappedIndex.size(); ++d)
+    {
+      m_mappedIndex[d] = &idx[mappedDimensions[d]];
+    }
+  }
+
+  // TODO better to overload NDArray to take Index types???
+  operator const std::vector<int64_t*>&() const
+  {
+    return m_mappedIndex;
+  }
+
+private:
+  std::vector<int64_t*> m_mappedIndex;
+};
+
 }

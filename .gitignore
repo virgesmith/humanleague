@@ -4,8 +4,8 @@
 .Ruserdata
 build/
 node_modules/
-src/*.o
-src/*.d
+*.o
+*.d
 src/*.so
 src/*.dll
 *.log

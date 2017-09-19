@@ -1,6 +1,6 @@
 PROJECT:=humanleague_dev
 
-src = main.cpp ../src/NDArrayUtils.cpp ../src/Index.cpp ../src/Sobol.cpp ../src/SobolImpl.cpp ../src/StatFuncs.cpp ../src/IPF.cpp ../src/QIWS.cpp
+src = main.cpp ../src/NDArrayUtils.cpp ../src/Index.cpp ../src/Sobol.cpp ../src/SobolImpl.cpp ../src/StatFuncs.cpp ../src/IPF.cpp ../src/QSIPF.cpp ../src/QIWS.cpp
 obj = $(src:.cpp=.o)
 dep = $(obj:.o=.d)
 

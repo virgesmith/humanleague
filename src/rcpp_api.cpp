@@ -23,6 +23,8 @@ in the project's root directory, or at <http://www.gnu.org/licenses/>.
 #include <Rcpp.h>
 using namespace Rcpp;
 
+#include "NDArrayUtils.h"
+#include "Index.h"
 #include "QIWS.h"
 // #include "CQIWS.h"
 // #include "RQIWS.h"
@@ -31,6 +33,7 @@ using namespace Rcpp;
 #include "QSIPF.h"
 #include "Integerise.h"
 #include "StatFuncs.h"
+#include "Sobol.h"
 
 #include "UnitTester.h"
 
@@ -130,7 +133,7 @@ DataFrame flatten(const size_t pop, const NDArray<uint32_t>& t)
 //   result["x.hat"] = values;
 //   result["pop"] = flatten<2>(solver.population(), t);
 // }
-//
+
 void doSolveGeneral(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, const NDArray<double>& exoProbs)
 {
   GQIWS solver(m, exoProbs);
@@ -195,7 +198,7 @@ void doSolveGeneral(List& result, IntegerVector dims, const std::vector<std::vec
 //   result["pop"] = flatten<2>(solver.population(), t);
 // }
 
-// void doConstrain(List& result, NDArray<2, uint32_t>& population, const NDArray<2, bool>& permitted)
+// void doConstrain(List& result, NDArray<uint32_t>& population, const NDArray<bool>& permitted)
 // {
 //   Constrain::Status status = CQIWS::constrain(population, permitted, population.storageSize());
 //
@@ -432,44 +435,44 @@ List synthPopG(List marginals, NumericMatrix exoProbsIn)
 //   return result;
 // }
 
-template<size_t D>
-void doIPF(const std::vector<int64_t>& s, NumericVector seed, NumericVector r, const std::vector<std::vector<double>>& m,
-           List& result)
-{
-  // Read-only shallow copy of seed
-  const old::NDArray<D, double> seedwrapper(const_cast<int64_t*>(&s[0]), (double*)&seed[0]);
-  // Do IPF
-  old::IPF<D> ipf(seedwrapper, m);
-  // Copy result data into R array
-  const old::NDArray<D, double>& tmp = ipf.result();
-  std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
-  result["conv"] = ipf.conv();
-  result["result"] = r;
-  result["pop"] = ipf.population();
-  result["iterations"] = ipf.iters();
-  result["errors"] = ipf.errors();
-  result["maxError"] = ipf.maxError();
-}
-
-template<size_t D>
-void doQSIPF(const std::vector<int64_t>& s, NumericVector seed, IntegerVector r, const std::vector<std::vector<int64_t>>& m,
-           List& result)
-{
-  // Read-only shallow copy of seed
-  const old::NDArray<D, double> seedwrapper(const_cast<int64_t*>(&s[0]), (double*)&seed[0]);
-  // Do IPF
-  QSIPF<D> qsipf(seedwrapper, m);
-  // Copy result data into R array
-  const old::NDArray<D, int64_t>& tmp = qsipf.sample();
-  std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
-  result["conv"] = qsipf.conv();
-  result["result"] = r;
-  result["pop"] = qsipf.population();
-  result["iterations"] = qsipf.iters();
-  result["chiSq"] = qsipf.chiSq();
-  result["errors"] = qsipf.errors();
-  result["maxError"] = qsipf.maxError();
-}
+// template<size_t D>
+// void doIPF(const std::vector<int64_t>& s, NumericVector seed, NumericVector r, const std::vector<std::vector<double>>& m,
+//            List& result)
+// {
+//   // Read-only shallow copy of seed
+//   const old::NDArray<D, double> seedwrapper(const_cast<int64_t*>(&s[0]), (double*)&seed[0]);
+//   // Do IPF
+//   old::IPF<D> ipf(seedwrapper, m);
+//   // Copy result data into R array
+//   const old::NDArray<D, double>& tmp = ipf.result();
+//   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
+//   result["conv"] = ipf.conv();
+//   result["result"] = r;
+//   result["pop"] = ipf.population();
+//   result["iterations"] = ipf.iters();
+//   result["errors"] = ipf.errors();
+//   result["maxError"] = ipf.maxError();
+// }
+//
+// template<size_t D>
+// void doQSIPF(const std::vector<int64_t>& s, NumericVector seed, IntegerVector r, const std::vector<std::vector<int64_t>>& m,
+//            List& result)
+// {
+//   // Read-only shallow copy of seed
+//   const old::NDArray<D, double> seedwrapper(const_cast<int64_t*>(&s[0]), (double*)&seed[0]);
+//   // Do IPF
+//   QSIPF<D> qsipf(seedwrapper, m);
+//   // Copy result data into R array
+//   const old::NDArray<D, int64_t>& tmp = qsipf.sample();
+//   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
+//   result["conv"] = qsipf.conv();
+//   result["result"] = r;
+//   result["pop"] = qsipf.population();
+//   result["iterations"] = qsipf.iters();
+//   result["chiSq"] = qsipf.chiSq();
+//   result["errors"] = qsipf.errors();
+//   result["maxError"] = qsipf.maxError();
+// }
 
 //' IPF
 //'
@@ -557,45 +560,61 @@ List qsipf(NumericVector seed, List marginals)
   IntegerVector r(seed);
 
   List result;
-  // Workaround for fact that dimensionality is a template param and thus fixed at compile time
-  switch(dim)
-  {
-  case 2:
-    doQSIPF<2>(s, seed, r, m, result);
-    break;
-  case 3:
-    doQSIPF<3>(s, seed, r, m, result);
-    break;
-  case 4:
-    doQSIPF<4>(s, seed, r, m, result);
-    break;
-  case 5:
-    doQSIPF<5>(s, seed, r, m, result);
-    break;
-  case 6:
-    doQSIPF<6>(s, seed, r, m, result);
-    break;
-  case 7:
-    doQSIPF<7>(s, seed, r, m, result);
-    break;
-  case 8:
-    doQSIPF<8>(s, seed, r, m, result);
-    break;
-  case 9:
-    doQSIPF<9>(s, seed, r, m, result);
-    break;
-  case 10:
-    doQSIPF<10>(s, seed, r, m, result);
-    break;
-  case 11:
-    doQSIPF<11>(s, seed, r, m, result);
-    break;
-  case 12:
-    doQSIPF<12>(s, seed, r, m, result);
-    break;
-  default:
-    throw std::runtime_error("QSIPF only works for 2D - 12D problems");
-  }
+
+  // Read-only shallow copy of seed
+  const NDArray<double> seedwrapper(s, (double*)&seed[0]);
+  // Do IPF
+  QSIPF qsipf(seedwrapper, m);
+  // Copy result data into R array
+  const NDArray<int64_t>& tmp = qsipf.sample();
+  std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
+  result["conv"] = qsipf.conv();
+  result["result"] = r;
+  result["pop"] = qsipf.population();
+  result["iterations"] = qsipf.iters();
+  result["chiSq"] = qsipf.chiSq();
+  result["errors"] = qsipf.errors();
+  result["maxError"] = qsipf.maxError();
+
+  // // Workaround for fact that dimensionality is a template param and thus fixed at compile time
+  // switch(dim)
+  // {
+  // case 2:
+  //   doQSIPF<2>(s, seed, r, m, result);
+  //   break;
+  // case 3:
+  //   doQSIPF<3>(s, seed, r, m, result);
+  //   break;
+  // case 4:
+  //   doQSIPF<4>(s, seed, r, m, result);
+  //   break;
+  // case 5:
+  //   doQSIPF<5>(s, seed, r, m, result);
+  //   break;
+  // case 6:
+  //   doQSIPF<6>(s, seed, r, m, result);
+  //   break;
+  // case 7:
+  //   doQSIPF<7>(s, seed, r, m, result);
+  //   break;
+  // case 8:
+  //   doQSIPF<8>(s, seed, r, m, result);
+  //   break;
+  // case 9:
+  //   doQSIPF<9>(s, seed, r, m, result);
+  //   break;
+  // case 10:
+  //   doQSIPF<10>(s, seed, r, m, result);
+  //   break;
+  // case 11:
+  //   doQSIPF<11>(s, seed, r, m, result);
+  //   break;
+  // case 12:
+  //   doQSIPF<12>(s, seed, r, m, result);
+  //   break;
+  // default:
+  //   throw std::runtime_error("QSIPF only works for 2D - 12D problems");
+  // }
 
   return result;
 }
@@ -659,7 +678,7 @@ List qsipf(NumericVector seed, List marginals)
 // ' }
 // ' res = humanleague::synthPop(list(r,b)) # unconstrained synthesis
 // ' res = humanleague::constrain(res$x.hat, p)
-// // ' @export
+// ' @export
 // // [[Rcpp::export]]
 // List constrain(IntegerMatrix population, LogicalMatrix permittedStates)
 // {

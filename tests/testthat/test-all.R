@@ -289,7 +289,7 @@ test_that("constrained4", {
   expect_equal(rowSums(res$x.hat), r)
   expect_equal(colSums(res$x.hat), b)
 })
-#
+
 # test_that("constrained5", {
 #   r = c(0, 3, 17, 124, 167, 79, 46, 22)
 #   b = c(0, 15, 165, 238, 33, 7)

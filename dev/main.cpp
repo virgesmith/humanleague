@@ -21,14 +21,14 @@ void do2d()
   std::vector<std::vector<int64_t>> m = {std::vector<int64_t>{52, 48}, 
                                         std::vector<int64_t>{10, 77, 13}};
                                     
-  size_t size[2] = { m[0].size(), m[1].size() };                                        
+  std::vector<int64_t> size{ (int64_t)m[0].size(), (int64_t)m[1].size() };                                        
 
-  old::NDArray<2, double> s(size);
+  NDArray<double> s(size);
   s.assign(1.0);
   //Index<2,Index_Unfixed> index(s.sizes());
   //s[index] = 0.5;
 
-  QSIPF<2> qsipf(s, m);
+  QSIPF qsipf(s, m);
 
   auto e = qsipf.errors();
   print(e[0]);
@@ -36,8 +36,8 @@ void do2d()
   std::cout << qsipf.conv() << ":" << qsipf.iters() << ":" << qsipf.chiSq() << std::endl;
   print(qsipf.result().rawData(), qsipf.result().storageSize(), m[1].size());
   print(qsipf.sample().rawData(), qsipf.sample().storageSize(), qsipf.sample().sizes()[1]);
-  print(old::reduce<2, int64_t, 0>(qsipf.sample()));
-  print(old::reduce<2, int64_t, 1>(qsipf.sample()));
+  print(reduce<int64_t>(qsipf.sample(), 0));
+  print(reduce<int64_t>(qsipf.sample(), 1));
 }
 
 void do2dIPF()
@@ -73,14 +73,14 @@ void do3d()
   //                                       std::vector<int64_t>{126, 1, 1},
   //                                       std::vector<int64_t>{64, 64}};
 
-  size_t size[3] = { m[0].size(), m[1].size(), m[2].size() };                                        
+  std::vector<int64_t> size{ (int64_t)m[0].size(), (int64_t)m[1].size(), (int64_t)m[2].size() };                                        
 
-  old::NDArray<3, double> s(size);
+  NDArray<double> s(size);
   s.assign(1.0);
-  old::Index<3, old::Index_Unfixed> i(s.sizes());
+  Index i(s.sizes());
   s[i] = 1.0;
 
-  QSIPF<3> qsipf(s, m);
+  QSIPF qsipf(s, m);
 
   auto e = qsipf.errors();
   print(e[0]);
@@ -92,9 +92,9 @@ void do3d()
 
   //print(pop.rawData(), pop.storageSize(), pop.sizes()[1]);
   print(qsipf.sample().rawData(), qsipf.sample().storageSize(), qsipf.sample().sizes()[1]);
-  print(old::reduce<3, int64_t, 0>(qsipf.sample()));
-  print(old::reduce<3, int64_t, 1>(qsipf.sample()));
-  print(old::reduce<3, int64_t, 2>(qsipf.sample()));
+  print(reduce<int64_t>(qsipf.sample(), 0));
+  print(reduce<int64_t>(qsipf.sample(), 1));
+  print(reduce<int64_t>(qsipf.sample(), 2));
 }
 
 void do3dIPF()
@@ -132,14 +132,14 @@ void do4d()
                                         std::vector<int64_t>{67, 33},
                                         std::vector<int64_t>{55, 45}};
 
-  size_t size[4] = { m[0].size(), m[1].size(), m[2].size(), m[3].size() };                                        
+  std::vector<int64_t> size{ (int64_t)m[0].size(), (int64_t)m[1].size(), (int64_t)m[2].size(), (int64_t)m[3].size() };                                        
 
-  old::NDArray<4, double> s(size);
+  NDArray<double> s(size);
   s.assign(1.0);
   //Index<3,Index_Unfixed> index(s.sizes());
   //s[index] = 0.7;
 
-  QSIPF<4> qsipf(s, m);
+  QSIPF qsipf(s, m);
 
   auto e = qsipf.errors();
   print(e[0]);
@@ -148,10 +148,10 @@ void do4d()
   print(e[3]);
   std::cout << qsipf.conv() << ":" << qsipf.iters() << ":" << qsipf.chiSq() << std::endl;
   print(qsipf.sample().rawData(), qsipf.sample().storageSize(), m[1].size());
-  print(old::reduce<4, int64_t, 0>(qsipf.sample()));
-  print(old::reduce<4, int64_t, 1>(qsipf.sample()));
-  print(old::reduce<4, int64_t, 2>(qsipf.sample()));
-  print(old::reduce<4, int64_t, 3>(qsipf.sample()));
+  print(reduce<int64_t>(qsipf.sample(), 0));
+  print(reduce<int64_t>(qsipf.sample(), 1));
+  print(reduce<int64_t>(qsipf.sample(), 2));
+  print(reduce<int64_t>(qsipf.sample(), 3));
 }
 
 int main()

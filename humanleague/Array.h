@@ -155,7 +155,7 @@ namespace pycpp {
     }
 
     template<size_t D>
-    old::NDArray<D, T> toNDArray() const
+    old::NDArray<D, T> toNDArrayOld() const
     {
       size_t sizes[D];
       for (size_t i = 0; i < D; ++i)
@@ -165,7 +165,7 @@ namespace pycpp {
       return tmp;
     }
     
-    NDArray<T> toWipNDArray() const
+    NDArray<T> toNDArray() const
     {
       const size_t dim = this->dim();
       std::vector<int64_t> sizes(dim);

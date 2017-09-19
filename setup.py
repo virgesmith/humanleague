@@ -20,6 +20,7 @@ cppmodule = Extension(
   sources = ['src/Sobol.cpp',
              'src/SobolImpl.cpp',
              'src/IPF.cpp',
+             'src/QSIPF.cpp',
              'src/QIWS.cpp',
   #           'src/RQIWS.cpp',
              'src/GQIWS.cpp',

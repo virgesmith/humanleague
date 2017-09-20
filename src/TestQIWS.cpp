@@ -2,6 +2,7 @@
 #include "UnitTester.h"
 #include "QIWS.h"
 
+#include <numeric>
 
 void unittest::testQIWS()
 {

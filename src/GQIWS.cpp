@@ -5,6 +5,8 @@
 #include "Sobol.h"
 #include "DDWR.h"
 
+#include <cstdlib>
+
 //#define NO_R
 
 // #ifdef NO_R
@@ -35,8 +37,8 @@ bool switchOne(const Index& forbiddenIndex, const NDArray<bool>& allowedStates, 
 
   // TODO randomise starting index
   std::vector<int64_t> switchFromIndex(2);
-  size_t offset0 = std::rand() % pop.sizes()[0];
-  size_t offset1 = std::rand() % pop.sizes()[1];
+  size_t offset0 = rand() % pop.sizes()[0];
+  size_t offset1 = rand() % pop.sizes()[1];
   //print(pop.rawData(), pop.storageSize(), pop.sizes()[1], Rcout);
   //Rcout << "Forbidden state is " << forbiddenIndex[0] << ", " << forbiddenIndex[1] << " value " << pop[forbiddenIndex] << std::endl;
   //Rcout << "Starting indices are " << offset0 << ", " << offset1 << std::endl;

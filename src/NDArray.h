@@ -251,7 +251,7 @@ public:
   // relinqish ownership (caller must delete)
   void release()
   {
-    m_data = nullptr;
+    m_owned = false;
   }
 
 private:

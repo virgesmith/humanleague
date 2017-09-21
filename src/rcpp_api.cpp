@@ -410,7 +410,7 @@ List ipf(NumericVector seed, List marginals)
 {
   const size_t dim = marginals.size();
 
-  IntegerVector sizes = seed.attr("dim");
+  Dimension sizes = seed.attr("dim");
   std::vector<std::vector<double>> m(dim);
   std::vector<int64_t> s(dim);
 
@@ -428,13 +428,13 @@ List ipf(NumericVector seed, List marginals)
     std::copy(iv.begin(), iv.end(), std::back_inserter(m[dim-i-1]));
   }
 
-  // Deep copy of seed for result (preserves dimension, values will be overwritten)
-  NumericVector r(seed);
+  // Storage for result
+  NumericVector r(sizes);
 
   List result;
   // Read-only shallow copy of seed
   const NDArray<double> seedwrapper(s, (double*)&seed[0]);
-  // Do IPF
+  // Do IPF (could provide another ctor that takies preallocated memory for result)
   IPF ipf(seedwrapper, m);
   // Copy result data into R array
   const NDArray<double>& tmp = ipf.result();

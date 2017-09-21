@@ -22,6 +22,7 @@ T sum(const std::vector<T>& v)
   return std::accumulate(v.begin(), v.end(), 0);
 }
 
+// TODO move printing somehwere else
 template<typename T>
 void print(const std::vector<T>& v, std::ostream& ostr = std::cout)
 {
@@ -72,6 +73,22 @@ T marginalProduct(const std::vector<std::vector<T>>& m, const std::vector<int64_
 template<typename T>
 std::vector<T> reduce(const NDArray<T>& input, size_t orient)
 {
+  // // check valid orientation
+  // assert(orient < input.dim());
+
+  // std::vector<int64_t> preservedSizes(1, orient);
+
+  // std::vector<T> reduced(input.size(orient), T(0));
+  // //reduced.assign(T(0));
+
+  // Index index(input.sizes());
+  // //MappedIndex rIndex(index, preservedDims);
+  // for (; !index.end(); ++index)
+  // {
+  //   reduced[index[orient]] += input[index];
+  // }
+
+  // return reduced;
   // check valid orientation
   assert(orient < input.dim());
 

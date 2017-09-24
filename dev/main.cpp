@@ -12,6 +12,7 @@
 #include "src/Index.h"
 #include "src/NDArrayUtils.h"
 
+#include <map>
 #include <iostream>
 
 // TODO integer marginals
@@ -154,6 +155,77 @@ void do4d()
   print(reduce<int64_t>(qsipf.sample(), 3));
 }
 
+class MIPF
+{
+public:
+  typedef std::vector<int64_t> index_t;
+  typedef std::vector<index_t> index_list_t;
+  typedef NDArray<double> marginal_t;
+  typedef std::vector<marginal_t> marginal_list_t;
+
+  MIPF(const index_list_t& i, const marginal_list_t& m)
+  {
+    // i and m should be same size and >
+    if (i.size() != m.size() || i.size() < 2)
+      throw std::runtime_error("index and marginal lists differ in size or too small");
+
+    // count all unique values in i...
+    std::map<int64_t, int64_t> index_dim;   
+    for (size_t k = 0; k < i.size(); ++k)
+    {
+      if (i[k].size() != m[k].dim())
+        throw std::runtime_error("index/marginal dimension mismatch " + std::to_string(i[k].size()) + " vs " + std::to_string(m[k].dim()));
+      //std::cout << "index " << k << std::endl;
+      for (size_t j = 0; j < i[k].size(); ++j)
+      {
+        int64_t dim = i[k][j];
+        int64_t size = m[k].size(j);
+        // check if already entered that size is same
+        auto posit = index_dim.find(dim);
+        if (posit == index_dim.end())
+          index_dim.insert(std::make_pair(dim, size));
+        else if (posit->second != size)
+          throw std::runtime_error("mismatch at index " + std::to_string(k) + 
+            ": dimension " + std::to_string(dim) + " size " + std::to_string(posit->second) + " redefined to " + std::to_string(size));
+        //std::cout << "  " << dim << ":" << size << std::endl;
+      }
+    }
+
+    // check all dims defined
+    std::vector<int64_t> sizes;
+    sizes.reserve(i.size());
+    
+//    std::transform(index_dim.begin(), index_dim.end(), std::back_inserter(sizes),
+//      [](const std::map<int64_t,int64_t>::value_type& pair) { return pair.first; });
+
+    // we should expect that the index_dim map contains keys from 0 to index_dim.size()-1. if not throw
+    for (size_t k = 0; k < index_dim.size(); ++k)
+    {
+      auto it = index_dim.find(k);
+      if (it == index_dim.end())
+        throw std::runtime_error("dimension " + std::to_string(k) + " size not defined");
+      sizes.push_back(it->second);
+    }
+
+    for (size_t k = 0; k < sizes.size(); ++k)
+    {  
+      std::cout << k << ":" << sizes[k] << std::endl;
+    }
+  }
+};
+
+void doMd()
+{
+  std::vector<NDArray<double>> m;
+  std::vector<std::vector<int64_t>> i;
+  i.push_back(std::vector<int64_t>{0,1});
+  i.push_back(std::vector<int64_t>{2,1});
+  m.push_back(std::move(NDArray<double>(std::vector<int64_t>{2, 3})));
+  m.push_back(std::move(NDArray<double>(std::vector<int64_t>{5, 3})));
+  MIPF(i, m);
+  
+}
+
 int main()
 {
   try
@@ -217,8 +289,9 @@ int main()
       print(r.sizes());
       print(r.rawData(), r.storageSize(), r.sizes()[1]);
     }
-  }
 
+    doMd();
+  }
   catch(const std::exception& e)
   {
     std::cout << e.what() << std::endl;

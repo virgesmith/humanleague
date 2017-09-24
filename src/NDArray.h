@@ -145,6 +145,7 @@ public:
   // But allow move
   NDArray(NDArray&& a)
   {
+    m_dim = a.m_dim;
     m_sizes.swap(a.m_sizes);
     m_storageSize = a.m_storageSize;
     m_data = a.m_data;
@@ -200,7 +201,7 @@ public:
         m_storageSize *= sizes[i];
       }
 
-      // no realloc if storageSize unchanged
+      // no realloc if storageSize already big enough
       if (m_storageSize > oldStorageSize)
       {
         deallocate(m_data);

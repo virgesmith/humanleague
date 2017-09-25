@@ -69,45 +69,90 @@ T marginalProduct(const std::vector<std::vector<T>>& m, const std::vector<int64_
   return p;
 }
 
+// // Reduce n-D array to 1-D sums
+// template<typename T>
+// std::vector<T> reduce(const NDArray<T>& input, size_t orient)
+// {
+//   // // check valid orientation
+//   // assert(orient < input.dim());
+
+//   // std::vector<int64_t> preservedSizes(1, orient);
+
+//   // std::vector<T> reduced(input.size(orient), T(0));
+//   // //reduced.assign(T(0));
+
+//   // Index index(input.sizes());
+//   // //MappedIndex rIndex(index, preservedDims);
+//   // for (; !index.end(); ++index)
+//   // {
+//   //   reduced[index[orient]] += input[index];
+//   // }
+
+//   // return reduced;
+//   // check valid orientation
+//   assert(orient < input.dim());
+
+//   std::vector<T> sums(input.size(orient), 0);
+
+//   Index indexer(input.sizes(), { orient, 0 });
+
+//   for (; !indexer.end(); ++indexer)
+//   {
+//     // Pass index in directly to avoid
+//     typename NDArray<T>::ConstIterator it(input, orient, indexer);
+//     for(size_t i = 0; !it.end(); ++it, ++i)
+//     {
+//       sums[i] += *it;
+//     }
+//   }
+
+//   return sums;
+// }
+
+
+// // Reduce n-D array to 1-D sums
+// template<typename T>
+// std::vector<T> reduce(const NDArray<T>& input, size_t orient)
+// {
+//   const size_t n = input.size(orient);
+//   assert(orient < input.dim());
+
+//   std::vector<T> sums(n, T(0));
+
+//   // Loop over elements in the orient dimension
+//   for (size_t i = 0; i < n; ++i)
+//   {
+//     // sum over elements in all orther dims
+//     for (Index index(input.sizes(), { orient, i }); !index.end(); ++index)
+//     {
+//       sums[i] += input[index];
+//     }
+//   }
+
+//   return sums;
+// }
+
 // Reduce n-D array to 1-D sums
 template<typename T>
 std::vector<T> reduce(const NDArray<T>& input, size_t orient)
 {
-  // // check valid orientation
-  // assert(orient < input.dim());
-
-  // std::vector<int64_t> preservedSizes(1, orient);
-
-  // std::vector<T> reduced(input.size(orient), T(0));
-  // //reduced.assign(T(0));
-
-  // Index index(input.sizes());
-  // //MappedIndex rIndex(index, preservedDims);
-  // for (; !index.end(); ++index)
-  // {
-  //   reduced[index[orient]] += input[index];
-  // }
-
-  // return reduced;
-  // check valid orientation
+  const size_t n = input.size(orient);
   assert(orient < input.dim());
 
-  std::vector<T> sums(input.size(orient), 0);
+  std::vector<T> sums(n, T(0));
 
-  Index indexer(input.sizes(), { orient, 0 });
-
-  for (; !indexer.end(); ++indexer)
+  Index index(input.sizes());
+  const int64_t& k = index[orient];
+  for (; !index.end(); ++index)
   {
-    // Pass index in directly to avoid
-    typename NDArray<T>::ConstIterator it(input, orient, indexer);
-    for(size_t i = 0; !it.end(); ++it, ++i)
-    {
-      sums[i] += *it;
-    }
+    sums[k] += input[index];
   }
 
   return sums;
 }
+
+
+
 
 // Reduce n-D array to m-D sums (where m<n)
 template<typename T>

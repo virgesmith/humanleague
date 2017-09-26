@@ -23,6 +23,12 @@ T sum(const std::vector<T>& v)
 }
 
 template<typename T>
+T product(const std::vector<T>& v)
+{
+  return std::accumulate(v.begin(), v.end(), T(1), std::multiplies<T>());
+}
+
+template<typename T>
 T sum(const NDArray<T>& a)
 {
   return std::accumulate(a.rawData(), a.rawData() + a.storageSize(), T(0));

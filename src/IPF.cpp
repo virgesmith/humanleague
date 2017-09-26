@@ -88,11 +88,11 @@ void IPF::solve(const NDArray<double>& seed)
   }
   //print(m_result.rawData(), m_result.storageSize(), m_marginals[1].size());
 
+  std::vector<std::vector<double>> diffs(m_result.dim());
   for (m_iters = 0; !m_conv && m_iters < s_MAXITER; ++m_iters)
   {
     rScale(m_result, m_marginals);
     // inefficient copying?
-    std::vector<std::vector<double>> diffs(m_result.dim());
 
     rDiff(diffs, m_result, m_marginals);
 

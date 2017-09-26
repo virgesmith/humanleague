@@ -152,12 +152,47 @@ void do4d()
   print(reduce<int64_t>(qsipf.sample(), 3));
 }
 
+
+namespace {
+  
+void rScale(NDArray<double>& result, const std::vector<NDArray<double>>& marginals)
+{
+  for (size_t d = 0; d < result.dim(); ++d)
+  {
+    const std::vector<double>& r = reduce<double>(result, d);
+    for (size_t p = 0; p < marginals[d].size(); ++p)
+    {
+      for (Index index(result.sizes(), { d, p }); !index.end(); ++index)
+      {
+        const std::vector<int64_t>& ref = index;
+        // avoid division by zero (assume 0/0 -> 0)
+        if (r[p] == 0.0 && marginals[d][ref[d]] != 0.0)
+          throw std::runtime_error("div0 in rScale with m>0");
+        if (r[p] != 0.0)
+          result[index] *= marginals[d][ref[d]] / r[p];
+        else
+          result[index] = 0.0;
+      }
+    }
+  }
+}
+
+void rDiff(std::vector<NDArray<double>>& diffs, const NDArray<double>& result, const std::vector<NDArray<double>>& marginals)
+{
+  int64_t n = result.dim();
+  for (int64_t d = 0; d < n; ++d)
+    diffs[d] = diff(reduce<double>(result, d), marginals[d]);
+}
+
+}
+
+template<typename T>
 class MIPF
 {
 public:
   typedef std::vector<int64_t> index_t;
   typedef std::vector<index_t> index_list_t;
-  typedef NDArray<double> marginal_t;
+  typedef NDArray<T> marginal_t;
   typedef std::vector<marginal_t> marginal_list_t;
 
   typedef std::vector<std::pair<int64_t, int64_t>> marginal_indices_t;
@@ -267,7 +302,7 @@ public:
     }
   }
 
-  NDArray<double>& doSomething()
+  NDArray<double>& doP()
   {
     Index index_main(m_array.sizes());
 
@@ -278,20 +313,59 @@ public:
       mappings.push_back(MappedIndex(index_main, m_indices[k]));
     }
 
-    m_array.assign(0.0);
+    m_array.assign(1.0);
     for (; !index_main.end(); ++index_main)
     {
       for (size_t k = 0; k < m_marginals.size(); ++k)
       {
-        m_array[index_main] += m_marginals[k][mappings[k]];
+        m_array[index_main] *= m_marginals[k][mappings[k]];
       }
     }
+
+    double scale = 1.0 / sum(m_array);
+    for (Index index(m_array.sizes()); !index.end(); ++index)
+    {
+      m_array[index] *= scale;    
+    }
+
+
+    return m_array;
+  }
+
+  NDArray<double>& doIPF()
+  {
+    Index index_main(m_array.sizes());
+    
+    std::vector<MappedIndex> mappings;
+    mappings.reserve(m_marginals.size());
+    for (size_t k = 0; k < m_marginals.size(); ++k)
+    {
+      mappings.push_back(MappedIndex(index_main, m_indices[k]));
+    }
+
+    m_array.assign(1.0);
+
+
+
+    marginal_list_t diffs(m_marginals.size());
+    for (m_iters = 0; !m_conv && m_iters < 3; ++m_iters)
+    {
+      rScale(m_array, m_marginals);
+      // inefficient copying
+
+      rDiff(diffs, m_array, m_marginals);
+
+      m_conv = computeErrors(diffs);
+    }
+
     return m_array;
   }
 
 private:
 
   size_t m_dim;
+  size_t m_iters;
+  bool m_conv;
   index_list_t m_indices;
   marginal_list_t& m_marginals;
   marginal_indices_list_t m_dim_lookup;
@@ -305,10 +379,13 @@ void doMd()
   std::vector<std::vector<int64_t>> i;
   i.push_back(std::vector<int64_t>{0,1});
   i.push_back(std::vector<int64_t>{2,1});
+  //i.push_back(std::vector<int64_t>{2,0});
   NDArray<double> m0(std::vector<int64_t>{2, 3});
   m0.assign(15.0);
   NDArray<double> m1(std::vector<int64_t>{5, 3});
   m1.assign(6.0);
+  NDArray<double> m2(std::vector<int64_t>{5, 2});
+  m2.assign(9.0);
   // induce partial sum mismatch
   // Index idx(m1.sizes());
   // m1[idx] += 0.1;
@@ -316,9 +393,18 @@ void doMd()
 
   m.push_back(std::move(m0));
   m.push_back(std::move(m1));
-  MIPF mipf(i, m);
-  const auto& a = mipf.doSomething();
-  print(a.rawData(), a.storageSize());
+  //m.push_back(std::move(m2));
+  MIPF<double> mipf(i, m);
+  {
+    const auto& a = mipf.doP();
+    print(a.rawData(), a.storageSize());
+    std::cout << sum(a) << std::endl;
+  }
+  {
+    const auto& a = mipf.doIPF();
+    print(a.rawData(), a.storageSize());
+    std::cout << sum(a) << std::endl;
+  }
 }
 
 int main()
@@ -364,7 +450,6 @@ int main()
 
     {
       NDArray<double> r = reduce(a, std::vector<int64_t>{0,1});
-
 
       std::cout << r.dim() << std::endl;
       print(r.sizes());

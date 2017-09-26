@@ -170,7 +170,7 @@ public:
     return m_sizes[dim];
   }
 
-  const std::vector<int64_t>&  sizes() const
+  const std::vector<int64_t>& sizes() const
   {
     return m_sizes;
   }

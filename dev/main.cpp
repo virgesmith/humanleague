@@ -232,7 +232,7 @@ public:
       const marginal_indices_t& mi = m_dim_lookup[d];
       if (mi.size() < 2)
         continue;
-      //                                                marginal index          marginal dimension
+      //                                     marginal index            marginal dimension
       const std::vector<double>& ms = reduce(m_marginals[mi[0].first], mi[0].second);
       for (size_t i = 1; i < mi.size(); ++i)
       {
@@ -270,30 +270,35 @@ public:
     }
   }
 
+
+  std::vector<MappedIndex> makeMappings(const Index& index_main)
+  {
+    std::vector<MappedIndex> mappings;
+    mappings.reserve(m_marginals.size());
+    for (size_t k = 0; k < m_marginals.size(); ++k)
+    {
+      mappings.push_back(MappedIndex(index_main, m_indices[k]));
+    }
+    return mappings;
+  }
+
   bool computeErrors(std::vector<NDArray<double>>& diffs)
   {
-    double maxError = -std::numeric_limits<double>::max();
+    m_maxError = -std::numeric_limits<double>::max();
 
-    Index main_index(m_array.sizes());
-    // create mapped indices
-    for (; !main_index.end(); ++main_index)
+    // // create mapped indices
+    // const std::vector<MappedIndex>& mapped = makeMappings(main_index);
+    for (size_t k = 0; k < diffs.size(); ++k)
     {
-      // loop over mapped indices
-      //diffs[k] = marginals[k][mapped[k]] - m_array[main_index]
-
+      for (Index index(diffs[k].sizes()); !index.end(); ++index)
+      {
+        double e = std::fabs(diffs[k][index]);
+        m_errors[k][index] = e;
+        m_maxError = std::max(m_maxError, e);
+      }
     }
 
-
-    // for (size_t k = 0; k < m_result.dim(); ++d)
-    // {
-    //   for (size_t i = 0; i < diffs[d].size(); ++i)
-    //   {
-    //     double e = std::fabs(diffs[d][i]);
-    //     m_errors[d][i] = e;
-    //     m_maxError = std::max(m_maxError, e);
-    //   }
-    // }
-    return maxError < 1e-8/*m_tol*/;
+    return m_maxError < m_tol;
   }  
 
   void rDiff(std::vector<NDArray<double>>& diffs, const NDArray<double>& result, const std::vector<NDArray<double>>& marginals)
@@ -301,6 +306,22 @@ public:
     int64_t n = m_indices.size();
     for (int64_t k = 0; k < n; ++k)
       diff(reduce<double>(result, m_indices[k]), marginals[k], diffs[k]);
+  }
+
+  // TODO move
+  std::vector<int64_t> invert(size_t max, const std::vector<int64_t>& excluded)
+  {
+    std::cout << "invert " << max << std::endl; 
+    print(excluded);
+    std::vector<int64_t> included;
+    included.reserve(max - excluded.size());
+    for (size_t i = 0; i < max; ++i)
+    {
+      if (std::find(excluded.begin(), excluded.end(), i) == excluded.end())
+        included.push_back(i);
+    }
+    print(included);
+    return included;
   }
 
   
@@ -327,21 +348,27 @@ public:
     for (size_t k = 0; k < m_indices.size(); ++k)
     {
       const NDArray<double>& r = reduce<double>(m_array, m_indices[k]);
+      std::cout << k << ":";
       print(r.rawData(), r.storageSize());
-      // for (size_t p = 0; p < marginals[d].size(); ++p)
-      // {
-      //   for (Index index(result.sizes(), { d, p }); !index.end(); ++index)
-      //   {
-      //     const std::vector<int64_t>& ref = index;
-      //     // avoid division by zero (assume 0/0 -> 0)
-      //     if (r[p] == 0.0 && marginals[d][ref[d]] != 0.0)
-      //       throw std::runtime_error("div0 in rScale with m>0");
-      //     if (r[p] != 0.0)
-      //       result[index] *= marginals[d][ref[d]] / r[p];
-      //     else
-      //       result[index] = 0.0;
-      //   }
-      // }
+
+
+      Index main_index(m_array.sizes());
+      //std::cout << m_array.sizes()[m_indices[1-k][0]] << std::endl;
+      for (MappedIndex oindex(main_index, invert(m_array.dim(), m_indices[k])); !oindex.end(); ++oindex)
+      {
+        for (MappedIndex index(main_index, m_indices[k]); !index.end(); ++index)
+        {
+          print((std::vector<int64_t>)main_index);
+          if (r[index] == 0.0 && m_marginals[k][index] != 0.0)
+            throw std::runtime_error("div0 in rScale with m>0");
+          if (r[index] != 0.0)
+            m_array[main_index] *= m_marginals[k][index] / r[index];
+          else
+            m_array[main_index] = 0.0;
+        }
+      }
+      // reset the main index
+      //main_index.reset();
     }
   }
   
@@ -349,12 +376,7 @@ public:
   {
     Index index_main(m_array.sizes());
 
-    std::vector<MappedIndex> mappings;
-    mappings.reserve(m_marginals.size());
-    for (size_t k = 0; k < m_marginals.size(); ++k)
-    {
-      mappings.push_back(MappedIndex(index_main, m_indices[k]));
-    }
+    std::vector<MappedIndex> mappings = makeMappings(index_main);
 
     m_array.assign(1.0);
     for (; !index_main.end(); ++index_main)
@@ -370,7 +392,6 @@ public:
     {
       m_array[index] *= scale;    
     }
-
 
     return m_array;
   }
@@ -389,10 +410,12 @@ public:
     m_array.assign(1.0);
 
     marginal_list_t diffs(m_marginals.size());
+    m_errors.resize(m_marginals.size());
     
     for (size_t k = 0; k < diffs.size(); ++k)
     {
       diffs[k].resize(m_marginals[k].sizes());
+      m_errors[k].resize(m_marginals[k].sizes());
     }
 
     m_conv = false;
@@ -414,9 +437,11 @@ private:
   bool m_conv;
   index_list_t m_indices;
   marginal_list_t& m_marginals;
+  marginal_list_t m_errors;
   marginal_indices_list_t m_dim_lookup;
   NDArray<double> m_array;
-  
+  double m_maxError;
+  const double m_tol = 1e-8;
 };
 
 void doMd()
@@ -425,11 +450,13 @@ void doMd()
   std::vector<std::vector<int64_t>> i;
   i.push_back(std::vector<int64_t>{0,1});
   i.push_back(std::vector<int64_t>{2,1});
+  //i.push_back(std::vector<int64_t>{0});
+  //i.push_back(std::vector<int64_t>{1});
   //i.push_back(std::vector<int64_t>{2,0});
   NDArray<double> m0(std::vector<int64_t>{2, 3});
-  m0.assign(15.0);
+  m0.assign(5.0);
   NDArray<double> m1(std::vector<int64_t>{5, 3});
-  m1.assign(6.0);
+  m1.assign(2.0);
   NDArray<double> m2(std::vector<int64_t>{5, 2});
   m2.assign(9.0);
   // induce partial sum mismatch
@@ -441,11 +468,11 @@ void doMd()
   m.push_back(std::move(m1));
   //m.push_back(std::move(m2));
   MIPF<double> mipf(i, m);
-  {
-    const auto& a = mipf.doP();
-    print(a.rawData(), a.storageSize());
-    std::cout << sum(a) << std::endl;
-  }
+  // {
+  //   const auto& a = mipf.doP();
+  //   print(a.rawData(), a.storageSize());
+  //   std::cout << sum(a) << std::endl;
+  // }
   {
     const auto& a = mipf.doIPF();
     print(a.rawData(), a.storageSize());

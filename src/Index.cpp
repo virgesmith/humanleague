@@ -1,6 +1,8 @@
 
 #include "Index.h"
 
+#include "NDArrayUtils.h"
+
 #include <algorithm>
 #include <cassert>
 
@@ -52,6 +54,12 @@ size_t Index::size() const
   return m_idx.size();
 }
 
+const std::vector<int64_t>& Index::sizes() const
+{
+  return m_sizes;
+}
+
+
 // allow read-only access to individual values
 const int64_t& Index::operator[](size_t i) const
 {
@@ -85,24 +93,40 @@ void Index::reset()
   m_atEnd = false;
 }
 
-bool Index::end()
+bool Index::end() const
 {
   return m_atEnd;
 }
 
 
-MappedIndex::MappedIndex(Index& idx, const std::vector<int64_t>& mappedDimensions)
-  : m_mappedIndex(mappedDimensions.size())
+MappedIndex::MappedIndex(const Index& idx, const std::vector<int64_t>& mappedDimensions)
+  : m_dim(mappedDimensions.size()), 
+  m_sizes(m_dim), m_mappedIndex(m_dim), m_atEnd(idx.end())
 {
   int64_t n = idx.size();
   (void)n; // avoid compiler warning about unused variable when assert exands to nothing
   // TODO check mappedDimensions are unique 
-  for (size_t d = 0; d < m_mappedIndex.size(); ++d)
+  for (size_t d = 0; d < m_dim; ++d)
   {
     // check mappedDimensions are within dimension of index
     assert(mappedDimensions[d] < n);
-    m_mappedIndex[d] = &idx[mappedDimensions[d]];
+    m_sizes[d] = idx.sizes()[mappedDimensions[d]];
+    m_mappedIndex[d] = &const_cast<Index&>(idx)[mappedDimensions[d]];
   }
+}
+
+const MappedIndex& MappedIndex::operator++()
+{
+  for (int64_t i = m_dim - 1; i != -1ll; --i)
+  {
+    ++*m_mappedIndex[i];
+    if (*m_mappedIndex[i] != m_sizes[i])
+      break;
+    if (i == 0)
+      m_atEnd = true;
+    *m_mappedIndex[i] = 0;
+  }
+  return *this;
 }
 
 // TODO better to overload NDArray to take Index types???
@@ -111,4 +135,8 @@ MappedIndex::operator const std::vector<int64_t*>&() const
   return m_mappedIndex;
 }
 
+bool MappedIndex::end()
+{
+  return m_atEnd;
+}
 

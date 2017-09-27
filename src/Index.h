@@ -17,12 +17,16 @@ public:
 
   Index(const Index& rhs);
 
+  // TODO return *this
   const std::vector<int64_t>& operator++();
 
   // Implicitly cast to index vector
   operator const std::vector<int64_t>&() const;
 
+  // TODO rename to dim
   size_t size() const;
+
+  const std::vector<int64_t>& sizes() const;
 
   // allow read-only access to individual values
   const int64_t& operator[](size_t i) const;
@@ -36,7 +40,7 @@ public:
 
   void reset();
 
-  bool end();
+  bool end() const;
 
 public:
   size_t m_dim;
@@ -53,12 +57,19 @@ public:
 class MappedIndex
 {
 public:
-  MappedIndex(Index& idx, const std::vector<int64_t>& mappedDimensions);
+  MappedIndex(const Index& idx, const std::vector<int64_t>& mappedDimensions);
+
+  const MappedIndex& operator++();  
 
   // TODO better to overload NDArray to take Index types???
   operator const std::vector<int64_t*>&() const;
 
+  bool end();
+  
 private:
+  size_t m_dim;
+  std::vector<int64_t> m_sizes;
   std::vector<int64_t*> m_mappedIndex;
+  bool m_atEnd;
 };
 

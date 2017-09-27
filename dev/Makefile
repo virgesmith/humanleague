@@ -1,4 +1,4 @@
-PROJECT:=humanleague_dev
+target:=humanleague_dev
 
 src = main.cpp ../src/NDArrayUtils.cpp ../src/Index.cpp ../src/Sobol.cpp ../src/SobolImpl.cpp ../src/StatFuncs.cpp ../src/IPF.cpp ../src/QSIPF.cpp ../src/QIWS.cpp
 obj = $(src:.cpp=.o)
@@ -13,10 +13,9 @@ CXXFLAGS=-Wall -Werror -g -O0 -std=c++11 -I.. -D_GLIBCXX_DEBUG
 LDFLAGS=
 
 # this doesnt test python and R interfaces!!!
-all: humanleague_dev 
+all: $(target) 
 
-#humanleague_dev: main.cpp ../src/NDArrayUtils.cpp ../src/Sobol.cpp ../src/SobolImpl.cpp
-humanleague_dev: $(obj)
+$(target): $(obj)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LDFLAGS)
 
 %.d: %.cpp
@@ -26,7 +25,7 @@ humanleague_dev: $(obj)
 -include $(dep)
 
 clean:
-	rm -f $(PROJECT) $(obj) $(dep)
+	rm -f $(target) $(obj) $(dep)
 
 .PHONY: all clean
 

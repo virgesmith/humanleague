@@ -1,12 +1,13 @@
 // IPF.h
-// C++ implementation of multidimensional iterative proportional fitting
+// C++ implementation of multidimensional* iterative proportional fitting
+// marginals are 1d in this implementation
 
 #pragma once
 
 #include "NDArray.h"
+#include "Microsynthesis.h"
 
 #include <vector>
-
 
 class IPF
 {
@@ -56,3 +57,30 @@ protected:
   double m_maxError;
 };
 
+namespace wip {
+
+class IPF : public Microsynthesis<double>
+{
+public:
+  // TODO perhaps seed should be an arg to solve instead of being passed in here
+  IPF(/*const NDArray<double>& seed,*/ const index_list_t& indices, marginal_list_t& marginals);
+
+  NDArray<double>& solve();
+
+  bool computeErrors(std::vector<NDArray<double>>& diffs);
+
+  void rScale();
+  
+  void rDiff(std::vector<NDArray<double>>& diffs, const NDArray<double>& result, const std::vector<NDArray<double>>& marginals);
+
+private:
+  NDArray<double> m_seed;
+
+  size_t m_iters;
+  bool m_conv;
+  double m_maxError;
+  const double m_tol = 1e-8;
+
+};
+
+} // wip

@@ -48,6 +48,9 @@
     "codecvt": "cpp",
     "condition_variable": "cpp",
     "slist": "cpp",
-    "thread": "cpp"
+    "thread": "cpp",
+    "*.ipp": "cpp",
+    "vector": "cpp",
+    "map": "cpp"
   }
 }

@@ -14,6 +14,16 @@ int32_t maxAbsElement(const std::vector<int32_t>& r);
 std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vector<uint32_t>& y);
 std::vector<double> diff(const std::vector<double>& x, const std::vector<double>& y);
 
+template<typename T>
+void diff(const NDArray<T>& x, const NDArray<T>& y, NDArray<T>& d)
+{
+  // TODO check x y and d sizes match
+  for (Index index(x.sizes()); !index.end(); ++index)
+  {
+    d[index] = x[index] - y[index];
+  }
+}
+
 bool allZeros(const std::vector<std::vector<int32_t>>& r);
 
 template<typename T>
@@ -162,8 +172,6 @@ std::vector<T> reduce(const NDArray<T>& input, size_t orient)
 
 //   return sums;
 // }
-
-
 
 
 // Reduce n-D array to m-D sums (where m<n)

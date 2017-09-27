@@ -153,38 +153,6 @@ void do4d()
 }
 
 
-namespace {
-  
-void rScale(NDArray<double>& result, const std::vector<NDArray<double>>& marginals)
-{
-  for (size_t d = 0; d < result.dim(); ++d)
-  {
-    const std::vector<double>& r = reduce<double>(result, d);
-    for (size_t p = 0; p < marginals[d].size(); ++p)
-    {
-      for (Index index(result.sizes(), { d, p }); !index.end(); ++index)
-      {
-        const std::vector<int64_t>& ref = index;
-        // avoid division by zero (assume 0/0 -> 0)
-        if (r[p] == 0.0 && marginals[d][ref[d]] != 0.0)
-          throw std::runtime_error("div0 in rScale with m>0");
-        if (r[p] != 0.0)
-          result[index] *= marginals[d][ref[d]] / r[p];
-        else
-          result[index] = 0.0;
-      }
-    }
-  }
-}
-
-void rDiff(std::vector<NDArray<double>>& diffs, const NDArray<double>& result, const std::vector<NDArray<double>>& marginals)
-{
-  int64_t n = result.dim();
-  for (int64_t d = 0; d < n; ++d)
-    diffs[d] = diff(reduce<double>(result, d), marginals[d]);
-}
-
-}
 
 template<typename T>
 class MIPF
@@ -302,6 +270,81 @@ public:
     }
   }
 
+  bool computeErrors(std::vector<NDArray<double>>& diffs)
+  {
+    double maxError = -std::numeric_limits<double>::max();
+
+    Index main_index(m_array.sizes());
+    // create mapped indices
+    for (; !main_index.end(); ++main_index)
+    {
+      // loop over mapped indices
+      //diffs[k] = marginals[k][mapped[k]] - m_array[main_index]
+
+    }
+
+
+    // for (size_t k = 0; k < m_result.dim(); ++d)
+    // {
+    //   for (size_t i = 0; i < diffs[d].size(); ++i)
+    //   {
+    //     double e = std::fabs(diffs[d][i]);
+    //     m_errors[d][i] = e;
+    //     m_maxError = std::max(m_maxError, e);
+    //   }
+    // }
+    return maxError < 1e-8/*m_tol*/;
+  }  
+
+  void rDiff(std::vector<NDArray<double>>& diffs, const NDArray<double>& result, const std::vector<NDArray<double>>& marginals)
+  {
+    int64_t n = m_indices.size();
+    for (int64_t k = 0; k < n; ++k)
+      diff(reduce<double>(result, m_indices[k]), marginals[k], diffs[k]);
+  }
+
+  
+  void rScale()
+  {
+    // for (size_t d = 0; d < result.dim(); ++d)
+    // {
+    //   const std::vector<double>& r = reduce<double>(result, d);
+    //   for (size_t p = 0; p < marginals[d].size(); ++p)
+    //   {
+    //     for (Index index(result.sizes(), { d, p }); !index.end(); ++index)
+    //     {
+    //       const std::vector<int64_t>& ref = index;
+    //       // avoid division by zero (assume 0/0 -> 0)
+    //       if (r[p] == 0.0 && marginals[d][ref[d]] != 0.0)
+    //         throw std::runtime_error("div0 in rScale with m>0");
+    //       if (r[p] != 0.0)
+    //         result[index] *= marginals[d][ref[d]] / r[p];
+    //       else
+    //         result[index] = 0.0;
+    //     }
+    //   }
+    // }
+    for (size_t k = 0; k < m_indices.size(); ++k)
+    {
+      const NDArray<double>& r = reduce<double>(m_array, m_indices[k]);
+      print(r.rawData(), r.storageSize());
+      // for (size_t p = 0; p < marginals[d].size(); ++p)
+      // {
+      //   for (Index index(result.sizes(), { d, p }); !index.end(); ++index)
+      //   {
+      //     const std::vector<int64_t>& ref = index;
+      //     // avoid division by zero (assume 0/0 -> 0)
+      //     if (r[p] == 0.0 && marginals[d][ref[d]] != 0.0)
+      //       throw std::runtime_error("div0 in rScale with m>0");
+      //     if (r[p] != 0.0)
+      //       result[index] *= marginals[d][ref[d]] / r[p];
+      //     else
+      //       result[index] = 0.0;
+      //   }
+      // }
+    }
+  }
+  
   NDArray<double>& doP()
   {
     Index index_main(m_array.sizes());
@@ -345,14 +388,17 @@ public:
 
     m_array.assign(1.0);
 
-
-
     marginal_list_t diffs(m_marginals.size());
+    
+    for (size_t k = 0; k < diffs.size(); ++k)
+    {
+      diffs[k].resize(m_marginals[k].sizes());
+    }
+
+    m_conv = false;
     for (m_iters = 0; !m_conv && m_iters < 3; ++m_iters)
     {
-      rScale(m_array, m_marginals);
-      // inefficient copying
-
+      rScale(/*m_array, m_marginals*/);
       rDiff(diffs, m_array, m_marginals);
 
       m_conv = computeErrors(diffs);

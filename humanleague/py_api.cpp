@@ -200,6 +200,69 @@ extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
 }
 
 // prevents name mangling (but works without this)
+extern "C" PyObject* humanleague_wip_ipf(PyObject *self, PyObject *args)
+{
+  try 
+  {
+    PyObject* indexArg;
+    PyObject* arrayArg;
+    //PyObject* seedArg;
+    
+    // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
+    if (!PyArg_ParseTuple(args, "O!O!", /*&PyArray_Type, & seedArg,*/ &PyList_Type, &indexArg, &PyList_Type, &arrayArg))
+      return nullptr;
+    
+    // seed
+    //pycpp::Array<double> seed(seedArg);
+    // expects a list of numpy arrays containing int64
+    pycpp::List ilist(indexArg);
+    pycpp::List mlist(arrayArg);
+
+    int64_t k = ilist.size();
+    if (k != mlist.size())
+      throw std::runtime_error("index and marginals lists differ in size");
+    //std::vector<size_t> sizes(k);
+    std::vector<std::vector<int64_t>> indices(k);
+    std::vector<NDArray<double>> marginals;
+    marginals.reserve(k);
+    
+    for (int64_t i = 0; i < k; ++i) 
+    {
+      if (!PyArray_Check(ilist[i]))
+        throw std::runtime_error("index input should be a list of numpy integer arrays");
+      if (!PyArray_Check(mlist[i]))
+        throw std::runtime_error("marginal input should be a list of numpy float arrays");
+      pycpp::Array<int64_t> ia(ilist[i]);
+      pycpp::Array<double> ma(mlist[i]);
+        //sizes[i] = a.shape()[0];
+      indices[i] = ia.toVector<int64_t>();
+      marginals.push_back(std::move(ma.toNDArray/*<double>*/()));
+    }
+
+    pycpp::Dict retval;
+
+    wip::IPF ipf(/*seed.toNDArray(),*/ indices, marginals); 
+    // retval.insert("conv", pycpp::Bool(ipf.conv()));
+    // // result.insert("p-value", pycpp::Double(qiws.pValue().first));
+    // // result.insert("chiSq", pycpp::Double(qiws.chiSq()));
+    // retval.insert("pop", pycpp::Double(ipf.population()));
+    // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
+    retval.insert("result", pycpp::Array<double>(std::move(const_cast<NDArray<double>&>(ipf.solve()))));
+
+    return retval.release();
+  }
+  catch(const std::exception& e)
+  {
+    return &pycpp::String(e.what());
+  }
+  catch(...)
+  {
+    return &pycpp::String("unexpected exception");
+  }
+}
+
+
+// prevents name mangling (but works without this)
 extern "C" PyObject* humanleague_qsipf(PyObject *self, PyObject *args)
 {
   try 
@@ -458,6 +521,7 @@ PyMethodDef entryPoints[] = {
   {"sobolSequence", humanleague_sobol, METH_VARARGS, "Returns a Sobol sequence."},
   {"synthPop", humanleague_synthPop, METH_VARARGS, "Synthpop."},
   {"ipf", humanleague_ipf, METH_VARARGS, "Synthpop (IPF)."},
+  {"wip_ipf", humanleague_wip_ipf, METH_VARARGS, "Synthpop (IPF)."},
   {"qsipf", humanleague_qsipf, METH_VARARGS, "Synthpop (quasirandom sampled IPF)."},
 //  {"synthPopR", humanleague_synthPopR, METH_VARARGS, "Synthpop correlated."},
   {"synthPopG", humanleague_synthPopG, METH_VARARGS, "Synthpop generalised."},

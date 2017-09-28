@@ -54,8 +54,8 @@ public:
     }
 
     // check all dims defined
-    std::vector<int64_t> sizes;
-    sizes.reserve(m_indices.size());
+    //std::vector<int64_t> sizes;
+    m_sizes.reserve(m_indices.size());
 
     // we should expect that the dim_sizes map contains keys from 0 to dim_sizes.size()-1. if not throw
     for (size_t k = 0; k < dim_sizes.size(); ++k)
@@ -63,18 +63,18 @@ public:
       auto it = dim_sizes.find(k);
       if (it == dim_sizes.end())
         throw std::runtime_error("dimension " + std::to_string(k) + " size not defined");
-      sizes.push_back(it->second);
+      m_sizes.push_back(it->second);
     }
 
-    createMappings(sizes, dim_sizes);
+    createMappings(m_sizes, dim_sizes);
 
-    m_array.resize(sizes);
+    m_array.resize(m_sizes);
 
     // print summary data
     std::cout << "Dim Size" << std::endl;
-    for (size_t d = 0; d < sizes.size(); ++d)
+    for (size_t d = 0; d < m_sizes.size(); ++d)
     {
-        std::cout << d << ": " << sizes[d] << std::endl;
+        std::cout << d << ": " << m_sizes[d] << std::endl;
     }
 
     std::cout << "Mrg Dims" << std::endl;
@@ -125,6 +125,11 @@ public:
     return included;
   }
 
+  std::vector<int64_t> sizes() const
+  {
+    return m_sizes;
+  }
+
 protected:
 
   void createMappings(const std::vector<int64_t> sizes, const std::map<int64_t, int64_t>& dim_sizes)
@@ -165,6 +170,7 @@ protected:
   }
 
   size_t m_dim;
+  std::vector<int64_t> m_sizes;
   index_list_t m_indices;
   marginal_list_t& m_marginals;
   marginal_list_t m_errors;

@@ -70,7 +70,7 @@ public:
   bool computeErrors(std::vector<NDArray<double>>& diffs);
 
   void rScale();
-  
+
   void rDiff(std::vector<NDArray<double>>& diffs, const NDArray<double>& result, const std::vector<NDArray<double>>& marginals);
 
 private:

@@ -54,6 +54,9 @@ using namespace Rcpp;
 // TODO this doesnt seem to work, perhaps another approach (like a separate thread?)
 //void (*oldhandler)(int) = signal(SIGINT, sigint_handler);
 
+// TODO convert R col-major multidim array to NDArray
+//...
+
 // Flatten N-D population array into N*P table
 DataFrame flatten(const size_t pop, const NDArray<uint32_t>& t)
 {
@@ -445,6 +448,62 @@ List ipf(NumericVector seed, List marginals)
   result["iterations"] = ipf.iters();
   result["errors"] = ipf.errors();
   result["maxError"] = ipf.maxError();
+  return result;
+}
+
+//' IPF
+//'
+//' C++ IPF implementation
+//' @param seed an n-dimensional array of seed values
+//' @param marginals a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical
+//' @return an object containing: ...
+//' @export
+// [[Rcpp::export]]
+List wip_ipf(List indices, List marginals)
+  /*NumericVector seed, */
+{
+  const size_t dim = marginals.size();
+
+  // Dimension sizes = seed.attr("dim");
+  std::vector<NDArray<double>> m(dim);
+  std::vector<std::vector<int64_t>> idx(dim);
+  // std::vector<int64_t> s(dim);
+
+  if (indices.size() != marginals.size())
+    throw std::runtime_error("no. of marginals not equal to no. of indices");
+
+  // if (sizes.size() != dim)
+  //   throw std::runtime_error("no. of marginals not equal to seed dimension");
+
+  // insert indices and marginals in reverse order (R being column-major)
+  for (size_t i = 0; i < dim; ++i)
+  {
+    const IntegerVector& iv = indices[i];
+    const NumericVector& nv = marginals[i];
+//    s[dim-i-1] = sizes[i];
+//    m[dim-i-1].reserve(iv.size());
+    std::copy(iv.begin(), iv.end(), std::back_inserter(idx[dim-i-1]));
+    // convert col major array to NDArray
+//    std::copy(nv.begin(), nv.end(), std::back_inserter(m[dim-i-1]));
+  }
+
+  // Storage for result
+
+  List result;
+  // Read-only shallow copy of seed
+  //const NDArray<double> seedwrapper(s, (double*)&seed[0]);
+  // Do IPF (could provide another ctor that takies preallocated memory for result)
+  wip::IPF ipf(/*seedwrapper,*/ idx, m);
+  //NumericVector r(ipf.sizes());
+  // Copy result data into R array
+  const NDArray<double>& tmp = ipf.solve();
+//  std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
+//  result["conv"] = ipf.conv();
+//  result["result"] = r;
+//  result["pop"] = ipf.population();
+//  result["iterations"] = ipf.iters();
+//  result["errors"] = ipf.errors();
+//  result["maxError"] = ipf.maxError();
   return result;
 }
 

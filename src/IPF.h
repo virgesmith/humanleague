@@ -65,24 +65,40 @@ public:
   // TODO perhaps seed should be an arg to solve instead of being passed in here
   IPF(/*const NDArray<double>& seed,*/ const index_list_t& indices, marginal_list_t& marginals);
 
+  IPF(const IPF&) = delete;
+  IPF(IPF&&) = delete;
+
+  IPF& operator=(const IPF&) = delete;
+  IPF& operator=(IPF&&) = delete;
+
+  ~IPF() { }
+
   NDArray<double>& solve();
 
+  const std::vector<NDArray<double>>& errors() const;
+
+  double maxError() const;
+
+  /*virtual*/ bool conv() const;
+
+  /*virtual*/ size_t iters() const;
 
 private:
 
   bool computeErrors(std::vector<NDArray<double>>& diffs);
 
   void rScale();
-  
-  void rDiff(std::vector<NDArray<double>>& diffs);
-  
-    NDArray<double> m_seed;
 
+  void rDiff(std::vector<NDArray<double>>& diffs);
+
+  NDArray<double> m_seed;
   size_t m_iters;
   bool m_conv;
+  Microsynthesis<double>::marginal_list_t m_errors;
   double m_maxError;
   const double m_tol = 1e-8;
 
+  static const size_t s_MAXITER = 10;
 };
 
 } // wip

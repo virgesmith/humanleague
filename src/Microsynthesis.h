@@ -57,7 +57,7 @@ public:
     //std::vector<int64_t> sizes;
     m_sizes.reserve(m_indices.size());
 
-    // we should expect that the dim_sizes map contains keys from 0 to dim_sizes.size()-1. if not throw
+    // we should expect that the dim_sizes map contains keys for all values in [ 0, dim_sizes.size() ). if not throw
     for (size_t k = 0; k < dim_sizes.size(); ++k)
     {
       auto it = dim_sizes.find(k);
@@ -96,6 +96,15 @@ public:
     // }
   }
 
+  Microsynthesis(const Microsynthesis&) = delete;
+  Microsynthesis(Microsynthesis&&) = delete;
+
+  Microsynthesis& operator=(const Microsynthesis&) = delete;
+  Microsynthesis& operator=(Microsynthesis&&) = delete;
+
+
+  virtual ~Microsynthesis() { }
+
   std::vector<MappedIndex> makeMarginalMappings(const Index& index_main) const
   {
     std::vector<MappedIndex> mappings;
@@ -130,6 +139,12 @@ public:
     return m_sizes;
   }
 
+  int64_t population() const
+  {
+    return m_population;
+  }
+
+
 protected:
 
   void createMappings(const std::vector<int64_t> sizes, const std::map<int64_t, int64_t>& dim_sizes)
@@ -145,10 +160,10 @@ protected:
     // more validation
 
     // check marginal sums all the same
-    const int64_t s = sum(m_marginals[0]);
+    m_population = sum(m_marginals[0]);
     for (size_t i = 1; i < m_marginals.size(); ++i)
     {
-    if (sum(m_marginals[i]) != s)
+      if (sum(m_marginals[i]) != m_population)
         throw std::runtime_error("marginal sum mismatch");
     }
 
@@ -158,13 +173,13 @@ protected:
       // loop over the relevant marginals
       const marginal_indices_t& mi = m_dim_lookup[d];
       if (mi.size() < 2)
-          continue;
+        continue;
       //                                     marginal index            marginal dimension
       const std::vector<T>& ms = reduce(m_marginals[mi[0].first], mi[0].second);
       for (size_t i = 1; i < mi.size(); ++i)
       {
-          if (reduce(m_marginals[mi[i].first], mi[i].second) != ms)
-          throw std::runtime_error("marginal partial sum mismatch");
+        if (reduce(m_marginals[mi[i].first], mi[i].second) != ms)
+        throw std::runtime_error("marginal partial sum mismatch");
       }
     }
   }
@@ -173,7 +188,7 @@ protected:
   std::vector<int64_t> m_sizes;
   index_list_t m_indices;
   marginal_list_t& m_marginals;
-  marginal_list_t m_errors;
+  int64_t m_population;
   marginal_indices_list_t m_dim_lookup;
   NDArray<double> m_array;
 };

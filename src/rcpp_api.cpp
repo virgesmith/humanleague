@@ -541,17 +541,13 @@ List wip_ipf(NumericVector seed, List indices, List marginals)
   NumericVector r(rSizes);
   // Copy result data into R array
   const NDArray<double>& tmp = ipf.solve();
-  // for (Index idx(tmp.sizes());!idx.end(); ++idx)
-  // {
-  //   r[idx.colMajorOffset()] = tmp[idx];
-  // }
   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
-//  result["conv"] = ipf.conv();
+  result["conv"] = ipf.conv();
   result["result"] = r;
-//  result["pop"] = ipf.population();
-//  result["iterations"] = ipf.iters();
+  result["pop"] = ipf.population();
+  result["iterations"] = ipf.iters();
 //  result["errors"] = ipf.errors();
-//  result["maxError"] = ipf.maxError();
+  result["maxError"] = ipf.maxError();
   return result;
 }
 

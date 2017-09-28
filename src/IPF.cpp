@@ -146,7 +146,7 @@ bool IPF::computeErrors(std::vector<std::vector<double>>& diffs)
 }
 
 namespace wip {
-  
+
 // TODO perhaps seed should be an arg to solve instead of being passed in here
 IPF::IPF(/*const NDArray<double>& seed,*/ const index_list_t& indices, marginal_list_t& marginals)
   : /*m_seed(std::move(seed)),*/ Microsynthesis(indices, marginals)
@@ -157,7 +157,7 @@ IPF::IPF(/*const NDArray<double>& seed,*/ const index_list_t& indices, marginal_
 NDArray<double>& IPF::solve()
 {
   Index index_main(m_array.sizes());
-  
+
   std::vector<MappedIndex> mappings;
   mappings.reserve(m_marginals.size());
   for (size_t k = 0; k < m_marginals.size(); ++k)
@@ -169,7 +169,7 @@ NDArray<double>& IPF::solve()
 
   marginal_list_t diffs(m_marginals.size());
   m_errors.resize(m_marginals.size());
-  
+
   for (size_t k = 0; k < diffs.size(); ++k)
   {
     diffs[k].resize(m_marginals[k].sizes());
@@ -177,7 +177,7 @@ NDArray<double>& IPF::solve()
   }
 
   m_conv = false;
-  for (m_iters = 0; !m_conv && m_iters < 3; ++m_iters)
+  for (m_iters = 0; !m_conv && m_iters < s_MAXITER; ++m_iters)
   {
     rScale(/*m_array, m_marginals*/);
     rDiff(diffs);
@@ -187,6 +187,27 @@ NDArray<double>& IPF::solve()
 
   return m_array;
 }
+
+const std::vector<NDArray<double>>& IPF::errors() const
+{
+  return m_errors;
+}
+
+double IPF::maxError() const
+{
+  return m_maxError;
+}
+
+bool IPF::conv() const
+{
+  return m_conv;
+}
+
+size_t IPF::iters() const
+{
+  return m_iters;
+}
+
 
 bool IPF::computeErrors(std::vector<NDArray<double>>& diffs)
 {
@@ -263,4 +284,3 @@ void IPF::rDiff(std::vector<NDArray<double>>& diffs)
 
 
 } // wip
-  

@@ -43,3 +43,8 @@ i2d = [np.array([0,1]), np.array([2])]
 p = hl.wip_ipf(i2d, [m2d, m1d])
 #print(r)
 print(p)
+
+m0=np.array([[25.,26.], [27., 22.]])
+m1=np.array([67.,20.,13.])
+t=hl.wip_ipf([np.array([0,1]),np.array([2])], [m0,m1])
+print(t)

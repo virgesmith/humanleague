@@ -180,7 +180,7 @@ NDArray<double>& IPF::solve()
   for (m_iters = 0; !m_conv && m_iters < 3; ++m_iters)
   {
     rScale(/*m_array, m_marginals*/);
-    rDiff(diffs, m_array, m_marginals);
+    rDiff(diffs);
 
     m_conv = computeErrors(diffs);
   }
@@ -230,8 +230,8 @@ void IPF::rScale()
   for (size_t k = 0; k < m_indices.size(); ++k)
   {
     const NDArray<double>& r = reduce<double>(m_array, m_indices[k]);
-    std::cout << k << ":";
-    print(r.rawData(), r.storageSize());
+    // std::cout << k << ":";
+    // print(r.rawData(), r.storageSize());
 
 
     Index main_index(m_array.sizes());
@@ -240,7 +240,7 @@ void IPF::rScale()
     {
       for (MappedIndex index(main_index, m_indices[k]); !index.end(); ++index)
       {
-        print((std::vector<int64_t>)main_index);
+        //print((std::vector<int64_t>)main_index);
         if (r[index] == 0.0 && m_marginals[k][index] != 0.0)
           throw std::runtime_error("div0 in rScale with m>0");
         if (r[index] != 0.0)
@@ -254,11 +254,11 @@ void IPF::rScale()
   }
 }
 
-void IPF::rDiff(std::vector<NDArray<double>>& diffs, const NDArray<double>& result, const std::vector<NDArray<double>>& marginals)
+void IPF::rDiff(std::vector<NDArray<double>>& diffs)
 {
   int64_t n = m_indices.size();
   for (int64_t k = 0; k < n; ++k)
-    diff(reduce<double>(result, m_indices[k]), marginals[k], diffs[k]);
+    diff(reduce<double>(m_array, m_indices[k]), m_marginals[k], diffs[k]);
 }
 
 

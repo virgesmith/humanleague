@@ -29,15 +29,16 @@ ipf <- function(seed, marginals) {
     .Call('_humanleague_ipf', PACKAGE = 'humanleague', seed, marginals)
 }
 
-#' IPF
+#' Multidimensional IPF
 #'
-#' C++ IPF implementation
+#' C++ multidimensional IPF implementation
 #' @param seed an n-dimensional array of seed values
-#' @param marginals a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical
+#' @param indices an array listing the dimension indices of each marginal as they apply to the seed values
+#' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
 #' @return an object containing: ...
 #' @export
-wip_ipf <- function(indices, marginals) {
-    .Call('_humanleague_wip_ipf', PACKAGE = 'humanleague', indices, marginals)
+wip_ipf <- function(seed, indices, marginals) {
+    .Call('_humanleague_wip_ipf', PACKAGE = 'humanleague', seed, indices, marginals)
 }
 
 #' QSIPF

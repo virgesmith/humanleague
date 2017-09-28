@@ -102,8 +102,9 @@ class Test(TestCase):
     m2 = np.array([55.0, 45.0])
 
     #s = np.ones([len(m0), len(m1)])
-    p = hl.wip_ipf([[0],[1]], [m0, m1])
-    print(p)
+    p = hl.wip_ipf([np.array([0]),np.array([1])], [m0, m1])
+    self.assertTrue(np.allclose(np.sum(p["result"], (0)), m1))
+    self.assertTrue(np.allclose(np.sum(p["result"], (1)), m0))
     #self.assertTrue(p["conv"])
     #self.assertEqual(p["pop"], 100.0)
     #self.assertTrue(np.array_equal(p["result"], np.array([[45.24, 6.76], [41.76, 6.24]])))

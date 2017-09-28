@@ -67,14 +67,16 @@ public:
 
   NDArray<double>& solve();
 
+
+private:
+
   bool computeErrors(std::vector<NDArray<double>>& diffs);
 
   void rScale();
-
-  void rDiff(std::vector<NDArray<double>>& diffs, const NDArray<double>& result, const std::vector<NDArray<double>>& marginals);
-
-private:
-  NDArray<double> m_seed;
+  
+  void rDiff(std::vector<NDArray<double>>& diffs);
+  
+    NDArray<double> m_seed;
 
   size_t m_iters;
   bool m_conv;

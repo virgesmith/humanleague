@@ -10,7 +10,7 @@ QIS::QIS(/*const NDArray<double>& seed,*/ const index_list_t& indices, marginal_
 }
 
 // Belongs in QIS?
-NDArray<double>& QIS::calcP()
+const NDArray<double>& QIS::calcP()
 {
   Index index_main(m_array.sizes());
 

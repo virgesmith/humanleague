@@ -451,55 +451,103 @@ List ipf(NumericVector seed, List marginals)
   return result;
 }
 
-//' IPF
+
+NDArray<double> convertRArray(NumericVector rArray)
+{
+  // workaround for 1-d arrays (which don't have "dim" attribute)
+  //Dimension colMajorSizes(rArray.hasAttribute("dim") ? Dimension(rArray.attr("dim")) : Dimension((size_t)rArray.size()));
+  Dimension colMajorSizes;
+  if (rArray.hasAttribute("dim"))
+  {
+    colMajorSizes = rArray.attr("dim");
+  }
+  else
+  {
+    colMajorSizes = rArray.size();
+  }
+  const size_t dim = colMajorSizes.size();
+
+  // Reverse sizes for row-major storage
+  std::vector<int64_t> sizes(dim);
+  for (size_t i = 0; i < sizes.size(); ++i)
+  {
+    sizes[i] = colMajorSizes[dim-i-1];
+  }
+
+  NDArray<double> array(sizes);
+
+  for (Index idx(array.sizes());!idx.end(); ++idx)
+  {
+    array[idx] = rArray[idx.colMajorOffset()];
+  }
+  //std::copy(&rArray[0], &rArray[0] + rArray.size(), const_cast<double*>(array.rawData()));
+
+  return array;
+}
+
+
+//' Multidimensional IPF
 //'
-//' C++ IPF implementation
+//' C++ multidimensional IPF implementation
 //' @param seed an n-dimensional array of seed values
-//' @param marginals a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical
+//' @param indices an array listing the dimension indices of each marginal as they apply to the seed values
+//' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
 //' @return an object containing: ...
 //' @export
 // [[Rcpp::export]]
-List wip_ipf(List indices, List marginals)
-  /*NumericVector seed, */
+List wip_ipf(NumericVector seed, List indices, List marginals)
 {
-  const size_t dim = marginals.size();
+  const int64_t k = marginals.size();
 
-  // Dimension sizes = seed.attr("dim");
-  std::vector<NDArray<double>> m(dim);
-  std::vector<std::vector<int64_t>> idx(dim);
-  // std::vector<int64_t> s(dim);
+  Dimension rSizes = seed.attr("dim");
+  int64_t dim = rSizes.size();
+
+  std::vector<NDArray<double>> m;
+  m.reserve(k);
+  std::vector<std::vector<int64_t>> idx;
+  idx.reserve(k);
+  std::vector<int64_t> s;
+  s.reserve(dim);
 
   if (indices.size() != marginals.size())
     throw std::runtime_error("no. of marginals not equal to no. of indices");
 
-  // if (sizes.size() != dim)
-  //   throw std::runtime_error("no. of marginals not equal to seed dimension");
+  // assemble dimensions (row major) for seed
+  for (int64_t i = dim-1; i >= 0; --i)
+    s.push_back(rSizes[(size_t)i]);
 
   // insert indices and marginals in reverse order (R being column-major)
-  for (size_t i = 0; i < dim; ++i)
+  for (int64_t i = k-1; i >= 0; --i)
   {
     const IntegerVector& iv = indices[i];
     const NumericVector& nv = marginals[i];
-//    s[dim-i-1] = sizes[i];
-//    m[dim-i-1].reserve(iv.size());
-    std::copy(iv.begin(), iv.end(), std::back_inserter(idx[dim-i-1]));
+    idx.push_back(std::vector<int64_t>(iv.size()));
+    // also need to reverse dimension indices
+    for (size_t j = 0; j < iv.size(); ++j)
+      idx.back()[j] = dim - iv[j];
+    //std::copy(iv.begin(), iv.end(), idx.back().begin());
     // convert col major array to NDArray
-//    std::copy(nv.begin(), nv.end(), std::back_inserter(m[dim-i-1]));
+    m.push_back(std::move(convertRArray(nv)));
   }
 
   // Storage for result
 
   List result;
   // Read-only shallow copy of seed
-  //const NDArray<double> seedwrapper(s, (double*)&seed[0]);
-  // Do IPF (could provide another ctor that takies preallocated memory for result)
+  const NDArray<double> seedwrapper(s, (double*)&seed[0]);
+  // Do IPF (could provide another ctor that takes preallocated memory for result)
   wip::IPF ipf(/*seedwrapper,*/ idx, m);
-  //NumericVector r(ipf.sizes());
+  //std::swap(rSizes[0],rSizes[1]);
+  NumericVector r(rSizes);
   // Copy result data into R array
   const NDArray<double>& tmp = ipf.solve();
-//  std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
+  // for (Index idx(tmp.sizes());!idx.end(); ++idx)
+  // {
+  //   r[idx.colMajorOffset()] = tmp[idx];
+  // }
+  std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
 //  result["conv"] = ipf.conv();
-//  result["result"] = r;
+  result["result"] = r;
 //  result["pop"] = ipf.population();
 //  result["iterations"] = ipf.iters();
 //  result["errors"] = ipf.errors();

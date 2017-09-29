@@ -8,6 +8,7 @@
 #include <vector>
 #include <utility>
 #include <cstdint>
+#include <cmath>
 
 // Cumulative standard normal distribution function
 double cumNorm(double x);

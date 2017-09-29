@@ -63,8 +63,8 @@ void getIndex(const NDArray<double>& p, const std::vector<uint32_t>& r, Index& i
 
 namespace wip {
 
-QIS::QIS(/*const NDArray<double>& seed,*/ const index_list_t& indices, marginal_list_t& marginals)
-: /*m_seed(std::move(seed)),*/ Microsynthesis(indices, marginals), m_conv(false)
+QIS::QIS(const index_list_t& indices, marginal_list_t& marginals)
+: Microsynthesis(indices, marginals), m_conv(false)
 {
   m_stateProbs.resize(m_array.sizes());
   // compute initial state probabilities and keep a copy
@@ -104,6 +104,11 @@ const NDArray<int64_t>& QIS::solve()
     // recalculate state probabilities
     updateStateProbs();
   }
+  m_chiSq = ::chiSq(m_array, m_expectedStateOccupancy);
+
+  m_pValue = ::pValue(dof(m_array.sizes()), m_chiSq).first;
+
+  m_degeneracy = ::degeneracy(m_array);
 
   return m_array;
 }
@@ -134,7 +139,17 @@ void QIS::updateStateProbs()
 
 double QIS::chiSq() const
 {
-  return ::chiSq(m_array, m_expectedStateOccupancy);
+  return m_chiSq;
+}
+
+double QIS::pValue() const
+{
+  return m_pValue;
+}
+
+double QIS::degeneracy() const
+{
+  return m_degeneracy;
 }
 
 bool QIS::conv() const

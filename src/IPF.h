@@ -73,6 +73,7 @@ public:
 
   ~IPF() { }
 
+  // TODO need a mechanism to invalidate result after its been moved
   NDArray<double>& solve();
 
   const std::vector<NDArray<double>>& errors() const;

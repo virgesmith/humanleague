@@ -7,8 +7,9 @@ namespace wip {
 class QIS : public Microsynthesis<int64_t>
 {
 public:
-  QIS(/*const NDArray<double>& seed,*/ const index_list_t& indices, marginal_list_t& marginals);
+  QIS(const index_list_t& indices, marginal_list_t& marginals);
 
+  // TODO need a mechanism to invalidate result after it's been moved (or just copy it)
   const NDArray<int64_t>& solve();
 
   bool conv() const;
@@ -16,7 +17,9 @@ public:
   // chi-squared stat vs the IPF solution
   double chiSq() const;
 
-  // TODO p-value, degeneracy
+  double degeneracy() const;
+
+  double pValue() const;
 
 private:
 
@@ -25,6 +28,9 @@ private:
   NDArray<double> m_stateProbs;
   // Required for chi-squared
   NDArray<double> m_expectedStateOccupancy;
+  double m_chiSq;
+  double m_pValue;
+  double m_degeneracy;
   bool m_conv;
 };
 

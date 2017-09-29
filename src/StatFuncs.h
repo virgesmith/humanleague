@@ -43,5 +43,16 @@ double chiSq(const NDArray<T>& sample, const NDArray<U>& reference)
   return chisq;
 }
 
+template<typename T>
+inline double factorial(T x)
+{
+  return std::tgamma(x+1);
+}
+
+int64_t dof(std::vector<int64_t> sizes);
+
 // Chi-squared p-value calculation using incomplete gamma function
 std::pair<double,bool> pValue(uint32_t df, double x);
+
+// S!/(prod_k(a_k!))
+double degeneracy(const NDArray<int64_t>& a);

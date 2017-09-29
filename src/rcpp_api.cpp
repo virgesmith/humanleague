@@ -550,21 +550,52 @@ List wip_ipf(NumericVector seed, List indices, List marginals)
   return result;
 }
 
-//' Multidimensional IPF
+// Helper to get overall dimension and sizes before constructing QIS
+// (as indices need to be relabelled and marginals transposed to construct in row-major form)
+std::vector<int64_t> dimensionHelper(List indices, List marginals)
+{
+  std::map<int64_t,int64_t> lookup;
+  // dont worry about inconsistencies here, QIS will detect and report them
+  for (size_t i = 0; i < indices.size(); ++i)
+  {
+    const IntegerVector& iv = indices[i];
+    const IntegerVector& mv = marginals[i];
+    std::vector<int64_t> colMajorSizes;
+    if (mv.hasAttribute("dim"))
+    {
+      colMajorSizes = as<std::vector<int64_t>>(mv.attr("dim"));
+    }
+    else
+    {
+      colMajorSizes.push_back(mv.size());
+    }
+    for (size_t j = 0; j < colMajorSizes.size(); ++j)
+    {
+      lookup[iv[j]] = colMajorSizes[j];
+    }
+  }
+  std::vector<int64_t> ret;
+  ret.reserve(lookup.size());
+  for (const auto& kv: lookup)
+    ret.push_back(kv.second);
+  return ret;
+}
+
+//' Multidimensional QIS
 //'
-//' C++ multidimensional IPF implementation
-//' @param seed an n-dimensional array of seed values
+//' C++ multidimensional Quasirandom Integer Sampling implementation
 //' @param indices an array listing the dimension indices of each marginal as they apply to the seed values
 //' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
 //' @return an object containing: ...
 //' @export
 // [[Rcpp::export]]
-List wip_qis(NumericVector seed, List indices, List marginals)
+List wip_qis(List indices, List marginals)
 {
-  const int64_t k = marginals.size();
+  // we need the overall dimension and sizes upfront to assemble the problem in row-major rather than col-major form.
+  std::vector<int64_t> rSizes = dimensionHelper(indices, marginals);
 
-  Dimension rSizes = seed.attr("dim");
-  int64_t dim = rSizes.size();
+  const int64_t k = marginals.size();
+  const int64_t dim = rSizes.size();
 
   std::vector<NDArray<int64_t>> m;
   m.reserve(k);
@@ -589,20 +620,19 @@ List wip_qis(NumericVector seed, List indices, List marginals)
     // also need to reverse dimension indices
     for (size_t j = 0; j < iv.size(); ++j)
       idx.back()[j] = dim - iv[j];
-    //std::copy(iv.begin(), iv.end(), idx.back().begin());
     // convert col major array to NDArray
     m.push_back(std::move(convertRArray<int64_t, IntegerVector>(nv)));
   }
 
   // Storage for result
-
   List result;
-  // Read-only shallow copy of seed
-  const NDArray<double> seedwrapper(s, (double*)&seed[0]);
-  // Do IPF (could provide another ctor that takes preallocated memory for result)
-  wip::QIS qis(/*seedwrapper,*/ idx, m);
-  //std::swap(rSizes[0],rSizes[1]);
-  NumericVector r(rSizes);
+  // Do QIS (could provide another ctor that takes preallocated memory for result)
+  wip::QIS qis(idx, m);
+
+  // How painful can it be to initialise a multidimensional array?
+  int64_t size = std::accumulate(rSizes.begin(), rSizes.end(), 1ll, std::multiplies<int64_t>());
+  NumericVector r(size);
+  r.attr("dim") = rSizes;
   // Copy result data into R array
   const NDArray<int64_t>& tmp = qis.solve();
   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
@@ -610,9 +640,9 @@ List wip_qis(NumericVector seed, List indices, List marginals)
   result["result"] = r;
   result["pop"] = qis.population();
   result["chiSq"] = qis.chiSq();
-  //result["iterations"] = qis.iters();
-  //  result["errors"] = ipf.errors();
-  //result["maxError"] = ipf.maxError();
+  result["pValue"] = qis.pValue();
+  result["degeneracy"] = qis.degeneracy();
+
   return result;
 }
 

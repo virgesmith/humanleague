@@ -21,6 +21,7 @@ cppmodule = Extension(
              'src/SobolImpl.cpp',
              'src/IPF.cpp',
              'src/QSIPF.cpp',
+             'src/QIS.cpp',
              'src/QIWS.cpp',
   #           'src/RQIWS.cpp',
              'src/GQIWS.cpp',

@@ -4,7 +4,6 @@
 
 #include "src/Sobol.h"
 #include "src/QIWS.h"
-#include "src/RQIWS.h"
 #include "src/GQIWS.h"
 #include "src/Integerise.h"
 #include "src/IPFOld.h"
@@ -18,18 +17,6 @@
 
 #include <iostream>
 
-template<size_t D>
-pycpp::List flatten(const size_t pop, const old::NDArray<D, uint32_t>& t)
-{
-  //print(t.rawData(), t.storageSize(), t.sizes()[1]);
-  const std::vector<std::vector<int>>& list = old::listify<D>(pop, t);
-  pycpp::List outer(D);
-  for (size_t i = 0; i < D; ++i)
-  {
-    outer.set(i, pycpp::List(list[i]));
-  }
-  return outer;
-}
 
 pycpp::List flatten(const size_t pop, const NDArray<uint32_t>& t)
 {

@@ -207,6 +207,51 @@ test_that("MIPF 3d (2)", {
   expect_equal(apply(t$result, c(3), sum), m1)
 })
 
+# QIS
+
+test_that("QIS 2d", {
+
+  m0=c(52,48)
+  m1=c(67,20,13)
+  sizes=c(length(m0), length(m1))
+  s=array(rep(1,prod(sizes)),sizes)
+  t=wip_qis(s, list(c(1),c(2)),list(m0,m1))
+  expect_equal(t$conv, TRUE)
+  expect_equal(t$pop, 100.0)
+  expect_equal(sum(t$result), 100)
+  expect_equal(apply(t$result, c(1), sum), m0)
+  expect_equal(apply(t$result, c(2), sum), m1)
+  expect_lt(t$chiSq, 0.6)
+})
+
+test_that("QIS 3d", {
+  m0=array(c(25, 26, 27, 22),c(2,2))
+  m1=c(67,20,13)
+  sizes=c(2,2, length(m1))
+  s=array(rep(1,prod(sizes)),sizes)
+  t=wip_qis(s, list(c(1,2),c(3)),list(m0,m1))
+  expect_equal(t$conv, TRUE)
+  expect_equal(t$pop, 100.0)
+  expect_equal(sum(t$result), 100)
+  expect_equal(apply(t$result, c(1,2), sum), m0)
+  expect_equal(apply(t$result, c(3), sum), m1)
+  expect_lt(t$chiSq, 2.2)
+})
+
+test_that("QIS 3d (2)", {
+  m0=array(c(20, 20, 11, 17, 12, 20),c(3,2))
+  m1=c(33,34,20,13)
+  sizes=c(3,2,length(m1))
+  s=array(rep(1,prod(sizes)),sizes)
+  t=wip_qis(s, list(c(1,2),c(3)),list(m0,m1))
+  expect_equal(t$conv, TRUE)
+  expect_equal(t$pop, 100.0)
+  expect_equal(sum(t$result), 100)
+  expect_equal(apply(t$result, c(1,2), sum), m0) # TODO transpose required, fix
+  expect_equal(apply(t$result, c(3), sum), m1)
+  expect_lt(t$chiSq, 10.0)
+})
+
 
 ##### QSIPF
 

@@ -11,11 +11,21 @@ public:
 
   const NDArray<int64_t>& solve();
 
+  bool conv() const;
+
+  // chi-squared stat vs the IPF solution
+  double chiSq() const;
+
+  // TODO p-value, degeneracy
+
 private:
 
   void updateStateProbs();
 
   NDArray<double> m_stateProbs;
+  // Required for chi-squared
+  NDArray<double> m_expectedStateOccupancy;
+  bool m_conv;
 };
 
 }

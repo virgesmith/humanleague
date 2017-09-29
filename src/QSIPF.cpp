@@ -7,7 +7,6 @@
 namespace {
 
 // TODO move somewhere appropriate (doesnt need to be member)
-
 size_t pick(const std::vector<double>& dist, double r)
 {
   // sum of dist should be 1, but we relax this

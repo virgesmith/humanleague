@@ -41,6 +41,18 @@ wip_ipf <- function(seed, indices, marginals) {
     .Call('_humanleague_wip_ipf', PACKAGE = 'humanleague', seed, indices, marginals)
 }
 
+#' Multidimensional IPF
+#'
+#' C++ multidimensional IPF implementation
+#' @param seed an n-dimensional array of seed values
+#' @param indices an array listing the dimension indices of each marginal as they apply to the seed values
+#' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
+#' @return an object containing: ...
+#' @export
+wip_qis <- function(seed, indices, marginals) {
+    .Call('_humanleague_wip_qis', PACKAGE = 'humanleague', seed, indices, marginals)
+}
+
 #' QSIPF
 #'
 #' C++ QSIPF implementation

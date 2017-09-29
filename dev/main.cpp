@@ -2,6 +2,7 @@
 #include "src/IPF.h"
 #include "src/QIS.h"
 #include "src/QSIPF.h"
+#include "src/QIS.h"
 //#include "src/Microsynthesis.h"
 #include "src/Sobol.h"
 
@@ -200,6 +201,33 @@ void doMd()
   }
 }
 
+void doMd_QIS()
+{
+  std::vector<NDArray<int64_t>> m;
+  std::vector<std::vector<int64_t>> i;
+  i.push_back(std::vector<int64_t>{0});
+  i.push_back(std::vector<int64_t>{1});
+  NDArray<int64_t> m0(std::vector<int64_t>{2});
+  Index i0(m0.sizes());
+  m0[i0] = 52;
+  m0[++i0] = 48;
+  //m0.assign(5.0);
+  NDArray<int64_t> m1(std::vector<int64_t>{2});
+  Index i1(m1.sizes());
+  m1[i1] = 87;
+  m1[++i1] = 13;
+
+  m.push_back(std::move(m0));
+  m.push_back(std::move(m1));
+
+  wip::QIS mipf(i, m);
+  {
+    const auto& a = mipf.solve();
+    print(a.rawData(), a.storageSize());
+    std::cout << sum(a) << std::endl;
+  }
+}
+
 int main()
 {
   try
@@ -264,6 +292,7 @@ int main()
     }
 
     doMd();
+    doMd_QIS();
   }
   catch(const std::exception& e)
   {

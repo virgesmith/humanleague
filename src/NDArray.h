@@ -142,6 +142,14 @@ public:
   NDArray(const NDArray&) = delete;
   NDArray& operator=(const NDArray&) = delete;
 
+  // Copying is strongly discouraged for efficiency reasons, however there will always be times when a copy is unavoidable...
+  // By explictly providing a copy function we avoid sloppy/inefficient coding where implicit copies are (inadvertently) taken
+  static void copy(const NDArray<T>& src, NDArray<T>& dest) 
+  {
+    dest.resize(src.m_sizes);
+    std::copy(src.m_data, src.m_data + src.m_storageSize, dest.m_data);
+  }
+
   // But allow move
   NDArray(NDArray&& a)
   {

@@ -25,12 +25,11 @@ using namespace Rcpp;
 
 #include "NDArrayUtils.h"
 #include "Index.h"
-#include "QIWS.h"
-// #include "CQIWS.h"
-// #include "RQIWS.h"
-#include "GQIWS.h"
+#include "QIWS.h" // TODO deprecate
+#include "GQIWS.h" // TODO deprecate
 #include "IPF.h"
-#include "QSIPF.h"
+#include "QSIPF.h" // TODO deprecate
+#include "QIS.h"
 #include "Integerise.h"
 #include "StatFuncs.h"
 #include "Sobol.h"
@@ -451,8 +450,8 @@ List ipf(NumericVector seed, List marginals)
   return result;
 }
 
-
-NDArray<double> convertRArray(NumericVector rArray)
+template<typename T, typename R>
+NDArray<T> convertRArray(R rArray)
 {
   // workaround for 1-d arrays (which don't have "dim" attribute)
   //Dimension colMajorSizes(rArray.hasAttribute("dim") ? Dimension(rArray.attr("dim")) : Dimension((size_t)rArray.size()));
@@ -474,7 +473,7 @@ NDArray<double> convertRArray(NumericVector rArray)
     sizes[i] = colMajorSizes[dim-i-1];
   }
 
-  NDArray<double> array(sizes);
+  NDArray<T> array(sizes);
 
   for (Index idx(array.sizes());!idx.end(); ++idx)
   {
@@ -527,7 +526,7 @@ List wip_ipf(NumericVector seed, List indices, List marginals)
       idx.back()[j] = dim - iv[j];
     //std::copy(iv.begin(), iv.end(), idx.back().begin());
     // convert col major array to NDArray
-    m.push_back(std::move(convertRArray(nv)));
+    m.push_back(std::move(convertRArray<double, NumericVector>(nv)));
   }
 
   // Storage for result
@@ -546,8 +545,74 @@ List wip_ipf(NumericVector seed, List indices, List marginals)
   result["result"] = r;
   result["pop"] = ipf.population();
   result["iterations"] = ipf.iters();
-//  result["errors"] = ipf.errors();
+  //  result["errors"] = ipf.errors();
   result["maxError"] = ipf.maxError();
+  return result;
+}
+
+//' Multidimensional IPF
+//'
+//' C++ multidimensional IPF implementation
+//' @param seed an n-dimensional array of seed values
+//' @param indices an array listing the dimension indices of each marginal as they apply to the seed values
+//' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
+//' @return an object containing: ...
+//' @export
+// [[Rcpp::export]]
+List wip_qis(NumericVector seed, List indices, List marginals)
+{
+  const int64_t k = marginals.size();
+
+  Dimension rSizes = seed.attr("dim");
+  int64_t dim = rSizes.size();
+
+  std::vector<NDArray<int64_t>> m;
+  m.reserve(k);
+  std::vector<std::vector<int64_t>> idx;
+  idx.reserve(k);
+  std::vector<int64_t> s;
+  s.reserve(dim);
+
+  if (indices.size() != marginals.size())
+    throw std::runtime_error("no. of marginals not equal to no. of indices");
+
+  // assemble dimensions (row major) for seed
+  for (int64_t i = dim-1; i >= 0; --i)
+    s.push_back(rSizes[(size_t)i]);
+
+  // insert indices and marginals in reverse order (R being column-major)
+  for (int64_t i = k-1; i >= 0; --i)
+  {
+    const IntegerVector& iv = indices[i];
+    const IntegerVector& nv = marginals[i];
+    idx.push_back(std::vector<int64_t>(iv.size()));
+    // also need to reverse dimension indices
+    for (size_t j = 0; j < iv.size(); ++j)
+      idx.back()[j] = dim - iv[j];
+    //std::copy(iv.begin(), iv.end(), idx.back().begin());
+    // convert col major array to NDArray
+    m.push_back(std::move(convertRArray<int64_t, IntegerVector>(nv)));
+  }
+
+  // Storage for result
+
+  List result;
+  // Read-only shallow copy of seed
+  const NDArray<double> seedwrapper(s, (double*)&seed[0]);
+  // Do IPF (could provide another ctor that takes preallocated memory for result)
+  wip::QIS qis(/*seedwrapper,*/ idx, m);
+  //std::swap(rSizes[0],rSizes[1]);
+  NumericVector r(rSizes);
+  // Copy result data into R array
+  const NDArray<int64_t>& tmp = qis.solve();
+  std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
+  result["conv"] = qis.conv();
+  result["result"] = r;
+  result["pop"] = qis.population();
+  result["chiSq"] = qis.chiSq();
+  //result["iterations"] = qis.iters();
+  //  result["errors"] = ipf.errors();
+  //result["maxError"] = ipf.maxError();
   return result;
 }
 

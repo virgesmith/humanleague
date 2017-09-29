@@ -187,8 +187,9 @@ protected:
   size_t m_dim;
   std::vector<int64_t> m_sizes;
   index_list_t m_indices;
+  // TODO not a ref
   marginal_list_t& m_marginals;
   int64_t m_population;
   marginal_indices_list_t m_dim_lookup;
-  NDArray<double> m_array;
+  NDArray<T> m_array;
 };

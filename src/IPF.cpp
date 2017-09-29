@@ -148,14 +148,17 @@ bool IPF::computeErrors(std::vector<std::vector<double>>& diffs)
 namespace wip {
 
 // TODO perhaps seed should be an arg to solve instead of being passed in here
-IPF::IPF(/*const NDArray<double>& seed,*/ const index_list_t& indices, marginal_list_t& marginals)
-  : /*m_seed(std::move(seed)),*/ Microsynthesis(indices, marginals)
+IPF::IPF(const index_list_t& indices, marginal_list_t& marginals)
+  : Microsynthesis(indices, marginals)
 {
-  // TODO check seed dims match those computed by base
+
 }
 
-NDArray<double>& IPF::solve()
+NDArray<double>& IPF::solve(const NDArray<double>& seed)
 {
+  // check seed dims match those computed by base
+  assert(seed.sizes() == m_array.sizes());
+
   Index index_main(m_array.sizes());
 
   std::vector<MappedIndex> mappings;
@@ -166,6 +169,7 @@ NDArray<double>& IPF::solve()
   }
 
   m_array.assign(1.0);
+  std::copy(seed.rawData(), seed.rawData() + seed.storageSize(), const_cast<double*>(m_array.rawData()));
 
   marginal_list_t diffs(m_marginals.size());
   m_errors.resize(m_marginals.size());

@@ -63,7 +63,7 @@ class IPF : public Microsynthesis<double>
 {
 public:
   // TODO perhaps seed should be an arg to solve instead of being passed in here
-  IPF(/*const NDArray<double>& seed,*/ const index_list_t& indices, marginal_list_t& marginals);
+  IPF(const index_list_t& indices, marginal_list_t& marginals);
 
   IPF(const IPF&) = delete;
   IPF(IPF&&) = delete;
@@ -74,7 +74,7 @@ public:
   ~IPF() { }
 
   // TODO need a mechanism to invalidate result after its been moved
-  NDArray<double>& solve();
+  NDArray<double>& solve(const NDArray<double>& seed);
 
   const std::vector<NDArray<double>>& errors() const;
 

@@ -102,22 +102,24 @@ class Test(TestCase):
     m1 = np.array([87.0, 13.0])
     m2 = np.array([55.0, 45.0])
 
-    #s = np.ones([len(m0), len(m1)])
-    p = hl.wip_ipf([np.array([0]),np.array([1])], [m0, m1])
+    seed = np.ones([len(m0), len(m1)])
+    p = hl.wip_ipf(seed, [np.array([0]),np.array([1])], [m0, m1])
     self.assertTrue(np.allclose(np.sum(p["result"], (0)), m1))
     self.assertTrue(np.allclose(np.sum(p["result"], (1)), m0))
-    #self.assertTrue(p["conv"])
-    #self.assertEqual(p["pop"], 100.0)
-    #self.assertTrue(np.array_equal(p["result"], np.array([[45.24, 6.76], [41.76, 6.24]])))
+    self.assertTrue(p["conv"])
+    self.assertEqual(p["iterations"], 1)
+    self.assertEqual(p["maxError"], 0.0)
+    self.assertEqual(p["pop"], 100.0)
+    self.assertTrue(np.array_equal(p["result"], np.array([[45.24, 6.76], [41.76, 6.24]])))
 
-    # s[0, 0] = 0.7
-    # p = hl.ipf(s, [m0, m1])
-    # #print(np.sum(p["result"], 0))
-    # self.assertTrue(p["conv"])
-    # # check overall population and marginals correct
-    # self.assertEqual(np.sum(p["result"]), p["pop"])
-    # self.assertTrue(np.allclose(np.sum(p["result"], 0), m1))
-    # self.assertTrue(np.allclose(np.sum(p["result"], 1), m0))
+    seed[0, 1] = 0.7
+    p = hl.wip_ipf(seed, [np.array([0]),np.array([1])], [m0, m1])
+    self.assertTrue(np.allclose(np.sum(p["result"], (0)), m1))
+    self.assertTrue(np.allclose(np.sum(p["result"], (1)), m0))
+    self.assertTrue(p["conv"])
+    self.assertLess(p["iterations"], 6)
+    self.assertLess(p["maxError"], 5e-10)
+    self.assertEqual(p["pop"], 100.0)
 
     # s = np.array([[[1.0, 1.0], [1.0, 1.0]], [[1.0, 1.0], [1.0, 1.0]]])
     # p = hl.ipf(s, [m0, m1, m2])

@@ -194,14 +194,14 @@ extern "C" PyObject* humanleague_wip_ipf(PyObject *self, PyObject *args)
   {
     PyObject* indexArg;
     PyObject* arrayArg;
-    //PyObject* seedArg;
+    PyObject* seedArg;
     
     // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
-    if (!PyArg_ParseTuple(args, "O!O!", /*&PyArray_Type, & seedArg,*/ &PyList_Type, &indexArg, &PyList_Type, &arrayArg))
+    if (!PyArg_ParseTuple(args, "O!O!O!", &PyArray_Type, & seedArg, &PyList_Type, &indexArg, &PyList_Type, &arrayArg))
       return nullptr;
     
     // seed
-    //pycpp::Array<double> seed(seedArg);
+    pycpp::Array<double> seed(seedArg);
     // expects a list of numpy arrays containing int64
     pycpp::List ilist(indexArg);
     pycpp::List mlist(arrayArg);
@@ -229,14 +229,15 @@ extern "C" PyObject* humanleague_wip_ipf(PyObject *self, PyObject *args)
 
     pycpp::Dict retval;
 
-    wip::IPF ipf(/*seed.toNDArray(),*/ indices, marginals); 
-    // retval.insert("conv", pycpp::Bool(ipf.conv()));
-    // // result.insert("p-value", pycpp::Double(qiws.pValue().first));
-    // // result.insert("chiSq", pycpp::Double(qiws.chiSq()));
-    // retval.insert("pop", pycpp::Double(ipf.population()));
-    // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
-    retval.insert("result", pycpp::Array<double>(std::move(const_cast<NDArray<double>&>(ipf.solve()))));
-
+    wip::IPF ipf(indices, marginals); 
+    // THIS IS DESTRUCTIVE!
+    retval.insert("result", pycpp::Array<double>(std::move(const_cast<NDArray<double>&>(ipf.solve(seed.toNDArray())))));
+    retval.insert("conv", pycpp::Bool(ipf.conv()));
+    retval.insert("pop", pycpp::Double(ipf.population()));
+    retval.insert("iterations", pycpp::Int(ipf.iters()));
+    // result.insert("errors", ipf.errors());
+    retval.insert("maxError", pycpp::Double(ipf.maxError()));
+      
     return retval.release();
   }
   catch(const std::exception& e)

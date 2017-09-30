@@ -16,7 +16,7 @@ void rScale(NDArray<double>& result, const std::vector<std::vector<double>>& mar
     const std::vector<double>& r = reduce<double>(result, d);
     for (size_t p = 0; p < marginals[d].size(); ++p)
     {
-      for (Index index(result.sizes(), { d, p }); !index.end(); ++index)
+      for (Index index(result.sizes(), std::make_pair(d, p)); !index.end(); ++index)
       {
         const std::vector<int64_t>& ref = index;
         // avoid division by zero (assume 0/0 -> 0)

@@ -2,9 +2,10 @@
 
 #pragma once
 
+#include <vector>
+
 #include <cstddef>
 #include <cstdint>
-#include <vector>
 
 // Indexer for elements in n-D array, optionally holding one dimension constant
 class Index
@@ -14,7 +15,10 @@ public:
 
   // Omit the second argument to loop over all elements
   explicit Index(const std::vector<int64_t>& sizes, const std::pair<int64_t, int64_t>& fixed = {-1, -1});
-
+  
+  // Create an index with a predefined position (all dims unfixed)
+  Index(const std::vector<int64_t>& sizes, const std::vector<int64_t>& values);
+  
   Index(const Index& rhs);
 
   // TODO return *this

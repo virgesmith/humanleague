@@ -138,7 +138,7 @@ std::vector<T> reduce(const NDArray<T>& input, size_t orient)
 
   std::vector<T> sums(input.size(orient), 0);
 
-  Index indexer(input.sizes(), { orient, 0 });
+  Index indexer(input.sizes(), std::make_pair(orient, 0));
 
   for (; !indexer.end(); ++indexer)
   {

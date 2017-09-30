@@ -114,6 +114,36 @@ const NDArray<int64_t>& QIS::solve()
   return m_array;
 }
 
+// control state of Sobol via arg?
+const NDArray<int64_t>& QIS::solveFast()
+{
+  // loop over population
+  m_array.assign(0ll);
+  
+  Sobol sobol_seq(m_dim);
+  for (int64_t i = 0; i < m_population; ++i)
+  {
+    // init main_index with unset values
+    std::vector<int64_t> main_index(m_array.sizes().size());//, Index::Unfixed);
+    // take values from Sobol
+    const std::vector<uint32_t>& seq = sobol_seq.buf();
+    
+    // loop over marginals
+    for (size_t k = 0; k < m_marginals.size(); ++k)
+    {
+      (void)seq;
+      // create index for that marginal by sampling sobol values
+      // insert indices into main_index where unset
+      // decrement marginal
+    }
+    // increment pop
+    ++m_array[main_index];
+  }
+
+  return m_array;
+}
+
+
 //
 void QIS::updateStateProbs()
 {

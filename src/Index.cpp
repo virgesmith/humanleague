@@ -21,6 +21,21 @@ Index::Index(const std::vector<int64_t>& sizes, const std::pair<int64_t, int64_t
     m_storageSize *= m_sizes[i];
 }
 
+//TODO why TF linker errors when using Unfixed in init list????
+Index::Index(const std::vector<int64_t>& sizes, const std::vector<int64_t>& values)
+: m_dim(sizes.size()), m_idx(values), m_sizes(sizes), m_fixed({-1,-1}), m_atEnd(false)
+{
+  assert(m_sizes.size());
+  assert(m_idx.size() == m_sizes.size());
+  m_storageSize = m_sizes[0];
+  for (size_t i = 1; i < m_dim; ++i)
+  {
+    assert(m_idx[i] < m_sizes[i]);
+    m_storageSize *= m_sizes[i];
+  }
+}
+
+
 Index::Index(const Index& rhs)
   : m_dim(rhs.m_dim), m_idx(rhs.m_idx), m_sizes(rhs.m_sizes), m_fixed(rhs.m_fixed), m_storageSize(rhs.m_storageSize), m_atEnd(rhs.m_atEnd)
 {

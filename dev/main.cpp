@@ -234,15 +234,15 @@ int main()
     std::vector<int64_t> s{3,2,5};
     NDArray<double> a(s);
     a.assign(1.0);
-    for (Index index(a.sizes(), {0,1}); !index.end(); ++index)
+    for (Index index(a.sizes(), std::make_pair(0,1)); !index.end(); ++index)
     {
       ++a[index];
     }
-    for (Index index(a.sizes(), {1,0}); !index.end(); ++index)
+    for (Index index(a.sizes(), std::make_pair(1,0)); !index.end(); ++index)
     {
       ++a[index];
     }
-    for (Index index(a.sizes(), {2,2}); !index.end(); ++index)
+    for (Index index(a.sizes(), std::make_pair(2,2)); !index.end(); ++index)
     {
       ++a[index];
     }

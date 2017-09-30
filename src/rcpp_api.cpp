@@ -551,7 +551,7 @@ List wip_ipf(NumericVector seed, List indices, List marginals)
   // Read-only shallow copy of seed
   const NDArray<double> seedwrapper(s, (double*)&seed[0]);
   // Do IPF (could provide another ctor that takes preallocated memory for result)
-  wip::IPF ipf(idx, m);
+  wip::IPF<double> ipf(idx, m);
   NumericVector r(rSizes);
   // Copy result data into R array
   const NDArray<double>& tmp = ipf.solve(seedwrapper);

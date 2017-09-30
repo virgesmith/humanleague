@@ -8,6 +8,7 @@
 #include "Microsynthesis.h"
 
 #include <vector>
+#include <cmath>
 
 class IPF
 {

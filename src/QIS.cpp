@@ -83,6 +83,7 @@ const NDArray<int64_t>& QIS::solve()
   const std::vector<MappedIndex>& mappedIndices = makeMarginalMappings(main_index);
   m_array.assign(0ll);
 
+  // this is massively inefficent, far better to sample directly from each marginal
   Sobol sobol_seq(m_dim);
   for (int64_t i = 0; i < m_population; ++i)
   {

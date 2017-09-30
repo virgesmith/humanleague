@@ -53,15 +53,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// wip_qis
-List wip_qis(List indices, List marginals);
-RcppExport SEXP _humanleague_wip_qis(SEXP indicesSEXP, SEXP marginalsSEXP) {
+// qis
+List qis(List indices, List marginals);
+RcppExport SEXP _humanleague_qis(SEXP indicesSEXP, SEXP marginalsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type indices(indicesSEXP);
     Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
-    rcpp_result_gen = Rcpp::wrap(wip_qis(indices, marginals));
+    rcpp_result_gen = Rcpp::wrap(qis(indices, marginals));
     return rcpp_result_gen;
 END_RCPP
 }

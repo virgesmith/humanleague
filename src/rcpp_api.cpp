@@ -72,6 +72,22 @@ DataFrame flatten(const size_t pop, const NDArray<uint32_t>& t)
   return DataFrame(proxyDf);
 }
 
+// Flatten N-D population array into N*P table
+DataFrame flatten(const size_t pop, const NDArray<int64_t>& t)
+{
+  std::vector<std::vector<int>> list = listify(pop, t);
+
+  // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
+  List proxyDf;
+  std::string s("C");
+  for (size_t i = 0; i < t.dim(); ++i)
+  {
+    proxyDf[std::string(s + std::to_string(i)).c_str()] = list[i];
+  }
+
+  return DataFrame(proxyDf);
+}
+
 
 // void doSolveConstrained(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, const NDArray<2, bool>& permitted)
 // {
@@ -588,7 +604,7 @@ std::vector<int64_t> dimensionHelper(List indices, List marginals)
 //' @return an object containing: ...
 //' @export
 // [[Rcpp::export]]
-List wip_qis(List indices, List marginals)
+List qis(List indices, List marginals)
 {
   // we need the overall dimension and sizes upfront to assemble the problem in row-major rather than col-major form.
   std::vector<int64_t> rSizes = dimensionHelper(indices, marginals);
@@ -641,6 +657,7 @@ List wip_qis(List indices, List marginals)
   result["chiSq"] = qis.chiSq();
   result["pValue"] = qis.pValue();
   result["degeneracy"] = qis.degeneracy();
+  result["table"] = flatten(qis.population(), tmp);
 
   return result;
 }
@@ -696,6 +713,7 @@ List qsipf(NumericVector seed, List marginals)
   result["chiSq"] = qsipf.chiSq();
   result["errors"] = qsipf.errors();
   result["maxError"] = qsipf.maxError();
+  result["table"] = flatten(qsipf.population(), tmp);
 
   return result;
 }

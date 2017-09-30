@@ -6,9 +6,9 @@
 //#include "src/Microsynthesis.h"
 #include "src/Sobol.h"
 
-// deprecated
-#include "src/NDArrayUtilsOld.h"
-#include "src/IndexOld.h"
+// // deprecated
+// #include "src/NDArrayUtilsOld.h"
+// #include "src/IndexOld.h"
 
 // work-in-progress
 #include "src/NDArray.h"
@@ -62,7 +62,6 @@ void do2dIPF()
   print(reduce(ipf.result(), 0));
   print(reduce(ipf.result(), 1));
 }
-
 
 void do3d()
 {
@@ -123,8 +122,6 @@ void do3dIPF()
   print(reduce(ipf.result(), 2));
 }
 
-
-
 void do4d()
 {
   std::vector<std::vector<int64_t>> m = {std::vector<int64_t>{52, 48}, 
@@ -153,10 +150,6 @@ void do4d()
   print(reduce<int64_t>(qsipf.sample(), 2));
   print(reduce<int64_t>(qsipf.sample(), 3));
 }
-
-
-
-
 
 void doMd()
 {
@@ -193,9 +186,11 @@ void doMd()
   //   print(a.rawData(), a.storageSize());
   //   std::cout << sum(a) << std::endl;
   // }
-  wip::IPF mipf(i, m);
+  wip::IPF<double> mipf(i, m);
   {
-    const auto& a = mipf.solve();
+    NDArray<double> s({m[0].sizes()[0], m[1].sizes()[0]});
+    s.assign(1.0);
+    const auto& a = mipf.solve(s);
     print(a.rawData(), a.storageSize());
     std::cout << sum(a) << std::endl;
   }

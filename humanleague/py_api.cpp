@@ -6,10 +6,11 @@
 #include "src/QIWS.h"
 #include "src/GQIWS.h"
 #include "src/Integerise.h"
-#include "src/IPFOld.h"
-#include "src/QIS.h"
-#include "src/QSIPF.h"
 #include "src/IPF.h"
+#include "src/QIS.h"
+#include "src/QISI.h"
+
+#include "src/QSIPF.h"
 
 #include <Python.h>
 
@@ -110,13 +111,13 @@ extern "C" PyObject* humanleague_sobol(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "ii|i", &dim, &length, &skips))
       return nullptr;
 
-    size_t sizes[2] = { (size_t)length, (size_t)dim };
-    old::NDArray<2,double> sequence(sizes);
+    std::vector<int64_t> sizes{ length, dim };
+    NDArray<double> sequence(sizes);
 
     Sobol sobol(dim, skips);
     double scale = 0.5 / (1u << 31);
 
-    for (old::Index<2, old::Index_Unfixed> idx(sizes); !idx.end(); ++idx)
+    for (Index idx(sizes); !idx.end(); ++idx)
     {
       sequence[idx] = sobol() * scale;
     }
@@ -229,7 +230,7 @@ extern "C" PyObject* humanleague_wip_ipf(PyObject *self, PyObject *args)
 
     pycpp::Dict retval;
 
-    wip::IPF ipf(indices, marginals); 
+    wip::IPF<double> ipf(indices, marginals); 
     // THIS IS DESTRUCTIVE!
     retval.insert("result", pycpp::Array<double>(std::move(const_cast<NDArray<double>&>(ipf.solve(seed.toNDArray())))));
     retval.insert("conv", pycpp::Bool(ipf.conv()));
@@ -495,68 +496,68 @@ extern "C" PyObject* humanleague_synthPopG(PyObject *self, PyObject *args)
 //   }
 // }
 
-// prevents name mangling (but works without this)
-extern "C" PyObject* humanleague_numpytest(PyObject *self, PyObject *args)
-{
-  try 
-  {
-    PyObject* arrayArg;
+// // prevents name mangling (but works without this)
+// extern "C" PyObject* humanleague_numpytest(PyObject *self, PyObject *args)
+// {
+//   try 
+//   {
+//     PyObject* arrayArg;
 
-    // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
-    if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, &arrayArg))
-      return nullptr;
+//     // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
+//     if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, &arrayArg))
+//       return nullptr;
       
-    //npy_intp p[2] = {5,5};
-    //pycpp::Array<double> retval(2, p);
+//     //npy_intp p[2] = {5,5};
+//     //pycpp::Array<double> retval(2, p);
     
-    long lsizes[] = {5,5};
-    size_t sizes[] = {5,5};
+//     long lsizes[] = {5,5};
+//     size_t sizes[] = {5,5};
 
-    old::NDArray<2,int64_t> a(sizes);
-    int i = 0;
-    for (old::Index<2, old::Index_Unfixed> idx(sizes); !idx.end(); ++idx)
-    {
-      a[idx] = ++i;
-    }
-    pycpp::Array<int64_t> array(std::move(a));
+//     old::NDArray<2,int64_t> a(sizes);
+//     int i = 0;
+//     for (old::Index<2, old::Index_Unfixed> idx(sizes); !idx.end(); ++idx)
+//     {
+//       a[idx] = ++i;
+//     }
+//     pycpp::Array<int64_t> array(std::move(a));
 
-    pycpp::Array<int64_t> array2(2, lsizes);
+//     pycpp::Array<int64_t> array2(2, lsizes);
     
-    long index[] = { 0, 0 };
-    for (; index[0] < lsizes[0]; ++index[0])
-      for (; index[1] < lsizes[1]; ++index[1])
-        array2[index] = index[0] * 10 + index[1] * 100;
+//     long index[] = { 0, 0 };
+//     for (; index[0] < lsizes[0]; ++index[0])
+//       for (; index[1] < lsizes[1]; ++index[1])
+//         array2[index] = index[0] * 10 + index[1] * 100;
 
-    pycpp::Dict retval;
-//    retval.insert("uninit", std::move(array));
+//     pycpp::Dict retval;
+// //    retval.insert("uninit", std::move(array));
 
-    for (ssize_t i = 0; i < 2; ++i)
-    {
-      std::cout << array2.stride(i) << ", ";
-    }
-    std::cout << std::endl;
-    int64_t* p = array2.rawData();
-    for (ssize_t i = 0; i < array2.storageSize(); ++i)
-    {
-      std::cout << p[i] << ", ";
-      p[i] = i;
-    }
-    std::cout << std::endl;
+//     for (ssize_t i = 0; i < 2; ++i)
+//     {
+//       std::cout << array2.stride(i) << ", ";
+//     }
+//     std::cout << std::endl;
+//     int64_t* p = array2.rawData();
+//     for (ssize_t i = 0; i < array2.storageSize(); ++i)
+//     {
+//       std::cout << p[i] << ", ";
+//       p[i] = i;
+//     }
+//     std::cout << std::endl;
     
-    retval.insert("init", std::move(array2));
-    retval.insert("NDArray", std::move(array));
+//     retval.insert("init", std::move(array2));
+//     retval.insert("NDArray", std::move(array));
     
-    return retval.release();
-  }
-  catch(const std::exception& e)
-  {
-    return &pycpp::String(e.what());
-  }
-  catch(...)
-  {
-    return &pycpp::String("unexpected exception");
-  }
-}
+//     return retval.release();
+//   }
+//   catch(const std::exception& e)
+//   {
+//     return &pycpp::String(e.what());
+//   }
+//   catch(...)
+//   {
+//     return &pycpp::String("unexpected exception");
+//   }
+// }
 
 // until I find a better way...
 extern "C" PyObject* humanleague_version(PyObject*, PyObject*)
@@ -577,7 +578,7 @@ PyMethodDef entryPoints[] = {
   {"qsipf", humanleague_qsipf, METH_VARARGS, "Synthpop (quasirandom sampled IPF)."},
   {"qis", humanleague_wip_qis, METH_VARARGS, "QIS."},
   {"synthPopG", humanleague_synthPopG, METH_VARARGS, "Synthpop generalised."},
-  {"numpytest", humanleague_numpytest, METH_VARARGS, "numpy test."},
+  //{"numpytest", humanleague_numpytest, METH_VARARGS, "numpy test."},
   {"version", humanleague_version, METH_NOARGS, "version info"},
   {nullptr, nullptr, 0, nullptr}        /* terminator */
 };

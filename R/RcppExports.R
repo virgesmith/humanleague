@@ -48,8 +48,8 @@ wip_ipf <- function(seed, indices, marginals) {
 #' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
 #' @return an object containing: ...
 #' @export
-wip_qis <- function(indices, marginals) {
-    .Call('_humanleague_wip_qis', PACKAGE = 'humanleague', indices, marginals)
+qis <- function(indices, marginals) {
+    .Call('_humanleague_qis', PACKAGE = 'humanleague', indices, marginals)
 }
 
 #' QSIPF

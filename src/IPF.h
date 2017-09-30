@@ -59,39 +59,109 @@ protected:
 
 namespace wip {
 
-class IPF : public Microsynthesis<double>
+template<typename M>
+class IPF : public Microsynthesis<double, M> // marginal type
 {
 public:
+
+  typedef typename Microsynthesis<double, M>::index_list_t index_list_t;
+  typedef typename Microsynthesis<double, M>::marginal_list_t marginal_list_t;
   // TODO perhaps seed should be an arg to solve instead of being passed in here
-  IPF(const index_list_t& indices, marginal_list_t& marginals);
+  IPF(const typename Microsynthesis<double, M>::index_list_t& indices, typename Microsynthesis<double, M>::marginal_list_t& marginals)
+    : Microsynthesis<double, M>(indices, marginals)
+  {
+  }
+  
+  // IPF(const IPF&) = delete;
+  // IPF(IPF&&) = delete;
 
-  IPF(const IPF&) = delete;
-  IPF(IPF&&) = delete;
+  // IPF& operator=(const IPF&) = delete;
+  // IPF& operator=(IPF&&) = delete;
 
-  IPF& operator=(const IPF&) = delete;
-  IPF& operator=(IPF&&) = delete;
-
-  ~IPF() { }
+  // ~IPF() { }
 
   // TODO need a mechanism to invalidate result after its been moved
-  NDArray<double>& solve(const NDArray<double>& seed);
+  NDArray<double>& solve(const NDArray<double>& seed)
+  {
+    // check seed dims match those computed by base
+    assert(seed.sizes() == this->m_array.sizes());
+  
+    Index index_main(this->m_array.sizes());
+  
+    std::vector<MappedIndex> mappings;
+    mappings.reserve(this->m_marginals.size());
+    for (size_t k = 0; k < this->m_marginals.size(); ++k)
+    {
+      mappings.push_back(MappedIndex(index_main, this->m_indices[k]));
+    }
+  
+    this->m_array.assign(1.0);
+    std::copy(seed.rawData(), seed.rawData() + seed.storageSize(), const_cast<double*>(this->m_array.rawData()));
+  
+    marginal_list_t diffs(this->m_marginals.size());
+    m_errors.resize(this->m_marginals.size());
+  
+    for (size_t k = 0; k < diffs.size(); ++k)
+    {
+      diffs[k].resize(this->m_marginals[k].sizes());
+      m_errors[k].resize(this->m_marginals[k].sizes());
+    }
+  
+    m_conv = false;
+    for (m_iters = 0; !m_conv && m_iters < s_MAXITER; ++m_iters)
+    {
+      // move back into this class?
+      Microsynthesis<double, M>::rScale();
+      Microsynthesis<double, M>::rDiff(diffs);
+  
+      m_conv = computeErrors(diffs);
+    }
+  
+    return this->m_array;
+  }
+  
 
-  const std::vector<NDArray<double>>& errors() const;
-
-  double maxError() const;
-
-  /*virtual*/ bool conv() const;
-
-  /*virtual*/ size_t iters() const;
-
+  const std::vector<NDArray<double>>& errors() const
+  {
+    return m_errors;
+  }
+  
+  double maxError() const
+  {
+    return m_maxError;
+  }
+  
+  bool conv() const
+  {
+    return m_conv;
+  }
+  
+  size_t iters() const
+  {
+    return m_iters;
+  }
+  
 private:
 
-  bool computeErrors(std::vector<NDArray<double>>& diffs);
-
-  void rScale();
-
-  void rDiff(std::vector<NDArray<double>>& diffs);
-
+  bool computeErrors(std::vector<NDArray<double>>& diffs)
+  {
+    m_maxError = -std::numeric_limits<double>::max();
+  
+    // // create mapped indices
+    // const std::vector<MappedIndex>& mapped = makeMappings(main_index);
+    for (size_t k = 0; k < diffs.size(); ++k)
+    {
+      for (Index index(diffs[k].sizes()); !index.end(); ++index)
+      {
+        double e = std::fabs(diffs[k][index]);
+        m_errors[k][index] = e;
+        m_maxError = std::max(m_maxError, e);
+      }
+    }
+  
+    return m_maxError < m_tol;
+  }
+  
   NDArray<double> m_seed;
   size_t m_iters;
   bool m_conv;

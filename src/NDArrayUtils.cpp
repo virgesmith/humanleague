@@ -48,26 +48,4 @@ bool allZeros(const std::vector<std::vector<int32_t>>& r)
     return true;
 }
 
-std::vector<std::vector<int>> listify(const size_t pop, const NDArray<uint32_t>& t)
-{
-  std::vector<std::vector<int>> list(t.dim(), std::vector<int>(pop));
-  Index index(t.sizes());
-
-  size_t pindex = 0;
-  while (!index.end())
-  {
-    for (size_t i = 0; i < t[index]; ++i)
-    {
-      const std::vector<int64_t>& ref = index;
-      for (size_t j = 0; j < t.dim(); ++j)
-      {
-        list[j][pindex] = ref[j];
-      }
-      ++pindex;
-    }
-    ++index;
-  }
-  return list;
-}
-
 

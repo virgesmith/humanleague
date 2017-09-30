@@ -14,70 +14,79 @@ test_that("unit tests", {
 
 # Regression tests
 
+test_that("dimension indices invalid (missing)", {
+  expect_error(humanleague::qis(list(1,3), list(c(10,10),c(10,10))))
+})
+
+test_that("dimension indices invalid (only one)", {
+  expect_error(humanleague::qis(list(1,1), list(c(10,10),c(10,10))))
+})
+
+# 0/-ve dimension values?
+
 test_that("marginal sums are invalid", {
-  expect_error(humanleague::synthPop(list(c(10,10),c(10,11))))
+  expect_error(humanleague::qis(list(1,2), list(c(10,10),c(10,11))))
 })
 
 test_that("dimension invalid", {
-  expect_error(humanleague::synthPop(list(c(10,10))))
+  expect_error(humanleague::qis(list(1),list(c(10,10))))
 })
 
-
 test_that("marginal has -ve value", {
-  expect_error(humanleague::synthPop(list(c(10,-10),c(10,-10))))
+  expect_error(humanleague::qis(list(1,2),list(c(10,-10),c(10,-10))))
 })
 
 test_that("invalid method", {
-  expect_error(humanleague::synthPop(list(c(10,10),c(10,10)),"abcd"))
+  expect_error(humanleague::qis(list(c(10,10),c(10,10)),"abcd"))
 })
 
 m<-c(25,25,25,25,25)
 # simple cases of various dimensions
 test_that("simple 2D qiws", {
-  res<-humanleague::synthPop(list(m,m))
-  expect_equal(rowSums(res$x.hat), m)
+  res<-humanleague::qis(list(1,2),list(m,m))
+  expect_equal(rowSums(res$result), m)
   expect_equal(res$conv, TRUE)
-  expect_equal(nrow(res$pop), 125)
-  expect_equal(ncol(res$pop), 2)
+  expect_equal(nrow(res$table), 125)
+  expect_equal(ncol(res$table), 2)
   expect_gt(res$pValue, 0.005)
-  expect_equal(sum(res$error.margins), 0)
-  expect_equal(length(res$error.margins), 2)
+  #expect_equal(sum(res$error.margins), 0)
+  #expect_equal(length(res$error.margins), 2)
 })
 
 
-m = m * 125
-test_that("simple 5D qiws", {
-  res<-humanleague::synthPop(list(m,m,m,m,m))
-  expect_equal(rowSums(res$x.hat), m)
-  expect_equal(res$conv, TRUE)
-  expect_equal(nrow(res$pop), 125^2)
-  expect_equal(ncol(res$pop), 5)
-  expect_gt(res$pValue, 0.005)
-  expect_equal(sum(res$error.margins), 0)
-  expect_equal(length(res$error.margins), 5)
-})
-
-
-m = m * 125
-test_that("simple 8D qiws", {
-  res<-humanleague::synthPop(list(m,m,m,m,m,m,m,m))
-  expect_equal(rowSums(res$x.hat), m)
-  expect_equal(res$conv, TRUE)
-  expect_gt(res$pValue, 0.005)
-  expect_equal(sum(res$error.margins), 0)
-  expect_equal(length(res$error.margins), 8)
-})
-
-
-m = c(2^15,2^15)
-test_that("simple 12D qiws", {
-  res<-humanleague::synthPop(list(m,m,m,m,m,m,m,m,m,m,m,m))
-  expect_equal(rowSums(res$x.hat), m)
-  expect_equal(res$conv, TRUE)
-  expect_gt(res$pValue, 0.005)
-  expect_equal(sum(res$error.margins), 0)
-  expect_equal(length(res$error.margins), 12)
-})
+# m = m * 125
+# test_that("simple 5D qiws", {
+#   res<-humanleague::qis(list(1,2,3,4,5),list(m,m,m,m,m))
+#   expect_equal(rowSums(res$x.hat), m)
+#   expect_equal(res$conv, TRUE)
+#   expect_equal(nrow(res$pop), 125^2)
+#   expect_equal(ncol(res$pop), 5)
+#   expect_gt(res$pValue, 0.005)
+#   expect_equal(sum(res$error.margins), 0)
+#   expect_equal(length(res$error.margins), 5)
+# })
+#
+#
+# m = m * 125
+# test_that("simple 8D qiws", {
+#   res<-humanleague::qis(list(1,2,3,4,5,6,7,8),list(m,m,m,m,m,m,m,m))
+#   expect_equal(rowSums(res$x.hat), m)
+#   expect_equal(res$conv, TRUE)
+#   expect_gt(res$pValue, 0.005)
+#   expect_equal(sum(res$error.margins), 0)
+#   expect_equal(length(res$error.margins), 8)
+# })
+#
+#
+# m = c(2^15,2^15)
+# test_that("simple 12D qiws", {
+#   res<-humanleague::qis(list(1,2,3,4,5,6,7,8,9,10,11,12),list(m,m,m,m,m,m,m,m,m,m,m,m))
+#   expect_equal(rowSums(res$x.hat), m)
+#   expect_equal(res$conv, TRUE)
+#   expect_gt(res$pValue, 0.005)
+#   expect_equal(sum(res$error.margins), 0)
+#   expect_equal(length(res$error.margins), 12)
+# })
 
 
 # realistic case (iqrs fails)
@@ -85,13 +94,13 @@ m1 <- c(144, 150, 3, 2, 153, 345, 13, 11, 226, 304, 24, 18, 250, 336, 14, 21, 19
 m2 <- c(18, 1, 1, 3, 6, 5, 1, 2, 1, 8, 2, 3, 4, 2, 4, 2, 2, 2, 4, 2, 4, 2, 2, 8, 10, 6, 2, 1, 2, 2, 2, 1, 1, 1, 5, 1, 2, 1, 1, 1, 3, 2, 1, 3, 3, 1, 1, 4, 4, 1, 1, 5, 4, 10, 1, 6, 2, 67, 1, 10, 7, 9, 4, 21, 19, 9, 131, 17, 9, 8, 14, 17, 13, 11, 3, 6, 2, 2, 3, 1, 12, 1, 1, 1, 2, 1, 1, 1, 2, 21, 1, 26, 97, 10, 47, 6, 2, 3, 2, 7, 2, 17, 2, 6, 3, 1, 1, 2, 18, 9, 59, 5, 399, 71, 100, 157, 74, 199, 154, 98, 22, 7, 13, 39, 19, 6, 43, 41, 24, 14, 30, 30, 105, 604, 15, 69, 33, 1, 122, 17, 20, 9, 77, 4, 9, 4, 56, 1, 32, 10, 9, 79, 4, 2, 30, 116, 3, 6, 14, 18, 2, 2, 9, 4, 11, 12, 5, 5, 2, 1, 1, 3, 9, 2, 7, 3, 1, 4, 1, 3, 2, 1, 7, 1, 7, 4, 17, 3, 5, 2, 6, 11, 2, 2, 3, 13, 3, 5, 1, 3, 2, 4, 2, 1, 16, 4, 1, 3, 7, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 2, 2, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 6, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 9, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 330, 28, 281, 12)
 
 test_that("msoa qiws", {
-  res<-humanleague::synthPop(list(m1,m2))
-  expect_equal(rowSums(res$x.hat), m1)
-  expect_equal(colSums(res$x.hat), m2)
-  expect_equal(nrow(res$pop), sum(m1))
-  expect_equal(ncol(res$pop), 2)
+  res<-humanleague::qis(list(1,2),list(m1,m2))
+  expect_equal(rowSums(res$result), m1)
+  expect_equal(colSums(res$result), m2)
+  expect_equal(nrow(res$table), sum(m1))
+  expect_equal(ncol(res$table), 2)
   expect_gt(res$pValue, 0.00)
-  expect_equal(sum(res$error.margins), 0)
+#  expect_equal(sum(res$error.margins), 0)
   expect_equal(res$conv, TRUE)
 })
 
@@ -213,7 +222,7 @@ test_that("QIS 2d", {
 
   m0=c(52,48)
   m1=c(67,20,13)
-  t=wip_qis(list(c(1),c(2)),list(m0,m1))
+  t=qis(list(c(1),c(2)),list(m0,m1))
   expect_equal(t$conv, TRUE)
   expect_equal(t$pop, 100.0)
   expect_equal(sum(t$result), 100)
@@ -227,7 +236,7 @@ test_that("QIS 2d", {
 test_that("QIS 3d", {
   m0=array(c(25, 26, 27, 22),c(2,2))
   m1=c(67,20,13)
-  t=wip_qis(list(c(1,2),c(3)),list(m0,m1))
+  t=qis(list(c(1,2),c(3)),list(m0,m1))
   expect_equal(t$conv, TRUE)
   expect_equal(t$pop, 100.0)
   expect_equal(sum(t$result), 100)
@@ -241,7 +250,7 @@ test_that("QIS 3d", {
 test_that("QIS 3d (2)", {
   m0=array(c(20, 20, 11, 17, 12, 20),c(3,2))
   m1=c(33,34,20,13)
-  t=wip_qis(list(c(1,2),c(3)),list(m0,m1))
+  t=qis(list(c(1,2),c(3)),list(m0,m1))
   expect_equal(t$conv, TRUE)
   expect_equal(t$pop, 100.0)
   expect_equal(sum(t$result), 100)
@@ -380,7 +389,7 @@ test_that("constrained4", {
 # test_that("constrained5", {
 #   r = c(0, 3, 17, 124, 167, 79, 46, 22)
 #   b = c(0, 15, 165, 238, 33, 7)
-#   res = humanleague::synthPop(list(r,b))
+#   res = humanleague::qis(list(r,b))
 #   expect_equal(res$conv, TRUE)
 #   cres = humanleague::constrain(res$x.hat,makeConstraint(r,b))
 #   expect_equal(cres$conv, TRUE)
@@ -391,7 +400,7 @@ test_that("constrained4", {
 # test_that("constrained6", {
 #   r = c( 1, 1, 8, 3,84, 21, 4, 4, 1)
 #   b = c( 0, 8, 3, 113, 2, 1)
-#   res = humanleague::synthPop(list(r,b))
+#   res = humanleague::qis(list(r,b))
 #   expect_equal(res$conv, TRUE)
 #   cres = humanleague::constrain(res$x.hat,makeConstraint(r,b))
 #   expect_equal(cres$conv, TRUE)
@@ -402,7 +411,7 @@ test_that("constrained4", {
 # test_that("constrained7", {
 #   r = c( 1, 3, 7, 19, 96, 4, 5, 1, 1)
 #   b = c( 0, 7, 21, 109, 0, 0)
-#   res = humanleague::synthPop(list(r,b))
+#   res = humanleague::qis(list(r,b))
 #   expect_equal(res$conv, TRUE)
 #   cres = humanleague::constrain(res$x.hat,makeConstraint(r,b))
 #   expect_equal(cres$conv, TRUE)
@@ -413,7 +422,7 @@ test_that("constrained4", {
 # test_that("constrained8", {
 #   r = c( 1, 1, 12, 43, 45, 1, 6, 0, 2)
 #   b = c( 0, 7, 46, 54, 1, 3)
-#   res = humanleague::synthPop(list(r,b))
+#   res = humanleague::qis(list(r,b))
 #   expect_equal(res$conv, TRUE)
 #   cres = humanleague::constrain(res$x.hat,makeConstraint(r,b))
 #   expect_equal(cres$conv, TRUE)

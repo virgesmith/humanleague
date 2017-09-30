@@ -44,6 +44,28 @@ T sum(const NDArray<T>& a)
   return std::accumulate(a.rawData(), a.rawData() + a.storageSize(), T(0));
 }
 
+template<typename T>
+T min(const NDArray<T>& a)
+{
+  T minVal = std::numeric_limits<T>::max();
+  for (Index i(a.sizes()); !i.end(); ++i)
+  {
+    minVal = std::min(minVal, a[i]);
+  }
+  return minVal;
+}
+
+template<typename T>
+T max(const NDArray<T>& a)
+{
+  T minVal = std::numeric_limits<T>::max();
+  for (Index i(a.sizes()); !i.end(); ++i)
+  {
+    minVal = std::min(minVal, a[i]);
+  }
+  return minVal;
+}
+
 // TODO move printing somehwere else
 template<typename T>
 void print(const std::vector<T>& v, std::ostream& ostr = std::cout)
@@ -164,7 +186,7 @@ std::vector<T> reduce(const NDArray<T>& input, size_t orient)
 //   std::vector<T> sums(n, T(0));
 
 //   Index index(input.sizes());
-//   const int64_t& k = index[orient]; 
+//   const int64_t& k = index[orient];
 //   for (; !index.end(); ++index)
 //   {
 //     sums[k] += input[index];
@@ -232,4 +254,26 @@ NDArray<T> slice(const NDArray<T>& input, std::pair<int64_t, int64_t> index)
 
 
 // Converts a D-dimensional population array into a list with D columns and pop rows
-std::vector<std::vector<int>> listify(const size_t pop, const NDArray<uint32_t>& t);
+template<typename T>
+std::vector<std::vector<int>> listify(const size_t pop, const NDArray<T>& t)
+{
+  std::vector<std::vector<int>> list(t.dim(), std::vector<int>(pop));
+  Index index(t.sizes());
+
+  size_t pindex = 0;
+  while (!index.end())
+  {
+    for (size_t i = 0; i < t[index]; ++i)
+    {
+      const std::vector<int64_t>& ref = index;
+      for (size_t j = 0; j < t.dim(); ++j)
+      {
+        list[j][pindex] = ref[j];
+      }
+      ++pindex;
+    }
+    ++index;
+  }
+  return list;
+}
+

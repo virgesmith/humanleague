@@ -3,7 +3,7 @@
 
 #include "Object.h"
 #include "src/NDArray.h"
-#include "src/NDArrayOld.h"
+//#include "src/NDArrayOld.h"
 
 #include <Python.h>
 #include <numpy/arrayobject.h>
@@ -97,18 +97,18 @@ namespace pycpp {
   
   public:
 
-    // Construct from NDArray<D,T>. Data is presumed to be copied
-    template<size_t D>
-    explicit Array(old::NDArray<D, T>&& a) 
-      : Object(PyArray_SimpleNewFromData(D, 
-                                         const_cast<npy_intp*>(a.sizesl()), 
-                                         NpyType<T>::Type, 
-                                         const_cast<T*>((const T*)a.rawData()))) 
-    {
-      // memory ownership transferred?
-      // leak if you dont, memory corruption if you do
-      a.release();
-    }
+    // // Construct from NDArray<D,T>. Data is presumed to be copied
+    // template<size_t D>
+    // explicit Array(old::NDArray<D, T>&& a) 
+    //   : Object(PyArray_SimpleNewFromData(D, 
+    //                                      const_cast<npy_intp*>(a.sizesl()), 
+    //                                      NpyType<T>::Type, 
+    //                                      const_cast<T*>((const T*)a.rawData()))) 
+    // {
+    //   // memory ownership transferred?
+    //   // leak if you dont, memory corruption if you do
+    //   a.release();
+    // }
     
     // Construct from NDArray<D,T>. Data is presumed to be copied
     explicit Array(NDArray<T>&& a) 
@@ -154,16 +154,16 @@ namespace pycpp {
       return v;
     }
 
-    template<size_t D>
-    old::NDArray<D, T> toNDArrayOld() const
-    {
-      size_t sizes[D];
-      for (size_t i = 0; i < D; ++i)
-        sizes[i] = shape()[i];
-      old::NDArray<D, T> tmp(sizes);
-      std::copy(rawData(), rawData() + tmp.storageSize(), const_cast<T*>(tmp.rawData()));
-      return tmp;
-    }
+    // template<size_t D>
+    // old::NDArray<D, T> toNDArrayOld() const
+    // {
+    //   size_t sizes[D];
+    //   for (size_t i = 0; i < D; ++i)
+    //     sizes[i] = shape()[i];
+    //   old::NDArray<D, T> tmp(sizes);
+    //   std::copy(rawData(), rawData() + tmp.storageSize(), const_cast<T*>(tmp.rawData()));
+    //   return tmp;
+    // }
     
     NDArray<T> toNDArray() const
     {

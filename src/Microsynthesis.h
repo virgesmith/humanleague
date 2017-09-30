@@ -12,13 +12,14 @@
 
 #include <iostream>
 
-template<typename T>
+// T = population, M = marginals (defaults to same type)
+template<typename T, typename M = T>
 class Microsynthesis
 {
 public:
   typedef std::vector<int64_t> index_t;
   typedef std::vector<index_t> index_list_t;
-  typedef NDArray<T> marginal_t;
+  typedef NDArray<M> marginal_t;
   typedef std::vector<marginal_t> marginal_list_t;
 
   typedef std::vector<std::pair<int64_t, int64_t>> marginal_indices_t;
@@ -51,6 +52,16 @@ public:
             ": dimension " + std::to_string(dim) + " size " + std::to_string(posit->second) + " redefined to " + std::to_string(size));
         //std::cout << "  " << dim << ":" << size << std::endl;
       }
+    }
+
+    if (dim_sizes.size() < 2)
+      throw std::runtime_error("problem needs to have more than 1 dimension!");
+
+    // validate marginals
+    for (size_t k = 0; k < m_marginals.size(); ++k)
+    {
+      if (min(m_marginals[k]) < 0)
+        throw std::runtime_error("negative value in marginal " + std::to_string(k));
     }
 
     // check all dims defined
@@ -144,9 +155,44 @@ public:
     return m_population;
   }
 
+  // Diffs always represented in floating point
+  void rDiff(std::vector<NDArray<double>>& diffs)
+  {
+    int64_t n = m_indices.size();
+    for (int64_t k = 0; k < n; ++k)
+      diff(reduce<double>(m_array, m_indices[k]), m_marginals[k], diffs[k]);
+  }
 
 protected:
-
+  
+  void rScale()
+  {
+    for (size_t k = 0; k < m_indices.size(); ++k)
+    {
+      const NDArray<double>& r = reduce<double>(m_array, m_indices[k]);
+      // std::cout << k << ":";
+      // print(r.rawData(), r.storageSize());
+  
+      Index main_index(m_array.sizes());
+      //std::cout << m_array.sizes()[m_indices[1-k][0]] << std::endl;
+      for (MappedIndex oindex(main_index, invert(m_array.dim(), m_indices[k])); !oindex.end(); ++oindex)
+      {
+        for (MappedIndex index(main_index, m_indices[k]); !index.end(); ++index)
+        {
+          //print((std::vector<int64_t>)main_index);
+          if (r[index] == 0.0 && m_marginals[k][index] != 0.0)
+            throw std::runtime_error("div0 in rScale with m>0");
+          if (r[index] != 0.0)
+            m_array[main_index] *= m_marginals[k][index] / r[index];
+          else
+            m_array[main_index] = 0.0;
+        }
+      }
+      // reset the main index
+      //main_index.reset();
+    }
+  }
+  
   void createMappings(const std::vector<int64_t> sizes, const std::map<int64_t, int64_t>& dim_sizes)
   {
     // create mapping from dimension to marginal(s)

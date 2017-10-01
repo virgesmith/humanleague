@@ -215,9 +215,9 @@ void doMd_QIS()
   m.push_back(std::move(m0));
   m.push_back(std::move(m1));
 
-  wip::QIS mipf(i, m);
+  wip::QIS qis(i, m);
   {
-    const auto& a = mipf.solve();
+    const auto& a = qis.solve();
     print(a.rawData(), a.storageSize());
     std::cout << sum(a) << std::endl;
   }

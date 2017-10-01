@@ -10,9 +10,9 @@ public:
   QIS(const index_list_t& indices, marginal_list_t& marginals);
 
   // TODO need a mechanism to invalidate result after it's been moved (or just copy it)
-  const NDArray<int64_t>& solveFast();
   const NDArray<int64_t>& solve();
-  
+  const NDArray<int64_t>& solve2();
+
   bool conv() const;
 
   // chi-squared stat vs the IPF solution

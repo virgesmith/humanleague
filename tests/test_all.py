@@ -61,16 +61,17 @@ class Test(TestCase):
     m0 = np.array([52.0, 48.0])
     m1 = np.array([87.0, 13.0])
     m2 = np.array([55.0, 45.0])
+    i = [np.array([0]),np.array([1])]
 
     s = np.ones([len(m0), len(m1)])
-    p = hl.ipf(s, [m0, m1])
+    p = hl.ipf(s, i, [m0, m1])
     #print(p)
     self.assertTrue(p["conv"])
     self.assertEqual(p["pop"], 100.0)
     self.assertTrue(np.array_equal(p["result"], np.array([[45.24, 6.76], [41.76, 6.24]])))
 
     s[0, 0] = 0.7
-    p = hl.ipf(s, [m0, m1])
+    p = hl.ipf(s, i, [m0, m1])
     #print(np.sum(p["result"], 0))
     self.assertTrue(p["conv"])
     # check overall population and marginals correct
@@ -78,8 +79,9 @@ class Test(TestCase):
     self.assertTrue(np.allclose(np.sum(p["result"], 0), m1))
     self.assertTrue(np.allclose(np.sum(p["result"], 1), m0))
 
+    i = [np.array([0]),np.array([1]),np.array([2])]
     s = np.array([[[1.0, 1.0], [1.0, 1.0]], [[1.0, 1.0], [1.0, 1.0]]])
-    p = hl.ipf(s, [m0, m1, m2])
+    p = hl.ipf(s, i, [m0, m1, m2])
     print(np.sum(p["result"], (0, 1)))
     print(np.sum(p["result"], (1, 2)))
     print(np.sum(p["result"], (2, 0)))
@@ -92,18 +94,19 @@ class Test(TestCase):
 
     # 12D
     s = np.ones([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+    i = [np.array([0]),np.array([1]),np.array([2]),np.array([3]),np.array([4]),np.array([5]),
+         np.array([6]),np.array([7]),np.array([8]),np.array([9]),np.array([10]),np.array([11])]
     m = np.array([2048., 2048.])
-    p = hl.ipf(s,[m, m, m, m, m, m, m, m, m, m, m, m])
-    print(p)
+    p = hl.ipf(s,i,[m, m, m, m, m, m, m, m, m, m, m, m])
+    #print(p)
     self.assertTrue(p["pop"] == 4096)
 
-  def test_wip_IPF(self):
     m0 = np.array([52.0, 48.0])
     m1 = np.array([87.0, 13.0])
     m2 = np.array([55.0, 45.0])
 
     seed = np.ones([len(m0), len(m1)])
-    p = hl.wip_ipf(seed, [np.array([0]),np.array([1])], [m0, m1])
+    p = hl.ipf(seed, [np.array([0]),np.array([1])], [m0, m1])
     self.assertTrue(np.allclose(np.sum(p["result"], (0)), m1))
     self.assertTrue(np.allclose(np.sum(p["result"], (1)), m0))
     self.assertTrue(p["conv"])
@@ -113,7 +116,7 @@ class Test(TestCase):
     self.assertTrue(np.array_equal(p["result"], np.array([[45.24, 6.76], [41.76, 6.24]])))
 
     seed[0, 1] = 0.7
-    p = hl.wip_ipf(seed, [np.array([0]),np.array([1])], [m0, m1])
+    p = hl.ipf(seed, [np.array([0]),np.array([1])], [m0, m1])
     self.assertTrue(np.allclose(np.sum(p["result"], (0)), m1))
     self.assertTrue(np.allclose(np.sum(p["result"], (1)), m0))
     self.assertTrue(p["conv"])

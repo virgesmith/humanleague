@@ -2,18 +2,20 @@
 % Please edit documentation in R/RcppExports.R
 \name{ipf}
 \alias{ipf}
-\title{IPF}
+\title{Multidimensional IPF}
 \usage{
-ipf(seed, marginals)
+ipf(seed, indices, marginals)
 }
 \arguments{
 \item{seed}{an n-dimensional array of seed values}
 
-\item{marginals}{a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical}
+\item{indices}{an array listing the dimension indices of each marginal as they apply to the seed values}
+
+\item{marginals}{a List of arrays containing marginal data. The sum of elements in each array must be identical}
 }
 \value{
 an object containing: ...
 }
 \description{
-C++ IPF implementation
+C++ multidimensional IPF implementation
 }

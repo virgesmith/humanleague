@@ -81,44 +81,44 @@ QIS::QIS(const index_list_t& indices, marginal_list_t& marginals)
     m_expectedStateOccupancy[index] *= m_population;
 }
 
-// control state of Sobol via arg?
-const NDArray<int64_t>& QIS::solve2()
-{
-  m_conv = true;
-  Index main_index(m_array.sizes());
-  const std::vector<MappedIndex>& mappedIndices = makeMarginalMappings(main_index);
-  m_array.assign(0ll);
+// // control state of Sobol via arg?
+// const NDArray<int64_t>& QIS::solve2()
+// {
+//   m_conv = true;
+//   Index main_index(m_array.sizes());
+//   const std::vector<MappedIndex>& mappedIndices = makeMarginalMappings(main_index);
+//   m_array.assign(0ll);
 
-  // this is massively inefficent, far better to sample directly from each marginal
-  Sobol sobol_seq(m_dim);
-  for (int64_t i = 0; i < m_population; ++i)
-  {
-    // map sobol to a point in state space, store in index
-    const std::vector<uint32_t>& seq = sobol_seq.buf();
-    // ...
-    getIndex(m_stateProbs, seq, main_index);
+//   // this is massively inefficent, far better to sample directly from each marginal
+//   Sobol sobol_seq(m_dim);
+//   for (int64_t i = 0; i < m_population; ++i)
+//   {
+//     // map sobol to a point in state space, store in index
+//     const std::vector<uint32_t>& seq = sobol_seq.buf();
+//     // ...
+//     getIndex(m_stateProbs, seq, main_index);
 
-    // increment population
-    ++m_array[main_index];
+//     // increment population
+//     ++m_array[main_index];
 
-    // decrement marginals, checking none have gone -ve
-    for (size_t j = 0; j < mappedIndices.size(); ++j)
-    {
-      --m_marginals[j][mappedIndices[j]];
-      if (m_marginals[j][mappedIndices[j]] < 0)
-        m_conv = false;
-    }
-    // recalculate state probabilities
-    updateStateProbs();
-  }
-  m_chiSq = ::chiSq(m_array, m_expectedStateOccupancy);
+//     // decrement marginals, checking none have gone -ve
+//     for (size_t j = 0; j < mappedIndices.size(); ++j)
+//     {
+//       --m_marginals[j][mappedIndices[j]];
+//       if (m_marginals[j][mappedIndices[j]] < 0)
+//         m_conv = false;
+//     }
+//     // recalculate state probabilities
+//     updateStateProbs();
+//   }
+//   m_chiSq = ::chiSq(m_array, m_expectedStateOccupancy);
 
-  m_pValue = ::pValue(dof(m_array.sizes()), m_chiSq).first;
+//   m_pValue = ::pValue(dof(m_array.sizes()), m_chiSq).first;
 
-  m_degeneracy = ::degeneracy(m_array);
+//   m_degeneracy = ::degeneracy(m_array);
 
-  return m_array;
-}
+//   return m_array;
+// }
 
 // control state of Sobol via arg?
 // better solution? construct set of 1-d marginals and sample from these
@@ -151,10 +151,10 @@ const NDArray<int64_t>& QIS::solve()
       // insert indices into main_index (where unset!)
       for (size_t j = 0; j < m_indices[k].size(); ++j)
       {
-        // if (main_index[m_indices[k][j]] != -1/*Index::Unfixed*/)
-        // {
-        //   std::cout << std::to_string(k) << ": changing " << std::to_string(main_index[m_indices[k][j]]) << " to " << std::to_string(index[j]) << std::endl;
-        // }
+        if (main_index[m_indices[k][j]] != -1/*Index::Unfixed*/)
+        {
+          std::cout << std::to_string(k) << ": changing " << std::to_string(main_index[m_indices[k][j]]) << " to " << std::to_string(index[j]) << std::endl;
+        }
 
         main_index[m_indices[k][j]] = index[j];
       }

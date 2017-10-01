@@ -18,17 +18,6 @@ synthPopG <- function(marginals, exoProbsIn) {
     .Call('_humanleague_synthPopG', PACKAGE = 'humanleague', marginals, exoProbsIn)
 }
 
-#' IPF
-#'
-#' C++ IPF implementation
-#' @param seed an n-dimensional array of seed values
-#' @param marginals a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical
-#' @return an object containing: ...
-#' @export
-ipf <- function(seed, marginals) {
-    .Call('_humanleague_ipf', PACKAGE = 'humanleague', seed, marginals)
-}
-
 #' Multidimensional IPF
 #'
 #' C++ multidimensional IPF implementation
@@ -37,8 +26,8 @@ ipf <- function(seed, marginals) {
 #' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
 #' @return an object containing: ...
 #' @export
-wip_ipf <- function(seed, indices, marginals) {
-    .Call('_humanleague_wip_ipf', PACKAGE = 'humanleague', seed, indices, marginals)
+ipf <- function(seed, indices, marginals) {
+    .Call('_humanleague_ipf', PACKAGE = 'humanleague', seed, indices, marginals)
 }
 
 #' Multidimensional QIS

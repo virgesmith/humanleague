@@ -1,3 +1,6 @@
+
+# make CXX=clang++-4.0 to use clang
+
 target:=humanleague_dev
 
 src = main.cpp ../src/NDArrayUtils.cpp ../src/Index.cpp ../src/Sobol.cpp ../src/SobolImpl.cpp ../src/StatFuncs.cpp \

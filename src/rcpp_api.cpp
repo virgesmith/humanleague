@@ -416,55 +416,55 @@ List synthPopG(List marginals, NumericMatrix exoProbsIn)
 // }
 
 
-//' IPF
-//'
-//' C++ IPF implementation
-//' @param seed an n-dimensional array of seed values
-//' @param marginals a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical
-//' @return an object containing: ...
-//' @export
-// [[Rcpp::export]]
-List ipf(NumericVector seed, List marginals)
-{
-  const size_t dim = marginals.size();
-
-  Dimension sizes = seed.attr("dim");
-  std::vector<std::vector<double>> m(dim);
-  std::vector<int64_t> s(dim);
-
-  if (sizes.size() != dim)
-    throw std::runtime_error("no. of marginals not equal to seed dimension");
-
-  // insert marginals in reverse order (R being column-major)
-  for (size_t i = 0; i < dim; ++i)
-  {
-    const NumericVector& iv = marginals[i];
-    if (iv.size() != sizes[i])
-      throw std::runtime_error("seed-marginal size mismatch");
-    s[dim-i-1] = sizes[i];
-    m[dim-i-1].reserve(iv.size());
-    std::copy(iv.begin(), iv.end(), std::back_inserter(m[dim-i-1]));
-  }
-
-  // Storage for result
-  NumericVector r(sizes);
-
-  List result;
-  // Read-only shallow copy of seed
-  const NDArray<double> seedwrapper(s, (double*)&seed[0]);
-  // Do IPF (could provide another ctor that takies preallocated memory for result)
-  IPF ipf(seedwrapper, m);
-  // Copy result data into R array
-  const NDArray<double>& tmp = ipf.result();
-  std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
-  result["conv"] = ipf.conv();
-  result["result"] = r;
-  result["pop"] = ipf.population();
-  result["iterations"] = ipf.iters();
-  result["errors"] = ipf.errors();
-  result["maxError"] = ipf.maxError();
-  return result;
-}
+// //' IPF
+// //'
+// //' C++ IPF implementation
+// //' @param seed an n-dimensional array of seed values
+// //' @param marginals a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical
+// //' @return an object containing: ...
+// //' @export
+// // [[Rcpp::export]]
+// List ipf(NumericVector seed, List marginals)
+// {
+//   const size_t dim = marginals.size();
+//
+//   Dimension sizes = seed.attr("dim");
+//   std::vector<std::vector<double>> m(dim);
+//   std::vector<int64_t> s(dim);
+//
+//   if (sizes.size() != dim)
+//     throw std::runtime_error("no. of marginals not equal to seed dimension");
+//
+//   // insert marginals in reverse order (R being column-major)
+//   for (size_t i = 0; i < dim; ++i)
+//   {
+//     const NumericVector& iv = marginals[i];
+//     if (iv.size() != sizes[i])
+//       throw std::runtime_error("seed-marginal size mismatch");
+//     s[dim-i-1] = sizes[i];
+//     m[dim-i-1].reserve(iv.size());
+//     std::copy(iv.begin(), iv.end(), std::back_inserter(m[dim-i-1]));
+//   }
+//
+//   // Storage for result
+//   NumericVector r(sizes);
+//
+//   List result;
+//   // Read-only shallow copy of seed
+//   const NDArray<double> seedwrapper(s, (double*)&seed[0]);
+//   // Do IPF (could provide another ctor that takies preallocated memory for result)
+//   IPF ipf(seedwrapper, m);
+//   // Copy result data into R array
+//   const NDArray<double>& tmp = ipf.result();
+//   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
+//   result["conv"] = ipf.conv();
+//   result["result"] = r;
+//   result["pop"] = ipf.population();
+//   result["iterations"] = ipf.iters();
+//   result["errors"] = ipf.errors();
+//   result["maxError"] = ipf.maxError();
+//   return result;
+// }
 
 template<typename T, typename R>
 NDArray<T> convertRArray(R rArray)
@@ -510,7 +510,7 @@ NDArray<T> convertRArray(R rArray)
 //' @return an object containing: ...
 //' @export
 // [[Rcpp::export]]
-List wip_ipf(NumericVector seed, List indices, List marginals)
+List ipf(NumericVector seed, List indices, List marginals)
 {
   const int64_t k = marginals.size();
 
@@ -893,7 +893,6 @@ NumericMatrix correlatedSobol2Sequence(double rho, int n, int skip = 0)
 
   return m;
 }
-
 
 //' Entry point to enable running unit tests within R (e.g. in testthat)
 //'

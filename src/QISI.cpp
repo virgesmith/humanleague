@@ -72,10 +72,11 @@ QISI::QISI(const index_list_t& indices, marginal_list_t& marginals)
 // control state of Sobol via arg?
 const NDArray<int64_t>& QISI::solve(const NDArray<double>& seed)
 {
+  m_ipfSolution.resize(m_array.sizes());
   m_expectedStateOccupancy.resize(m_array.sizes());
   // compute initial IPF solution and keep a copy
   recomputeIPF(seed);
-  NDArray<double>::copy(m_expectedStateOccupancy, m_ipfSolution);
+  NDArray<double>::copy(m_ipfSolution, m_expectedStateOccupancy);
 
   m_conv = true;
   Index main_index(m_array.sizes());
@@ -88,8 +89,10 @@ const NDArray<int64_t>& QISI::solve(const NDArray<double>& seed)
     // map sobol to a point in state space, store in index
     const std::vector<uint32_t>& seq = sobol_seq.buf();
     // ...
-    getIndex(m_expectedStateOccupancy, seq, main_index);
+    getIndex(m_ipfSolution, seq, main_index);
 
+    //print((std::vector<int64_t>)main_index);
+    //print(m_ipfSolution.rawData(), m_ipfSolution.storageSize());
     // increment population
     ++m_array[main_index];
 
@@ -104,7 +107,7 @@ const NDArray<int64_t>& QISI::solve(const NDArray<double>& seed)
     // TODO only do when marginal <0
     recomputeIPF(seed);
   }
-  m_chiSq = ::chiSq(m_array, m_ipfSolution);
+  m_chiSq = ::chiSq(m_array, m_expectedStateOccupancy);
 
   m_pValue = ::pValue(dof(m_array.sizes()), m_chiSq).first;
 
@@ -116,8 +119,9 @@ const NDArray<int64_t>& QISI::solve(const NDArray<double>& seed)
 //
 void QISI::recomputeIPF(const NDArray<double>& seed)
 {
-  //wip::IPF ipf(m_indices, m_marginals);
-  //NDArray<double>::copy(ipf.solve(seed), m_ipfSolution);
+  // TODO make more efficient
+  wip::IPF<int64_t> ipf(m_indices, m_marginals);
+  NDArray<double>::copy(ipf.solve(seed), m_ipfSolution);
 }
 
 double QISI::chiSq() const

@@ -237,3 +237,58 @@ class Test(TestCase):
     self.assertTrue(np.allclose(np.sum(p["result"], (1, 2, 3)), m0))
     self.assertTrue(np.allclose(np.sum(p["result"], (2, 3, 0)), m1))
     self.assertTrue(np.allclose(np.sum(p["result"], (3, 0, 1)), m2))
+
+  def test_QISI(self):
+    m0 = np.array([52, 48]) 
+    m1 = np.array([10, 77, 13])
+    i0 = np.array([0])
+    i1 = np.array([1])
+    s = np.ones([len(m0), len(m1)])
+
+    p = hl.qisi(s, [i0, i1], [m0, m1])
+    print(p)
+    self.assertTrue(p["conv"])
+    self.assertLess(p["chiSq"], 0.04) 
+    self.assertGreater(p["pValue"], 0.9) 
+    #self.assertLess(p["degeneracy"], 0.04) TODO check the calculation
+    self.assertEqual(p["pop"], 100.0)
+    self.assertTrue(np.allclose(np.sum(p["result"], 0), m1))
+    self.assertTrue(np.allclose(np.sum(p["result"], 1), m0))
+    #self.assertTrue(np.array_equal(p["result"], np.array([[5, 40, 7],[5, 37, 6]])))
+
+    m0 = np.array([52, 40, 4, 4]) 
+    m1 = np.array([87, 10, 3])
+    m2 = np.array([55, 15, 6, 12, 12])
+    i0 = np.array([0])
+    i1 = np.array([1])
+    i2 = np.array([2])
+    s = np.ones([len(m0), len(m1), len(m2)])
+
+    p = hl.qisi(s, [i0, i1, i2], [m0, m1, m2])
+    self.assertTrue(p["conv"])
+    self.assertLess(p["chiSq"], 73.0) # TODO seems a bit high (probably )
+    self.assertGreater(p["pValue"], 8e-7) # TODO this is suspect
+    self.assertEqual(p["pop"], 100.0)
+    self.assertTrue(np.allclose(np.sum(p["result"], (0, 1)), m2))
+    self.assertTrue(np.allclose(np.sum(p["result"], (1, 2)), m0))
+    self.assertTrue(np.allclose(np.sum(p["result"], (2, 0)), m1))
+
+    m0 = np.array([52, 48]) 
+    m1 = np.array([87, 13])
+    m2 = np.array([67, 33])
+    m3 = np.array([55, 45])
+    i0 = np.array([0])
+    i1 = np.array([1])
+    i2 = np.array([2])
+    i3 = np.array([3])
+    s = np.ones([len(m0), len(m1), len(m2), len(m3)])
+
+    p = hl.qisi(s, [i0, i1, i2, i3], [m0, m1, m2, m3])
+    self.assertTrue(p["conv"])
+    self.assertLess(p["chiSq"], 10) 
+    self.assertGreater(p["pValue"], 0.0025) # TODO this looks suspect too
+    self.assertEqual(p["pop"], 100)
+    self.assertTrue(np.allclose(np.sum(p["result"], (0, 1, 2)), m3))
+    self.assertTrue(np.allclose(np.sum(p["result"], (1, 2, 3)), m0))
+    self.assertTrue(np.allclose(np.sum(p["result"], (2, 3, 0)), m1))
+    self.assertTrue(np.allclose(np.sum(p["result"], (3, 0, 1)), m2))

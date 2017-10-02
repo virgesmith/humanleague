@@ -14,8 +14,8 @@ int32_t maxAbsElement(const std::vector<int32_t>& r);
 std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vector<uint32_t>& y);
 std::vector<double> diff(const std::vector<double>& x, const std::vector<double>& y);
 
-template<typename T>
-void diff(const NDArray<T>& x, const NDArray<T>& y, NDArray<T>& d)
+template<typename T, typename U>
+void diff(const NDArray<T>& x, const NDArray<U>& y, NDArray<double>& d)
 {
   // TODO check x y and d sizes match
   for (Index index(x.sizes()); !index.end(); ++index)

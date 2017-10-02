@@ -99,7 +99,7 @@ public:
     this->m_array.assign(1.0);
     std::copy(seed.rawData(), seed.rawData() + seed.storageSize(), const_cast<double*>(this->m_array.rawData()));
   
-    marginal_list_t diffs(this->m_marginals.size());
+    std::vector<NDArray<double>> diffs(this->m_marginals.size());
     m_errors.resize(this->m_marginals.size());
   
     for (size_t k = 0; k < diffs.size(); ++k)

@@ -220,12 +220,12 @@ protected:
       const marginal_indices_t& mi = m_dim_lookup[d];
       if (mi.size() < 2)
         continue;
-      //                                     marginal index            marginal dimension
-      const std::vector<T>& ms = reduce(m_marginals[mi[0].first], mi[0].second);
+      //                                marginal index            marginal dimension
+      const std::vector<M>& ms = reduce(m_marginals[mi[0].first], mi[0].second);
       for (size_t i = 1; i < mi.size(); ++i)
       {
         if (reduce(m_marginals[mi[i].first], mi[i].second) != ms)
-        throw std::runtime_error("marginal partial sum mismatch");
+          throw std::runtime_error("marginal partial sum mismatch");
       }
     }
   }

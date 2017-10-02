@@ -367,6 +367,69 @@ extern "C" PyObject* humanleague_qis(PyObject *self, PyObject *args)
   }
 }
 
+// prevents name mangling (but works without this)
+extern "C" PyObject* humanleague_qisi(PyObject *self, PyObject *args)
+{
+  try 
+  {
+    PyObject* seedArg;
+    PyObject* indexArg;
+    PyObject* arrayArg;
+    
+    // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
+    if (!PyArg_ParseTuple(args, "O!O!O!", &PyArray_Type, & seedArg, &PyList_Type, &indexArg, &PyList_Type, &arrayArg))
+      return nullptr;
+  
+    // // seed
+    pycpp::Array<double> seed(seedArg);
+    //expects a list of numpy arrays containing int64
+    pycpp::List ilist(indexArg);
+    pycpp::List mlist(arrayArg);
+
+    int64_t k = ilist.size();
+    if (k != mlist.size())
+      throw std::runtime_error("index and marginals lists differ in size");
+    //std::vector<size_t> sizes(k);
+    std::vector<std::vector<int64_t>> indices(k);
+    std::vector<NDArray<int64_t>> marginals;
+    marginals.reserve(k);
+    
+    for (int64_t i = 0; i < k; ++i) 
+    {
+      if (!PyArray_Check(ilist[i]))
+        throw std::runtime_error("index input should be a list of numpy integer arrays");
+      if (!PyArray_Check(mlist[i]))
+        throw std::runtime_error("marginal input should be a list of numpy float arrays");
+      pycpp::Array<int64_t> ia(ilist[i]);
+      pycpp::Array<int64_t> ma(mlist[i]);
+        //sizes[i] = a.shape()[0];
+      indices[i] = ia.toVector<int64_t>();
+      marginals.push_back(std::move(ma.toNDArray()));
+    }
+
+    pycpp::Dict retval;
+
+    wip::QISI qisi(indices, marginals);
+    // THIS IS DESTRUCTIVE!
+    retval.insert("result", pycpp::Array<int64_t>(std::move(const_cast<NDArray<int64_t>&>(qisi.solve(seed.toNDArray())))));
+    retval.insert("conv", pycpp::Bool(qisi.conv()));
+    retval.insert("pop", pycpp::Double(qisi.population()));
+    retval.insert("chiSq", pycpp::Double(qisi.chiSq()));
+    retval.insert("pValue", pycpp::Double(qisi.pValue()));
+    retval.insert("degeneracy", pycpp::Double(qisi.degeneracy()));
+    
+    return retval.release();
+  }
+  catch(const std::exception& e)
+  {
+    return &pycpp::String(e.what());
+  }
+  catch(...)
+  {
+    return &pycpp::String("unexpected exception");
+  }
+}
+
 
 // prevents name mangling (but works without this)
 extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
@@ -576,6 +639,7 @@ PyMethodDef entryPoints[] = {
 //  {"wip_ipf", humanleague_wip_ipf, METH_VARARGS, "Synthpop (IPF)."},
   {"qsipf", humanleague_qsipf, METH_VARARGS, "Synthpop (quasirandom sampled IPF)."},
   {"qis", humanleague_qis, METH_VARARGS, "QIS."},
+  {"qisi", humanleague_qisi, METH_VARARGS, "QIS-IPF."},
   {"synthPop", humanleague_synthPop, METH_VARARGS, "Synthpop."},
   {"synthPopG", humanleague_synthPopG, METH_VARARGS, "Synthpop generalised."},
   //{"numpytest", humanleague_numpytest, METH_VARARGS, "numpy test."},

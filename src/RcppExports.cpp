@@ -53,15 +53,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// qsipf
-List qsipf(NumericVector seed, List marginals);
-RcppExport SEXP _humanleague_qsipf(SEXP seedSEXP, SEXP marginalsSEXP) {
+// qisi
+List qisi(NumericVector seed, List indices, List marginals);
+RcppExport SEXP _humanleague_qisi(SEXP seedSEXP, SEXP indicesSEXP, SEXP marginalsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< List >::type indices(indicesSEXP);
     Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
-    rcpp_result_gen = Rcpp::wrap(qsipf(seed, marginals));
+    rcpp_result_gen = Rcpp::wrap(qisi(seed, indices, marginals));
     return rcpp_result_gen;
 END_RCPP
 }

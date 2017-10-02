@@ -2,8 +2,6 @@
 
 #include "Microsynthesis.h"
 
-namespace wip {
-
 class QISI : public Microsynthesis<int64_t>
 {
 public:
@@ -27,11 +25,10 @@ private:
 
   NDArray<double> m_expectedStateOccupancy;
   // Required for chi-squared
-  NDArray<double> m_ipfSolution; 
+  NDArray<double> m_ipfSolution;
   double m_chiSq;
   double m_pValue;
   double m_degeneracy;
   bool m_conv;
 };
 
-}

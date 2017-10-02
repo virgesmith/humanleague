@@ -67,8 +67,6 @@ void getIndex(const NDArray<T>& p, const std::vector<uint32_t>& r, Index& index)
 
 }
 
-namespace wip {
-
 QIS::QIS(const index_list_t& indices, marginal_list_t& marginals)
 : Microsynthesis(indices, marginals), m_conv(false)
 {
@@ -151,10 +149,10 @@ const NDArray<int64_t>& QIS::solve()
       // insert indices into main_index (where unset!)
       for (size_t j = 0; j < m_indices[k].size(); ++j)
       {
-        if (main_index[m_indices[k][j]] != -1/*Index::Unfixed*/)
-        {
-          std::cout << std::to_string(k) << ": changing " << std::to_string(main_index[m_indices[k][j]]) << " to " << std::to_string(index[j]) << std::endl;
-        }
+        // if (main_index[m_indices[k][j]] != -1/*Index::Unfixed*/)
+        // {
+        //   std::cout << std::to_string(k) << ": changing " << std::to_string(main_index[m_indices[k][j]]) << " to " << std::to_string(index[j]) << std::endl;
+        // }
 
         main_index[m_indices[k][j]] = index[j];
       }
@@ -169,11 +167,11 @@ const NDArray<int64_t>& QIS::solve()
     ++m_array[main_index];
   }
   m_chiSq = ::chiSq(m_array, m_expectedStateOccupancy);
-  
+
   m_pValue = ::pValue(dof(m_array.sizes()), m_chiSq).first;
 
   m_degeneracy = ::degeneracy(m_array);
-  
+
   return m_array;
 }
 
@@ -222,4 +220,3 @@ bool QIS::conv() const
   return m_conv;
 }
 
-} //wip

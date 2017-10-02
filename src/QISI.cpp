@@ -62,7 +62,6 @@ void getIndex(const NDArray<double>& p, const std::vector<uint32_t>& r, Index& i
 
 }
 
-namespace wip {
 
 QISI::QISI(const index_list_t& indices, marginal_list_t& marginals)
 : Microsynthesis(indices, marginals), m_conv(false)
@@ -144,4 +143,3 @@ bool QISI::conv() const
   return m_conv;
 }
 
-} //wip

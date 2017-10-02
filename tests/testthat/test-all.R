@@ -49,45 +49,46 @@ test_that("simple 2D qiws", {
   expect_equal(nrow(res$table), 125)
   expect_equal(ncol(res$table), 2)
   expect_gt(res$pValue, 0.005)
-  #expect_equal(sum(res$error.margins), 0)
-  #expect_equal(length(res$error.margins), 2)
 })
 
 
-# m = m * 125
-# test_that("simple 5D qiws", {
-#   res<-humanleague::qis(list(1,2,3,4,5),list(m,m,m,m,m))
-#   expect_equal(rowSums(res$x.hat), m)
-#   expect_equal(res$conv, TRUE)
-#   expect_equal(nrow(res$pop), 125^2)
-#   expect_equal(ncol(res$pop), 5)
-#   expect_gt(res$pValue, 0.005)
-#   expect_equal(sum(res$error.margins), 0)
-#   expect_equal(length(res$error.margins), 5)
-# })
-#
-#
-# m = m * 125
-# test_that("simple 8D qiws", {
-#   res<-humanleague::qis(list(1,2,3,4,5,6,7,8),list(m,m,m,m,m,m,m,m))
-#   expect_equal(rowSums(res$x.hat), m)
-#   expect_equal(res$conv, TRUE)
-#   expect_gt(res$pValue, 0.005)
-#   expect_equal(sum(res$error.margins), 0)
-#   expect_equal(length(res$error.margins), 8)
-# })
-#
-#
-# m = c(2^15,2^15)
-# test_that("simple 12D qiws", {
-#   res<-humanleague::qis(list(1,2,3,4,5,6,7,8,9,10,11,12),list(m,m,m,m,m,m,m,m,m,m,m,m))
-#   expect_equal(rowSums(res$x.hat), m)
-#   expect_equal(res$conv, TRUE)
-#   expect_gt(res$pValue, 0.005)
-#   expect_equal(sum(res$error.margins), 0)
-#   expect_equal(length(res$error.margins), 12)
-# })
+m = m * 125
+test_that("simple 5D qis", {
+  res<-humanleague::qis(list(1,2,3,4,5),list(m,m,m,m,m))
+  expect_equal(rowSums(res$result), m)
+  expect_equal(res$conv, TRUE)
+  expect_equal(nrow(res$table), 125^2)
+  expect_equal(ncol(res$table), 5)
+  expect_gt(res$pValue, 0.005)
+})
 
+
+m = m * 125
+test_that("simple 8D qiws", {
+  res<-humanleague::qis(list(1,2,3,4,5,6,7,8),list(m,m,m,m,m,m,m,m))
+  expect_equal(rowSums(res$result), m)
+  expect_equal(res$conv, TRUE)
+  expect_equal(nrow(res$table), 125^3)
+  expect_equal(ncol(res$table), 8)
+  expect_gt(res$pValue, 0.005)
+})
+
+
+m = c(2^15,2^15)
+test_that("simple 12D qiws", {
+  res<-humanleague::qis(list(1,2,3,4,5,6,7,8,9,10,11,12),list(m,m,m,m,m,m,m,m,m,m,m,m))
+  expect_equal(rowSums(res$result), m)
+  expect_equal(res$conv, TRUE)
+  expect_gt(res$pValue, 0.005)
+})
+
+m = array(c(2^14,2^14,2^14,2^14),c(2,2))
+test_that("Complex 8 x 2D -> 12D qiws", {
+  res<-humanleague::qis(list(c(1,2),c(2,3),c(4,5),c(5,6),c(6,7),c(8,9),c(9,10),c(11,12)),list(m,m,m,m,m,m,m,m))
+  expect_equal(rowSums(res$result), rowSums(m))
+  expect_equal(res$conv, TRUE)
+  expect_gt(res$pValue, 0.005)
+})
 
 # realistic? case (iqrs fails)
 m1 <- c(144, 150, 3, 2, 153, 345, 13, 11, 226, 304, 24, 18, 250, 336, 14, 21, 190, 176, 15, 14, 27, 10, 2, 3, 93, 135, 2, 6, 30, 465, 11, 28, 43, 463, 17, 76, 39, 458, 15, 88, 55, 316, 22, 50, 15, 25, 11, 17)
@@ -262,15 +263,15 @@ test_that("QIS 3d (2)", {
 })
 
 
-##### QSIPF
+##### QIS-IPF
 
-test_that("QSIPF 2d unity seed", {
+test_that("QIS-IPF 2d unity seed", {
 
   m0=c(52,28,20)
   m1=c(87,13)
   sizes=c(length(m0), length(m1))
   s=array(rep(1,prod(sizes)),sizes)
-  t=qsipf(s,list(m0,m1))
+  t=qisi(s,list(1,2),list(m0,m1))
   expect_equal(t$conv, TRUE)
   expect_equal(t$pop, 100)
   expect_equal(sum(t$result), t$pop)
@@ -285,7 +286,7 @@ test_that("QSIPF 2d nonunity seed", {
 
   s2=array(rep(1,4),c(2,2))
   s2[1,1] = 0.7
-  t=qsipf(s2,list(m0,m1))
+  t=qisi(s2,list(1,2),list(m0,m1))
   expect_equal(t$conv, TRUE)
   expect_equal(t$pop, 100)
   expect_equal(sum(t$result), t$pop)
@@ -302,7 +303,7 @@ test_that("QSIPF 3d unity seed", {
   sizes = c(length(m0), length(m1), length(m2))
 
   s3=array(rep(1,prod(sizes)),sizes)
-  t3=qsipf(s3,list(m0,m1,m2))
+  t3=qisi(s3,list(1,2,3),list(m0,m1,m2))
   expect_equal(t3$conv, TRUE)
   expect_equal(t3$pop, 100)
   expect_equal(sum(t3$result), t3$pop)
@@ -322,7 +323,7 @@ test_that("QSIPF 4d unity seed", {
   sizes = c(length(m0), length(m1), length(m2), length(m3))
 
   s=array(rep(1,prod(sizes)),sizes)
-  t=qsipf(s,list(m0,m1,m2,m3))
+  t=qisi(s,list(1,2,3,4),list(m0,m1,m2,m3))
   expect_equal(t$conv, TRUE)
   expect_equal(t$pop, 100)
   expect_equal(sum(t$result), t$pop)

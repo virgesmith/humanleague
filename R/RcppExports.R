@@ -41,15 +41,16 @@ qis <- function(indices, marginals) {
     .Call('_humanleague_qis', PACKAGE = 'humanleague', indices, marginals)
 }
 
-#' QSIPF
+#' QIS-IPF
 #'
-#' C++ QSIPF implementation
+#' C++ QIS-IPF implementation
 #' @param seed an n-dimensional array of seed values
+#' @param indices
 #' @param marginals a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical
 #' @return an object containing: ...
 #' @export
-qsipf <- function(seed, marginals) {
-    .Call('_humanleague_qsipf', PACKAGE = 'humanleague', seed, marginals)
+qisi <- function(seed, indices, marginals) {
+    .Call('_humanleague_qisi', PACKAGE = 'humanleague', seed, indices, marginals)
 }
 
 #' Generate integer frequencies from discrete probabilities and an overall population.

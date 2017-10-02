@@ -2,8 +2,6 @@
 
 #include "Microsynthesis.h"
 
-namespace wip {
-
 class QIS : public Microsynthesis<int64_t>
 {
 public:
@@ -35,4 +33,3 @@ private:
   bool m_conv;
 };
 
-}

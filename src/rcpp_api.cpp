@@ -25,14 +25,16 @@ using namespace Rcpp;
 
 #include "NDArrayUtils.h"
 #include "Index.h"
-#include "QIWS.h" // TODO deprecate
-#include "GQIWS.h" // TODO deprecate
 #include "IPF.h"
-#include "QSIPF.h" // TODO deprecate
 #include "QIS.h"
+#include "QISI.h"
 #include "Integerise.h"
 #include "StatFuncs.h"
 #include "Sobol.h"
+
+#include "QIWS.h" // TODO deprecate
+#include "GQIWS.h" // TODO deprecate
+#include "QSIPF.h" // TODO deprecate
 
 #include "UnitTester.h"
 
@@ -642,7 +644,7 @@ List qis(List indices, List marginals)
   // Storage for result
   List result;
   // Do QIS (could provide another ctor that takes preallocated memory for result)
-  wip::QIS qis(idx, m);
+  QIS qis(idx, m);
 
   // How painful can it be to initialise a multidimensional array?
   int64_t size = std::accumulate(rSizes.begin(), rSizes.end(), 1ll, std::multiplies<int64_t>());
@@ -662,58 +664,67 @@ List qis(List indices, List marginals)
   return result;
 }
 
-//' QSIPF
+//' QIS-IPF
 //'
-//' C++ QSIPF implementation
+//' C++ QIS-IPF implementation
 //' @param seed an n-dimensional array of seed values
+//' @param indices
 //' @param marginals a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical
 //' @return an object containing: ...
 //' @export
 // [[Rcpp::export]]
-List qsipf(NumericVector seed, List marginals)
+List qisi(NumericVector seed, List indices, List marginals)
 {
-  const size_t dim = marginals.size();
+  const int64_t k = marginals.size();
 
-  IntegerVector sizes = seed.attr("dim");
-  std::vector<std::vector<int64_t>> m(dim);
-  std::vector<int64_t> s(dim);
+  Dimension rSizes = seed.attr("dim");
+  const int64_t dim = rSizes.size();
 
-  if (sizes.size() != dim)
-    throw std::runtime_error("no. of marginals not equal to seed dimension");
+  std::vector<NDArray<int64_t>> m;
+  m.reserve(k);
+  std::vector<std::vector<int64_t>> idx;
+  idx.reserve(k);
+  std::vector<int64_t> s;
+  s.reserve(dim);
 
-  // insert marginals in reverse order
-  for (size_t i = 0; i < dim; ++i)
+  if (indices.size() != marginals.size())
+    throw std::runtime_error("no. of marginals not equal to no. of indices");
+
+  // assemble dimensions (row major) for seed
+  for (int64_t i = dim-1; i >= 0; --i)
+    s.push_back(rSizes[(size_t)i]);
+
+    // insert indices and marginals in reverse order (R being column-major)
+  for (int64_t i = k-1; i >= 0; --i)
   {
-    const IntegerVector& iv = marginals[i];
-    if (iv.size() != sizes[i])
-      throw std::runtime_error("seed-marginal size mismatch");
-    s[dim-i-1] = sizes[i];
-    m[dim-i-1].reserve(iv.size());
-    std::copy(iv.begin(), iv.end(), std::back_inserter(m[dim-i-1]));
+    const IntegerVector& iv = indices[i];
+    const IntegerVector& mv = marginals[i];
+    idx.push_back(std::vector<int64_t>(iv.size()));
+    // also need to reverse dimension indices
+    for (size_t j = 0; j < iv.size(); ++j)
+      idx.back()[j] = dim - iv[j];
+    // convert col major array to NDArray
+    m.push_back(std::move(convertRArray<int64_t, IntegerVector>(mv)));
   }
 
-  //print(s);
-
   // Deep copy of seed for result (preserves diimesion, values will be overwritten)
-  IntegerVector r(seed);
+  NumericVector r(seed);
 
   List result;
 
   // Read-only shallow copy of seed
   const NDArray<double> seedwrapper(s, (double*)&seed[0]);
   // Do IPF
-  QSIPF qsipf(seedwrapper, m);
+  QISI qisipf(idx, m);
   // Copy result data into R array
-  const NDArray<int64_t>& tmp = qsipf.sample();
+  const NDArray<int64_t>& tmp = qisipf.solve(seedwrapper);
+
   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
-  result["conv"] = qsipf.conv();
+  result["conv"] = qisipf.conv();
   result["result"] = r;
-  result["pop"] = qsipf.population();
-  result["iterations"] = qsipf.iters();
-  result["chiSq"] = qsipf.chiSq();
-  result["errors"] = qsipf.errors();
-  result["maxError"] = qsipf.maxError();
-  result["table"] = flatten(qsipf.population(), tmp);
+  result["pop"] = qisipf.population();
+  result["chiSq"] = qisipf.chiSq();
+  result["table"] = flatten(qisipf.population(), tmp);
 
   return result;
 }

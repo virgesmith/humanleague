@@ -19,7 +19,6 @@
 
 #include <iostream>
 
-
 pycpp::List flatten(const size_t pop, const NDArray<uint32_t>& t)
 {
   //print(t.rawData(), t.storageSize(), t.sizes()[1]);
@@ -31,32 +30,6 @@ pycpp::List flatten(const size_t pop, const NDArray<uint32_t>& t)
   }
   return outer;
 }
-
-// // TODO multidim
-// template<typename S>
-// void doSolve(pycpp::Dict& result, size_t dims, const std::vector<std::vector<uint32_t>>& m)
-// {
-//   S qiws(m); 
-//   result.insert("conv", pycpp::Bool(qiws.solve()));
-//   result.insert("result", flatten(qiws.population(), qiws.result()));
-//   result.insert("p-value", pycpp::Double(qiws.pValue().first));
-//   result.insert("chiSq", pycpp::Double(qiws.chiSq()));
-//   result.insert("pop", pycpp::Int(qiws.population()));
-// }
-
-// // TODO merge with above when APIs are consistent
-// template<size_t D>
-// void doSolveIPF(pycpp::Dict& result, size_t dims, const NDArray<D, double>& seed, const std::vector<std::vector<double>>& m)
-// {
-//   IPF<D> ipf(seed, m); 
-//   result.insert("conv", pycpp::Bool(ipf.conv()));
-//   // result.insert("p-value", pycpp::Double(qiws.pValue().first));
-//   // result.insert("chiSq", pycpp::Double(qiws.chiSq()));
-//   result.insert("pop", pycpp::Double(ipf.population()));
-//   // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
-//   result.insert("result", pycpp::Array<double>(std::move(const_cast<NDArray<D, double>&>(ipf.result()))));
-// }
-
 
 extern "C" PyObject* humanleague_prob2IntFreq(PyObject* self, PyObject* args)
 {
@@ -136,58 +109,6 @@ extern "C" PyObject* humanleague_sobol(PyObject *self, PyObject *args)
   }
 }
 
-// // prevents name mangling (but works without this)
-// extern "C" PyObject* humanleague_ipf_old(PyObject *self, PyObject *args)
-// {
-//   try 
-//   {
-//     PyObject* arrayArg;
-//     PyObject* seedArg;
-    
-//     // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
-//     if (!PyArg_ParseTuple(args, "O!O!", &PyArray_Type, & seedArg, &PyList_Type, &arrayArg))
-//       return nullptr;
-    
-//     // seed
-//     pycpp::Array<double> seed(seedArg);
-//     // expects a list of numpy arrays containing int64
-//     pycpp::List list(arrayArg);
-    
-//     size_t dim = list.size();
-//     std::vector<size_t> sizes(dim);
-//     std::vector<std::vector<double>> marginals(dim);
-      
-//     for (size_t i = 0; i < dim; ++i) 
-//     {
-//       if (!PyArray_Check(list[i]))
-//         throw std::runtime_error("input should be a list of numpy integer arrays");
-//       pycpp::Array<double> a(list[i]);
-//       sizes[i] = a.shape()[0];
-//       marginals[i] = a.toVector<double>();
-//     }
-
-//     pycpp::Dict retval;
-
-//     IPF ipf(seed.toNDArray(), marginals); 
-//     retval.insert("conv", pycpp::Bool(ipf.conv()));
-//     // result.insert("p-value", pycpp::Double(qiws.pValue().first));
-//     // result.insert("chiSq", pycpp::Double(qiws.chiSq()));
-//     retval.insert("pop", pycpp::Double(ipf.population()));
-//     // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
-//     retval.insert("result", pycpp::Array<double>(std::move(const_cast<NDArray<double>&>(ipf.result()))));
-
-//     return retval.release();
-//   }
-//   catch(const std::exception& e)
-//   {
-//     return &pycpp::String(e.what());
-//   }
-//   catch(...)
-//   {
-//     return &pycpp::String("unexpected exception");
-//   }
-// }
-
 // prevents name mangling (but works without this)
 extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
 {
@@ -252,57 +173,57 @@ extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
 }
 
 
-// prevents name mangling (but works without this)
-extern "C" PyObject* humanleague_qsipf(PyObject *self, PyObject *args)
-{
-  try 
-  {
-    PyObject* arrayArg;
-    PyObject* seedArg;
+// // prevents name mangling (but works without this)
+// extern "C" PyObject* humanleague_qsipf(PyObject *self, PyObject *args)
+// {
+//   try 
+//   {
+//     PyObject* arrayArg;
+//     PyObject* seedArg;
     
-    // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
-    if (!PyArg_ParseTuple(args, "O!O!", &PyArray_Type, & seedArg, &PyList_Type, &arrayArg))
-      return nullptr;
+//     // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
+//     if (!PyArg_ParseTuple(args, "O!O!", &PyArray_Type, & seedArg, &PyList_Type, &arrayArg))
+//       return nullptr;
     
-    // seed
-    pycpp::Array<double> seed(seedArg);
-    // expects a list of numpy arrays containing int64
-    pycpp::List list(arrayArg);
+//     // seed
+//     pycpp::Array<double> seed(seedArg);
+//     // expects a list of numpy arrays containing int64
+//     pycpp::List list(arrayArg);
     
-    size_t dim = list.size();
-    std::vector<size_t> sizes(dim);
-    std::vector<std::vector<int64_t>> marginals(dim);
+//     size_t dim = list.size();
+//     std::vector<size_t> sizes(dim);
+//     std::vector<std::vector<int64_t>> marginals(dim);
       
-    for (size_t i = 0; i < dim; ++i) 
-    {
-      if (!PyArray_Check(list[i]))
-        throw std::runtime_error("input should be a list of numpy integer arrays");
-      pycpp::Array<int64_t> a(list[i]);
-      sizes[i] = a.shape()[0];
-      marginals[i] = a.toVector<int64_t>();
-    }
+//     for (size_t i = 0; i < dim; ++i) 
+//     {
+//       if (!PyArray_Check(list[i]))
+//         throw std::runtime_error("input should be a list of numpy integer arrays");
+//       pycpp::Array<int64_t> a(list[i]);
+//       sizes[i] = a.shape()[0];
+//       marginals[i] = a.toVector<int64_t>();
+//     }
 
-    pycpp::Dict result;
+//     pycpp::Dict result;
     
-    QSIPF qsipf(seed.toNDArray(), marginals); 
-    result.insert("conv", pycpp::Bool(qsipf.conv()));
-    result.insert("chiSq", pycpp::Double(qsipf.chiSq()));
-    result.insert("pop", pycpp::Int(qsipf.population()));
-    // result.insert("p-value", pycpp::Double(qiws.pValue().first));
-    // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
-    result.insert("result", pycpp::Array<int64_t>(std::move(const_cast<NDArray<int64_t>&>(qsipf.sample()))));
+//     QSIPF qsipf(seed.toNDArray(), marginals); 
+//     result.insert("conv", pycpp::Bool(qsipf.conv()));
+//     result.insert("chiSq", pycpp::Double(qsipf.chiSq()));
+//     result.insert("pop", pycpp::Int(qsipf.population()));
+//     // result.insert("p-value", pycpp::Double(qiws.pValue().first));
+//     // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
+//     result.insert("result", pycpp::Array<int64_t>(std::move(const_cast<NDArray<int64_t>&>(qsipf.sample()))));
 
-    return result.release();
-  }
-  catch(const std::exception& e)
-  {
-    return &pycpp::String(e.what());
-  }
-  catch(...)
-  {
-    return &pycpp::String("unexpected exception");
-  }
-}
+//     return result.release();
+//   }
+//   catch(const std::exception& e)
+//   {
+//     return &pycpp::String(e.what());
+//   }
+//   catch(...)
+//   {
+//     return &pycpp::String("unexpected exception");
+//   }
+// }
 
 
 // prevents name mangling (but works without this)
@@ -312,9 +233,10 @@ extern "C" PyObject* humanleague_qis(PyObject *self, PyObject *args)
   {
     PyObject* indexArg;
     PyObject* arrayArg;
+    int64_t skips = 0;
     
     // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
-    if (!PyArg_ParseTuple(args, "O!O!", &PyList_Type, &indexArg, &PyList_Type, &arrayArg))
+    if (!PyArg_ParseTuple(args, "O!O!|i", &PyList_Type, &indexArg, &PyList_Type, &arrayArg, &skips))
       return nullptr;
     
     // seed
@@ -346,7 +268,7 @@ extern "C" PyObject* humanleague_qis(PyObject *self, PyObject *args)
 
     pycpp::Dict retval;
 
-    QIS qis(indices, marginals); 
+    QIS qis(indices, marginals, skips); 
     // THIS IS DESTRUCTIVE!
     retval.insert("result", pycpp::Array<int64_t>(std::move(const_cast<NDArray<int64_t>&>(qis.solve()))));
     retval.insert("conv", pycpp::Bool(qis.conv()));
@@ -375,12 +297,13 @@ extern "C" PyObject* humanleague_qisi(PyObject *self, PyObject *args)
     PyObject* seedArg;
     PyObject* indexArg;
     PyObject* arrayArg;
+    int64_t skips = 0;
     
     // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
-    if (!PyArg_ParseTuple(args, "O!O!O!", &PyArray_Type, & seedArg, &PyList_Type, &indexArg, &PyList_Type, &arrayArg))
+    if (!PyArg_ParseTuple(args, "O!O!O!|i", &PyArray_Type, & seedArg, &PyList_Type, &indexArg, &PyList_Type, &arrayArg, &skips))
       return nullptr;
   
-    // // seed
+    // seed
     pycpp::Array<double> seed(seedArg);
     //expects a list of numpy arrays containing int64
     pycpp::List ilist(indexArg);
@@ -409,7 +332,7 @@ extern "C" PyObject* humanleague_qisi(PyObject *self, PyObject *args)
 
     pycpp::Dict retval;
 
-    QISI qisi(indices, marginals);
+    QISI qisi(indices, marginals, skips);
     // THIS IS DESTRUCTIVE!
     retval.insert("result", pycpp::Array<int64_t>(std::move(const_cast<NDArray<int64_t>&>(qisi.solve(seed.toNDArray())))));
     retval.insert("conv", pycpp::Bool(qisi.conv()));
@@ -521,106 +444,6 @@ extern "C" PyObject* humanleague_synthPopG(PyObject *self, PyObject *args)
   }
 }
 
-// // prevents name mangling (but works without this)
-// extern "C" PyObject* humanleague_synthPopR(PyObject *self, PyObject *args)
-// {
-//   try 
-//   {
-//     PyObject* marginal0Arg;
-//     PyObject* marginal1Arg;
-//     double rho;
-
-//     // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
-//     if (!PyArg_ParseTuple(args, "O!O!d", &PyList_Type, &marginal0Arg, 
-//                                          &PyList_Type, &marginal1Arg, &rho))
-//       return nullptr;
-      
-//     pycpp::List marginal0(marginal0Arg);
-//     pycpp::List marginal1(marginal1Arg);
-    
-//     std::vector<std::vector<uint32_t>> marginals(2);
-      
-//     marginals[0] = marginal0.toVector<uint32_t>();
-//     marginals[1] = marginal1.toVector<uint32_t>();
-//     RQIWS rqiws(marginals, rho);
-//     pycpp::Dict retval;
-//     retval.insert("conv", pycpp::Bool(rqiws.solve()));
-//     retval.insert("result", flatten(rqiws.population(), rqiws.result()));
-//     retval.insert("pop", pycpp::Int(rqiws.population()));
-//     return retval.release();
-//   }
-//   catch(const std::exception& e)
-//   {
-//     return &pycpp::String(e.what());
-//   }
-//   catch(...)
-//   {
-//     return &pycpp::String("unexpected exception");
-//   }
-// }
-
-// // prevents name mangling (but works without this)
-// extern "C" PyObject* humanleague_numpytest(PyObject *self, PyObject *args)
-// {
-//   try 
-//   {
-//     PyObject* arrayArg;
-
-//     // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
-//     if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, &arrayArg))
-//       return nullptr;
-      
-//     //npy_intp p[2] = {5,5};
-//     //pycpp::Array<double> retval(2, p);
-    
-//     long lsizes[] = {5,5};
-//     size_t sizes[] = {5,5};
-
-//     old::NDArray<2,int64_t> a(sizes);
-//     int i = 0;
-//     for (old::Index<2, old::Index_Unfixed> idx(sizes); !idx.end(); ++idx)
-//     {
-//       a[idx] = ++i;
-//     }
-//     pycpp::Array<int64_t> array(std::move(a));
-
-//     pycpp::Array<int64_t> array2(2, lsizes);
-    
-//     long index[] = { 0, 0 };
-//     for (; index[0] < lsizes[0]; ++index[0])
-//       for (; index[1] < lsizes[1]; ++index[1])
-//         array2[index] = index[0] * 10 + index[1] * 100;
-
-//     pycpp::Dict retval;
-// //    retval.insert("uninit", std::move(array));
-
-//     for (ssize_t i = 0; i < 2; ++i)
-//     {
-//       std::cout << array2.stride(i) << ", ";
-//     }
-//     std::cout << std::endl;
-//     int64_t* p = array2.rawData();
-//     for (ssize_t i = 0; i < array2.storageSize(); ++i)
-//     {
-//       std::cout << p[i] << ", ";
-//       p[i] = i;
-//     }
-//     std::cout << std::endl;
-    
-//     retval.insert("init", std::move(array2));
-//     retval.insert("NDArray", std::move(array));
-    
-//     return retval.release();
-//   }
-//   catch(const std::exception& e)
-//   {
-//     return &pycpp::String(e.what());
-//   }
-//   catch(...)
-//   {
-//     return &pycpp::String("unexpected exception");
-//   }
-// }
 
 // until I find a better way...
 extern "C" PyObject* humanleague_version(PyObject*, PyObject*)
@@ -636,13 +459,11 @@ PyMethodDef entryPoints[] = {
   {"prob2IntFreq", humanleague_prob2IntFreq, METH_VARARGS, "Returns nearest-integer population given probs and overall population."},
   {"sobolSequence", humanleague_sobol, METH_VARARGS, "Returns a Sobol sequence."},
   {"ipf", humanleague_ipf, METH_VARARGS, "Synthpop (IPF)."},
-//  {"wip_ipf", humanleague_wip_ipf, METH_VARARGS, "Synthpop (IPF)."},
-  {"qsipf", humanleague_qsipf, METH_VARARGS, "Synthpop (quasirandom sampled IPF)."},
   {"qis", humanleague_qis, METH_VARARGS, "QIS."},
   {"qisi", humanleague_qisi, METH_VARARGS, "QIS-IPF."},
   {"synthPop", humanleague_synthPop, METH_VARARGS, "Synthpop."},
   {"synthPopG", humanleague_synthPopG, METH_VARARGS, "Synthpop generalised."},
-  //{"numpytest", humanleague_numpytest, METH_VARARGS, "numpy test."},
+  //{"qsipf", humanleague_qsipf, METH_VARARGS, "Synthpop (quasirandom sampled IPF)."},
   {"version", humanleague_version, METH_NOARGS, "version info"},
   {nullptr, nullptr, 0, nullptr}        /* terminator */
 };

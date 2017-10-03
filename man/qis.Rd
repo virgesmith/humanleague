@@ -4,7 +4,7 @@
 \alias{qis}
 \title{Multidimensional QIS}
 \usage{
-qis(indices, marginals)
+qis(indices, marginals, skips = 0L)
 }
 \arguments{
 \item{indices}{an array listing the dimension indices of each marginal as they apply to the seed values}

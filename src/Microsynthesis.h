@@ -64,6 +64,8 @@ public:
         throw std::runtime_error("negative value in marginal " + std::to_string(k));
     }
 
+    m_dim = dim_sizes.size();
+    
     // check all dims defined
     //std::vector<int64_t> sizes;
     m_sizes.reserve(m_indices.size());
@@ -196,7 +198,6 @@ protected:
   void createMappings(const std::vector<int64_t> sizes, const std::map<int64_t, int64_t>& dim_sizes)
   {
     // create mapping from dimension to marginal(s)
-    m_dim = dim_sizes.size();
     m_dim_lookup.resize(m_dim);
 
     for (size_t k = 0; k < m_indices.size(); ++k)

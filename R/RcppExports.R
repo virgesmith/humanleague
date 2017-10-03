@@ -37,8 +37,8 @@ ipf <- function(seed, indices, marginals) {
 #' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
 #' @return an object containing: ...
 #' @export
-qis <- function(indices, marginals) {
-    .Call('_humanleague_qis', PACKAGE = 'humanleague', indices, marginals)
+qis <- function(indices, marginals, skips = 0L) {
+    .Call('_humanleague_qis', PACKAGE = 'humanleague', indices, marginals, skips)
 }
 
 #' QIS-IPF
@@ -49,8 +49,8 @@ qis <- function(indices, marginals) {
 #' @param marginals a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical
 #' @return an object containing: ...
 #' @export
-qisi <- function(seed, indices, marginals) {
-    .Call('_humanleague_qisi', PACKAGE = 'humanleague', seed, indices, marginals)
+qisi <- function(seed, indices, marginals, skips = 0L) {
+    .Call('_humanleague_qisi', PACKAGE = 'humanleague', seed, indices, marginals, skips)
 }
 
 #' Generate integer frequencies from discrete probabilities and an overall population.

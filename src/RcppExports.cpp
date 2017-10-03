@@ -42,27 +42,29 @@ BEGIN_RCPP
 END_RCPP
 }
 // qis
-List qis(List indices, List marginals);
-RcppExport SEXP _humanleague_qis(SEXP indicesSEXP, SEXP marginalsSEXP) {
+List qis(List indices, List marginals, int skips);
+RcppExport SEXP _humanleague_qis(SEXP indicesSEXP, SEXP marginalsSEXP, SEXP skipsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type indices(indicesSEXP);
     Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
-    rcpp_result_gen = Rcpp::wrap(qis(indices, marginals));
+    Rcpp::traits::input_parameter< int >::type skips(skipsSEXP);
+    rcpp_result_gen = Rcpp::wrap(qis(indices, marginals, skips));
     return rcpp_result_gen;
 END_RCPP
 }
 // qisi
-List qisi(NumericVector seed, List indices, List marginals);
-RcppExport SEXP _humanleague_qisi(SEXP seedSEXP, SEXP indicesSEXP, SEXP marginalsSEXP) {
+List qisi(NumericVector seed, List indices, List marginals, int skips);
+RcppExport SEXP _humanleague_qisi(SEXP seedSEXP, SEXP indicesSEXP, SEXP marginalsSEXP, SEXP skipsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type seed(seedSEXP);
     Rcpp::traits::input_parameter< List >::type indices(indicesSEXP);
     Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
-    rcpp_result_gen = Rcpp::wrap(qisi(seed, indices, marginals));
+    Rcpp::traits::input_parameter< int >::type skips(skipsSEXP);
+    rcpp_result_gen = Rcpp::wrap(qisi(seed, indices, marginals, skips));
     return rcpp_result_gen;
 END_RCPP
 }

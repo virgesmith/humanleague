@@ -124,68 +124,24 @@ class Test(TestCase):
     self.assertLess(p["maxError"], 5e-10)
     self.assertEqual(p["pop"], 100.0)
 
-    # s = np.array([[[1.0, 1.0], [1.0, 1.0]], [[1.0, 1.0], [1.0, 1.0]]])
-    # p = hl.ipf(s, [m0, m1, m2])
-    # print(np.sum(p["result"], (0, 1)))
-    # print(np.sum(p["result"], (1, 2)))
-    # print(np.sum(p["result"], (2, 0)))
-    # self.assertTrue(p["conv"])
-    # # check overall population and marginals correct
-    # self.assertAlmostEqual(np.sum(p["result"]), p["pop"]) # default is 7d.p.
-    # self.assertTrue(np.allclose(np.sum(p["result"], (0, 1)), m2))
-    # self.assertTrue(np.allclose(np.sum(p["result"], (1, 2)), m0))
-    # self.assertTrue(np.allclose(np.sum(p["result"], (2, 0)), m1))
-
-    # # 12D
-    # s = np.ones([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
-    # m = np.array([2048., 2048.])
-    # p = hl.ipf(s,[m, m, m, m, m, m, m, m, m, m, m, m])
-    # print(p)
-    # self.assertTrue(p["pop"] == 4096)
-
-  def test_QSIPF(self):
-    m0 = np.array([52, 48]) 
-    m1 = np.array([10, 77, 13])
-
-    # nonunity seed
-    s = np.ones([len(m0), len(m1)])
-    s[0,0] = 0.7
-    s[1,1] = 1.3
-    p = hl.qsipf(s, [m0, m1])
+    s = np.array([[[1.0, 1.0], [1.0, 1.0]], [[1.0, 1.0], [1.0, 1.0]]])
+    p = hl.ipf(s, [np.array([0]),np.array([1]),np.array([2])], [m0, m1, m2])
+    print(np.sum(p["result"], (0, 1)))
+    print(np.sum(p["result"], (1, 2)))
+    print(np.sum(p["result"], (2, 0)))
     self.assertTrue(p["conv"])
-    self.assertLess(p["chiSq"], 0.1) # ~0.091
-    self.assertEqual(p["pop"], 100.0)
-    self.assertTrue(np.allclose(np.sum(p["result"], 0), m1))
-    self.assertTrue(np.allclose(np.sum(p["result"], 1), m0))
-    #self.assertTrue(np.array_equal(p["result"], np.array([[5, 40, 7],[5, 37, 6]])))
-
-    m0 = np.array([52, 40, 4, 4]) 
-    m1 = np.array([87, 10, 3])
-    m2 = np.array([55, 15, 6, 12, 12])
-
-    s = np.ones([len(m0), len(m1), len(m2)])
-    p = hl.qsipf(s, [m0, m1, m2])
-    self.assertTrue(p["conv"])
-    self.assertLess(p["chiSq"], 70) # TODO seems a bit high (probably )
-    self.assertEqual(p["pop"], 100.0)
+    # check overall population and marginals correct
+    self.assertAlmostEqual(np.sum(p["result"]), p["pop"]) # default is 7d.p.
     self.assertTrue(np.allclose(np.sum(p["result"], (0, 1)), m2))
     self.assertTrue(np.allclose(np.sum(p["result"], (1, 2)), m0))
     self.assertTrue(np.allclose(np.sum(p["result"], (2, 0)), m1))
 
-    m0 = np.array([52, 48]) 
-    m1 = np.array([87, 13])
-    m2 = np.array([67, 33])
-    m3 = np.array([55, 45])
-
-    s = np.ones([len(m0), len(m1), len(m2), len(m3)])
-    p = hl.qsipf(s, [m0, m1, m2, m3])
-    self.assertTrue(p["conv"])
-    self.assertLess(p["chiSq"], 5.25) 
-    self.assertEqual(p["pop"], 100)
-    self.assertTrue(np.allclose(np.sum(p["result"], (0, 1, 2)), m3))
-    self.assertTrue(np.allclose(np.sum(p["result"], (1, 2, 3)), m0))
-    self.assertTrue(np.allclose(np.sum(p["result"], (2, 3, 0)), m1))
-    self.assertTrue(np.allclose(np.sum(p["result"], (3, 0, 1)), m2))
+    # 12D
+    s = np.ones([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+    m = np.array([2048., 2048.])
+    p = hl.ipf(s, [np.array([0]),np.array([1]),np.array([2]),np.array([3]),np.array([4]),np.array([5]),np.array([6]),np.array([7]),np.array([8]),np.array([9]),np.array([10]),np.array([11])],[m, m, m, m, m, m, m, m, m, m, m, m])
+    self.assertTrue(p["conv"] == True)
+    self.assertTrue(p["pop"] == 4096)
 
   def test_QIS(self):
     m0 = np.array([52, 48]) 

@@ -1,7 +1,6 @@
 
 #include "QIS.h"
 #include "Index.h"
-#include "Sobol.h"
 #include "StatFuncs.h"
 
 namespace {
@@ -67,9 +66,11 @@ void getIndex(const NDArray<T>& p, const std::vector<uint32_t>& r, Index& index)
 
 }
 
-QIS::QIS(const index_list_t& indices, marginal_list_t& marginals)
-: Microsynthesis(indices, marginals), m_conv(false)
+QIS::QIS(const index_list_t& indices, marginal_list_t& marginals, int64_t skips)
+: Microsynthesis(indices, marginals), m_sobolSeq(m_dim), m_conv(false)
 {
+  m_sobolSeq.skip(skips);
+  //m_sobolSeq = Sobol(m_dim);
   m_stateProbs.resize(m_array.sizes());
   // compute initial state probabilities and keep a copy
   updateStateProbs();
@@ -120,19 +121,23 @@ QIS::QIS(const index_list_t& indices, marginal_list_t& marginals)
 
 // control state of Sobol via arg?
 // better solution? construct set of 1-d marginals and sample from these
-const NDArray<int64_t>& QIS::solve()
+const NDArray<int64_t>& QIS::solve(bool reset)
 {
+  if (reset)
+  {
+    m_sobolSeq.reset();
+  }
+
   m_conv = true;
   // loop over population
   m_array.assign(0ll);
 
-  Sobol sobol_seq(m_dim);
   for (int64_t i = 0; i < m_population; ++i)
   {
     // init main_index with unset values
     std::vector<int64_t> main_index(m_array.sizes().size(), -1/*Index::Unfixed*/);
     // take values from Sobol
-    const std::vector<uint32_t>& seq = sobol_seq.buf();
+    const std::vector<uint32_t>& seq = m_sobolSeq.buf();
 
     // loop over marginals
     for (size_t k = 0; k < m_marginals.size(); ++k)
@@ -149,10 +154,11 @@ const NDArray<int64_t>& QIS::solve()
       // insert indices into main_index (where unset!)
       for (size_t j = 0; j < m_indices[k].size(); ++j)
       {
-        // if (main_index[m_indices[k][j]] != -1/*Index::Unfixed*/)
-        // {
-        //   std::cout << std::to_string(k) << ": changing " << std::to_string(main_index[m_indices[k][j]]) << " to " << std::to_string(index[j]) << std::endl;
-        // }
+        // TODO try to find a case whexe index gets changed (or prove its not possible)
+        if (main_index[m_indices[k][j]] != -1/*Index::Unfixed*/ && main_index[m_indices[k][j]] != index[j])
+        {
+          std::cout << std::to_string(k) << ": changing " << std::to_string(main_index[m_indices[k][j]]) << " to " << std::to_string(index[j]) << std::endl;
+        }
 
         main_index[m_indices[k][j]] = index[j];
       }

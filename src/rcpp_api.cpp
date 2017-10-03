@@ -283,67 +283,6 @@ List synthPop(List marginals)
   return result;
 }
 
-// //' Generate a constrained population in 2 dimensions given 2 marginals and a constraint matrix.
-// //'
-// //' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
-// //' generates a 2-dimensional population table where elements sum to the input marginals.
-// //' It then uses an iterative algorithm to reassign the population to only the permitted states.
-// //' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
-// //' @param permittedStates a matrix of booleans containing allowed states. The matrix dimensions must be the length of each marginal
-// //' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
-// //' @examples
-// //' r = c(0, 3, 17, 124, 167, 79, 46, 22)
-// //' # rooms (1,2,3...9+)
-// //' b = c(0, 15, 165, 238, 33, 7) # bedrooms {0, 1,2...5+}
-// //' p = matrix(rep(TRUE,length(r)*length(b)), nrow=length(r)) # all states permitted
-// //' # now disallow bedrooms>rooms
-// //'   for (i in 1:length(r)) {
-// //'     for (j in 1:length(b)) {
-// //'       if (j > i + 1)
-// //'         p[i,j] = FALSE;
-// //'     }
-// //'   }
-// //' res = humanleague::synthPopC(list(r,b),p)
-// //' @export
-// // [[Rcpp::export]]
-// List synthPopC(List marginals, LogicalMatrix permittedStates)
-// {
-//   if (marginals.size() != 2)
-//     throw std::runtime_error("CQIWS invalid dimensionality: " + std::to_string(marginals.size()));
-//
-//   std::vector<std::vector<uint32_t>> m(2);
-//
-//   const IntegerVector& iv0 = marginals[0];
-//   const IntegerVector& iv1 = marginals[1];
-//   IntegerVector dims(2);
-//   dims[0] = iv0.size();
-//   dims[1] = iv1.size();
-//   m[0].reserve(dims[0]);
-//   m[1].reserve(dims[1]);
-//   std::copy(iv0.begin(), iv0.end(), std::back_inserter(m[0]));
-//   std::copy(iv1.begin(), iv1.end(), std::back_inserter(m[1]));
-//
-//   if (permittedStates.rows() != dims[0] || permittedStates.cols() != dims[1])
-//     throw std::runtime_error("CQIWS invalid permittedStates matrix size");
-//
-//   size_t d[2] = { (size_t)dims[0], (size_t)dims[1] };
-//   NDArray<2,bool> permitted(d);
-//
-//   for (d[0] = 0; d[0] < dims[0]; ++d[0])
-//   {
-//     for (d[1] = 0; d[1] < dims[1]; ++d[1])
-//     {
-//       permitted[d] = permittedStates(d[0],d[1]);
-//     }
-//   }
-//
-//   List result;
-//   doSolveConstrained(result, dims, m, permitted);
-//
-//   return result;
-// }
-
-
 // [[Rcpp::export]]
 List synthPopG(List marginals, NumericMatrix exoProbsIn)
 {
@@ -381,41 +320,6 @@ List synthPopG(List marginals, NumericMatrix exoProbsIn)
 
   return result;
 }
-
-
-// //' Generate a correlated population in 2 dimensions given 2 marginals and a flat correlation.
-// //'
-// //' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
-// //' generates a 2-dimensional population table where elements sum to the input marginals.
-// //' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
-// //' @param rho correlation
-// //' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
-// //' @export
-// // [[Rcpp::export]]
-// List synthPopR(List marginals, double rho)
-// {
-//   if (marginals.size() != 2)
-//     throw std::runtime_error("CQIWS invalid dimensionality: " + std::to_string(marginals.size()));
-//
-//   std::vector<std::vector<uint32_t>> m(2);
-//
-//   const IntegerVector& iv0 = marginals[0];
-//   const IntegerVector& iv1 = marginals[1];
-//   IntegerVector dims(2);
-//   dims[0] = iv0.size();
-//   dims[1] = iv1.size();
-//   m[0].reserve(dims[0]);
-//   m[1].reserve(dims[1]);
-//   std::copy(iv0.begin(), iv0.end(), std::back_inserter(m[0]));
-//   std::copy(iv1.begin(), iv1.end(), std::back_inserter(m[1]));
-//
-//   size_t d[2] = { (size_t)dims[0], (size_t)dims[1] };
-//
-//   List result;
-//   doSolveCorrelated(result, dims, m, rho);
-//
-//   return result;
-// }
 
 
 // //' IPF
@@ -606,7 +510,7 @@ std::vector<int64_t> dimensionHelper(List indices, List marginals)
 //' @return an object containing: ...
 //' @export
 // [[Rcpp::export]]
-List qis(List indices, List marginals)
+List qis(List indices, List marginals, int skips = 0)
 {
   // we need the overall dimension and sizes upfront to assemble the problem in row-major rather than col-major form.
   std::vector<int64_t> rSizes = dimensionHelper(indices, marginals);
@@ -644,7 +548,7 @@ List qis(List indices, List marginals)
   // Storage for result
   List result;
   // Do QIS (could provide another ctor that takes preallocated memory for result)
-  QIS qis(idx, m);
+  QIS qis(idx, m, skips);
 
   // How painful can it be to initialise a multidimensional array?
   int64_t size = std::accumulate(rSizes.begin(), rSizes.end(), 1ll, std::multiplies<int64_t>());
@@ -673,7 +577,7 @@ List qis(List indices, List marginals)
 //' @return an object containing: ...
 //' @export
 // [[Rcpp::export]]
-List qisi(NumericVector seed, List indices, List marginals)
+List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
 {
   const int64_t k = marginals.size();
 
@@ -715,7 +619,7 @@ List qisi(NumericVector seed, List indices, List marginals)
   // Read-only shallow copy of seed
   const NDArray<double> seedwrapper(s, (double*)&seed[0]);
   // Do IPF
-  QISI qisipf(idx, m);
+  QISI qisipf(idx, m, skips);
   // Copy result data into R array
   const NDArray<int64_t>& tmp = qisipf.solve(seedwrapper);
 
@@ -729,41 +633,6 @@ List qisi(NumericVector seed, List indices, List marginals)
   return result;
 }
 
-// // a = array(rep(1,16), c(2,2,2,2))
-// // b = test(a)
-// // [[Rcpp::export]]
-// List test(NumericVector ndarray)
-// {
-//   IntegerVector sizes = ndarray.attr("dim");
-//   NumericVector copy(ndarray.begin(), ndarray.end());
-//   copy.attr("dim") = sizes;
-//
-//   std::vector<int64_t> s(4);
-//   for (size_t i = 0; i < 4; ++i)
-//   {
-//     s[i] = sizes[i];
-//   }
-//
-//   //print(s);
-//
-//   // Shallow copy of "copy"
-//   NDArray<4, double> wrapper(&s[0], (double*)&copy[0]);
-//   double x = 0.0;
-//   for (Index<4, Index_Unfixed> i(wrapper.sizes()); !i.end(); ++i)
-//   {
-//     wrapper[i] = x;
-//     x += 0.1;
-//   }
-//
-//   //std::vector<double> cpparray(ndarray.begin(), ndarray.end());
-//   List result;
-//   result["dim"] =   s.size();
-//   result["sizes"] =   s;
-//   // TODO set dim attr...
-//   result["ndarray"] = copy;
-//
-//   return result;
-// }
 
 // ' Constraine a pre-generated population in 2 dimensions given a constraint matrix.
 // '

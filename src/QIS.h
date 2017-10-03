@@ -1,15 +1,16 @@
 #pragma once
 
 #include "Microsynthesis.h"
+#include "Sobol.h"
 
 class QIS : public Microsynthesis<int64_t>
 {
 public:
-  QIS(const index_list_t& indices, marginal_list_t& marginals);
+  QIS(const index_list_t& indices, marginal_list_t& marginals, int64_t skips = 0);
 
   // TODO need a mechanism to invalidate result after it's been moved (or just copy it)
-  const NDArray<int64_t>& solve();
-  const NDArray<int64_t>& solve2();
+  const NDArray<int64_t>& solve(bool reset = false);
+  //const NDArray<int64_t>& solve2();
 
   bool conv() const;
 
@@ -23,6 +24,8 @@ public:
 private:
 
   void updateStateProbs();
+
+  Sobol m_sobolSeq;
 
   NDArray<double> m_stateProbs;
   // Required for chi-squared

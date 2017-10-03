@@ -2,7 +2,6 @@
 #include "QISI.h"
 #include "IPF.h"
 #include "Index.h"
-#include "Sobol.h"
 #include "StatFuncs.h"
 
 namespace {
@@ -63,14 +62,20 @@ void getIndex(const NDArray<double>& p, const std::vector<uint32_t>& r, Index& i
 }
 
 
-QISI::QISI(const index_list_t& indices, marginal_list_t& marginals)
-: Microsynthesis(indices, marginals), m_conv(false)
+QISI::QISI(const index_list_t& indices, marginal_list_t& marginals, int64_t skips)
+: Microsynthesis(indices, marginals), m_sobolSeq(m_dim), m_conv(false)
 {
+  m_sobolSeq.skip(skips);
 }
 
 // control state of Sobol via arg?
-const NDArray<int64_t>& QISI::solve(const NDArray<double>& seed)
+const NDArray<int64_t>& QISI::solve(const NDArray<double>& seed, bool reset)
 {
+  if (reset)
+  {
+    m_sobolSeq.reset();
+  }
+
   m_ipfSolution.resize(m_array.sizes());
   m_expectedStateOccupancy.resize(m_array.sizes());
   // compute initial IPF solution and keep a copy

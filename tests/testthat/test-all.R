@@ -231,6 +231,9 @@ test_that("QIS 2d", {
   expect_equal(apply(t$result, c(2), sum), m1)
   expect_lt(t$chiSq, 0.6)
   expect_gt(t$pValue, 0.7)
+  chi2 = chisq.test(t$result, t$expectation)
+  expect_equal(t$chiSq, as.numeric(chi2$statistic)) # as.numeric required as its a labelled value
+  expect_equal(chisq.test(t$result, t$expectation)$p.value, t$pValue)
   #expect_lt(t$degeneracy, ?)
 })
 
@@ -245,6 +248,9 @@ test_that("QIS 3d", {
   expect_equal(apply(t$result, c(3), sum), m1)
   expect_lt(t$chiSq, 2.2)
   expect_gt(t$pValue, 0.3)
+#  chi2 = chisq.test(t$result, t$expectation)
+#  expect_equal(t$chiSq, as.numeric(chi2$statistic)) # as.numeric required as its a labelled value
+#  expect_equal(chisq.test(t$result, t$expectation)$p.value, t$pValue)
   #expect_lt(t$degeneracy, ?)
 })
 
@@ -259,6 +265,9 @@ test_that("QIS 3d (2)", {
   expect_equal(apply(t$result, c(3), sum), m1)
   expect_lt(t$chiSq, 10.0)
   expect_gt(t$pValue, 0.1)
+#  chi2 = chisq.test(t$result, t$expectation, simulate.p.value=T)
+#  expect_equal(t$chiSq, as.numeric(chi2$statistic)) # as.numeric required as its a labelled value
+#  expect_equal(chisq.test(t$result, t$expectation)$p.value, t$pValue)
   #expect_lt(t$degeneracy, ?)
 })
 

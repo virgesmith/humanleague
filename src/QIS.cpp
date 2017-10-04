@@ -181,6 +181,11 @@ const NDArray<int64_t>& QIS::solve(bool reset)
   return m_array;
 }
 
+// Expected state occupancy
+const NDArray<double>& QIS::expectation()
+{
+  return m_expectedStateOccupancy;
+}
 
 //
 void QIS::updateStateProbs()

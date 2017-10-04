@@ -12,6 +12,10 @@ public:
   const NDArray<int64_t>& solve(bool reset = false);
   //const NDArray<int64_t>& solve2();
 
+  // Expected state occupancy
+  const NDArray<double>& expectation();
+
+  // convergence
   bool conv() const;
 
   // chi-squared stat vs the IPF solution

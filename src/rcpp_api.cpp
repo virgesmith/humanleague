@@ -552,13 +552,18 @@ List qis(List indices, List marginals, int skips = 0)
 
   // How painful can it be to initialise a multidimensional array?
   int64_t size = std::accumulate(rSizes.begin(), rSizes.end(), 1ll, std::multiplies<int64_t>());
-  NumericVector r(size);
+  IntegerVector r(size);
+  NumericVector e(size);
   r.attr("dim") = rSizes;
+  e.attr("dim") = rSizes;
   // Copy result data into R array
   const NDArray<int64_t>& tmp = qis.solve();
   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
+  const NDArray<double>& tmpe = qis.expectation();
+  std::copy(tmpe.rawData(), tmpe.rawData() + tmpe.storageSize(), e.begin());
   result["conv"] = qis.conv();
   result["result"] = r;
+  result["expectation"] = e;
   result["pop"] = qis.population();
   result["chiSq"] = qis.chiSq();
   result["pValue"] = qis.pValue();
@@ -611,8 +616,9 @@ List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
     m.push_back(std::move(convertRArray<int64_t, IntegerVector>(mv)));
   }
 
-  // Deep copy of seed for result (preserves diimesion, values will be overwritten)
-  NumericVector r(seed);
+  IntegerVector r(rSizes);
+  NumericVector e(rSizes);
+  //e.attr("dim") = rSizes;
 
   List result;
 
@@ -622,6 +628,10 @@ List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
   QISI qisipf(idx, m, skips);
   // Copy result data into R array
   const NDArray<int64_t>& tmp = qisipf.solve(seedwrapper);
+  // Copy result data into R array
+  const NDArray<double>& tmpe = qisipf.expectation();
+  std::copy(tmpe.rawData(), tmpe.rawData() + tmpe.storageSize(), e.begin());
+  result["expectation"] = e;
 
   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
   result["conv"] = qisipf.conv();

@@ -120,6 +120,13 @@ const NDArray<int64_t>& QISI::solve(const NDArray<double>& seed, bool reset)
   return m_array;
 }
 
+// Expected state occupancy
+const NDArray<double>& QISI::expectation()
+{
+  return m_expectedStateOccupancy;
+}
+
+
 //
 void QISI::recomputeIPF(const NDArray<double>& seed)
 {

@@ -11,6 +11,9 @@ public:
   // TODO need a mechanism to invalidate result after it's been moved (or just copy it)
   const NDArray<int64_t>& solve(const NDArray<double>& seed, bool reset = false);
 
+  // Expected state occupancy
+  const NDArray<double>& expectation();
+
   bool conv() const;
 
   // chi-squared stat vs the IPF solution

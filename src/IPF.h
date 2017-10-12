@@ -10,6 +10,8 @@
 #include <vector>
 #include <cmath>
 
+namespace deprecated {
+
 class IPF
 {
 public:
@@ -58,7 +60,8 @@ protected:
   double m_maxError;
 };
 
-namespace wip {
+
+}
 
 template<typename M>
 class IPF : public Microsynthesis<double, M> // marginal type
@@ -173,4 +176,3 @@ private:
   static const size_t s_MAXITER = 10;
 };
 
-} // wip

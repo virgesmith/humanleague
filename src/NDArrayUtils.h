@@ -117,21 +117,6 @@ T marginalProduct(const std::vector<std::vector<T>>& m, const std::vector<int64_
 template<typename T>
 std::vector<T> reduce(const NDArray<T>& input, size_t orient)
 {
-  // // check valid orientation
-  // assert(orient < input.dim());
-
-  // std::vector<int64_t> preservedSizes(1, orient);
-
-  // std::vector<T> reduced(input.size(orient), T(0));
-  // //reduced.assign(T(0));
-
-  // Index index(input.sizes());
-  // //MappedIndex rIndex(index, preservedDims);
-  // for (; !index.end(); ++index)
-  // {
-  //   reduced[index[orient]] += input[index];
-  // }
-
   // return reduced;
   // check valid orientation
   assert(orient < input.dim());
@@ -139,7 +124,6 @@ std::vector<T> reduce(const NDArray<T>& input, size_t orient)
   std::vector<T> sums(input.size(orient), 0);
 
   Index indexer(input.sizes(), std::make_pair(orient, 0));
-
   for (; !indexer.end(); ++indexer)
   {
     // Pass index in directly to avoid
@@ -150,6 +134,14 @@ std::vector<T> reduce(const NDArray<T>& input, size_t orient)
     }
   }
 
+  // // this is MUCH slower!!!
+  // Index indexer(input.sizes());
+  // for (; !indexer.end(); ++indexer)
+  // {
+  //   sums[indexer[orient]] += input[indexer];
+  // }
+
+  
   return sums;
 }
 

@@ -151,7 +151,7 @@ extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
 
     pycpp::Dict retval;
 
-    wip::IPF<double> ipf(indices, marginals); 
+    IPF<double> ipf(indices, marginals); 
     // THIS IS DESTRUCTIVE!
     retval.insert("result", pycpp::Array<double>(std::move(const_cast<NDArray<double>&>(ipf.solve(seed.toNDArray())))));
     retval.insert("conv", pycpp::Bool(ipf.conv()));

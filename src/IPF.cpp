@@ -8,7 +8,6 @@
 #include <cmath>
 
 namespace {
-namespace old {
 
 void rScale(NDArray<double>& result, const std::vector<std::vector<double>>& marginals)
 {
@@ -39,7 +38,9 @@ void rDiff(std::vector<std::vector<double>>& diffs, const NDArray<double>& resul
     diffs[d] = diff(reduce<double>(result, d), marginals[d]);
 }
 
-}}
+}
+
+namespace deprecated {
 
 // construct from fractional marginals
 IPF::IPF(const NDArray<double>& seed, const std::vector<std::vector<double>>& marginals)
@@ -92,10 +93,10 @@ void IPF::solve(const NDArray<double>& seed)
   std::vector<std::vector<double>> diffs(m_result.dim());
   for (m_iters = 0; !m_conv && m_iters < s_MAXITER; ++m_iters)
   {
-    old::rScale(m_result, m_marginals);
+    rScale(m_result, m_marginals);
     // inefficient copying?
 
-    old::rDiff(diffs, m_result, m_marginals);
+    rDiff(diffs, m_result, m_marginals);
 
     m_conv = computeErrors(diffs);
   }
@@ -146,3 +147,4 @@ bool IPF::computeErrors(std::vector<std::vector<double>>& diffs)
   return m_maxError < m_tol;
 }
 
+}

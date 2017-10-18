@@ -123,23 +123,23 @@ std::vector<T> reduce(const NDArray<T>& input, size_t orient)
 
   std::vector<T> sums(input.size(orient), 0);
 
-  Index indexer(input.sizes(), std::make_pair(orient, 0));
-  for (; !indexer.end(); ++indexer)
-  {
-    // Pass index in directly to avoid
-    typename NDArray<T>::ConstIterator it(input, orient, indexer);
-    for(size_t i = 0; !it.end(); ++it, ++i)
-    {
-      sums[i] += *it;
-    }
-  }
-
-  // // this is MUCH slower!!!
-  // Index indexer(input.sizes());
+  // Index indexer(input.sizes(), std::make_pair(orient, 0));
   // for (; !indexer.end(); ++indexer)
   // {
-  //   sums[indexer[orient]] += input[indexer];
+  //   // Pass index in directly to avoid
+  //   typename NDArray<T>::ConstIterator it(input, orient, indexer);
+  //   for(size_t i = 0; !it.end(); ++it, ++i)
+  //   {
+  //     sums[i] += *it;
+  //   }
   // }
+
+  // this is MUCH slower!!!
+  Index indexer(input.sizes());
+  for (; !indexer.end(); ++indexer)
+  {
+    sums[indexer[orient]] += input[indexer];
+  }
 
   
   return sums;

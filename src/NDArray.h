@@ -23,45 +23,45 @@ public:
 
   typedef T& reference;
 
-  // RO iterator over one dimension (O) of an n-D array given an index
-  class ConstIterator
-  {
-  public:
+//   // RO iterator over one dimension (O) of an n-D array given an index
+//   class ConstIterator
+//   {
+//   public:
 
-    ConstIterator(const NDArray<T>& a, int64_t orient, const std::vector<int64_t>& idx) : m_a(a), m_orient(orient), m_idx(idx)
-    {
-      // set index of orientation dimension to zero
-      m_idx[orient] = 0;
-    }
+//     ConstIterator(const NDArray<T>& a, int64_t orient, const std::vector<int64_t>& idx) : m_a(a), m_orient(orient), m_idx(idx)
+//     {
+//       // set index of orientation dimension to zero
+//       m_idx[orient] = 0;
+//     }
 
-    ~ConstIterator() { }
+//     ~ConstIterator() { }
 
-    const std::vector<int64_t>& idx() const
-    {
-      return m_idx;
-    }
+//     const std::vector<int64_t>& idx() const
+//     {
+//       return m_idx;
+//     }
 
-    ConstIterator& operator++()
-    {
-      ++m_idx[m_orient];
-      return *this;
-    }
+//     ConstIterator& operator++()
+//     {
+//       ++m_idx[m_orient];
+//       return *this;
+//     }
 
-    bool end() const
-    {
-      return (size_t)m_idx[m_orient] >= m_a.size(m_orient);
-    }
+//     bool end() const
+//     {
+//       return (size_t)m_idx[m_orient] >= m_a.size(m_orient);
+//     }
 
-    const_reference operator*() const
-    {
-      return m_a[m_idx];
-    }
+//     const_reference operator*() const
+//     {
+//       return m_a[m_idx];
+//     }
 
-  private:
-    const NDArray& m_a;
-    int64_t m_orient;
-    std::vector<int64_t> m_idx;
-  };
+//   private:
+//     const NDArray& m_a;
+//     int64_t m_orient;
+//     std::vector<int64_t> m_idx;
+//   };
 
 //   // RW iterator over one dimension (O) of an n-D array given an index
 //   template<size_t O>
@@ -133,7 +133,8 @@ public:
       assert(sizes[i] < MaxSize);
       m_storageSize *= sizes[i];
     }
-
+    computeOffsets();
+    
     m_data = storage;
     m_owned = false;
   }
@@ -155,6 +156,7 @@ public:
   {
     m_dim = a.m_dim;
     m_sizes.swap(a.m_sizes);
+    m_offsets.swap(a.m_offsets);
     m_storageSize = a.m_storageSize;
     m_data = a.m_data;
     m_owned = a.m_owned;
@@ -215,6 +217,7 @@ public:
         deallocate(m_data);
         m_data = allocate(m_storageSize);
       }
+      computeOffsets();
     }
     else
     {
@@ -265,15 +268,24 @@ public:
 
 private:
 
-  size_t offset(const std::vector<int64_t>& idx) const
+  void computeOffsets()
   {
-    // TODO this is pretty horrible, but it works.
-    size_t ret = 0;
+    m_offsets.resize(m_dim);
     size_t mult = m_storageSize;
     for (size_t i = 0; i < m_dim; ++i)
     {
       mult /= m_sizes[i];
-      ret += mult * idx[i];
+      m_offsets[i] = mult;
+    }
+  }
+
+  size_t offset(const std::vector<int64_t>& idx) const
+  {
+    // TODO this is pretty horrible, but it works.
+    size_t ret = 0;
+    for (size_t i = 0; i < m_dim; ++i)
+    {
+      ret += m_offsets[i] * idx[i];
     }
     return ret;
   }
@@ -282,11 +294,9 @@ private:
   {
     // TODO this is pretty horrible, but it works.
     size_t ret = 0;
-    size_t mult = m_storageSize;
     for (size_t i = 0; i < m_dim; ++i)
     {
-      mult /= m_sizes[i];
-      ret += mult * *idx[i];
+      ret += m_offsets[i] * *idx[i];
     }
     return ret;
   }
@@ -305,6 +315,7 @@ private:
 
   size_t m_dim;
   std::vector<int64_t> m_sizes;
+  std::vector<int64_t> m_offsets;
   size_t m_storageSize;
   T* m_data;
   bool m_owned;

@@ -48,7 +48,7 @@ protected:
 
   bool computeErrors(std::vector<std::vector<double>>& diffs);
 
-  static const size_t s_MAXITER = 10;
+  static const size_t s_MAXITER = 1000;
 
   NDArray<double> m_result;
   std::vector<std::vector<double>> m_marginals;
@@ -173,6 +173,6 @@ private:
   double m_maxError;
   const double m_tol = 1e-8;
 
-  static const size_t s_MAXITER = 10;
+  static const size_t s_MAXITER = 1000;
 };
 

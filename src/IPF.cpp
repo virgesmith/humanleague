@@ -20,12 +20,16 @@ void rScale(NDArray<double>& result, const std::vector<std::vector<double>>& mar
       {
         const std::vector<int64_t>& ref = index;
         // avoid division by zero (assume 0/0 -> 0)
+#ifndef NDEBUG
         if (r[p] == 0.0 && marginals[d][ref[d]] != 0.0)
           throw std::runtime_error("div0 in rScale with m>0");
         if (r[p] != 0.0)
           result[index] *= marginals[d][ref[d]] / r[p];
         else
           result[index] = 0.0;
+#else
+        result[index] = r[p] > 0.0 ? marginals[d][ref[d]] / r[p] : 0.0;
+#endif
       }
     }
   }

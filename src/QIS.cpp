@@ -155,11 +155,12 @@ const NDArray<int64_t>& QIS::solve(bool reset)
       for (size_t j = 0; j < m_indices[k].size(); ++j)
       {
         // TODO try to find a case whexe index gets changed (or prove its not possible)
+#ifndef NDEBUG
         if (main_index[m_indices[k][j]] != -1/*Index::Unfixed*/ && main_index[m_indices[k][j]] != index[j])
         {
           std::cout << std::to_string(k) << ": changing " << std::to_string(main_index[m_indices[k][j]]) << " to " << std::to_string(index[j]) << std::endl;
         }
-
+#endif
         main_index[m_indices[k][j]] = index[j];
       }
       // create index for that marginal by sampling sobol values

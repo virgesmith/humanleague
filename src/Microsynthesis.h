@@ -182,12 +182,19 @@ protected:
         for (MappedIndex index(main_index, m_indices[k]); !index.end(); ++index)
         {
           //print((std::vector<int64_t>)main_index);
+#ifndef NDEBUG
           if (r[index] == 0.0 && m_marginals[k][index] != 0.0)
             throw std::runtime_error("div0 in rScale with m>0");
           if (r[index] != 0.0)
             m_array[main_index] *= m_marginals[k][index] / r[index];
           else
             m_array[main_index] = 0.0;
+#else
+          if (r[index] != 0.0)
+            m_array[main_index] *= m_marginals[k][index] / r[index];
+          else
+            m_array[main_index] = 0.0;
+#endif  
         }
       }
       // reset the main index

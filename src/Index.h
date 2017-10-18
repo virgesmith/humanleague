@@ -62,14 +62,16 @@ class MappedIndex
 {
 public:
   MappedIndex(const Index& idx, const std::vector<int64_t>& mappedDimensions);
-
+  
   const MappedIndex& operator++();  
 
   // TODO better to overload NDArray to take Index types???
   operator const std::vector<int64_t*>&() const;
 
   bool end();
-  
+
+  //static std::vector<int64_t> excludeFrom(const std::vector<int64_t>& dims, int64_t excludedDim);
+
 private:
   size_t m_dim;
   std::vector<int64_t> m_sizes;

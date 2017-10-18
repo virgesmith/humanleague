@@ -115,8 +115,7 @@ bool Index::end() const
 
 
 MappedIndex::MappedIndex(const Index& idx, const std::vector<int64_t>& mappedDimensions)
-  : m_dim(mappedDimensions.size()), 
-  m_sizes(m_dim), m_mappedIndex(m_dim), m_atEnd(idx.end())
+: m_dim(mappedDimensions.size()), m_sizes(m_dim), m_mappedIndex(m_dim), m_atEnd(idx.end())
 {
   int64_t n = idx.size();
   (void)n; // avoid compiler warning about unused variable when assert exands to nothing
@@ -129,6 +128,7 @@ MappedIndex::MappedIndex(const Index& idx, const std::vector<int64_t>& mappedDim
     m_mappedIndex[d] = &const_cast<Index&>(idx)[mappedDimensions[d]];
   }
 }
+
 
 const MappedIndex& MappedIndex::operator++()
 {
@@ -154,4 +154,16 @@ bool MappedIndex::end()
 {
   return m_atEnd;
 }
+
+// std::vector<int64_t> MappedIndex::excludeFrom(const std::vector<int64_t>& dims, int64_t excludedDim)
+// {
+//   std::vector<int64_t> included;
+//   included.reserve(dims.size() - 1);
+//   for (int64_t i = 0; i < (int64_t)dims.size(); ++i)
+//   {
+//     if (i != excludedDim)
+//       included.push_back(dims[i]);
+//   } 
+//   return included;
+// }
 

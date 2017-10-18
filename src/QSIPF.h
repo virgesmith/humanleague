@@ -7,7 +7,7 @@
 
 #include <vector>
 
-class QSIPF : public IPF
+class QSIPF : public deprecated::IPF
 {
 public:
   // TODO marginal values must be integers

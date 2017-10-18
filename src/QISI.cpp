@@ -134,7 +134,8 @@ const NDArray<double>& QISI::expectation()
 void QISI::recomputeIPF(const NDArray<double>& seed)
 {
   // TODO make more efficient
-  wip::IPF<int64_t> ipf(m_indices, m_marginals);
+  // is this moving the marginals???
+  IPF<int64_t> ipf(m_indices, m_marginals);
   NDArray<double>::copy(ipf.solve(seed), m_ipfSolution);
 }
 

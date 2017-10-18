@@ -107,9 +107,12 @@ const NDArray<int64_t>& QISI::solve(const NDArray<double>& seed, bool reset)
       if (m_marginals[j][mappedIndices[j]] < 0)
         m_conv = false;
     }
-    // recalculate state probabilities
-    // TODO only do when marginal <0
-    recomputeIPF(seed);
+
+
+    // recalculate state probabilities only do when state occupancy drops below zero
+    --m_ipfSolution[main_index];
+    if (m_ipfSolution[main_index] < 0.0)
+      recomputeIPF(seed);
   }
   m_chiSq = ::chiSq(m_array, m_expectedStateOccupancy);
 

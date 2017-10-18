@@ -1,7 +1,7 @@
 
 #include "src/IPF.h"
 #include "src/QIS.h"
-#include "src/QSIPF.h"
+//#include "src/QSIPF.h"
 #include "src/QIS.h"
 #include "src/QISI.h"
 //#include "src/Microsynthesis.h"

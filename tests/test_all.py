@@ -175,6 +175,22 @@ class Test(TestCase):
     self.assertTrue(np.allclose(np.sum(p["result"], (1, 2)), m0))
     self.assertTrue(np.allclose(np.sum(p["result"], (2, 0)), m1))
 
+    # Test flatten functionality
+    table = hl.flatten(p["result"])
+
+    # length is no of dims
+    self.assertTrue(len(table) == 3)
+    # length of element is pop
+    self.assertTrue(len(table[0]) == p["pop"])
+    # check consistent with marginals
+    for i in range(0, len(m0)):
+      self.assertTrue(table[0].count(i) == m0[i])
+    for i in range(0, len(m1)):
+      self.assertTrue(table[1].count(i) == m1[i])
+    for i in range(0, len(m2)):
+      self.assertTrue(table[2].count(i) == m2[i])
+
+
     m0 = np.array([52, 48]) 
     m1 = np.array([87, 13])
     m2 = np.array([67, 33])

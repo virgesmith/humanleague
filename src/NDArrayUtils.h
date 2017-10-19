@@ -255,7 +255,7 @@ std::vector<std::vector<int>> listify(const size_t pop, const NDArray<T>& t)
   size_t pindex = 0;
   while (!index.end())
   {
-    for (size_t i = 0; i < t[index]; ++i)
+    for (T i = 0; i < t[index]; ++i)
     {
       const std::vector<int64_t>& ref = index;
       for (size_t j = 0; j < t.dim(); ++j)

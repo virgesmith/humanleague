@@ -19,7 +19,8 @@
 
 #include <iostream>
 
-pycpp::List flatten(const size_t pop, const NDArray<uint32_t>& t)
+template<typename T>
+pycpp::List flatten(const size_t pop, const NDArray<T>& t)
 {
   //print(t.rawData(), t.storageSize(), t.sizes()[1]);
   const std::vector<std::vector<int>>& list = listify(pop, t);
@@ -29,6 +30,39 @@ pycpp::List flatten(const size_t pop, const NDArray<uint32_t>& t)
     outer.set(i, pycpp::List(list[i]));
   }
   return outer;
+}
+
+// flatten n-D integer array into 2-d table
+extern "C" PyObject* humanleague_flatten(PyObject* self, PyObject* args)
+{
+  try 
+  {
+    PyObject* arrayArg;
+
+    // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
+    if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, &arrayArg))
+      return nullptr; 
+
+    pycpp::Array<int64_t> pyarray(arrayArg);
+    
+    NDArray<int64_t> array(pyarray.toNDArray());
+
+    size_t pop = 0;
+    for (Index i(array.sizes()); !i.end(); ++i)
+    {
+      pop += array[i];
+    }
+
+    return flatten(pop, array).release();    
+  }
+  catch(const std::exception& e)
+  {
+    return &pycpp::String(e.what());
+  }
+  catch(...)
+  {
+    return &pycpp::String("unexpected exception");
+  }
 }
 
 extern "C" PyObject* humanleague_prob2IntFreq(PyObject* self, PyObject* args)
@@ -457,6 +491,7 @@ namespace {
 // Python2.7
 PyMethodDef entryPoints[] = {
   {"prob2IntFreq", humanleague_prob2IntFreq, METH_VARARGS, "Returns nearest-integer population given probs and overall population."},
+  {"flatten", humanleague_flatten, METH_VARARGS, "Converts n-D integer array into a table with columns referencing the value indices."},
   {"sobolSequence", humanleague_sobol, METH_VARARGS, "Returns a Sobol sequence."},
   {"ipf", humanleague_ipf, METH_VARARGS, "Synthpop (IPF)."},
   {"qis", humanleague_qis, METH_VARARGS, "QIS."},

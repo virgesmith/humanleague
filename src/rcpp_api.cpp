@@ -55,20 +55,20 @@ using namespace Rcpp;
 // TODO this doesnt seem to work, perhaps another approach (like a separate thread?)
 //void (*oldhandler)(int) = signal(SIGINT, sigint_handler);
 
-// TODO convert R col-major multidim array to NDArray
 //...
 
 // Flatten N-D population array into N*P table
 DataFrame flatten(const size_t pop, const NDArray<uint32_t>& t)
 {
-  std::vector<std::vector<int>> list = listify(pop, t);
+  // for R colMajor is true and offset is 1
+  std::vector<std::vector<int>> list = listify(pop, t, true, 1);
 
   // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
   List proxyDf;
   std::string s("C");
   for (size_t i = 0; i < t.dim(); ++i)
   {
-    proxyDf[std::string(s + std::to_string(i)).c_str()] = list[i];
+    proxyDf[std::string(s + std::to_string(i+1)).c_str()] = list[i];
   }
 
   return DataFrame(proxyDf);
@@ -77,14 +77,15 @@ DataFrame flatten(const size_t pop, const NDArray<uint32_t>& t)
 // Flatten N-D population array into N*P table
 DataFrame flatten(const size_t pop, const NDArray<int64_t>& t)
 {
-  std::vector<std::vector<int>> list = listify(pop, t);
+  // for R colMajor is true and offset is 1
+  std::vector<std::vector<int>> list = listify(pop, t, true, 1);
 
   // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
   List proxyDf;
   std::string s("C");
   for (size_t i = 0; i < t.dim(); ++i)
   {
-    proxyDf[std::string(s + std::to_string(i)).c_str()] = list[i];
+    proxyDf[std::string(s + std::to_string(i+1)).c_str()] = list[i];
   }
 
   return DataFrame(proxyDf);

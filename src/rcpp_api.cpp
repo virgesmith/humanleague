@@ -61,14 +61,14 @@ using namespace Rcpp;
 DataFrame flatten(const size_t pop, const NDArray<uint32_t>& t)
 {
   // for R colMajor is true and offset is 1
-  std::vector<std::vector<int>> list = listify(pop, t, true, 1);
+  std::vector<std::vector<int>> list = listify(pop, t, 1);
 
   // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
   List proxyDf;
   std::string s("C");
-  for (size_t i = 0; i < t.dim(); ++i)
+  for (size_t i = t.dim(); i > 0; --i)
   {
-    proxyDf[std::string(s + std::to_string(i+1)).c_str()] = list[i];
+    proxyDf[std::string(s + std::to_string(t.dim() - i)).c_str()] = list[i-1];
   }
 
   return DataFrame(proxyDf);
@@ -78,14 +78,14 @@ DataFrame flatten(const size_t pop, const NDArray<uint32_t>& t)
 DataFrame flatten(const size_t pop, const NDArray<int64_t>& t)
 {
   // for R colMajor is true and offset is 1
-  std::vector<std::vector<int>> list = listify(pop, t, true, 1);
+  std::vector<std::vector<int>> list = listify(pop, t, 1);
 
   // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
   List proxyDf;
   std::string s("C");
-  for (size_t i = 0; i < t.dim(); ++i)
+  for (size_t i = t.dim(); i > 0; --i)
   {
-    proxyDf[std::string(s + std::to_string(i+1)).c_str()] = list[i];
+    proxyDf[std::string(s + std::to_string(t.dim() - i)).c_str()] = list[i-1];
   }
 
   return DataFrame(proxyDf);
@@ -419,6 +419,11 @@ NDArray<T> convertRArray(R rArray)
 // [[Rcpp::export]]
 List ipf(NumericVector seed, List indices, List marginals)
 {
+  if (indices.size() != marginals.size())
+  {
+    throw std::runtime_error("index and marginal lists are different lengths");
+  }
+
   const int64_t k = marginals.size();
 
   Dimension rSizes = seed.attr("dim");
@@ -472,6 +477,7 @@ List ipf(NumericVector seed, List indices, List marginals)
   return result;
 }
 
+
 // Helper to get overall dimension and sizes before constructing QIS
 // (as indices need to be relabelled and marginals transposed to construct in row-major form)
 std::vector<int64_t> dimensionHelper(List indices, List marginals)
@@ -513,7 +519,12 @@ std::vector<int64_t> dimensionHelper(List indices, List marginals)
 // [[Rcpp::export]]
 List qis(List indices, List marginals, int skips = 0)
 {
-  // we need the overall dimension and sizes upfront to assemble the problem in row-major rather than col-major form.
+  if (indices.size() != marginals.size())
+  {
+    throw std::runtime_error("index and marginal lists are different lengths");
+  }
+
+    // we need the overall dimension and sizes upfront to assemble the problem in row-major rather than col-major form.
   std::vector<int64_t> rSizes = dimensionHelper(indices, marginals);
 
   const int64_t k = marginals.size();
@@ -585,6 +596,11 @@ List qis(List indices, List marginals, int skips = 0)
 // [[Rcpp::export]]
 List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
 {
+  if (indices.size() != marginals.size())
+  {
+    throw std::runtime_error("index and marginal lists are different lengths");
+  }
+
   const int64_t k = marginals.size();
 
   Dimension rSizes = seed.attr("dim");

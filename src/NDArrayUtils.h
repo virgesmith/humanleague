@@ -247,10 +247,9 @@ NDArray<T> slice(const NDArray<T>& input, std::pair<int64_t, int64_t> index)
 
 // Converts a D-dimensional population array into a list with D columns and pop rows
 template<typename T>
-std::vector<std::vector<int>> listify(const size_t pop, const NDArray<T>& t, bool colMajor = false, int offset = 0)
+std::vector<std::vector<int>> listify(const size_t pop, const NDArray<T>& t, int offset = 0)
 {
-  // use colMajor = true from column major languages like R
-  // likewise use offset = 1 for langauges where array indexing begins at 1
+  // use offset = 1 for langauges where array indexing begins at 1 (e.g. R)
   std::vector<std::vector<int>> list(t.dim(), std::vector<int>(pop));
   Index index(t.sizes());
 
@@ -260,11 +259,9 @@ std::vector<std::vector<int>> listify(const size_t pop, const NDArray<T>& t, boo
     for (T i = 0; i < t[index]; ++i)
     {
       const std::vector<int64_t>& ref = index;
-      const std::vector<int64_t> ref2(ref.rbegin(), ref.rend());
       for (size_t j = 0; j < t.dim(); ++j)
       {
-        //list[j][pindex] = offset + ref2[colMajor ? t.dim() - j - 1 : j];
-        list[j][pindex] = offset + ref2[j];
+        list[j][pindex] = offset + ref[j];
       }
       ++pindex;
     }

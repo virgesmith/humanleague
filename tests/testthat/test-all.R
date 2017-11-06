@@ -272,6 +272,62 @@ test_that("QIS 3d (2)", {
 })
 
 
+test_that("QIS listify tests", {
+
+  # 1D+1D
+  m=c(101, 99, 103, 97, 200)
+  n=c(105, 95, 107, 93, 109, 91)
+
+  ms=qis(list(1,2),list(m,n))
+
+  expect_true(ms$conv)
+
+  a=ms$result
+  t=ms$table
+
+  expect_equal(sum(a), nrow(t))
+
+  expect_equal(length(unique(t$C1)), 5)
+  expect_equal(length(unique(t$C2)), 6)
+
+  # check row sums match marginals
+  for (i in 1:length(m)) {
+    expect_equal(nrow(t[t$C1==i,]), m[i])
+  }
+  for (i in 1:length(n)) {
+    expect_equal(nrow(t[t$C2==i,]), n[i])
+  }
+
+  # 1D+2D
+  m=c(101, 99, 103, 97, 200)
+  n=array(c(105, 95, 107, 93, 109, 91), dim=c(3,2))
+
+  ms=qis(list(1,c(2,3)),list(m,n))
+
+  expect_true(ms$conv)
+
+  a=ms$result
+  t=ms$table
+
+  expect_equal(sum(a), nrow(t))
+
+  stopifnot(length(unique(t$C1)) == 5)
+  stopifnot(length(unique(t$C2)) == 3)
+  stopifnot(length(unique(t$C3)) == 2)
+
+  # check row sums match marginals
+  for (i in 1:5) {
+    expect_equal(nrow(t[t$C1==i,]), m[i])
+  }
+
+  for (i in 1:3) {
+    for (j in 1:2) {
+      expect_equal(nrow(t[t$C2==i & t$C3==j,]), n[i,j])
+    }
+  }
+
+})
+
 ##### QIS-IPF
 
 test_that("QIS-IPF 2d unity seed", {

@@ -251,6 +251,7 @@ std::vector<std::vector<int>> listify(const size_t pop, const NDArray<T>& t, int
 {
   // use offset = 1 for langauges where array indexing begins at 1 (e.g. R)
   std::vector<std::vector<int>> list(t.dim(), std::vector<int>(pop));
+
   Index index(t.sizes());
 
   size_t pindex = 0;

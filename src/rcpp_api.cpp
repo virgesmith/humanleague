@@ -60,15 +60,15 @@ using namespace Rcpp;
 // Flatten N-D population array into N*P table
 DataFrame flatten(const size_t pop, const NDArray<uint32_t>& t)
 {
-  // for R colMajor is true and offset is 1
-  std::vector<std::vector<int>> list = listify(pop, t, 1);
+  // for R indices start at 1
+  const std::vector<std::vector<int>>& list = listify(pop, t, 1);
 
   // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
   List proxyDf;
   std::string s("C");
   for (size_t i = t.dim(); i > 0; --i)
   {
-    proxyDf[std::string(s + std::to_string(t.dim() - i)).c_str()] = list[i-1];
+    proxyDf[std::string(s + std::to_string(t.dim() - i + 1)).c_str()] = list[i-1];
   }
 
   return DataFrame(proxyDf);
@@ -77,15 +77,15 @@ DataFrame flatten(const size_t pop, const NDArray<uint32_t>& t)
 // Flatten N-D population array into N*P table
 DataFrame flatten(const size_t pop, const NDArray<int64_t>& t)
 {
-  // for R colMajor is true and offset is 1
-  std::vector<std::vector<int>> list = listify(pop, t, 1);
+  // for R indices start at 1
+  const std::vector<std::vector<int>>& list = listify(pop, t, 1);
 
   // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
   List proxyDf;
   std::string s("C");
   for (size_t i = t.dim(); i > 0; --i)
   {
-    proxyDf[std::string(s + std::to_string(t.dim() - i)).c_str()] = list[i-1];
+    proxyDf[std::string(s + std::to_string(t.dim() - i + 1)).c_str()] = list[i-1];
   }
 
   return DataFrame(proxyDf);
@@ -393,7 +393,8 @@ NDArray<T> convertRArray(R rArray)
   std::vector<int64_t> sizes(dim);
   for (size_t i = 0; i < sizes.size(); ++i)
   {
-    sizes[i] = colMajorSizes[dim-i-1];
+    //sizes[i] = colMajorSizes[dim-i-1]; // reversing the dims messes the tablular output
+    sizes[i] = colMajorSizes[i];
   }
 
   NDArray<T> array(sizes);
@@ -453,7 +454,7 @@ List ipf(NumericVector seed, List indices, List marginals)
     for (size_t j = 0; j < iv.size(); ++j)
       idx.back()[j] = dim - iv[j];
     //std::copy(iv.begin(), iv.end(), idx.back().begin());
-    // convert col major array to NDArray
+    // convert to NDArray
     m.push_back(std::move(convertRArray<double, NumericVector>(nv)));
   }
 
@@ -553,7 +554,7 @@ List qis(List indices, List marginals, int skips = 0)
     // also need to reverse dimension indices
     for (size_t j = 0; j < iv.size(); ++j)
       idx.back()[j] = dim - iv[j];
-    // convert col major array to NDArray
+    // convert to NDArray
     m.push_back(std::move(convertRArray<int64_t, IntegerVector>(nv)));
   }
 
@@ -629,7 +630,7 @@ List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
     // also need to reverse dimension indices
     for (size_t j = 0; j < iv.size(); ++j)
       idx.back()[j] = dim - iv[j];
-    // convert col major array to NDArray
+    // convert to NDArray
     m.push_back(std::move(convertRArray<int64_t, IntegerVector>(mv)));
   }
 

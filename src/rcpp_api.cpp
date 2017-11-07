@@ -55,42 +55,6 @@ using namespace Rcpp;
 // TODO this doesnt seem to work, perhaps another approach (like a separate thread?)
 //void (*oldhandler)(int) = signal(SIGINT, sigint_handler);
 
-//...
-
-// Flatten N-D population array into N*P table
-DataFrame flatten(const size_t pop, const NDArray<uint32_t>& t)
-{
-  // for R indices start at 1
-  const std::vector<std::vector<int>>& list = listify(pop, t, 1);
-
-  // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
-  List proxyDf;
-  std::string s("C");
-  for (size_t i = t.dim(); i > 0; --i)
-  {
-    proxyDf[std::string(s + std::to_string(t.dim() - i + 1)).c_str()] = list[i-1];
-  }
-
-  return DataFrame(proxyDf);
-}
-
-// Flatten N-D population array into N*P table
-DataFrame flatten(const size_t pop, const NDArray<int64_t>& t)
-{
-  // for R indices start at 1
-  const std::vector<std::vector<int>>& list = listify(pop, t, 1);
-
-  // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
-  List proxyDf;
-  std::string s("C");
-  for (size_t i = t.dim(); i > 0; --i)
-  {
-    proxyDf[std::string(s + std::to_string(t.dim() - i + 1)).c_str()] = list[i-1];
-  }
-
-  return DataFrame(proxyDf);
-}
-
 
 // void doSolveConstrained(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, const NDArray<2, bool>& permitted)
 // {
@@ -121,7 +85,6 @@ DataFrame flatten(const size_t pop, const NDArray<int64_t>& t)
 //   probs.attr("dim") = dims;
 //   result["p.hat"] = probs;
 //   result["x.hat"] = values;
-//   result["pop"] = flatten<2>(solver.population(), t);
 // }
 
 void doSolveGeneral(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, const NDArray<double>& exoProbs)
@@ -146,7 +109,6 @@ void doSolveGeneral(List& result, IntegerVector dims, const std::vector<std::vec
   // probs.attr("dim") = dims;
   // result["p.hat"] = probs;
   result["x.hat"] = values;
-  result["pop"] = flatten(solver.population(), t);
 }
 
 // void doSolveCorrelated(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, double rho)
@@ -178,7 +140,6 @@ void doSolveGeneral(List& result, IntegerVector dims, const std::vector<std::vec
 //   probs.attr("dim") = dims;
 //   result["p.hat"] = probs;
 //   result["x.hat"] = values;
-//   result["pop"] = flatten<2>(solver.population(), t);
 // }
 
 // void doConstrain(List& result, NDArray<uint32_t>& population, const NDArray<bool>& permitted)
@@ -217,7 +178,6 @@ void doSolveGeneral(List& result, IntegerVector dims, const std::vector<std::vec
 //   }
 //   values.attr("dim") = dims;
 //   result["x.hat"] = values;
-//   result["pop"] = flatten<2>(pop, population);
 // }
 
 
@@ -279,7 +239,6 @@ List synthPop(List marginals)
   probs.attr("dim") = sizes;
   result["p.hat"] = probs;
   result["x.hat"] = values;
-  result["pop"] = flatten(solver.population(), t);
 
   return result;
 }
@@ -581,7 +540,6 @@ List qis(List indices, List marginals, int skips = 0)
   result["chiSq"] = qis.chiSq();
   result["pValue"] = qis.pValue();
   result["degeneracy"] = qis.degeneracy();
-  result["table"] = flatten(qis.population(), tmp);
 
   return result;
 }
@@ -656,7 +614,6 @@ List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
   result["result"] = r;
   result["pop"] = qisipf.population();
   result["chiSq"] = qisipf.chiSq();
-  result["table"] = flatten(qisipf.population(), tmp);
 
   return result;
 }
@@ -800,6 +757,33 @@ NumericMatrix correlatedSobol2Sequence(double rho, int n, int skip = 0)
   }
 
   return m;
+}
+
+//' Convert multidimensional array of counts per state into table form. Each row in the table corresponds to one individual
+//'
+//' This function
+//' @param stateOccupancies an arbitrary-dimension array of (integer) state occupation counts.
+//' @return a DataFrame with columns corresponding to category values and rows corresponding to individuals.
+//' @export
+// [[Rcpp::export]]
+DataFrame flatten(IntegerVector stateOccupancies)
+{
+  //m.push_back(std::move(convertRArray<int64_t, IntegerVector>(nv)));
+  const NDArray<int64_t>& a = convertRArray<int64_t, IntegerVector>(stateOccupancies);
+  int64_t pop = sum(a);
+
+  // for R indices start at 1
+  const std::vector<std::vector<int>>& list = listify(pop, a, 1);
+
+  // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
+  List proxyDf;
+  std::string s("C");
+  for (size_t i = 0; i < a.dim(); ++i)
+  {
+    proxyDf[std::string(s + std::to_string(i + 1)).c_str()] = list[i];
+  }
+
+  return DataFrame(proxyDf);
 }
 
 //' Entry point to enable running unit tests within R (e.g. in testthat)

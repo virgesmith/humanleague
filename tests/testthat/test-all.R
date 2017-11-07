@@ -46,8 +46,9 @@ test_that("simple 2D qiws", {
   res<-humanleague::qis(list(1,2),list(m,m))
   expect_equal(rowSums(res$result), m)
   expect_equal(res$conv, TRUE)
-  expect_equal(nrow(res$table), 125)
-  expect_equal(ncol(res$table), 2)
+  table = flatten(res$result)
+  expect_equal(nrow(table), 125)
+  expect_equal(ncol(table), 2)
   expect_gt(res$pValue, 0.005)
 })
 
@@ -57,8 +58,9 @@ test_that("simple 5D qis", {
   res<-humanleague::qis(list(1,2,3,4,5),list(m,m,m,m,m))
   expect_equal(rowSums(res$result), m)
   expect_equal(res$conv, TRUE)
-  expect_equal(nrow(res$table), 125^2)
-  expect_equal(ncol(res$table), 5)
+  table = flatten(res$result)
+  expect_equal(nrow(table), 125^2)
+  expect_equal(ncol(table), 5)
   expect_gt(res$pValue, 0.005)
 })
 
@@ -68,8 +70,9 @@ test_that("simple 8D qiws", {
   res<-humanleague::qis(list(1,2,3,4,5,6,7,8),list(m,m,m,m,m,m,m,m))
   expect_equal(rowSums(res$result), m)
   expect_equal(res$conv, TRUE)
-  expect_equal(nrow(res$table), 125^3)
-  expect_equal(ncol(res$table), 8)
+  table = flatten(res$result)
+  expect_equal(nrow(table), 125^3)
+  expect_equal(ncol(table), 8)
   expect_gt(res$pValue, 0.005)
 })
 
@@ -98,8 +101,9 @@ test_that("msoa qiws", {
   res<-humanleague::qis(list(1,2),list(m1,m2))
   expect_equal(rowSums(res$result), m1)
   expect_equal(colSums(res$result), m2)
-  expect_equal(nrow(res$table), sum(m1))
-  expect_equal(ncol(res$table), 2)
+  table = flatten(res$result)
+  expect_equal(nrow(table), sum(m1))
+  expect_equal(ncol(table), 2)
   expect_gt(res$pValue, 0.00)
 #  expect_equal(sum(res$error.margins), 0)
   expect_equal(res$conv, TRUE)
@@ -283,7 +287,7 @@ test_that("QIS listify tests", {
   expect_true(ms$conv)
 
   a=ms$result
-  t=ms$table
+  t=flatten(ms$result)
 
   expect_equal(sum(a), nrow(t))
 
@@ -307,7 +311,7 @@ test_that("QIS listify tests", {
   expect_true(ms$conv)
 
   a=ms$result
-  t=ms$table
+  t=flatten(ms$result)
 
   expect_equal(sum(a), nrow(t))
 

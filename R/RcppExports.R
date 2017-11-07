@@ -92,6 +92,16 @@ correlatedSobol2Sequence <- function(rho, n, skip = 0L) {
     .Call('_humanleague_correlatedSobol2Sequence', PACKAGE = 'humanleague', rho, n, skip)
 }
 
+#' Convert multidimensional array of counts per state into table form. Each row in the table corresponds to one individual
+#'
+#' This function
+#' @param stateOccupancies an arbitrary-dimension array of (integer) state occupation counts.
+#' @return a DataFrame with columns corresponding to category values and rows corresponding to individuals.
+#' @export
+flatten <- function(stateOccupancies) {
+    .Call('_humanleague_flatten', PACKAGE = 'humanleague', stateOccupancies)
+}
+
 #' Entry point to enable running unit tests within R (e.g. in testthat)
 #'
 #' @return a List containing, number of tests run, number of failures, and any error messages.

@@ -4,10 +4,12 @@
 \alias{flatten}
 \title{Convert multidimensional array of counts per state into table form. Each row in the table corresponds to one individual}
 \usage{
-flatten(stateOccupancies)
+flatten(stateOccupancies, categoryNames)
 }
 \arguments{
 \item{stateOccupancies}{an arbitrary-dimension array of (integer) state occupation counts.}
+
+\item{categoryNames}{a string vector of unique column names.}
 }
 \value{
 a DataFrame with columns corresponding to category values and rows corresponding to individuals.

@@ -46,7 +46,9 @@ test_that("simple 2D qiws", {
   res<-humanleague::qis(list(1,2),list(m,m))
   expect_equal(rowSums(res$result), m)
   expect_equal(res$conv, TRUE)
-  table = flatten(res$result)
+  colnames = c("A","B")
+  table = flatten(res$result, colnames)
+  expect_true(all.equal(names(table), colnames))
   expect_equal(nrow(table), 125)
   expect_equal(ncol(table), 2)
   expect_gt(res$pValue, 0.005)
@@ -58,7 +60,9 @@ test_that("simple 5D qis", {
   res<-humanleague::qis(list(1,2,3,4,5),list(m,m,m,m,m))
   expect_equal(rowSums(res$result), m)
   expect_equal(res$conv, TRUE)
-  table = flatten(res$result)
+  colnames = c("A","B","C","D","E")
+  table = flatten(res$result, colnames)
+  expect_true(all.equal(names(table), colnames))
   expect_equal(nrow(table), 125^2)
   expect_equal(ncol(table), 5)
   expect_gt(res$pValue, 0.005)
@@ -70,7 +74,9 @@ test_that("simple 8D qiws", {
   res<-humanleague::qis(list(1,2,3,4,5,6,7,8),list(m,m,m,m,m,m,m,m))
   expect_equal(rowSums(res$result), m)
   expect_equal(res$conv, TRUE)
-  table = flatten(res$result)
+  colnames = c("A","B","C","D","E","F","G","H")
+  table = flatten(res$result, colnames)
+  expect_true(all.equal(names(table), colnames))
   expect_equal(nrow(table), 125^3)
   expect_equal(ncol(table), 8)
   expect_gt(res$pValue, 0.005)
@@ -101,7 +107,7 @@ test_that("msoa qiws", {
   res<-humanleague::qis(list(1,2),list(m1,m2))
   expect_equal(rowSums(res$result), m1)
   expect_equal(colSums(res$result), m2)
-  table = flatten(res$result)
+  table = flatten(res$result, c("A","B"))
   expect_equal(nrow(table), sum(m1))
   expect_equal(ncol(table), 2)
   expect_gt(res$pValue, 0.00)
@@ -287,19 +293,21 @@ test_that("QIS listify tests", {
   expect_true(ms$conv)
 
   a=ms$result
-  t=flatten(ms$result)
+  colnames = c("M", "N")
+  t=flatten(ms$result, colnames)
 
+  expect_true(all.equal(names(t), colnames))
   expect_equal(sum(a), nrow(t))
 
-  expect_equal(length(unique(t$C1)), 5)
-  expect_equal(length(unique(t$C2)), 6)
+  expect_equal(length(unique(t$M)), 5)
+  expect_equal(length(unique(t$N)), 6)
 
   # check row sums match marginals
   for (i in 1:length(m)) {
-    expect_equal(nrow(t[t$C1==i,]), m[i])
+    expect_equal(nrow(t[t$M==i,]), m[i])
   }
   for (i in 1:length(n)) {
-    expect_equal(nrow(t[t$C2==i,]), n[i])
+    expect_equal(nrow(t[t$N==i,]), n[i])
   }
 
   # 1D+2D
@@ -311,22 +319,23 @@ test_that("QIS listify tests", {
   expect_true(ms$conv)
 
   a=ms$result
-  t=flatten(ms$result)
+  colnames = c("M", "N1", "N2")
+  t=flatten(ms$result, colnames)
 
   expect_equal(sum(a), nrow(t))
 
-  stopifnot(length(unique(t$C1)) == 5)
-  stopifnot(length(unique(t$C2)) == 3)
-  stopifnot(length(unique(t$C3)) == 2)
+  stopifnot(length(unique(t$M)) == 5)
+  stopifnot(length(unique(t$N1)) == 3)
+  stopifnot(length(unique(t$N2)) == 2)
 
   # check row sums match marginals
   for (i in 1:5) {
-    expect_equal(nrow(t[t$C1==i,]), m[i])
+    expect_equal(nrow(t[t$M==i,]), m[i])
   }
 
   for (i in 1:3) {
     for (j in 1:2) {
-      expect_equal(nrow(t[t$C2==i & t$C3==j,]), n[i,j])
+      expect_equal(nrow(t[t$N1==i & t$N2==j,]), n[i,j])
     }
   }
 

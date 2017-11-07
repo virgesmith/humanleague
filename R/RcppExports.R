@@ -96,10 +96,11 @@ correlatedSobol2Sequence <- function(rho, n, skip = 0L) {
 #'
 #' This function
 #' @param stateOccupancies an arbitrary-dimension array of (integer) state occupation counts.
+#' @param categoryNames a string vector of unique column names.
 #' @return a DataFrame with columns corresponding to category values and rows corresponding to individuals.
 #' @export
-flatten <- function(stateOccupancies) {
-    .Call('_humanleague_flatten', PACKAGE = 'humanleague', stateOccupancies)
+flatten <- function(stateOccupancies, categoryNames) {
+    .Call('_humanleague_flatten', PACKAGE = 'humanleague', stateOccupancies, categoryNames)
 }
 
 #' Entry point to enable running unit tests within R (e.g. in testthat)

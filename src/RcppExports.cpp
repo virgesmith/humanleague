@@ -107,13 +107,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // flatten
-DataFrame flatten(IntegerVector stateOccupancies);
-RcppExport SEXP _humanleague_flatten(SEXP stateOccupanciesSEXP) {
+DataFrame flatten(IntegerVector stateOccupancies, StringVector categoryNames);
+RcppExport SEXP _humanleague_flatten(SEXP stateOccupanciesSEXP, SEXP categoryNamesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< IntegerVector >::type stateOccupancies(stateOccupanciesSEXP);
-    rcpp_result_gen = Rcpp::wrap(flatten(stateOccupancies));
+    Rcpp::traits::input_parameter< StringVector >::type categoryNames(categoryNamesSEXP);
+    rcpp_result_gen = Rcpp::wrap(flatten(stateOccupancies, categoryNames));
     return rcpp_result_gen;
 END_RCPP
 }

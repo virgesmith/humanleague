@@ -763,10 +763,11 @@ NumericMatrix correlatedSobol2Sequence(double rho, int n, int skip = 0)
 //'
 //' This function
 //' @param stateOccupancies an arbitrary-dimension array of (integer) state occupation counts.
+//' @param categoryNames a string vector of unique column names.
 //' @return a DataFrame with columns corresponding to category values and rows corresponding to individuals.
 //' @export
 // [[Rcpp::export]]
-DataFrame flatten(IntegerVector stateOccupancies)
+DataFrame flatten(IntegerVector stateOccupancies, StringVector categoryNames)
 {
   //m.push_back(std::move(convertRArray<int64_t, IntegerVector>(nv)));
   const NDArray<int64_t>& a = convertRArray<int64_t, IntegerVector>(stateOccupancies);
@@ -780,7 +781,7 @@ DataFrame flatten(IntegerVector stateOccupancies)
   std::string s("C");
   for (size_t i = 0; i < a.dim(); ++i)
   {
-    proxyDf[std::string(s + std::to_string(i + 1)).c_str()] = list[i];
+    proxyDf[as<std::string>(categoryNames[i])] = list[i];
   }
 
   return DataFrame(proxyDf);

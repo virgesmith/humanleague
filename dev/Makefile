@@ -14,7 +14,7 @@ dep = $(obj:.o=.d)
 
 CXX=g++
 # use -m32 to test for LLP64 data model issues (i.e. windows)
-CXXFLAGS=-Wall -Werror -g -O2 -std=c++11 -I..
+CXXFLAGS=-Wall -Werror -g -O0 -std=c++11 -I..
 # -D_GLIBCXX_DEBUG
 LDFLAGS=
 

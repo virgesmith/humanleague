@@ -281,6 +281,75 @@ test_that("QIS 3d (2)", {
   #expect_lt(t$degeneracy, ?)
 })
 
+test_that("QIS degeneracy tests", {
+
+  # 2D
+  stateOcc = 8
+  statesPerDim = 8
+  m=rep(stateOcc, statesPerDim)
+  ms=qis(list(1,2),list(m,m),stateOcc^2)
+  expect_true(ms$conv)
+  expect_lte(max(ms$result - ms$expectation), 1)
+  expect_gte(min(ms$result - ms$expectation),-1)
+
+  # TODO investigate these failures
+  # 3D (1D+2D)
+  stateOcc = 8
+  statesPerDim = 8
+  m=rep(stateOcc * stateOcc, statesPerDim)
+  n=array(rep(stateOcc, statesPerDim * statesPerDim), dim=c(statesPerDim, statesPerDim))
+  ms=qis(list(1,c(2,3)),list(m,n), stateOcc^3)
+  expect_true(ms$conv)
+  expect_lte(max(ms$result - ms$expectation), 1)
+  expect_gte(min(ms$result - ms$expectation), -1)
+  #
+  # 4D (overlapping 2D+2D+2D)
+  stateOcc = 8
+  statesPerDim = 8
+  n=array(rep(stateOcc^2, statesPerDim * statesPerDim), dim=c(statesPerDim, statesPerDim))
+  ms=qis(list(c(1,2),c(2,3),c(3,4)),list(n,n,n), stateOcc^4)
+  expect_true(ms$conv)
+  expect_lte(max(ms$result - ms$expectation), 1)
+  expect_gte(min(ms$result - ms$expectation), -1)
+
+})
+
+
+test_that("QISI degeneracy tests", {
+
+  # 2D
+  stateOcc = 8
+  statesPerDim = 8
+  m=rep(stateOcc, statesPerDim)
+  s=array(rep(stateOcc, statesPerDim^2),dim=c(statesPerDim, statesPerDim))
+  ms=qisi(s, list(1,2),list(m,m),stateOcc^2)
+  expect_true(ms$conv)
+  expect_lte(max(ms$result - ms$expectation), 1)
+  expect_gte(min(ms$result - ms$expectation),-1)
+
+  # 3D (1D+2D)
+  stateOcc = 8
+  statesPerDim = 8
+  m=rep(stateOcc * stateOcc, statesPerDim)
+  n=array(rep(stateOcc, statesPerDim * statesPerDim), dim=c(statesPerDim, statesPerDim))
+  s=array(rep(stateOcc, statesPerDim^3),dim=c(statesPerDim, statesPerDim, statesPerDim))
+  ms=qisi(s, list(1,c(2,3)),list(m,n), stateOcc^3)
+  expect_true(ms$conv)
+  expect_lte(max(ms$result - ms$expectation), 1)
+  expect_gte(min(ms$result - ms$expectation), -1)
+
+  # 4D (overlapping 2D+2D+2D)
+  stateOcc = 8
+  statesPerDim = 8
+  n=array(rep(stateOcc^2, statesPerDim * statesPerDim), dim=c(statesPerDim, statesPerDim))
+  s=array(rep(stateOcc, statesPerDim^4),dim=c(statesPerDim, statesPerDim, statesPerDim, statesPerDim))
+  ms=qisi(s, list(c(1,2),c(2,3),c(3,4)),list(n,n,n), stateOcc^4)
+  expect_true(ms$conv)
+  expect_lte(max(ms$result - ms$expectation), 1)
+  expect_gte(min(ms$result - ms$expectation), -1)
+
+})
+
 
 test_that("QIS listify tests", {
 

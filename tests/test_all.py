@@ -144,6 +144,13 @@ class Test(TestCase):
     self.assertTrue(p["pop"] == 4096)
 
   def test_QIS(self):
+
+
+    # m = np.array([[10,10,10],[10,10,10],[10,10,10]])
+    # idx = [np.array([0,1]), np.array([1,2])]
+    # r = hl.qis(idx, [m, m])
+    # self.assertTrue(false)
+
     m0 = np.array([52, 48]) 
     m1 = np.array([10, 77, 13])
     i0 = np.array([0])

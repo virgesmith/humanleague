@@ -352,8 +352,8 @@ NDArray<T> convertRArray(R rArray)
   std::vector<int64_t> sizes(dim);
   for (size_t i = 0; i < sizes.size(); ++i)
   {
-    //sizes[i] = colMajorSizes[dim-i-1]; // reversing the dims messes the tablular output
-    sizes[i] = colMajorSizes[i];
+    sizes[i] = colMajorSizes[dim-i-1]; // reversing the dims messes the tablular output
+    //sizes[i] = colMajorSizes[i];
   }
 
   NDArray<T> array(sizes);

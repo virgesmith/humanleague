@@ -10,7 +10,7 @@ public:
 
   // TODO need a mechanism to invalidate result after it's been moved (or just copy it)
   const NDArray<int64_t>& solve(bool reset = false);
-  //const NDArray<int64_t>& solve2();
+  const NDArray<int64_t>& solve3(bool reset = false);
 
   // Expected state occupancy
   const NDArray<double>& expectation();

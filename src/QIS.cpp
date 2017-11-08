@@ -335,17 +335,17 @@ const NDArray<int64_t>& QIS::solve3(bool reset)
 
 void QIS::sample(const std::vector<uint32_t>& seq, const NDArray<int64_t>& marginal, MappedIndex& index)
 {
-  // TODO if no unset values, do nothing
+//   // TODO if no unset values, do nothing
 
-  std::vector<int64_t> unsampled;
-  for (size_t d = 0; d < marginal.dim(); ++d)
-  {
-    if (index[d] == -1)
-      unsampled.push_back(d);
-  }
+//   std::vector<int64_t> unsampled;
+//   for (size_t d = 0; d < marginal.dim(); ++d)
+//   {
+//     if (index[d] == -1)
+//       unsampled.push_back(d);
+//   }
 
-  // create reduced array in unsampled dims
-  NDArray<int64_t>& r = std::move(reduce(marginal, unsampled));
+//   // create reduced array in unsampled dims
+//   NDArray<int64_t>& r = std::move(reduce(marginal, unsampled));
 
 }
 

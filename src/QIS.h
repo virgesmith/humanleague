@@ -10,7 +10,6 @@ public:
 
   // TODO need a mechanism to invalidate result after it's been moved (or just copy it)
   const NDArray<int64_t>& solve(bool reset = false);
-  const NDArray<int64_t>& solve3(bool reset = false);
 
   // Expected state occupancy
   const NDArray<double>& expectation();
@@ -29,7 +28,7 @@ private:
 
   void updateStateProbs();
 
-  void sample(const std::vector<uint32_t>& seq, const NDArray<int64_t>& marginal, MappedIndex& index);
+  void sample(const std::vector<uint32_t>& seq, size_t marginalNo, MappedIndex& index);
   
   Sobol m_sobolSeq;
 

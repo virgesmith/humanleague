@@ -68,6 +68,12 @@ public:
   // TODO better to overload NDArray to take Index types???
   operator const std::vector<int64_t*>&() const;
 
+  // allow read-only access to individual values
+  const int64_t& operator[](size_t i) const;
+  
+  // allow modification of individual values
+  int64_t& operator[](size_t i);
+  
   bool end();
 
   //static std::vector<int64_t> excludeFrom(const std::vector<int64_t>& dims, int64_t excludedDim);

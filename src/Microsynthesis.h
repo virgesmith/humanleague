@@ -208,7 +208,7 @@ protected:
     m_dim_lookup.resize(m_dim);
 
     for (size_t k = 0; k < m_indices.size(); ++k)
-    for (size_t i = 0; i < m_indices[k].size(); ++i)
+      for (size_t i = 0; i < m_indices[k].size(); ++i)
         m_dim_lookup[m_indices[k][i]].push_back(std::make_pair(k,i));
 
     // more validation
@@ -244,6 +244,7 @@ protected:
   // TODO not a ref
   marginal_list_t& m_marginals;
   int64_t m_population;
+  // lists marginals and dims of marginals per overall dimension
   marginal_indices_list_t m_dim_lookup;
   NDArray<T> m_array;
 };

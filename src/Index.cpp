@@ -150,6 +150,19 @@ MappedIndex::operator const std::vector<int64_t*>&() const
   return m_mappedIndex;
 }
 
+// allow read-only access to individual values
+const int64_t& MappedIndex::operator[](size_t i) const
+{
+  return *m_mappedIndex[i];
+}
+
+// allow modification of individual values
+int64_t& MappedIndex::operator[](size_t i)
+{
+  return *m_mappedIndex[i];
+}
+  
+
 bool MappedIndex::end()
 {
   return m_atEnd;

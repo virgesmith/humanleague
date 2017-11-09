@@ -418,6 +418,7 @@ extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
     pycpp::Dict retval;
     QIWS qiws(marginals); 
     retval.insert("conv", pycpp::Bool(qiws.solve()));
+    // cannot easily output uint32_t array...
     retval.insert("result", flatten(qiws.population(), qiws.result()));
     retval.insert("p-value", pycpp::Double(qiws.pValue().first));
     retval.insert("chiSq", pycpp::Double(qiws.chiSq()));
@@ -463,6 +464,7 @@ extern "C" PyObject* humanleague_synthPopG(PyObject *self, PyObject *args)
     GQIWS gqiws(marginals, xp);
     pycpp::Dict retval;
     retval.insert("conv", pycpp::Bool(gqiws.solve()));
+    // cannot easily output uint32_t array...
     retval.insert("result", flatten(gqiws.population(), gqiws.result()));
     //retval.insert("result", pycpp::Array<uint32_t>(std::move(const_cast<NDArray<2,uint32_t>&>(gqiws.result()))));
     retval.insert("pop", pycpp::Int(gqiws.population()));

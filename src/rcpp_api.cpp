@@ -484,7 +484,7 @@ List qis(List indices, List marginals, int skips = 0)
     throw std::runtime_error("index and marginal lists are different lengths");
   }
 
-    // we need the overall dimension and sizes upfront to assemble the problem in row-major rather than col-major form.
+  // we need the overall dimension and sizes upfront to assemble the problem in row-major rather than col-major form.
   std::vector<int64_t> rSizes = dimensionHelper(indices, marginals);
 
   const int64_t k = marginals.size();
@@ -781,7 +781,7 @@ DataFrame flatten(IntegerVector stateOccupancies, StringVector categoryNames)
   std::string s("C");
   for (size_t i = 0; i < a.dim(); ++i)
   {
-    proxyDf[as<std::string>(categoryNames[i])] = list[i];
+    proxyDf[as<std::string>(categoryNames[i])] = list[a.dim() - i -1];
   }
 
   return DataFrame(proxyDf);

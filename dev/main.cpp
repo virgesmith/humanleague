@@ -205,14 +205,18 @@ void doMd_QIS()
   i.push_back(std::vector<int64_t>{1,2});
   NDArray<int64_t> m0(std::vector<int64_t>{2,2});
   Index i0(m0.sizes());
-  m0[i0] = 52;
-  m0[++i0] = 48;
+  m0[i0] = 10;
+  m0[++i0] = 10;
+  m0[++i0] = 10;
+  m0[++i0] = 10;
   //m0.assign(5.0);
-  NDArray<int64_t> m1(std::vector<int64_t>{2});
+  NDArray<int64_t> m1(std::vector<int64_t>{2,2});
   Index i1(m1.sizes());
-  m1[i1] = 87;
-  m1[++i1] = 13;
-
+  m1[i1] = 10;
+  m1[++i1] = 10;
+  m1[++i1] = 10;
+  m1[++i1] = 10;
+  
   m.push_back(std::move(m0));
   m.push_back(std::move(m1));
 
@@ -259,57 +263,57 @@ int main()
   try
   {
 
-    std::vector<int64_t> s{3,2,5};
-    NDArray<double> a(s);
-    a.assign(1.0);
-    for (Index index(a.sizes(), std::make_pair(0,1)); !index.end(); ++index)
-    {
-      ++a[index];
-    }
-    for (Index index(a.sizes(), std::make_pair(1,0)); !index.end(); ++index)
-    {
-      ++a[index];
-    }
-    for (Index index(a.sizes(), std::make_pair(2,2)); !index.end(); ++index)
-    {
-      ++a[index];
-    }
-    print(a.rawData(), a.storageSize(), s[2]);
+    // std::vector<int64_t> s{3,2,5};
+    // NDArray<double> a(s);
+    // a.assign(1.0);
+    // for (Index index(a.sizes(), std::make_pair(0,1)); !index.end(); ++index)
+    // {
+    //   ++a[index];
+    // }
+    // for (Index index(a.sizes(), std::make_pair(1,0)); !index.end(); ++index)
+    // {
+    //   ++a[index];
+    // }
+    // for (Index index(a.sizes(), std::make_pair(2,2)); !index.end(); ++index)
+    // {
+    //   ++a[index];
+    // }
+    // print(a.rawData(), a.storageSize(), s[2]);
 
-    print(reduce(a, 0));
-    print(reduce(a, 1));
-    print(reduce(a, 2));
+    // print(reduce(a, 0));
+    // print(reduce(a, 1));
+    // print(reduce(a, 2));
 
-    for (size_t d = 0; d < a.dim(); ++d)
-    {
-      for (int64_t i = 0; i < a.sizes()[d]; ++i)
-      {
-        NDArray<double> a00 = slice(a, {d,i});
-        print(a00.rawData(), a00.storageSize());//, a00.sizes()[1]);
-      }
-    }
+    // for (size_t d = 0; d < a.dim(); ++d)
+    // {
+    //   for (int64_t i = 0; i < a.sizes()[d]; ++i)
+    //   {
+    //     NDArray<double> a00 = slice(a, {d,i});
+    //     print(a00.rawData(), a00.storageSize());//, a00.sizes()[1]);
+    //   }
+    // }
 
-    {
-      NDArray<double> r = reduce(a, std::vector<int64_t>{0,1});
+    // {
+    //   NDArray<double> r = reduce(a, std::vector<int64_t>{0,1});
 
-      std::cout << r.dim() << std::endl;
-      print(r.sizes());
-      print(r.rawData(), r.storageSize(), r.sizes()[1]);
-    }
-    {
-      NDArray<double> r = reduce(a, std::vector<int64_t>{1,2});
+    //   std::cout << r.dim() << std::endl;
+    //   print(r.sizes());
+    //   print(r.rawData(), r.storageSize(), r.sizes()[1]);
+    // }
+    // {
+    //   NDArray<double> r = reduce(a, std::vector<int64_t>{1,2});
 
-      std::cout << r.dim() << std::endl;
-      print(r.sizes());
-      print(r.rawData(), r.storageSize(), r.sizes()[1]);
-    }
-    {
-      NDArray<double> r = reduce(a, std::vector<int64_t>{2, 0});
+    //   std::cout << r.dim() << std::endl;
+    //   print(r.sizes());
+    //   print(r.rawData(), r.storageSize(), r.sizes()[1]);
+    // }
+    // {
+    //   NDArray<double> r = reduce(a, std::vector<int64_t>{2, 0});
 
-      std::cout << r.dim() << std::endl;
-      print(r.sizes());
-      print(r.rawData(), r.storageSize(), r.sizes()[1]);
-    }
+    //   std::cout << r.dim() << std::endl;
+    //   print(r.sizes());
+    //   print(r.rawData(), r.storageSize(), r.sizes()[1]);
+    // }
 
     //doMd();
     doMd_QIS();

@@ -78,7 +78,73 @@ QIS::QIS(const index_list_t& indices, marginal_list_t& marginals, int64_t skips)
     m_expectedStateOccupancy[index] *= m_population;
 }
 
+void recursive_pick(const NDArray<double>& p, const std::vector<uint32_t>& seq, Index& index, size_t dim)
+{
+  static const double scale = 0.5 / (1u<<31);
 
+  const std::vector<double> r = reduce<double>(p, dim);
+  index[dim] = pick<double>(r.data(), r.size(), seq[dim] * scale); 
+
+  const NDArray<double>& s = slice(p, {dim, index[dim]});
+
+  if (dim == 1)
+  {
+    index[0] = pick<double>(s.rawData(), s.storageSize(), seq[0] * scale); 
+    return;
+  }
+  else
+  {
+    recursive_pick(s, seq, index, dim-1);
+  }
+}
+
+const NDArray<int64_t>& QIS::solve(bool reset)
+{
+  if (reset)
+  {
+    m_sobolSeq.reset();
+  }
+
+  m_conv = true;
+  m_array.assign(0ll);
+
+  Index main_index(m_array.sizes());
+  
+  std::vector<MappedIndex> mapped_indices;
+  mapped_indices.reserve(m_marginals.size());
+  for (size_t m = 0; m < m_marginals.size(); ++m)
+  {
+    mapped_indices.push_back(MappedIndex(main_index, m_indices[m]));
+  }
+
+  // loop over population
+  for (int64_t i = 0; i < m_population; ++i)
+  {
+
+    const std::vector<uint32_t>& seq = m_sobolSeq.buf();
+
+    recursive_pick(m_stateProbs, seq, main_index, m_dim-1);
+
+    //print(main_index.operator const std::vector<int64_t, std::allocator<int64_t>> &());
+
+    ++m_array[main_index];
+
+    for (size_t m = 0; m < m_marginals.size(); ++m)
+    {
+      --m_marginals[m][mapped_indices[m]];
+      if (m_marginals[m][mapped_indices[m]] < 0)
+        m_conv = false;
+    }
+    updateStateProbs();
+  }
+  m_chiSq = ::chiSq(m_array, m_expectedStateOccupancy);
+
+  m_pValue = ::pValue(dof(m_array.sizes()), m_chiSq).first;
+
+  m_degeneracy = ::degeneracy(m_array);
+
+  return m_array;
+}
 // const NDArray<int64_t>& QIS::solve3(bool reset)
 // {
 //   if (reset)
@@ -142,7 +208,7 @@ QIS::QIS(const index_list_t& indices, marginal_list_t& marginals, int64_t skips)
 
 // control state of Sobol via arg?
 // better solution? construct set of 1-d marginals and sample from these
-const NDArray<int64_t>& QIS::solve(bool reset)
+const NDArray<int64_t>& QIS::solve4(bool reset)
 {
   if (reset)
   {
@@ -196,7 +262,6 @@ const NDArray<int64_t>& QIS::solve(bool reset)
   //   std::cout << std::endl;
   // }
 
-
   for (int64_t i = 0; i < m_population; ++i)
   {
     // mark main index as unassigned
@@ -214,6 +279,11 @@ const NDArray<int64_t>& QIS::solve(bool reset)
       sample(seq, m, mapped_indices[m]);
       //print(main_index.operator const std::vector<int64_t, std::allocator<int64_t>> &());
     }
+    // check we have sampled in every dim
+    for (size_t d = 0; d < m_dim; ++d)
+      if (main_index[d] < 0)
+        throw std::runtime_error("sampling error, not all dims have been set");
+
     for (size_t m = 0; m < mapped_indices.size(); ++m)
     {
       --m_marginals[m][mapped_indices[m]];
@@ -233,82 +303,134 @@ const NDArray<int64_t>& QIS::solve(bool reset)
   return m_array;
 }
 
-void sampleOne(size_t dimOffset, const std::vector<uint32_t>& subSeq, const NDArray<int64_t>& marginal, MappedIndex& index)
+const NDArray<int64_t>& recursive_slice(std::vector<std::pair<int64_t, int64_t>>& dims, const NDArray<int64_t>& marginal)
+{
+  if (dims.size() == 0)
+    return marginal;
+
+  const NDArray<int64_t>& sliced = slice(marginal, {dims.size() - 1, dims.back().second});
+  dims.pop_back();
+
+  return recursive_slice(dims, sliced);
+}
+
+void recursive_sample(std::vector<std::pair<int64_t, uint32_t>>& dims, const NDArray<int64_t>& marginal, MappedIndex& index)
 {
   static const double scale = 0.5 / (1u<<31);
   
-  size_t dim = marginal.dim();
+  assert(dims.size() == marginal.dim());
+  if (dims.size() == 0)
+    return;
 
-  if (dim > 2)
+  // need this to avoid a zero-D marginal
+  if (dims.size() == 1)
   {
-    // reduce/fix if necessary, then slice the last dimension and recurse 
-    // TODO this is wrong, all fixed dims should be sliced first. Need to track unfixed dims not just offset
-
-    if (index[dimOffset + dim - 1] < 0)
-    {
-      const std::vector<int64_t>& r = reduce<int64_t>(marginal, dim - 1);
-        // if all unfixed, reduce and recurse
-      index[dimOffset + dim - 1] = pick(r.data(), r.size(), subSeq[dimOffset + dim - 1] * scale);
-    }  
-    const NDArray<int64_t>& sliced = slice(marginal, {dim - 1, index[dimOffset + dim - 1]});
-    sampleOne(0, subSeq, sliced, index); 
-
-    // TODO...
-    // // reduce dim D-1
-    // const std::vector<int64_t>& m = reduce(marginal, dim - 1);
-    // // pick an index
-    // int64_t oldValue = index[dimOffset + dim - 1];
-    // index[dimOffset + dim-1] = pick(m.data(), m.size(), subSeq[dim-1] * scale);
-    // if (oldValue != -1 && oldValue != index[dimOffset + dim - 1])
-    // {
-    //   std::cout << "warning: index change" << std::endl;
-    // }
-
-    // // take slice of Dim D-1 at index
-    // const NDArray<int64_t>& sliced = slice(marginal, {dim-1, index[dim-1]});
-
-    // // recurse
-    // sampleOne(0, subSeq, sliced, index);
+    index[dims.back().first] = pick(marginal.rawData(), marginal.storageSize(), dims.back().second * scale);
+    dims.pop_back();
+    return;
   }
-  else if (dim == 2)
+  else
   {
-    if (index[dimOffset] > -1 && index[dimOffset + 1] > -1)
-    {
-      return;
-    }
-    else if (index[dimOffset] > -1) // 2nd index needs to be fixed
-    {
-      const NDArray<int64_t>& sliced = slice(marginal, {0, index[dimOffset]});
-      index[dimOffset + 1] = pick(sliced.rawData(), sliced.storageSize(), subSeq[dimOffset + 1] * scale);      
-    }
-    else if (index[dimOffset + 1] > -1) // 1st index needs to be fixed
-    {
-      // take slice in fixed dim
-      const NDArray<int64_t>& sliced = slice(marginal, {1, index[dimOffset + 1]});
-      index[dimOffset] = pick(sliced.rawData(), sliced.storageSize(), subSeq[dimOffset] * scale);
-    }
-    else //both indices need fixing
-    {
-      // reduce dim 1 (now 0)
-      const std::vector<int64_t>& r1 = reduce<int64_t>(marginal, 1);
-      // pick an index
-      index[dimOffset + 1] = pick(r1.data(), r1.size(), subSeq[dimOffset + 1] * scale);
+    const std::vector<int64_t>& r = reduce<int64_t>(marginal, dims.back().first);
+    index[dims.back().first] = pick(r.data(), r.size(), dims.back().second * scale);
+    const NDArray<int64_t>& sliced = slice(marginal, dims.back());
+    dims.pop_back();
+    recursive_sample(dims, sliced, index);      
+  }
+}
 
-      // slice dim 2 (now 0)
-      const NDArray<int64_t>& sliced = slice(marginal, {1, index[dimOffset + 1]});
-      assert(sliced.dim() == 1);
-      // no reduction required
-      // pick an index
-      index[dimOffset] = pick(sliced.rawData(), sliced.storageSize(), subSeq[dimOffset] * scale);
-    }
-  }
-  else // 1-D
+void sampleOne(std::vector<int64_t>& dims, const std::vector<uint32_t>& subSeq, const NDArray<int64_t>& marginal, MappedIndex& index)
+{
+  std::vector<std::pair<int64_t, int64_t>> dims_to_slice;
+  std::vector<std::pair<int64_t, uint32_t>> dims_to_sample;
+  for (size_t d = 0; d < dims.size(); ++d)
   {
-    if (index[dimOffset] < 0)
-    {
-      index[dimOffset] = pick(marginal.rawData(), marginal.storageSize(), subSeq[dimOffset] * scale);
-    }
+    if (index[dims[d]] > -1)
+      dims_to_slice.push_back(std::make_pair(d, index[dims[d]]));
+    else
+      dims_to_sample.push_back(std::make_pair(d, subSeq[d]));
   }
+
+  // nothing to do if all dims already sampled
+  if (dims_to_sample.empty())
+    return;
+
+  // first get slice in the free dimensions only
+  const NDArray<int64_t>& free = recursive_slice(dims_to_slice, marginal);
+
+  // should now have an array with dim = dims_to_sample.size()
+  recursive_sample(dims_to_sample, free, index);
+
+  // if (dim > 2)
+  // {
+  //   // reduce/fix if necessary, then slice the last dimension and recurse 
+  //   // TODO this is wrong, all fixed dims should be sliced first. Need to track unfixed dims not just offset
+
+  //   if (index[dimOffset + dim - 1] < 0)
+  //   {
+  //     const std::vector<int64_t>& r = reduce<int64_t>(marginal, dim - 1);
+  //       // if all unfixed, reduce and recurse
+  //     index[dimOffset + dim - 1] = pick(r.data(), r.size(), subSeq[dimOffset + dim - 1] * scale);
+  //   }  
+  //   const NDArray<int64_t>& sliced = slice(marginal, {dim - 1, index[dimOffset + dim - 1]});
+  //   sampleOne(0, subSeq, sliced, index); 
+
+  //   // TODO...
+  //   // // reduce dim D-1
+  //   // const std::vector<int64_t>& m = reduce(marginal, dim - 1);
+  //   // // pick an index
+  //   // int64_t oldValue = index[dimOffset + dim - 1];
+  //   // index[dimOffset + dim-1] = pick(m.data(), m.size(), subSeq[dim-1] * scale);
+  //   // if (oldValue != -1 && oldValue != index[dimOffset + dim - 1])
+  //   // {
+  //   //   std::cout << "warning: index change" << std::endl;
+  //   // }
+
+  //   // // take slice of Dim D-1 at index
+  //   // const NDArray<int64_t>& sliced = slice(marginal, {dim-1, index[dim-1]});
+
+  //   // // recurse
+  //   // sampleOne(0, subSeq, sliced, index);
+  // }
+  // else if (dim == 2)
+  // {
+  //   if (index[dimOffset] > -1 && index[dimOffset + 1] > -1)
+  //   {
+  //     return;
+  //   }
+  //   else if (index[dimOffset] > -1) // 2nd index needs to be fixed
+  //   {
+  //     const NDArray<int64_t>& sliced = slice(marginal, {0, index[dimOffset]});
+  //     index[dimOffset + 1] = pick(sliced.rawData(), sliced.storageSize(), subSeq[dimOffset + 1] * scale);      
+  //   }
+  //   else if (index[dimOffset + 1] > -1) // 1st index needs to be fixed
+  //   {
+  //     // take slice in fixed dim
+  //     const NDArray<int64_t>& sliced = slice(marginal, {1, index[dimOffset + 1]});
+  //     index[dimOffset] = pick(sliced.rawData(), sliced.storageSize(), subSeq[dimOffset] * scale);
+  //   }
+  //   else //both indices need fixing
+  //   {
+  //     // reduce dim 1 (now 0)
+  //     const std::vector<int64_t>& r1 = reduce<int64_t>(marginal, 1);
+  //     // pick an index
+  //     index[dimOffset + 1] = pick(r1.data(), r1.size(), subSeq[dimOffset + 1] * scale);
+
+  //     // slice dim 2 (now 0)
+  //     const NDArray<int64_t>& sliced = slice(marginal, {1, index[dimOffset + 1]});
+  //     assert(sliced.dim() == 1);
+  //     // no reduction required
+  //     // pick an index
+  //     index[dimOffset] = pick(sliced.rawData(), sliced.storageSize(), subSeq[dimOffset] * scale);
+  //   }
+  // }
+  // else // 1-D
+  // {
+  //   if (index[dimOffset] < 0)
+  //   {
+  //     index[dimOffset] = pick(marginal.rawData(), marginal.storageSize(), subSeq[dimOffset] * scale);
+  //   }
+  // }
 
 }
 
@@ -323,7 +445,7 @@ void QIS::sample(const std::vector<uint32_t>& seq, size_t marginalNo, MappedInde
   // std::cout << marginalNo << ": ";
   // print(r);
 
-  sampleOne(0, r, m_marginals[marginalNo], index);
+  sampleOne(m_indices[marginalNo], r, m_marginals[marginalNo], index);
 
 }
 

@@ -781,7 +781,7 @@ DataFrame flatten(IntegerVector stateOccupancies, StringVector categoryNames)
   std::string s("C");
   for (size_t i = 0; i < a.dim(); ++i)
   {
-    proxyDf[as<std::string>(categoryNames[i])] = list[a.dim() - i -1];
+    proxyDf[as<std::string>(categoryNames[i])] = list[i];
   }
 
   return DataFrame(proxyDf);

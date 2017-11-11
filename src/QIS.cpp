@@ -3,6 +3,7 @@
 #include "Index.h"
 #include "StatFuncs.h"
 
+
 namespace {
 
 // TODO move somewhere appropriate (doesnt need to be member) (copy&paste from QSIPF)
@@ -99,6 +100,11 @@ void recursive_pick(const NDArray<double>& p, const std::vector<uint32_t>& seq, 
 }
 
 const NDArray<int64_t>& QIS::solve(bool reset)
+{
+  return solve_m(reset);
+}
+
+const NDArray<int64_t>& QIS::solve_p(bool reset)
 {
   if (reset)
   {
@@ -208,7 +214,7 @@ const NDArray<int64_t>& QIS::solve(bool reset)
 
 // control state of Sobol via arg?
 // better solution? construct set of 1-d marginals and sample from these
-const NDArray<int64_t>& QIS::solve4(bool reset)
+const NDArray<int64_t>& QIS::solve_m(bool reset)
 {
   if (reset)
   {
@@ -277,7 +283,9 @@ const NDArray<int64_t>& QIS::solve4(bool reset)
     for (size_t m = 0; m < mapped_indices.size(); ++m)
     {
       sample(seq, m, mapped_indices[m]);
-      //print(main_index.operator const std::vector<int64_t, std::allocator<int64_t>> &());
+#ifdef VERBOSE
+      print(main_index.operator const std::vector<int64_t, std::allocator<int64_t>> &());
+#endif
     }
     // check we have sampled in every dim
     for (size_t d = 0; d < m_dim; ++d)
@@ -305,6 +313,9 @@ const NDArray<int64_t>& QIS::solve4(bool reset)
 
 const NDArray<int64_t>& recursive_slice(std::vector<std::pair<int64_t, int64_t>>& dims, const NDArray<int64_t>& marginal)
 {
+#ifdef VERBOSE
+  std::cout << "recursive_slice: " << dims.size() << std::endl;
+#endif
   if (dims.size() == 0)
     return marginal;
 
@@ -333,23 +344,42 @@ void recursive_sample(std::vector<std::pair<int64_t, uint32_t>>& dims, const NDA
   {
     const std::vector<int64_t>& r = reduce<int64_t>(marginal, dims.back().first);
     index[dims.back().first] = pick(r.data(), r.size(), dims.back().second * scale);
-    const NDArray<int64_t>& sliced = slice(marginal, dims.back());
+    const NDArray<int64_t>& sliced = slice(marginal, { dims.back().first, index[dims.back().first] });
     dims.pop_back();
     recursive_sample(dims, sliced, index);      
   }
 }
 
-void sampleOne(std::vector<int64_t>& dims, const std::vector<uint32_t>& subSeq, const NDArray<int64_t>& marginal, MappedIndex& index)
+void sampleOne(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, const NDArray<int64_t>& marginal, MappedIndex& index)
 {
+#ifdef VERBOSE
+  std::cout << "dims:";
+  print(dims);
+  std::cout << "seq:";
+  print(seq);
+#endif
   std::vector<std::pair<int64_t, int64_t>> dims_to_slice;
   std::vector<std::pair<int64_t, uint32_t>> dims_to_sample;
   for (size_t d = 0; d < dims.size(); ++d)
   {
-    if (index[dims[d]] > -1)
+    if (index[d] > -1)
       dims_to_slice.push_back(std::make_pair(d, index[dims[d]]));
     else
-      dims_to_sample.push_back(std::make_pair(d, subSeq[d]));
+      dims_to_sample.push_back(std::make_pair(d, seq[dims[d]]));
   }
+#ifdef VERBOSE
+  std::cout << "slice:";
+  for (size_t i = 0; i < dims_to_slice.size(); ++i)
+  {
+    std::cout << dims_to_slice[i].first << ":" << dims_to_slice[i].second << std::endl;
+  }
+  std::cout << "sample:";
+  for (size_t i = 0; i < dims_to_sample.size(); ++i)
+  {
+    std::cout << dims_to_sample[i].first << ":" << dims_to_sample[i].second << std::endl;
+  }
+#endif
+  
 
   // nothing to do if all dims already sampled
   if (dims_to_sample.empty())
@@ -437,15 +467,15 @@ void sampleOne(std::vector<int64_t>& dims, const std::vector<uint32_t>& subSeq, 
 void QIS::sample(const std::vector<uint32_t>& seq, size_t marginalNo, MappedIndex& index)
 {
   // pick relevant numbers from sample
-  std::vector<uint32_t> r;
-  for (size_t m = 0; m < m_indices[marginalNo].size(); ++m)
-  {
-    r.push_back(seq[m_indices[marginalNo][m]]);
-  }
+  // std::vector<uint32_t> r;
+  // for (size_t m = 0; m < m_indices[marginalNo].size(); ++m)
+  // {
+  //   r.push_back(seq[m_indices[marginalNo][m]]);
+  // }
   // std::cout << marginalNo << ": ";
   // print(r);
 
-  sampleOne(m_indices[marginalNo], r, m_marginals[marginalNo], index);
+  sampleOne(m_indices[marginalNo], seq, m_marginals[marginalNo], index);
 
 }
 

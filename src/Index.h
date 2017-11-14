@@ -14,6 +14,7 @@ public:
   static const int64_t Unfixed = -1;
 
   // Omit the second argument to loop over all elements
+  // TODO remove the fixed index entirely from this class - use FixedIndex instead
   explicit Index(const std::vector<int64_t>& sizes, const std::pair<int64_t, int64_t>& fixed = {-1, -1});
   
   // Create an index with a predefined position (all dims unfixed)
@@ -85,3 +86,35 @@ private:
   bool m_atEnd;
 };
 
+class FixedIndex
+{
+public:
+  // Loop over elements with some dimensions fixed
+  FixedIndex(const std::vector<int64_t>& sizes, const std::vector<std::pair<int64_t, int64_t>>& fixed);
+
+  // increment
+  const FixedIndex& operator++();
+
+  // TODO better to overload NDArray to take Index types???
+  operator const std::vector<int64_t*>&() const;
+
+  // allow read-only access to individual values
+  const int64_t& operator[](size_t i) const;
+  
+  // allow modification of individual values
+  int64_t& operator[](size_t i);
+  
+  const std::vector<int64_t>& sizes() const;
+
+  bool end();
+
+  const Index& fullIndex() const;
+
+private:
+  size_t m_dim; // this is the dim of the free indices only
+  Index m_fullIndex;
+  std::vector<int64_t*> m_freeIndex;
+  std::vector<int64_t> m_sizes;
+  bool m_atEnd;
+
+};

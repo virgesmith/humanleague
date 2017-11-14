@@ -21,6 +21,7 @@ Index::Index(const std::vector<int64_t>& sizes, const std::pair<int64_t, int64_t
     m_storageSize *= m_sizes[i];
 }
 
+
 //TODO why TF linker errors when using Unfixed in init list????
 Index::Index(const std::vector<int64_t>& sizes, const std::vector<int64_t>& values)
 : m_dim(sizes.size()), m_idx(values), m_sizes(sizes), m_fixed({-1,-1}), m_atEnd(false)
@@ -129,7 +130,6 @@ MappedIndex::MappedIndex(const Index& idx, const std::vector<int64_t>& mappedDim
   }
 }
 
-
 const MappedIndex& MappedIndex::operator++()
 {
   for (int64_t i = m_dim - 1; i != -1ll; --i)
@@ -179,4 +179,80 @@ bool MappedIndex::end()
 //   } 
 //   return included;
 // }
+
+FixedIndex::FixedIndex(const std::vector<int64_t>& sizes, const std::vector<std::pair<int64_t, int64_t>>& fixed)
+  : m_dim(sizes.size() - fixed.size()), m_fullIndex(sizes), m_sizes(fixed.size()), m_atEnd(false)
+{
+  // invalidate full index
+  for (size_t i = 0; i < m_fullIndex.size(); ++i)
+  {
+    m_fullIndex[i] = -1;
+  }
+  
+  // set fixed in full index
+  for (size_t i = 0; i < fixed.size(); ++i)
+  {
+    m_fullIndex[fixed[i].first] = fixed[i].second;
+  }
+  // set unfixed in mapped index and set full index to start pos
+  for (size_t i = 0, j = 0; i < m_fullIndex.size(); ++i)
+  {
+    if (m_fullIndex[i] == -1)
+    {
+      m_freeIndex.push_back(&m_fullIndex[i]);
+      m_sizes[j] = m_fullIndex.sizes()[i];
+      m_fullIndex[i] = 0;
+      ++j;
+    }
+  }
+}
+
+const FixedIndex& FixedIndex::operator++()
+{
+  for (int64_t i = m_dim - 1; i != -1ll; --i)
+  {
+    ++*m_freeIndex[i];
+    if (*m_freeIndex[i] != m_sizes[i])
+      break;
+    if (i == 0)
+      m_atEnd = true;
+    *m_freeIndex[i] = 0;
+  }
+  return *this;
+}
+
+// TODO better to overload NDArray to take Index types???
+FixedIndex::operator const std::vector<int64_t*>&() const
+{
+  return m_freeIndex;
+}
+
+// allow read-only access to individual values
+const int64_t& FixedIndex::operator[](size_t i) const
+{
+  return *m_freeIndex[i];
+}
+
+// allow modification of individual values
+int64_t& FixedIndex::operator[](size_t i)
+{
+  return *m_freeIndex[i];
+}
+  
+
+bool FixedIndex::end()
+{
+  return m_atEnd;
+}
+
+const Index& FixedIndex::fullIndex() const
+{
+  return m_fullIndex;
+}
+
+
+const std::vector<int64_t>& FixedIndex::sizes() const
+{
+  return m_sizes;
+}
 

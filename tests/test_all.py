@@ -156,6 +156,7 @@ class Test(TestCase):
     i1 = np.array([1])
 
     p = hl.qis([i0, i1], [m0, m1])
+    print(p)
     self.assertTrue(p["conv"])
     self.assertLess(p["chiSq"], 0.04) 
     self.assertGreater(p["pValue"], 0.9) 
@@ -215,6 +216,18 @@ class Test(TestCase):
     self.assertTrue(np.allclose(np.sum(p["result"], (1, 2, 3)), m0))
     self.assertTrue(np.allclose(np.sum(p["result"], (2, 3, 0)), m1))
     self.assertTrue(np.allclose(np.sum(p["result"], (3, 0, 1)), m2))
+
+    m = np.array([[10,20,10],[10,10,20],[20,10,10]])
+    idx = [np.array([0,1]), np.array([1,2])]
+    p = hl.qis(idx, [m, m])
+    #print(p)
+    self.assertTrue(p["conv"])
+    self.assertLess(p["chiSq"], 10) 
+    self.assertGreater(p["pValue"], 0.2) # TODO this looks suspect too
+    self.assertEqual(p["pop"], 120)
+    print(np.sum(p["result"], 2))
+    self.assertTrue(np.allclose(np.sum(p["result"], 2), m))
+    self.assertTrue(np.allclose(np.sum(p["result"], 0), m))
 
   def test_QISI(self):
     m0 = np.array([52, 48]) 

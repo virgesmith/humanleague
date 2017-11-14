@@ -224,7 +224,7 @@ void doMd_QIS()
   {
     const auto& a = qis.solve();
     print(a.rawData(), a.storageSize());
-    std::cout << sum(a) << std::endl;
+    std::cout << sum(a) << ":" << qis.conv() << std::endl;
   }
 }
 

@@ -232,21 +232,41 @@ public:
 
   reference operator[](const std::vector<int64_t>& index)
   {
+// STL-like debugging
+#ifdef GLIBCXX_DEBUG
+    if (offset[index] >= m_storageSize)
+      throw std::runtime_error("NDArray bounds (index, non-const)");
+#endif    
     return m_data[offset(index)];
   }
 
   const_reference operator[](const std::vector<int64_t>& index) const
   {
+// STL-like debugging
+#ifdef GLIBCXX_DEBUG
+    if (offset[index] >= m_storageSize)
+      throw std::runtime_error("NDArray bounds (index, const)");
+#endif    
     return m_data[offset(index)];
   }
 
   reference operator[](const std::vector<int64_t*>& index)
   {
+// STL-like debugging
+#ifdef GLIBCXX_DEBUG
+    if (offset[index] >= m_storageSize)
+      throw std::runtime_error("NDArray bounds (mapped index, non-const)");
+#endif    
     return m_data[offset(index)];
   }
 
   const_reference operator[](const std::vector<int64_t*>& index) const
   {
+// STL-like debugging
+#ifdef GLIBCXX_DEBUG
+    if (offset[index] >= m_storageSize)
+      throw std::runtime_error("NDArray bounds (mapped index, const)");
+#endif    
     return m_data[offset(index)];
   }
 

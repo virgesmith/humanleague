@@ -7,6 +7,12 @@ from unittest import TestCase
 
 class Test(TestCase):
 
+  def test_unittest(self):
+    res = hl.unittest()
+    print("unit test fails/tests: ", res["nFails"], "/", res["nTests"])
+    print(res["errors"])
+    self.assertTrue(res["nFails"] == 0)
+
   def test_sobolSequence(self):
     a = hl.sobolSequence(3, 5)
     self.assertTrue(a.size == 15)

@@ -12,6 +12,8 @@
 
 #include "src/QSIPF.h"
 
+#include "src/UnitTester.h"
+
 #include <Python.h>
 
 #include <vector>
@@ -488,6 +490,18 @@ extern "C" PyObject* humanleague_version(PyObject*, PyObject*)
   return v.release();
 }
 
+extern "C" PyObject* humanleague_unittest(PyObject*, PyObject*)
+{
+  const unittest::Logger& log = unittest::run();
+
+  pycpp::Dict result;
+  result.insert("nTests", pycpp::Int(log.testsRun));
+  result.insert("nFails", pycpp::Int(log.testsFailed));
+  result.insert("errors", pycpp::List(log.errors));
+
+  return result.release();
+}
+
 namespace {
 
 // Python2.7
@@ -502,6 +516,7 @@ PyMethodDef entryPoints[] = {
   {"synthPopG", humanleague_synthPopG, METH_VARARGS, "Synthpop generalised."},
   //{"qsipf", humanleague_qsipf, METH_VARARGS, "Synthpop (quasirandom sampled IPF)."},
   {"version", humanleague_version, METH_NOARGS, "version info"},
+  {"unittest", humanleague_unittest, METH_NOARGS, "unit testing"},
   {nullptr, nullptr, 0, nullptr}        /* terminator */
 };
 

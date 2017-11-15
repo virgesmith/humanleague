@@ -114,6 +114,8 @@ pycpp::Double::operator double() const
 
 pycpp::String::String(const char* s) : pycpp::Object(PyUnicode_FromString(s)) { }
 
+pycpp::String::String(const std::string& s) : pycpp::Object(PyUnicode_FromString(s.c_str())) { }
+
 pycpp::String::String(PyObject* p) : pycpp::Object(p) 
 { 
   if (!PyUnicode_Check(m_obj))

@@ -91,6 +91,7 @@ namespace pycpp {
   {
   public: 
     explicit String(const char* s);
+    explicit String(const std::string& s);
     explicit String(PyObject* p);
 
     operator const char*() const; 

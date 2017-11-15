@@ -1,8 +1,8 @@
 
 #include "UnitTester.h"
 
-#include <Rcpp.h>
-
+//#include <Rcpp.h>
+#include <cmath>
 
 void unittest::Logger::reset()
 {
@@ -43,12 +43,15 @@ const unittest::Logger& unittest::run()
   //testConstrainedSampling();
   testNDArray();
   testSobol();
-  testDDWR();
+  //testDDWR();
   testCumNorm();
   testCholesky();
   testPValue();
   testQIWS();
 
+  testIndex();
+  testSlice();
+  testReduce();
 
   return Global::instance<unittest::Logger>();
 }

@@ -199,46 +199,71 @@ void doMd()
 
 void doMd_QIS()
 {
-  std::vector<NDArray<int64_t>> m;
-  std::vector<std::vector<int64_t>> i;
-  i.push_back(std::vector<int64_t>{0,1});
-  i.push_back(std::vector<int64_t>{1,2});
-  NDArray<int64_t> m0(std::vector<int64_t>{2,2});
-  Index i0(m0.sizes());
-  m0[i0] = 10;
-  m0[++i0] = 10;
-  m0[++i0] = 10;
-  m0[++i0] = 10;
-  //m0.assign(5.0);
-  NDArray<int64_t> m1(std::vector<int64_t>{2,2});
-  Index i1(m1.sizes());
-  m1[i1] = 10;
-  m1[++i1] = 10;
-  m1[++i1] = 10;
-  m1[++i1] = 10;
+  // std::vector<NDArray<int64_t>> m;
+  // std::vector<std::vector<int64_t>> i;
+  // i.push_back(std::vector<int64_t>{0,1});
+  // i.push_back(std::vector<int64_t>{1,2});
+  // NDArray<int64_t> m0(std::vector<int64_t>{2,2});
+  // Index i0(m0.sizes());
+  // m0[i0] = 10;
+  // m0[++i0] = 10;
+  // m0[++i0] = 10;
+  // m0[++i0] = 10;
+  // //m0.assign(5.0);
+  // NDArray<int64_t> m1(std::vector<int64_t>{2,2});
+  // Index i1(m1.sizes());
+  // m1[i1] = 10;
+  // m1[++i1] = 10;
+  // m1[++i1] = 10;
+  // m1[++i1] = 10;
   
-  m.push_back(std::move(m0));
-  m.push_back(std::move(m1));
+  // m.push_back(std::move(m0));
+  // m.push_back(std::move(m1));
 
-  QIS qis(i, m);
-  {
-    const auto& a = qis.solve();
-    print(a.rawData(), a.storageSize());
-    std::cout << sum(a) << ":" << qis.conv() << std::endl;
-  }
+  // QIS qis(i, m);
+  // {
+  //   const auto& a = qis.solve();
+  //   print(a.rawData(), a.storageSize());
+  //   std::cout << sum(a) << ":" << qis.conv() << std::endl;
+  // }
 
+  // {
+  //   // # 1D+2D
+  //   NDArray<int64_t> m(std::vector<int64_t>{5});
+  //   int64_t mvalues[] = {101, 99, 103, 97, 200};
+  //   std::copy(mvalues, mvalues + 5, const_cast<int64_t*>(m.rawData()));
+  //   NDArray<int64_t> n(std::vector<int64_t>{3,2});
+  //   int64_t nvalues[] = {105, 95, 107, 93, 109, 91};
+  //   std::copy(nvalues, nvalues + 6, const_cast<int64_t*>(n.rawData()));
+  //   std::vector<std::vector<int64_t>> i;
+  //   i.push_back(std::vector<int64_t>{0});
+  //   i.push_back(std::vector<int64_t>{1,2});
+  //   std::vector<NDArray<int64_t>> m2;
+  //   m2.push_back(std::move(m));
+  //   m2.push_back(std::move(n));
+  //   QIS qis(i,m2);
+  //   const auto& a = qis.solve();
+  //   print(a.rawData(), a.storageSize());
+  //   std::cout << sum(a) << ":" << qis.conv() << std::endl;
+  // }
   {
-    // segfaults
-    // # 1D+2D
-    NDArray<int64_t> m(std::vector<int64_t>{5});
-    int64_t mvalues[] = {101, 99, 103, 97, 200};
-    std::copy(mvalues, mvalues + 5, const_cast<int64_t*>(m.rawData()));
-    NDArray<int64_t> n(std::vector<int64_t>{3,2});
-    int64_t nvalues[] = {105, 95, 107, 93, 109, 91};
-    std::copy(nvalues, nvalues + 6, const_cast<int64_t*>(n.rawData()));
+    // # 3D+3D -> 4D
+    // # THIS CRASHES
+    // m = np.array([[10,20,5,5],[10,5,5,20],[10,10,10,10]])
+    // idx = [np.array([0,1]), np.array([2,1])]
+    // r = hl.qis(idx, [m, m])
+
+    NDArray<int64_t> m(std::vector<int64_t>{3,4});
+    int64_t mvalues[] = {1,1,1,1, 1,1,1,1, 1,1,1,1};
+    std::copy(mvalues, mvalues + 12, const_cast<int64_t*>(m.rawData()));
+
+    NDArray<int64_t> n(std::vector<int64_t>{3,4});
+    int64_t nvalues[] = {1,1,1,1, 1,1,1,1, 1,1,1,1};
+    std::copy(nvalues, nvalues + 12, const_cast<int64_t*>(n.rawData()));
+
     std::vector<std::vector<int64_t>> i;
-    i.push_back(std::vector<int64_t>{0});
-    i.push_back(std::vector<int64_t>{1,2});
+    i.push_back(std::vector<int64_t>{0,1});
+    i.push_back(std::vector<int64_t>{2,1});
     std::vector<NDArray<int64_t>> m2;
     m2.push_back(std::move(m));
     m2.push_back(std::move(n));

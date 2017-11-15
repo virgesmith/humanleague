@@ -69,35 +69,35 @@ test_that("simple 5D qis", {
 })
 
 
-m = m * 125
-test_that("simple 8D qiws", {
-  res<-humanleague::qis(list(1,2,3,4,5,6,7,8),list(m,m,m,m,m,m,m,m))
-  expect_equal(rowSums(res$result), m)
-  expect_equal(res$conv, TRUE)
-  colnames = c("A","B","C","D","E","F","G","H")
-  table = flatten(res$result, colnames)
-  expect_true(all.equal(names(table), colnames))
-  expect_equal(nrow(table), 125^3)
-  expect_equal(ncol(table), 8)
-  expect_gt(res$pValue, 0.005)
-})
+# m = m * 125
+# test_that("simple 8D qiws", {
+#   res<-humanleague::qis(list(1,2,3,4,5,6,7,8),list(m,m,m,m,m,m,m,m))
+#   expect_equal(rowSums(res$result), m)
+#   expect_equal(res$conv, TRUE)
+#   colnames = c("A","B","C","D","E","F","G","H")
+#   table = flatten(res$result, colnames)
+#   expect_true(all.equal(names(table), colnames))
+#   expect_equal(nrow(table), 125^3)
+#   expect_equal(ncol(table), 8)
+#   expect_gt(res$pValue, 0.005)
+# })
+#
+#
+# m = c(2^15,2^15)
+# test_that("simple 12D qiws", {
+#   res<-humanleague::qis(list(1,2,3,4,5,6,7,8,9,10,11,12),list(m,m,m,m,m,m,m,m,m,m,m,m))
+#   expect_equal(rowSums(res$result), m)
+#   expect_equal(res$conv, TRUE)
+#   expect_gt(res$pValue, 0.005)
+# })
 
-
-m = c(2^15,2^15)
-test_that("simple 12D qiws", {
-  res<-humanleague::qis(list(1,2,3,4,5,6,7,8,9,10,11,12),list(m,m,m,m,m,m,m,m,m,m,m,m))
-  expect_equal(rowSums(res$result), m)
-  expect_equal(res$conv, TRUE)
-  expect_gt(res$pValue, 0.005)
-})
-
-m = array(c(2^14,2^14,2^14,2^14),c(2,2))
-test_that("Complex 8 x 2D -> 12D qiws", {
-  res<-humanleague::qis(list(c(1,2),c(2,3),c(4,5),c(5,6),c(6,7),c(8,9),c(9,10),c(11,12)),list(m,m,m,m,m,m,m,m))
-  expect_equal(rowSums(res$result), rowSums(m))
-  expect_equal(res$conv, TRUE)
-  expect_gt(res$pValue, 0.005)
-})
+# m = array(c(2^14,2^14,2^14,2^14),c(2,2))
+# test_that("Complex 8 x 2D -> 12D qiws", {
+#   res<-humanleague::qis(list(c(1,2),c(2,3),c(4,5),c(5,6),c(6,7),c(8,9),c(9,10),c(11,12)),list(m,m,m,m,m,m,m,m))
+#   expect_equal(rowSums(res$result), rowSums(m))
+#   expect_equal(res$conv, TRUE)
+#   expect_gt(res$pValue, 0.005)
+# })
 
 # realistic? case (iqrs fails)
 m1 <- c(144, 150, 3, 2, 153, 345, 13, 11, 226, 304, 24, 18, 250, 336, 14, 21, 190, 176, 15, 14, 27, 10, 2, 3, 93, 135, 2, 6, 30, 465, 11, 28, 43, 463, 17, 76, 39, 458, 15, 88, 55, 316, 22, 50, 15, 25, 11, 17)
@@ -255,7 +255,7 @@ test_that("QIS 3d", {
   expect_equal(t$pop, 100.0)
   expect_equal(sum(t$result), 100)
   # TODO fix dimension indices
-  expect_equal(apply(t$result, c(2,1), sum), m0)
+  expect_equal(apply(t$result, c(1,2), sum), m0)
   expect_equal(apply(t$result, c(3), sum), m1)
   expect_lt(t$chiSq, 2.2)
   expect_gt(t$pValue, 0.3)

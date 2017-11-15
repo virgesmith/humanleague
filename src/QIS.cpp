@@ -101,7 +101,9 @@ void recursive_pick(const NDArray<double>& p, const std::vector<uint32_t>& seq, 
 
 const NDArray<int64_t>& QIS::solve(bool reset)
 {
-  return solve_m(reset);
+  // slow, but it works
+  return solve_p(reset);
+  //return solve_m(reset);
 }
 
 const NDArray<int64_t>& QIS::solve_p(bool reset)

@@ -337,35 +337,26 @@ NDArray<T> convertRArray(R rArray)
 {
   // workaround for 1-d arrays (which don't have "dim" attribute)
   //Dimension colMajorSizes(rArray.hasAttribute("dim") ? Dimension(rArray.attr("dim")) : Dimension((size_t)rArray.size()));
-  Dimension colMajorSizes;
+  std::vector<int64_t> colMajorSizes;
   if (rArray.hasAttribute("dim"))
   {
-    colMajorSizes = rArray.attr("dim");
+    colMajorSizes = as<std::vector<int64_t>>(rArray.attr("dim"));
   }
   else
   {
-    colMajorSizes = rArray.size();
+    colMajorSizes.push_back(rArray.size());
   }
   const size_t dim = colMajorSizes.size();
 
-  // Reverse sizes for row-major storage
-  std::vector<int64_t> sizes(dim);
-  for (size_t i = 0; i < sizes.size(); ++i)
-  {
-    sizes[i] = colMajorSizes[dim-i-1]; // reversing the dims messes the tablular output
-    // subsequently crashes
-    //sizes[i] = colMajorSizes[i];
-  }
-  //std::vector<int64_t> sizes = as<std::vector<int64_t>>(colMajorSizes);
-  //print(sizes, Rcout);
+  // This is column major data - reverse the dimensions but copy the data as-is for efficiency
+  NDArray<T> array(colMajorSizes);
 
-  NDArray<T> array(sizes);
-
+  // This makes IPF work correctly
   for (Index idx(array.sizes());!idx.end(); ++idx)
   {
     array[idx] = rArray[idx.colMajorOffset()];
   }
-  //std::copy(&rArray[0], &rArray[0] + rArray.size(), const_cast<double*>(array.rawData()));
+  //std::copy(&rArray[0], &rArray[0] + rArray.size(), const_cast<T*>(array.rawData()));
 
   return array;
 }
@@ -442,7 +433,7 @@ List ipf(NumericVector seed, List indices, List marginals)
 
 
 // Helper to get overall dimension and sizes before constructing QIS
-// (as indices need to be relabelled and marginals transposed to construct in row-major form)
+// (as dims/indices need to be reversed to interpret data as row-major)
 std::vector<int64_t> dimensionHelper(List indices, List marginals)
 {
   std::map<int64_t,int64_t> lookup;
@@ -489,6 +480,7 @@ List qis(List indices, List marginals, int skips = 0)
 
   // we need the overall dimension and sizes upfront to assemble the problem in row-major rather than col-major form.
   std::vector<int64_t> rSizes = dimensionHelper(indices, marginals);
+  // rSizes confirmed to be equivalent to dims reported by seed
 
   const int64_t k = marginals.size();
   const int64_t dim = rSizes.size();
@@ -497,15 +489,9 @@ List qis(List indices, List marginals, int skips = 0)
   m.reserve(k);
   std::vector<std::vector<int64_t>> idx;
   idx.reserve(k);
-  std::vector<int64_t> s;
-  s.reserve(dim);
 
   if (indices.size() != marginals.size())
     throw std::runtime_error("no. of marginals not equal to no. of indices");
-
-  // assemble dimensions (row major) for seed
-  for (int64_t i = dim-1; i >= 0; --i)
-    s.push_back(rSizes[(size_t)i]);
 
   // insert indices and marginals in reverse order (R being column-major)
   for (int64_t i = k-1; i >= 0; --i)
@@ -518,6 +504,9 @@ List qis(List indices, List marginals, int skips = 0)
       idx.back()[j] = dim - iv[j];
     // convert to NDArray
     m.push_back(std::move(convertRArray<int64_t, IntegerVector>(nv)));
+//
+//     Rcout << "dimensionHelper: marginal dim: ";
+//     print(idx.back(), Rcout);
   }
 
   // Storage for result
@@ -533,7 +522,11 @@ List qis(List indices, List marginals, int skips = 0)
   e.attr("dim") = rSizes;
   // Copy result data into R array
   const NDArray<int64_t>& tmp = qis.solve();
+  // temporarily return an empty array of dimension determined by dimensionHelper
+  //NDArray<int64_t> tmp(rSizes);
+  //tmp.assign(0);
   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
+
   const NDArray<double>& tmpe = qis.expectation();
   std::copy(tmpe.rawData(), tmpe.rawData() + tmpe.storageSize(), e.begin());
   result["conv"] = qis.conv();
@@ -597,26 +590,28 @@ List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
 
   IntegerVector r(rSizes);
   NumericVector e(rSizes);
-  //e.attr("dim") = rSizes;
 
   List result;
 
   // Read-only shallow copy of seed
   const NDArray<double> seedwrapper(s, (double*)&seed[0]);
-  // Do IPF
+  // Do QIS-IPF
   QISI qisipf(idx, m, skips);
+
   // Copy result data into R array
   const NDArray<int64_t>& tmp = qisipf.solve(seedwrapper);
+  std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
+  result["result"] = r;
+
   // Copy result data into R array
   const NDArray<double>& tmpe = qisipf.expectation();
   std::copy(tmpe.rawData(), tmpe.rawData() + tmpe.storageSize(), e.begin());
   result["expectation"] = e;
 
-  std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
   result["conv"] = qisipf.conv();
-  result["result"] = r;
   result["pop"] = qisipf.population();
   result["chiSq"] = qisipf.chiSq();
+  result["pValue"] = qisipf.pValue();
 
   return result;
 }

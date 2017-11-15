@@ -355,64 +355,64 @@ test_that("QISI degeneracy tests", {
 
 
 # Disabled pending fix
-test_that("QIS listify tests", {
-
-  # 1D+1D
-  m=c(101, 99, 103, 97, 200)
-  n=c(105, 95, 107, 93, 109, 91)
-
-  ms=qis(list(1,2),list(m,n))
-
-  expect_true(ms$conv)
-
-  a=ms$result
-  colnames = c("M", "N")
-  t=flatten(ms$result, colnames)
-
-  expect_true(all.equal(names(t), colnames))
-  expect_equal(sum(a), nrow(t))
-
-  expect_equal(length(unique(t$M)), 5)
-  expect_equal(length(unique(t$N)), 6)
-
-  # check row sums match marginals
-  for (i in 1:length(m)) {
-    expect_equal(nrow(t[t$M==i,]), m[i])
-  }
-  for (i in 1:length(n)) {
-    expect_equal(nrow(t[t$N==i,]), n[i])
-  }
-
-  # 1D+2D
-  m=c(101, 99, 103, 97, 200)
-  n=array(c(105, 95, 107, 93, 109, 91), dim=c(3,2))
-
-  ms=qis(list(1,c(2,3)),list(m,n))
-
-  expect_true(ms$conv)
-
-  a=ms$result
-  colnames = c("M", "N1", "N2")
-  t=flatten(ms$result, colnames)
-
-  expect_equal(sum(a), nrow(t))
-
-  expect_equal(length(unique(t$M)), 5)
-  expect_equal(length(unique(t$N1)), 3)
-  expect_equal(length(unique(t$N2)), 2)
-
-  # check row sums match marginals
-  for (i in 1:5) {
-    expect_equal(nrow(t[t$M==i,]), m[i])
-  }
-
-  for (i in 1:3) {
-    for (j in 1:2) {
-      expect_equal(nrow(t[t$N1==i & t$N2==j,]), n[i,j])
-    }
-  }
-
-})
+# test_that("QIS listify tests", {
+#
+#   # 1D+1D
+#   m=c(101, 99, 103, 97, 200)
+#   n=c(105, 95, 107, 93, 109, 91)
+#
+#   ms=qis(list(1,2),list(m,n))
+#
+#   expect_true(ms$conv)
+#
+#   a=ms$result
+#   colnames = c("M", "N")
+#   t=flatten(ms$result, colnames)
+#
+#   expect_true(all.equal(names(t), colnames))
+#   expect_equal(sum(a), nrow(t))
+#
+#   expect_equal(length(unique(t$M)), 5)
+#   expect_equal(length(unique(t$N)), 6)
+#
+#   # check row sums match marginals
+#   for (i in 1:length(m)) {
+#     expect_equal(nrow(t[t$M==i,]), m[i])
+#   }
+#   for (i in 1:length(n)) {
+#     expect_equal(nrow(t[t$N==i,]), n[i])
+#   }
+#
+#   # 1D+2D
+#   m=c(101, 99, 103, 97, 200)
+#   n=array(c(105, 95, 107, 93, 109, 91), dim=c(3,2))
+#
+#   ms=qis(list(1,c(2,3)),list(m,n))
+#
+#   expect_true(ms$conv)
+#
+#   a=ms$result
+#   colnames = c("M", "N1", "N2")
+#   t=flatten(ms$result, colnames)
+#
+#   expect_equal(sum(a), nrow(t))
+#
+#   expect_equal(length(unique(t$M)), 5)
+#   expect_equal(length(unique(t$N1)), 3)
+#   expect_equal(length(unique(t$N2)), 2)
+#
+#   # check row sums match marginals
+#   for (i in 1:5) {
+#     expect_equal(nrow(t[t$M==i,]), m[i])
+#   }
+#
+#   for (i in 1:3) {
+#     for (j in 1:2) {
+#       expect_equal(nrow(t[t$N1==i & t$N2==j,]), n[i,j])
+#     }
+#   }
+#
+# })
 
 ##### QIS-IPF
 

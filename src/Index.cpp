@@ -221,10 +221,10 @@ const FixedIndex& FixedIndex::operator++()
   return *this;
 }
 
-// TODO better to overload NDArray to take Index types???
-FixedIndex::operator const std::vector<int64_t*>&() const
+// 
+FixedIndex::operator const Index&() const
 {
-  return m_freeIndex;
+  return m_fullIndex;
 }
 
 // allow read-only access to individual values
@@ -245,9 +245,9 @@ bool FixedIndex::end()
   return m_atEnd;
 }
 
-const Index& FixedIndex::fullIndex() const
+const std::vector<int64_t*>& FixedIndex::free() const
 {
-  return m_fullIndex;
+  return m_freeIndex;
 }
 
 

@@ -1,4 +1,7 @@
 
+# pass extra flags, e.g.
+# make -B CXXFLAGS="-DVERBOSE -D_GLIBCXX_DEBUG -D_DEBUG"
+
 # make CXX=clang++-4.0 to use clang
 
 target:=humanleague_dev
@@ -15,7 +18,7 @@ dep = $(obj:.o=.d)
 CXX=g++
 # use -m32 to test for LLP64 data model issues (i.e. windows)
 # See about override here: https://stackoverflow.com/questions/2129391/append-to-gnu-make-variables-via-command-line
-override CXXFLAGS+=-Wall -Werror -g -O0 -std=c++11 -I.. -D_GLIBCXX_DEBUG
+override CXXFLAGS+=-Wall -Werror -g -O0 -std=c++11 -I..
 LDFLAGS=
 
 # this doesnt test python and R interfaces!!!

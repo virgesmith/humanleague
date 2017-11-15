@@ -95,20 +95,20 @@ public:
   // increment
   const FixedIndex& operator++();
 
-  // TODO better to overload NDArray to take Index types???
-  operator const std::vector<int64_t*>&() const;
+  // Returns the FULL index
+  operator const Index&() const;
 
-  // allow read-only access to individual values
+  // allow read-only access to individual unfixed values
   const int64_t& operator[](size_t i) const;
   
-  // allow modification of individual values
+  // allow modification of individual unfixed values
   int64_t& operator[](size_t i);
   
   const std::vector<int64_t>& sizes() const;
 
   bool end();
 
-  const Index& fullIndex() const;
+  const std::vector<int64_t*>& free() const;
 
 private:
   size_t m_dim; // this is the dim of the free indices only

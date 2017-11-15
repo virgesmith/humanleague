@@ -262,7 +262,7 @@ std::vector<std::vector<int>> listify(const size_t pop, const NDArray<T>& t, int
       const std::vector<int64_t>& ref = index;
       for (size_t j = 0; j < t.dim(); ++j)
       {
-        list[j][pindex] = offset + ref[j];
+        list[j][pindex] = offset + ref[/*t.dim() - 1 - */j];
       }
       ++pindex;
     }

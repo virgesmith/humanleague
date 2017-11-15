@@ -226,6 +226,27 @@ void doMd_QIS()
     print(a.rawData(), a.storageSize());
     std::cout << sum(a) << ":" << qis.conv() << std::endl;
   }
+
+  {
+    // segfaults
+    // # 1D+2D
+    NDArray<int64_t> m(std::vector<int64_t>{5});
+    int64_t mvalues[] = {101, 99, 103, 97, 200};
+    std::copy(mvalues, mvalues + 5, const_cast<int64_t*>(m.rawData()));
+    NDArray<int64_t> n(std::vector<int64_t>{3,2});
+    int64_t nvalues[] = {105, 95, 107, 93, 109, 91};
+    std::copy(nvalues, nvalues + 6, const_cast<int64_t*>(n.rawData()));
+    std::vector<std::vector<int64_t>> i;
+    i.push_back(std::vector<int64_t>{0});
+    i.push_back(std::vector<int64_t>{1,2});
+    std::vector<NDArray<int64_t>> m2;
+    m2.push_back(std::move(m));
+    m2.push_back(std::move(n));
+    QIS qis(i,m2);
+    const auto& a = qis.solve();
+    print(a.rawData(), a.storageSize());
+    std::cout << sum(a) << ":" << qis.conv() << std::endl;
+  }
 }
 
 void doMd_QISI()

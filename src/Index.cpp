@@ -97,8 +97,9 @@ size_t Index::colMajorOffset() const
   size_t mult = m_storageSize;
   for (int i = m_dim-1; i >= 0; --i)
   {
-    mult /= m_sizes[i];
-    ret += mult * m_idx[i];
+    //print(m_sizes);
+    mult /= m_sizes[m_dim-1-i];
+    ret += mult * m_idx[m_dim-1-i];
   }
   return ret;
 }

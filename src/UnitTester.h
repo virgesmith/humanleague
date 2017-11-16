@@ -33,6 +33,16 @@ bool withinTolerance(double x, double y, double tol = std::numeric_limits<double
                               + __FILE__ + ":" + std::to_string(__LINE__));                 \
  }
 
+#define CHECK_EQUAL(cond0, cond1)                                                           \
+ ++Global::instance<unittest::Logger>().testsRun;                                           \
+ if (!(cond0 == cond1))                                                                     \
+ {                                                                                          \
+   ++Global::instance<unittest::Logger>().testsFailed;                                      \
+   Global::instance<unittest::Logger>().errors.push_back(std::string(#cond0 "==" #cond1) +  \
+   " [" + std::to_string(cond0) + " == " + std::to_string(cond1) + "] FAILED at "           \
+                              + __FILE__ + ":" + std::to_string(__LINE__));                 \
+ }
+
 #define CHECK_THROWS(expr, except)                                             \
   {                                                                            \
     ++Global::instance<unittest::Logger>().testsRun;                           \

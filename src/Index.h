@@ -47,7 +47,7 @@ public:
 
   bool end() const;
 
-public:
+protected:
   size_t m_dim;
   std::vector<int64_t> m_idx;
   std::vector<int64_t> m_sizes;
@@ -56,6 +56,31 @@ public:
   size_t m_storageSize;
   bool m_atEnd;
 };
+
+
+// Indexer for elements in n-D array, treating storage as column-major
+class TransposedIndex : public Index
+{
+public:
+  // Omit the second argument to loop over all elements
+  explicit TransposedIndex(const std::vector<int64_t>& sizes) : Index(sizes/*std::vector<int64_t>(sizes.rbegin(), sizes.rend())*/) { }
+
+  const std::vector<int64_t>& operator++()
+  {
+    for (size_t i = 0; i < m_dim; ++i)
+    {
+      ++m_idx[i];
+      if (m_idx[i] != m_sizes[i])
+        break;
+      if (i == m_dim-1)
+        m_atEnd = true;
+      m_idx[i] = 0;
+    }
+    return m_idx;
+  }
+  
+};
+
 
 
 // Contains a mapping from a higher dimensionality to a lower one

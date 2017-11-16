@@ -19,10 +19,6 @@ in the project's root directory, or at <http://www.gnu.org/licenses/>.
 
 **********************************************************************/
 
-
-#include <Rcpp.h>
-using namespace Rcpp;
-
 #include "NDArrayUtils.h"
 #include "Index.h"
 #include "IPF.h"
@@ -34,13 +30,15 @@ using namespace Rcpp;
 
 #include "QIWS.h" // TODO deprecate
 #include "GQIWS.h" // TODO deprecate
-#include "QSIPF.h" // TODO deprecate
 
 #include "UnitTester.h"
 
-#include <vector>
+#include <Rcpp.h>
 
+#include <vector>
 #include <cstdint>
+
+using namespace Rcpp;
 
 //#include <csignal>
 
@@ -352,11 +350,11 @@ NDArray<T> convertRArray(R rArray)
   NDArray<T> array(colMajorSizes);
 
   // This makes IPF work correctly
-  for (Index idx(array.sizes());!idx.end(); ++idx)
+  size_t i = 0;
+  for (TransposedIndex idx(colMajorSizes); !idx.end(); ++idx, ++i)
   {
-    array[idx] = rArray[idx.colMajorOffset()];
+    array[idx] = rArray[i];
   }
-  //std::copy(&rArray[0], &rArray[0] + rArray.size(), const_cast<T*>(array.rawData()));
 
   return array;
 }

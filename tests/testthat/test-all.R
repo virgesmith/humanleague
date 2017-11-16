@@ -259,13 +259,13 @@ test_that("QIS 3d", {
   expect_equal(apply(t$result, c(3), sum), m1)
   expect_lt(t$chiSq, 2.2)
   expect_gt(t$pValue, 0.3)
-#  chi2 = chisq.test(t$result, t$expectation)
-#  expect_equal(t$chiSq, as.numeric(chi2$statistic)) # as.numeric required as its a labelled value
-#  expect_equal(chisq.test(t$result, t$expectation)$p.value, t$pValue)
+  # Chi-squared approximation may be incorrect
+  # chi2 = chisq.test(t$result, t$expectation)
+  # expect_equal(t$chiSq, as.numeric(chi2$statistic)) # as.numeric required as its a labelled value
+  # expect_equal(chisq.test(t$result, t$expectation)$p.value, t$pValue)
   #expect_lt(t$degeneracy, ?)
 })
 
-# TODO - FIX THIS ITS BROKEN
 test_that("QIS 3d (2)", {
   m0=array(c(20, 20, 11, 17, 12, 20),c(3,2))
   m1=c(33,34,20,13)
@@ -273,13 +273,14 @@ test_that("QIS 3d (2)", {
   expect_equal(t$conv, TRUE)
   expect_equal(t$pop, 100.0)
   expect_equal(sum(t$result), 100)
-#  expect_equal(apply(t$result, c(1,2), sum), m0)
+  expect_equal(apply(t$result, c(1,2), sum), m0)
   expect_equal(apply(t$result, c(3), sum), m1)
-#  expect_lt(t$chiSq, 10.0)
-#  expect_gt(t$pValue, 0.1)
-#  chi2 = chisq.test(t$result, t$expectation, simulate.p.value=T)
-#  expect_equal(t$chiSq, as.numeric(chi2$statistic)) # as.numeric required as its a labelled value
-#  expect_equal(chisq.test(t$result, t$expectation)$p.value, t$pValue)
+  expect_lt(t$chiSq, 10.0)
+  expect_gt(t$pValue, 0.1)
+  # Chi-squared approximation may be incorrect
+  # chi2 = chisq.test(t$result, t$expectation, simulate.p.value=T)
+  # expect_equal(t$chiSq, as.numeric(chi2$statistic)) # as.numeric required as its a labelled value
+  # expect_equal(chisq.test(t$result, t$expectation)$p.value, t$pValue)
   #expect_lt(t$degeneracy, ?)
 })
 
@@ -294,7 +295,6 @@ test_that("QIS degeneracy tests", {
   expect_lte(max(ms$result - ms$expectation), 1)
   expect_gte(min(ms$result - ms$expectation),-1)
 
-  # TODO investigate these failures
   # 3D (1D+2D)
   stateOcc = 8
   statesPerDim = 8
@@ -302,18 +302,19 @@ test_that("QIS degeneracy tests", {
   n=array(rep(stateOcc, statesPerDim * statesPerDim), dim=c(statesPerDim, statesPerDim))
   ms=qis(list(1,c(2,3)),list(m,n), stateOcc^3)
   expect_true(ms$conv)
+  # TODO why is this not lower?
   expect_lte(max(ms$result - ms$expectation), 2)
   expect_gte(min(ms$result - ms$expectation), -1)
 
-  #Disabled pending fix
-  # # 4D (overlapping 2D+2D+2D)
-  # stateOcc = 8
-  # statesPerDim = 8
-  # n=array(rep(stateOcc^2, statesPerDim * statesPerDim), dim=c(statesPerDim, statesPerDim))
-  # ms=qis(list(c(1,2),c(2,3),c(3,4)),list(n,n,n), stateOcc^4)
-  # expect_true(ms$conv)
-  # expect_lte(max(ms$result - ms$expectation), 1)
-  # expect_gte(min(ms$result - ms$expectation), -1)
+  # 4D (overlapping 2D+2D+2D)
+  stateOcc = 8
+  statesPerDim = 8
+  n=array(rep(stateOcc^2, statesPerDim * statesPerDim), dim=c(statesPerDim, statesPerDim))
+  ms=qis(list(c(1,2),c(2,3),c(3,4)),list(n,n,n), stateOcc^4)
+  expect_true(ms$conv)
+  # TODO why is this not lower?
+  expect_lte(max(ms$result - ms$expectation), 3)
+  expect_gte(min(ms$result - ms$expectation), -1)
 
 })
 
@@ -355,64 +356,64 @@ test_that("QISI degeneracy tests", {
 
 
 # Disabled pending fix
-# test_that("QIS listify tests", {
-#
-#   # 1D+1D
-#   m=c(101, 99, 103, 97, 200)
-#   n=c(105, 95, 107, 93, 109, 91)
-#
-#   ms=qis(list(1,2),list(m,n))
-#
-#   expect_true(ms$conv)
-#
-#   a=ms$result
-#   colnames = c("M", "N")
-#   t=flatten(ms$result, colnames)
-#
-#   expect_true(all.equal(names(t), colnames))
-#   expect_equal(sum(a), nrow(t))
-#
-#   expect_equal(length(unique(t$M)), 5)
-#   expect_equal(length(unique(t$N)), 6)
-#
-#   # check row sums match marginals
-#   for (i in 1:length(m)) {
-#     expect_equal(nrow(t[t$M==i,]), m[i])
-#   }
-#   for (i in 1:length(n)) {
-#     expect_equal(nrow(t[t$N==i,]), n[i])
-#   }
-#
-#   # 1D+2D
-#   m=c(101, 99, 103, 97, 200)
-#   n=array(c(105, 95, 107, 93, 109, 91), dim=c(3,2))
-#
-#   ms=qis(list(1,c(2,3)),list(m,n))
-#
-#   expect_true(ms$conv)
-#
-#   a=ms$result
-#   colnames = c("M", "N1", "N2")
-#   t=flatten(ms$result, colnames)
-#
-#   expect_equal(sum(a), nrow(t))
-#
-#   expect_equal(length(unique(t$M)), 5)
-#   expect_equal(length(unique(t$N1)), 3)
-#   expect_equal(length(unique(t$N2)), 2)
-#
-#   # check row sums match marginals
-#   for (i in 1:5) {
-#     expect_equal(nrow(t[t$M==i,]), m[i])
-#   }
-#
-#   for (i in 1:3) {
-#     for (j in 1:2) {
-#       expect_equal(nrow(t[t$N1==i & t$N2==j,]), n[i,j])
-#     }
-#   }
-#
-# })
+test_that("QIS listify tests", {
+
+  # 1D+1D
+  m=c(101, 99, 103, 97, 200)
+  n=c(105, 95, 107, 93, 109, 91)
+
+  ms=qis(list(1,2),list(m,n))
+
+  expect_true(ms$conv)
+
+  a=ms$result
+  colnames = c("M", "N")
+  t=flatten(ms$result, colnames)
+
+  expect_true(all.equal(names(t), colnames))
+  expect_equal(sum(a), nrow(t))
+
+  expect_equal(length(unique(t$M)), 5)
+  expect_equal(length(unique(t$N)), 6)
+
+  # check row sums match marginals
+  for (i in 1:length(m)) {
+    expect_equal(nrow(t[t$M==i,]), m[i])
+  }
+  for (i in 1:length(n)) {
+    expect_equal(nrow(t[t$N==i,]), n[i])
+  }
+
+  # 1D+2D
+  m=c(101, 99, 103, 97, 200)
+  n=array(c(105, 95, 107, 93, 109, 91), dim=c(3,2))
+
+  ms=qis(list(1,c(2,3)),list(m,n))
+
+  expect_true(ms$conv)
+
+  a=ms$result
+  colnames = c("M", "N1", "N2")
+  t=flatten(ms$result, colnames)
+
+  expect_equal(sum(a), nrow(t))
+
+  expect_equal(length(unique(t$M)), 5)
+  expect_equal(length(unique(t$N1)), 3)
+  expect_equal(length(unique(t$N2)), 2)
+
+  # check row sums match marginals
+  for (i in 1:5) {
+    expect_equal(nrow(t[t$M==i,]), m[i])
+  }
+
+  for (i in 1:3) {
+    for (j in 1:2) {
+      expect_equal(nrow(t[t$N1==i & t$N2==j,]), n[i,j])
+    }
+  }
+
+})
 
 ##### QIS-IPF
 

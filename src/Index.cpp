@@ -116,6 +116,25 @@ bool Index::end() const
 }
 
 
+TransposedIndex::TransposedIndex(const std::vector<int64_t>& sizes) 
+: Index(sizes) 
+{ }
+
+const std::vector<int64_t>& TransposedIndex::operator++()
+{
+  for (size_t i = 0; i < m_dim; ++i)
+  {
+    ++m_idx[i];
+    if (m_idx[i] != m_sizes[i])
+      break;
+    if (i == m_dim-1)
+      m_atEnd = true;
+    m_idx[i] = 0;
+  }
+  return m_idx;
+}
+
+
 MappedIndex::MappedIndex(const Index& idx, const std::vector<int64_t>& mappedDimensions)
 : m_dim(mappedDimensions.size()), m_sizes(m_dim), m_mappedIndex(m_dim), m_atEnd(idx.end())
 {

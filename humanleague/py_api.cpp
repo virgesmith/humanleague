@@ -10,8 +10,6 @@
 #include "src/QIS.h"
 #include "src/QISI.h"
 
-#include "src/QSIPF.h"
-
 #include "src/UnitTester.h"
 
 #include <Python.h>
@@ -207,59 +205,6 @@ extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
     return &pycpp::String("unexpected exception");
   }
 }
-
-
-// // prevents name mangling (but works without this)
-// extern "C" PyObject* humanleague_qsipf(PyObject *self, PyObject *args)
-// {
-//   try 
-//   {
-//     PyObject* arrayArg;
-//     PyObject* seedArg;
-    
-//     // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
-//     if (!PyArg_ParseTuple(args, "O!O!", &PyArray_Type, & seedArg, &PyList_Type, &arrayArg))
-//       return nullptr;
-    
-//     // seed
-//     pycpp::Array<double> seed(seedArg);
-//     // expects a list of numpy arrays containing int64
-//     pycpp::List list(arrayArg);
-    
-//     size_t dim = list.size();
-//     std::vector<size_t> sizes(dim);
-//     std::vector<std::vector<int64_t>> marginals(dim);
-      
-//     for (size_t i = 0; i < dim; ++i) 
-//     {
-//       if (!PyArray_Check(list[i]))
-//         throw std::runtime_error("input should be a list of numpy integer arrays");
-//       pycpp::Array<int64_t> a(list[i]);
-//       sizes[i] = a.shape()[0];
-//       marginals[i] = a.toVector<int64_t>();
-//     }
-
-//     pycpp::Dict result;
-    
-//     QSIPF qsipf(seed.toNDArray(), marginals); 
-//     result.insert("conv", pycpp::Bool(qsipf.conv()));
-//     result.insert("chiSq", pycpp::Double(qsipf.chiSq()));
-//     result.insert("pop", pycpp::Int(qsipf.population()));
-//     // result.insert("p-value", pycpp::Double(qiws.pValue().first));
-//     // DO THIS LAST BECAUSE ITS DESTRUCTIVE!
-//     result.insert("result", pycpp::Array<int64_t>(std::move(const_cast<NDArray<int64_t>&>(qsipf.sample()))));
-
-//     return result.release();
-//   }
-//   catch(const std::exception& e)
-//   {
-//     return &pycpp::String(e.what());
-//   }
-//   catch(...)
-//   {
-//     return &pycpp::String("unexpected exception");
-//   }
-// }
 
 
 // prevents name mangling (but works without this)
@@ -514,7 +459,6 @@ PyMethodDef entryPoints[] = {
   {"qisi", humanleague_qisi, METH_VARARGS, "QIS-IPF."},
   {"synthPop", humanleague_synthPop, METH_VARARGS, "Synthpop."},
   {"synthPopG", humanleague_synthPopG, METH_VARARGS, "Synthpop generalised."},
-  //{"qsipf", humanleague_qsipf, METH_VARARGS, "Synthpop (quasirandom sampled IPF)."},
   {"version", humanleague_version, METH_NOARGS, "version info"},
   {"unittest", humanleague_unittest, METH_NOARGS, "unit testing"},
   {nullptr, nullptr, 0, nullptr}        /* terminator */

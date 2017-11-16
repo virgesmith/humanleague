@@ -20,11 +20,9 @@ cppmodule = Extension(
   sources = ['src/Sobol.cpp',
              'src/SobolImpl.cpp',
              'src/IPF.cpp',
-             'src/QSIPF.cpp',
              'src/QIS.cpp',
              'src/QISI.cpp',
              'src/QIWS.cpp',
-  #           'src/RQIWS.cpp',
              'src/GQIWS.cpp',
              'src/StatFuncs.cpp',
              'src/NDArrayUtils.cpp',
@@ -52,7 +50,7 @@ setup(
   author_email = 'a.p.smith@leeds.ac.uk',
   url = '',
   long_description = '''
-microsynthesis using quasirandom sampling
+microsynthesis using quasirandom sampling and/or IPF
 ''',
   ext_modules = [cppmodule],
   # these settings appear not to be required

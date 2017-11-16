@@ -22,8 +22,10 @@ public:
   
   Index(const Index& rhs);
 
-  // TODO return *this
-  const std::vector<int64_t>& operator++();
+  virtual ~Index() {}
+
+  // TODO return *this? (covariant return type)
+  virtual const std::vector<int64_t>& operator++();
 
   // Implicitly cast to index vector
   operator const std::vector<int64_t>&() const;
@@ -39,6 +41,7 @@ public:
   // allow modification of individual values
   int64_t& operator[](size_t i);
 
+  // TODO deprecate this - it don't work correctly
   // need this for e.g. R where storage is column-major
   // NB row-major offset calc is in NDArray itself
   size_t colMajorOffset() const;
@@ -63,21 +66,10 @@ class TransposedIndex : public Index
 {
 public:
   // Omit the second argument to loop over all elements
-  explicit TransposedIndex(const std::vector<int64_t>& sizes) : Index(sizes/*std::vector<int64_t>(sizes.rbegin(), sizes.rend())*/) { }
+  explicit TransposedIndex(const std::vector<int64_t>& sizes);
 
-  const std::vector<int64_t>& operator++()
-  {
-    for (size_t i = 0; i < m_dim; ++i)
-    {
-      ++m_idx[i];
-      if (m_idx[i] != m_sizes[i])
-        break;
-      if (i == m_dim-1)
-        m_atEnd = true;
-      m_idx[i] = 0;
-    }
-    return m_idx;
-  }
+  // overload increment operator
+  const std::vector<int64_t>& operator++();
   
 };
 

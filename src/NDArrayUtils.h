@@ -215,6 +215,32 @@ NDArray<T> reduce(const NDArray<T>& input, const std::vector<int64_t>& preserved
   return reduced;
 }
 
+template<typename T>
+NDArray<int64_t> slice(const NDArray<T>& outer, std::vector<std::pair<int64_t, int64_t>>& fixedDims)
+{
+  // if ((size_t)index.first >= input.dim())
+  //   throw std::runtime_error("dimension out of bounds in slice");
+  // if (index.second >= input.sizes()[index.first])
+  //   throw std::runtime_error("index out of bounds in slice");
+
+  // if dims empty have to make an exact copy of marginal and return it, which is massively inefficient
+  if (fixedDims.empty())
+  {
+    NDArray<T> copy(outer.sizes());
+    std::copy(outer.rawData(), outer.rawData() + outer.storageSize(), const_cast<int64_t*>(copy.rawData()));
+    return copy;
+  }
+
+  FixedIndex fixedIndex(outer.sizes(), fixedDims);
+
+  // fixedIndex.sizes() returns the sizes of the free dimensions
+  NDArray<T> sliced(fixedIndex.sizes());
+  for(; !fixedIndex.end(); ++fixedIndex)
+  {
+    sliced[fixedIndex.free()] = outer[fixedIndex.operator const Index &()];
+  }
+  return sliced;
+}
 
 // take a D-1 dimensional slice at element index in orientation O
 template<typename T>

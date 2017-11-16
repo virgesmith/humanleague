@@ -102,8 +102,9 @@ void recursive_pick(const NDArray<double>& p, const std::vector<uint32_t>& seq, 
 const NDArray<int64_t>& QIS::solve(bool reset)
 {
   // slow, but it works
-  return solve_p(reset);
-  //return solve_m(reset);
+  //return solve_p(reset);
+  // fast, but still buggy
+  return solve_m(reset);
 }
 
 const NDArray<int64_t>& QIS::solve_p(bool reset)
@@ -247,30 +248,6 @@ const NDArray<int64_t>& QIS::solve_m(bool reset)
   return m_array;
 }
 
-// TODO use a fixed workspace for the return value?
-const NDArray<int64_t> multislice(std::vector<std::pair<int64_t, int64_t>>& fixedDims, const NDArray<int64_t>& marginal)
-{
-  // if dims empty would have to make an exact copy of marginal and return it, which is massively inefficient
-  // TODO create a workspace in QIS and use pointers to 
-  if (fixedDims.empty())
-  {
-    NDArray<int64_t> copy(marginal.sizes());
-    std::copy(marginal.rawData(), marginal.rawData() + marginal.storageSize(), const_cast<int64_t*>(copy.rawData()));
-    return copy;
-  }
-
-  FixedIndex fixedIndex(marginal.sizes(), fixedDims);
-
-  // fixedIndex.sizes() returns the sizes of the free dimensions
-  NDArray<int64_t> sliced(fixedIndex.sizes());
-  for(; !fixedIndex.end(); ++fixedIndex)
-  {
-    sliced[fixedIndex.free()] = marginal[fixedIndex.operator const Index &()];
-  }
-  return sliced;
-}
-
-
 void recursive_sample(std::vector<std::pair<int64_t, uint32_t>>& dims, const NDArray<int64_t>& marginal, MappedIndex& index)
 {
   static const double scale = 0.5 / (1u<<31);
@@ -344,7 +321,7 @@ void sampleOne(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, con
     return;
 
   // first get slice in the free dimensions only
-  const NDArray<int64_t>& free = multislice(dims_to_slice, marginal);
+  const NDArray<int64_t>& free = slice(marginal, dims_to_slice);
 #ifdef VERBOSE
   std::cout << "sliced [" << free.dim() << "] ";
   print(free.rawData(), free.storageSize());

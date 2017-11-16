@@ -65,7 +65,7 @@ Index::operator const std::vector<int64_t>&() const
   return m_idx;
 }
 
-size_t Index::size() const 
+size_t Index::size() const
 {
   return m_idx.size();
 }
@@ -98,8 +98,8 @@ size_t Index::colMajorOffset() const
   for (int i = m_dim-1; i >= 0; --i)
   {
     //print(m_sizes);
-    mult /= m_sizes[m_dim-1-i];
-    ret += mult * m_idx[m_dim-1-i];
+    mult /= m_sizes[i];
+    ret += mult * m_idx[i];
   }
   return ret;
 }
@@ -121,7 +121,7 @@ MappedIndex::MappedIndex(const Index& idx, const std::vector<int64_t>& mappedDim
 {
   int64_t n = idx.size();
   (void)n; // avoid compiler warning about unused variable when assert exands to nothing
-  // TODO check mappedDimensions are unique 
+  // TODO check mappedDimensions are unique
   for (size_t d = 0; d < m_dim; ++d)
   {
     // check mappedDimensions are within dimension of index
@@ -162,7 +162,7 @@ int64_t& MappedIndex::operator[](size_t i)
 {
   return *m_mappedIndex[i];
 }
-  
+
 
 bool MappedIndex::end()
 {
@@ -177,7 +177,7 @@ bool MappedIndex::end()
 //   {
 //     if (i != excludedDim)
 //       included.push_back(dims[i]);
-//   } 
+//   }
 //   return included;
 // }
 
@@ -189,7 +189,7 @@ FixedIndex::FixedIndex(const std::vector<int64_t>& sizes, const std::vector<std:
   {
     m_fullIndex[i] = -1;
   }
-  
+
   // set fixed in full index
   for (size_t i = 0; i < fixed.size(); ++i)
   {
@@ -222,7 +222,7 @@ const FixedIndex& FixedIndex::operator++()
   return *this;
 }
 
-// 
+//
 FixedIndex::operator const Index&() const
 {
   return m_fullIndex;
@@ -239,7 +239,7 @@ int64_t& FixedIndex::operator[](size_t i)
 {
   return *m_freeIndex[i];
 }
-  
+
 
 bool FixedIndex::end()
 {

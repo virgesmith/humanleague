@@ -7,13 +7,12 @@
       'sources': [ 'json_api.cpp',
                    'Module.cpp',
                    '../src/Sobol.cpp',
-                   '../src/SobolImpl.c',
-                   '../src/CQIWS.cpp',
-                   '../src/RQIWS.cpp',
+                   '../src/SobolImpl.cpp',
                    '../src/StatFuncs.cpp',
+                   '../src/Index.cpp',
                    '../src/NDArrayUtils.cpp'],
-      'include_dirs': ['../..'],  
+      'include_dirs': ['../..'],
     },
   ],
-} 
+}
 

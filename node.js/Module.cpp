@@ -7,9 +7,7 @@
 void init(v8::Handle<v8::Object> target)
 {
   NODE_SET_METHOD(target, "sobolSequence", sobolSequence);
-  NODE_SET_METHOD(target, "synthPop", synthPop);
-  NODE_SET_METHOD(target, "synthPopR", synthPopR);
-  NODE_SET_METHOD(target, "synthPopC", synthPopC);
+  //NODE_SET_METHOD(target, "synthPop", synthPop);
 }
 
 NODE_MODULE(humanleague, init) 

@@ -252,6 +252,7 @@ extern "C" PyObject* humanleague_qis(PyObject *self, PyObject *args)
     QIS qis(indices, marginals, skips); 
     // THIS IS DESTRUCTIVE!
     retval.insert("result", pycpp::Array<int64_t>(std::move(const_cast<NDArray<int64_t>&>(qis.solve()))));
+    retval.insert("expectation", pycpp::Array<double>(std::move(const_cast<NDArray<double>&>(qis.expectation()))));
     retval.insert("conv", pycpp::Bool(qis.conv()));
     retval.insert("pop", pycpp::Double(qis.population()));
     retval.insert("chiSq", pycpp::Double(qis.chiSq()));
@@ -316,6 +317,7 @@ extern "C" PyObject* humanleague_qisi(PyObject *self, PyObject *args)
     QISI qisi(indices, marginals, skips);
     // THIS IS DESTRUCTIVE!
     retval.insert("result", pycpp::Array<int64_t>(std::move(const_cast<NDArray<int64_t>&>(qisi.solve(seed.toNDArray())))));
+    retval.insert("ipf", pycpp::Array<double>(std::move(const_cast<NDArray<double>&>(qisi.expectation()))));
     retval.insert("conv", pycpp::Bool(qisi.conv()));
     retval.insert("pop", pycpp::Double(qisi.population()));
     retval.insert("chiSq", pycpp::Double(qisi.chiSq()));

@@ -220,29 +220,29 @@ template<typename T>
 NDArray<T> slice(const NDArray<T>& input, std::pair<int64_t, int64_t> index)
 {
   // not working
-  //return slice(input, std::vector<std::pair<int64_t, int64_t>>(1, index));
-  if ((size_t)index.first >= input.dim())
-    throw std::runtime_error("dimension out of bounds in slice");
-  if (index.second >= input.sizes()[index.first])
-    throw std::runtime_error("index out of bounds in slice");
+  return slice(input, std::vector<std::pair<int64_t, int64_t>>(1, index));
+  // if ((size_t)index.first >= input.dim())
+  //   throw std::runtime_error("dimension out of bounds in slice");
+  // if (index.second >= input.sizes()[index.first])
+  //   throw std::runtime_error("index out of bounds in slice");
 
-  std::vector<int64_t> remainingSizes;
-  remainingSizes.reserve(input.dim() - 1);
-  for (size_t i = 0; i < input.dim(); ++i)
-  {
-    if (i != (size_t)index.first)
-    {
-      remainingSizes.push_back(input.sizes()[i]);
-    }
-  }
-  NDArray<T> output(remainingSizes);
-  Index inputIndex(input.sizes(), index);
-  Index outputIndex(output.sizes());
-  for(;!inputIndex.end(); ++inputIndex, ++outputIndex)
-  {
-    output[outputIndex] = input[inputIndex];
-  }
-  return output;
+  // std::vector<int64_t> remainingSizes;
+  // remainingSizes.reserve(input.dim() - 1);
+  // for (size_t i = 0; i < input.dim(); ++i)
+  // {
+  //   if (i != (size_t)index.first)
+  //   {
+  //     remainingSizes.push_back(input.sizes()[i]);
+  //   }
+  // }
+  // NDArray<T> output(remainingSizes);
+  // Index inputIndex(input.sizes(), index);
+  // Index outputIndex(output.sizes());
+  // for(;!inputIndex.end(); ++inputIndex, ++outputIndex)
+  // {
+  //   output[outputIndex] = input[inputIndex];
+  // }
+  // return output;
 }
 
 template<typename T>

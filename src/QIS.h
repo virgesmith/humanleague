@@ -31,8 +31,6 @@ private:
   
   void updateStateProbs();
 
-  void sample(const std::vector<uint32_t>& seq, size_t marginalNo, MappedIndex& index);
-  
   Sobol m_sobolSeq;
 
   NDArray<double> m_stateProbs;

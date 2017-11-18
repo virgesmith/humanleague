@@ -16,6 +16,7 @@
 #include "src/Index.h"
 #include "src/NDArrayUtils.h"
 
+#include "src/UnitTester.h"
 
 // void do2d()
 // {
@@ -361,8 +362,16 @@ int main()
     //   print(r.rawData(), r.storageSize(), r.sizes()[1]);
     // }
 
+    const unittest::Logger& log = unittest::run();
+
+    for (const auto& e: log.errors)
+    {
+      std::cout << e << "\n";
+    }
+    std::cout << "unittest: " << log.testsFailed << "/" << log.testsRun << " failures" << std::endl;
+
     //doMd();
-    doMd_QIS();
+    //doMd_QIS();
     //doMd_QISI();
   }
   catch(const std::exception& e)

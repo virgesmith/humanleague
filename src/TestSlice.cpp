@@ -85,4 +85,55 @@ void unittest::testSlice()
     CHECK_EQUAL(s24[++i24], 104); CHECK_EQUAL(s24[++i24], 114); CHECK_EQUAL(s24[++i24], 124); 
   }
 
+  {
+    int64_t values3[] = {0,1,2,3,4, 10,11,12,13,14, 20,21,22,23,24, 100,101,102,103,104, 110,111,112,113,114, 120,121,122,123,124};
+    NDArray<int64_t> a3({2,3,5}, values3);
+
+    // Slice with dim 0 fixed at 0 and dim 1 fixed at 0
+    const NDArray<int64_t>& s00_10 = slice(a3, std::vector<std::pair<int64_t, int64_t>>({{0,0},{1,0}}));
+    Index i00_10(s00_10.sizes());
+    CHECK_EQUAL(s00_10[  i00_10],   0); 
+    CHECK_EQUAL(s00_10[++i00_10],   1); 
+    CHECK_EQUAL(s00_10[++i00_10],   2); 
+    CHECK_EQUAL(s00_10[++i00_10],   3); 
+    CHECK_EQUAL(s00_10[++i00_10],   4); 
+    ++i00_10;
+    CHECK(i00_10.end());
+    i00_10.reset();
+    CHECK_EQUAL(s00_10[  i00_10],   0); 
+    CHECK_EQUAL(s00_10[++i00_10],   1); 
+    CHECK_EQUAL(s00_10[++i00_10],   2); 
+    CHECK_EQUAL(s00_10[++i00_10],   3); 
+    CHECK_EQUAL(s00_10[++i00_10],   4); 
+    ++i00_10;
+    CHECK(i00_10.end());
+    
+
+    const NDArray<int64_t>& s01_11 = slice(a3, std::vector<std::pair<int64_t, int64_t>>({{0,1},{1,1}}));
+    Index i01_11(s01_11.sizes());
+    CHECK_EQUAL(s01_11[  i01_11],   110); 
+    CHECK_EQUAL(s01_11[++i01_11],   111); 
+    CHECK_EQUAL(s01_11[++i01_11],   112); 
+    CHECK_EQUAL(s01_11[++i01_11],   113); 
+    CHECK_EQUAL(s01_11[++i01_11],   114); 
+    ++i01_11;
+    CHECK(i01_11.end());
+
+    const NDArray<int64_t>& s23_12 = slice(a3, std::vector<std::pair<int64_t, int64_t>>({{2,3},{1,2}}));
+    Index i23_12(s23_12.sizes());
+    CHECK_EQUAL(s23_12[  i23_12],    23); 
+    CHECK_EQUAL(s23_12[++i23_12],   123); 
+    ++i23_12;
+    CHECK(i23_12.end());
+    i23_12.reset();
+    CHECK_EQUAL(s23_12[  i23_12],    23); 
+    CHECK_EQUAL(s23_12[++i23_12],   123); 
+
+    // index out of bounds
+    CHECK_THROWS(slice(a3, std::vector<std::pair<int64_t, int64_t>>({{2,3},{1,3}})), std::runtime_error);
+    // dimension out of bounds
+    CHECK_THROWS(slice(a3, std::vector<std::pair<int64_t, int64_t>>({{2,3},{3,2}})), std::runtime_error);
+  }
+
+
 }

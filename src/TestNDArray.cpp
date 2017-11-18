@@ -17,11 +17,11 @@ void unittest::testNDArray()
 
   Index idx(a.sizes());
 
-  for (idx[0] = 0; idx[0] < a.size(0); ++idx[0])
+  for (idx[0] = 0; idx[0] < (int64_t)a.size(0); ++idx[0])
   {
-    for (idx[1] = 0; idx[1] < a.size(1); ++idx[1])
+    for (idx[1] = 0; idx[1] < (int64_t)a.size(1); ++idx[1])
     {
-      for (idx[2] = 0; idx[2] < a.size(2); ++idx[2])
+      for (idx[2] = 0; idx[2] < (int64_t)a.size(2); ++idx[2])
       {
         uint32_t n = idx[0] * 100 + idx[1] * 10 + idx[2];
         //std::cout << idx[0] << idx[1] << idx[2] << "->";

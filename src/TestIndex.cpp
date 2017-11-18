@@ -121,7 +121,7 @@ void unittest::testIndex()
   }
 
   // Fixed index tests (uses slice)
-  for (int64_t d = 0; d < a3.dim(); ++d)
+  for (size_t d = 0; d < a3.dim(); ++d)
   {
     for (int64_t i = 0; i < a3.sizes()[d]; ++i)
       {

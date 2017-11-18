@@ -53,5 +53,5 @@ const unittest::Logger& unittest::run()
   testSlice();
   testReduce();
 
-  return Global::instance<unittest::Logger>();
+  return Global::instance<Logger>();
 }

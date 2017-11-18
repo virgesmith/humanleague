@@ -201,7 +201,7 @@ bool MappedIndex::end()
 // }
 
 FixedIndex::FixedIndex(const std::vector<int64_t>& sizes, const std::vector<std::pair<int64_t, int64_t>>& fixed)
-  : m_dim(sizes.size() - fixed.size()), m_fullIndex(sizes), m_sizes(fixed.size()), m_atEnd(false)
+  : m_freeDim(sizes.size() - fixed.size()), m_fullIndex(sizes), m_freeSizes(sizes.size() - fixed.size()), m_atEnd(false)
 {
   // invalidate full index
   for (size_t i = 0; i < m_fullIndex.size(); ++i)
@@ -220,7 +220,7 @@ FixedIndex::FixedIndex(const std::vector<int64_t>& sizes, const std::vector<std:
     if (m_fullIndex[i] == -1)
     {
       m_freeIndex.push_back(&m_fullIndex[i]);
-      m_sizes[j] = m_fullIndex.sizes()[i];
+      m_freeSizes[j] = m_fullIndex.sizes()[i];
       m_fullIndex[i] = 0;
       ++j;
     }
@@ -229,10 +229,10 @@ FixedIndex::FixedIndex(const std::vector<int64_t>& sizes, const std::vector<std:
 
 const FixedIndex& FixedIndex::operator++()
 {
-  for (int64_t i = m_dim - 1; i != -1ll; --i)
+  for (int64_t i = m_freeDim - 1; i != -1ll; --i)
   {
     ++*m_freeIndex[i];
-    if (*m_freeIndex[i] != m_sizes[i])
+    if (*m_freeIndex[i] != m_freeSizes[i])
       break;
     if (i == 0)
       m_atEnd = true;
@@ -273,6 +273,6 @@ const std::vector<int64_t*>& FixedIndex::free() const
 
 const std::vector<int64_t>& FixedIndex::sizes() const
 {
-  return m_sizes;
+  return m_freeSizes;
 }
 

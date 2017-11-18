@@ -128,10 +128,10 @@ public:
   const std::vector<int64_t*>& free() const;
 
 private:
-  size_t m_dim; // this is the dim of the free indices only
+  size_t m_freeDim; // this is the dim of the free indices only
   Index m_fullIndex;
   std::vector<int64_t*> m_freeIndex;
-  std::vector<int64_t> m_sizes;
+  std::vector<int64_t> m_freeSizes;
   bool m_atEnd;
 
 };

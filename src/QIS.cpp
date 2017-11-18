@@ -23,45 +23,45 @@ int64_t pick(const T* dist, size_t len, double r)
   throw std::runtime_error("pick failed");
 }
 
-template<typename T>
-void getIndex(const NDArray<T>& p, const std::vector<uint32_t>& r, Index& index)
-{
-  static const double scale = 0.5 / (1u<<31);
+// template<typename T>
+// void getIndex(const NDArray<T>& p, const std::vector<uint32_t>& r, Index& index)
+// {
+//   static const double scale = 0.5 / (1u<<31);
 
-  size_t dim = p.dim();
+//   size_t dim = p.dim();
 
-  if (dim > 2)
-  {
-    // reduce dim D-1
-    const std::vector<T>& m = reduce<T>(p, dim - 1);
-    // pick an index
-    index[dim-1] = pick(m.data(), m.size(), r[dim-1] * scale);
+//   if (dim > 2)
+//   {
+//     // reduce dim D-1
+//     const std::vector<T>& m = reduce<T>(p, dim - 1);
+//     // pick an index
+//     index[dim-1] = pick(m.data(), m.size(), r[dim-1] * scale);
 
-    // take slice of Dim D-1 at index
-    const NDArray<T>& sliced = slice<T>(p, {dim-1, index[dim-1]});
+//     // take slice of Dim D-1 at index
+//     const NDArray<T>& sliced = slice<T>(p, {dim-1, index[dim-1]});
 
-    // recurse
-    getIndex(sliced, r, index);
-  }
-  else if (dim == 2)
-  {
-    // reduce dim 1 (now 0)
-    const std::vector<T>& r1 = reduce<T>(p, 1);
-    // pick an index
-    index[1] = pick(r1.data(), r1.size(), r[1] * scale);
+//     // recurse
+//     getIndex(sliced, r, index);
+//   }
+//   else if (dim == 2)
+//   {
+//     // reduce dim 1 (now 0)
+//     const std::vector<T>& r1 = reduce<T>(p, 1);
+//     // pick an index
+//     index[1] = pick(r1.data(), r1.size(), r[1] * scale);
 
-    // slice dim 2 (now 0)
-    const NDArray<T>& sliced = slice<T>(p, {1, index[1]});
-    assert(sliced.dim() == 1);
-    // no reduction required
-    // pick an index
-    index[0] = pick(sliced.rawData(), sliced.storageSize(), r[0] * scale);
-  }
-  else
-  {
-    index[0] = pick(p.rawData(), p.storageSize(), r[0] * scale);
-  }
-}
+//     // slice dim 2 (now 0)
+//     const NDArray<T>& sliced = slice<T>(p, {1, index[1]});
+//     assert(sliced.dim() == 1);
+//     // no reduction required
+//     // pick an index
+//     index[0] = pick(sliced.rawData(), sliced.storageSize(), r[0] * scale);
+//   }
+//   else
+//   {
+//     index[0] = pick(p.rawData(), p.storageSize(), r[0] * scale);
+//   }
+// }
 
 }
 

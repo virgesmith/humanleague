@@ -119,7 +119,8 @@ std::vector<T> reduce(const NDArray<T>& input, size_t orient)
 {
   // return reduced;
   // check valid orientation
-  assert(orient < input.dim());
+  if (!(orient < input.dim()))
+    throw std::runtime_error("reduce dimension greather than array dimension");
 
   std::vector<T> sums(input.size(orient), 0);
 

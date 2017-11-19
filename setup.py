@@ -19,7 +19,6 @@ cppmodule = Extension(
 #             library_dirs = ['/usr/local/lib','../src'],
   sources = ['src/Sobol.cpp',
              'src/SobolImpl.cpp',
-             'src/IPF.cpp',
              'src/QIS.cpp',
              'src/QISI.cpp',
              'src/QIWS.cpp',

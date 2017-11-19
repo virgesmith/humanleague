@@ -7,7 +7,7 @@
 target:=humanleague_dev
 
 src = main.cpp ../src/NDArrayUtils.cpp ../src/Index.cpp ../src/Sobol.cpp ../src/SobolImpl.cpp ../src/StatFuncs.cpp \
-      ../src/IPF.cpp ../src/QIS.cpp ../src/QISI.cpp ../src/QIWS.cpp \
+      ../src/QIS.cpp ../src/QISI.cpp ../src/QIWS.cpp \
 			../src/UnitTester.cpp ../src/TestNDArray.cpp ../src/TestIndex.cpp ../src/TestReduce.cpp ../src/TestSlice.cpp \
 			../src/TestSobol.cpp ../src/TestStatFuncs.cpp ../src/TestQIWS.cpp
 

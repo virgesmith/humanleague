@@ -108,8 +108,10 @@ const NDArray<int64_t>& QISI::solve(const NDArray<double>& seed, bool reset)
         m_conv = false;
     }
 
-
     // recalculate state probabilities only do when state occupancy drops below zero
+#ifdef VERBOSE
+    print(m_ipfSolution.rawData(), m_ipfSolution.storageSize(), m_ipfSolution.sizes()[0]);
+#endif
     --m_ipfSolution[main_index];
     if (m_ipfSolution[main_index] < 0.0)
       recomputeIPF(seed);

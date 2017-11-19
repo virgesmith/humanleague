@@ -23,6 +23,27 @@ int64_t pick(const T* dist, size_t len, double r)
   throw std::runtime_error("pick failed");
 }
 
+void recursive_pick(const NDArray<double>& p, const std::vector<uint32_t>& seq, Index& index, size_t dim)
+{
+  static const double scale = 0.5 / (1u<<31);
+
+  const std::vector<double> r = reduce<double>(p, dim);
+  index[dim] = pick<double>(r.data(), r.size(), seq[dim] * scale);
+
+  const NDArray<double>& s = slice(p, {dim, index[dim]});
+
+  if (dim == 1)
+  {
+    index[0] = pick<double>(s.rawData(), s.storageSize(), seq[0] * scale);
+    return;
+  }
+  else
+  {
+    recursive_pick(s, seq, index, dim-1);
+  }
+}
+
+
 void recursive_sample(std::vector<std::pair<int64_t, uint32_t>>& dims, const NDArray<int64_t>& marginal, MappedIndex& index)
 {
   static const double scale = 0.5 / (1u<<31);
@@ -106,7 +127,6 @@ void sample(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, const 
 
   // should now have an array with dim = dims_to_sample.size()
   recursive_sample(dims_to_sample, free, index);
-
 }
 
 }
@@ -125,25 +145,6 @@ QIS::QIS(const index_list_t& indices, marginal_list_t& marginals, int64_t skips)
     m_expectedStateOccupancy[index] *= m_population;
 }
 
-void recursive_pick(const NDArray<double>& p, const std::vector<uint32_t>& seq, Index& index, size_t dim)
-{
-  static const double scale = 0.5 / (1u<<31);
-
-  const std::vector<double> r = reduce<double>(p, dim);
-  index[dim] = pick<double>(r.data(), r.size(), seq[dim] * scale);
-
-  const NDArray<double>& s = slice(p, {dim, index[dim]});
-
-  if (dim == 1)
-  {
-    index[0] = pick<double>(s.rawData(), s.storageSize(), seq[0] * scale);
-    return;
-  }
-  else
-  {
-    recursive_pick(s, seq, index, dim-1);
-  }
-}
 
 const NDArray<int64_t>& QIS::solve(bool reset)
 {
@@ -188,7 +189,11 @@ const NDArray<int64_t>& QIS::solve_p(bool reset)
       if (m_marginals[m][mapped_indices[m]] < 0)
         m_conv = false;
     }
-    updateStateProbs();
+#ifdef VERBOSE
+    print(m_stateProbs.rawData(), m_stateProbs.storageSize(), m_stateProbs.sizes()[0]);
+#endif
+    if (m_stateProbs[main_index] < 1.0)
+      updateStateProbs();
   }
   m_chiSq = ::chiSq(m_array, m_expectedStateOccupancy);
 
@@ -287,7 +292,7 @@ const NDArray<double>& QIS::expectation()
   return m_expectedStateOccupancy;
 }
 
-//
+// TODO something seems wrong here
 void QIS::updateStateProbs()
 {
   Index index_main(m_array.sizes());

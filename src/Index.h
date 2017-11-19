@@ -7,19 +7,16 @@
 #include <cstddef>
 #include <cstdint>
 
-// Indexer for elements in n-D array, optionally holding one dimension constant
+// Indexer for elements in n-D array - iterates over entire array
 class Index
 {
 public:
-  static const int64_t Unfixed = -1;
 
-  // Omit the second argument to loop over all elements
-  // TODO remove the fixed index entirely from this class - use FixedIndex instead
-  explicit Index(const std::vector<int64_t>& sizes, const std::pair<int64_t, int64_t>& fixed = {-1, -1});
-  
+  explicit Index(const std::vector<int64_t>& sizes);
+
   // Create an index with a predefined position (all dims unfixed)
   Index(const std::vector<int64_t>& sizes, const std::vector<int64_t>& values);
-  
+
   Index(const Index& rhs);
 
   virtual ~Index() {}
@@ -41,9 +38,9 @@ public:
   // allow modification of individual values
   int64_t& operator[](size_t i);
 
-  // TODO deprecate this - it don't work correctly
-  // need this for e.g. R where storage is column-major
-  // NB row-major offset calc is in NDArray itself
+  // // TODO deprecate this - it don't work correctly
+  // // need this for e.g. R where storage is column-major
+  // // NB row-major offset calc is in NDArray itself
   size_t colMajorOffset() const;
 
   void reset();
@@ -54,8 +51,6 @@ protected:
   size_t m_dim;
   std::vector<int64_t> m_idx;
   std::vector<int64_t> m_sizes;
-  // Fixed point (dim, idx)
-  std::pair<int64_t, int64_t> m_fixed;
   size_t m_storageSize;
   bool m_atEnd;
 };
@@ -65,14 +60,13 @@ protected:
 class TransposedIndex : public Index
 {
 public:
-  // Omit the second argument to loop over all elements
+  // Construct from array size
   explicit TransposedIndex(const std::vector<int64_t>& sizes);
 
   // overload increment operator
   const std::vector<int64_t>& operator++();
-  
-};
 
+};
 
 
 // Contains a mapping from a higher dimensionality to a lower one
@@ -80,21 +74,19 @@ class MappedIndex
 {
 public:
   MappedIndex(const Index& idx, const std::vector<int64_t>& mappedDimensions);
-  
-  const MappedIndex& operator++();  
+
+  const MappedIndex& operator++();
 
   // TODO better to overload NDArray to take Index types???
   operator const std::vector<int64_t*>&() const;
 
   // allow read-only access to individual values
   const int64_t& operator[](size_t i) const;
-  
+
   // allow modification of individual values
   int64_t& operator[](size_t i);
-  
-  bool end();
 
-  //static std::vector<int64_t> excludeFrom(const std::vector<int64_t>& dims, int64_t excludedDim);
+  bool end();
 
 private:
   size_t m_dim;
@@ -117,10 +109,10 @@ public:
 
   // allow read-only access to individual unfixed values
   const int64_t& operator[](size_t i) const;
-  
+
   // allow modification of individual unfixed values
   int64_t& operator[](size_t i);
-  
+
   const std::vector<int64_t>& sizes() const;
 
   bool end();

@@ -54,36 +54,6 @@ using namespace Rcpp;
 //void (*oldhandler)(int) = signal(SIGINT, sigint_handler);
 
 
-// void doSolveConstrained(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, const NDArray<2, bool>& permitted)
-// {
-//   CQIWS solver(m, permitted);
-//   result["method"] = "QIWS-C";
-//   result["conv"] = solver.solve();
-//   result["chiSq"] = solver.chiSq();
-//   std::pair<double, bool> pVal = solver.pValue();
-//   result["pValue"] = pVal.first;
-//   if (!pVal.second)
-//   {
-//     result["warning"] = "p-value may be inaccurate";
-//   }
-//   result["error.margins"] = std::vector<uint32_t>(solver.residuals(), solver.residuals() + 2);
-//   const typename QIWS<2>::table_t& t = solver.result();
-//
-//   const NDArray<2, double>& p = solver.stateProbabilities();
-//   Index<2, Index_Unfixed> idx(t.sizes());
-//   IntegerVector values(t.storageSize());
-//   NumericVector probs(t.storageSize());
-//   while (!idx.end())
-//   {
-//     values[idx.colMajorOffset()] = t[idx];
-//     probs[idx.colMajorOffset()] = p[idx];
-//     ++idx;
-//   }
-//   values.attr("dim") = dims;
-//   probs.attr("dim") = dims;
-//   result["p.hat"] = probs;
-//   result["x.hat"] = values;
-// }
 
 void doSolveGeneral(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, const NDArray<double>& exoProbs)
 {
@@ -108,76 +78,6 @@ void doSolveGeneral(List& result, IntegerVector dims, const std::vector<std::vec
   // result["p.hat"] = probs;
   result["x.hat"] = values;
 }
-
-// void doSolveCorrelated(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, double rho)
-// {
-//   RQIWS solver(m, rho);
-//   result["method"] = "QIWS-R";
-//   result["conv"] = solver.solve();
-//   result["chiSq"] = solver.chiSq();
-//   std::pair<double, bool> pVal = solver.pValue();
-//   result["pValue"] = pVal.first;
-//   if (!pVal.second)
-//   {
-//     result["warning"] = "p-value may be inaccurate";
-//   }
-//   result["error.margins"] = std::vector<uint32_t>(solver.residuals(), solver.residuals() + 2);
-//   const typename QIWS<2>::table_t& t = solver.result();
-//
-//   const NDArray<2, double>& p = solver.stateProbabilities();
-//   Index<2, Index_Unfixed> idx(t.sizes());
-//   IntegerVector values(t.storageSize());
-//   NumericVector probs(t.storageSize());
-//   while (!idx.end())
-//   {
-//     values[idx.colMajorOffset()] = t[idx];
-//     probs[idx.colMajorOffset()] = p[idx];
-//     ++idx;
-//   }
-//   values.attr("dim") = dims;
-//   probs.attr("dim") = dims;
-//   result["p.hat"] = probs;
-//   result["x.hat"] = values;
-// }
-
-// void doConstrain(List& result, NDArray<uint32_t>& population, const NDArray<bool>& permitted)
-// {
-//   Constrain::Status status = CQIWS::constrain(population, permitted, population.storageSize());
-//
-//   switch(status)
-//   {
-//   case Constrain::SUCCESS:
-//     result["conv"] = true;
-//     break;
-//   case Constrain::ITERLIMIT:
-//     result["conv"] = false;
-//     result["error"] = "iteration limit reached";
-//     break;
-//   case Constrain::STUCK:
-//     result["conv"] = false;
-//     result["error"] = "cannot adjust population: check validity of constraint";
-//     break;
-//   default:
-//     result["conv"] = false;
-//     result["error"] = "constrain algorithm status invalid. please report this bug";
-//   }
-//
-//   IntegerVector dims;
-//   dims.push_back(population.sizes()[0]);
-//   dims.push_back(population.sizes()[1]);
-//   Index<2, Index_Unfixed> idx(population.sizes());
-//   IntegerVector values(population.storageSize());
-//   size_t pop = 0;
-//   while (!idx.end())
-//   {
-//     values[idx.colMajorOffset()] = population[idx];
-//     pop += population[idx];
-//     ++idx;
-//   }
-//   values.attr("dim") = dims;
-//   result["x.hat"] = values;
-// }
-
 
 
 //' Generate a population in n dimensions given n marginals.
@@ -280,55 +180,6 @@ List synthPopG(List marginals, NumericMatrix exoProbsIn)
 }
 
 
-// //' IPF
-// //'
-// //' C++ IPF implementation
-// //' @param seed an n-dimensional array of seed values
-// //' @param marginals a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical
-// //' @return an object containing: ...
-// //' @export
-// // [[Rcpp::export]]
-// List ipf(NumericVector seed, List marginals)
-// {
-//   const size_t dim = marginals.size();
-//
-//   Dimension sizes = seed.attr("dim");
-//   std::vector<std::vector<double>> m(dim);
-//   std::vector<int64_t> s(dim);
-//
-//   if (sizes.size() != dim)
-//     throw std::runtime_error("no. of marginals not equal to seed dimension");
-//
-//   // insert marginals in reverse order (R being column-major)
-//   for (size_t i = 0; i < dim; ++i)
-//   {
-//     const NumericVector& iv = marginals[i];
-//     if (iv.size() != sizes[i])
-//       throw std::runtime_error("seed-marginal size mismatch");
-//     s[dim-i-1] = sizes[i];
-//     m[dim-i-1].reserve(iv.size());
-//     std::copy(iv.begin(), iv.end(), std::back_inserter(m[dim-i-1]));
-//   }
-//
-//   // Storage for result
-//   NumericVector r(sizes);
-//
-//   List result;
-//   // Read-only shallow copy of seed
-//   const NDArray<double> seedwrapper(s, (double*)&seed[0]);
-//   // Do IPF (could provide another ctor that takies preallocated memory for result)
-//   IPF ipf(seedwrapper, m);
-//   // Copy result data into R array
-//   const NDArray<double>& tmp = ipf.result();
-//   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
-//   result["conv"] = ipf.conv();
-//   result["result"] = r;
-//   result["pop"] = ipf.population();
-//   result["iterations"] = ipf.iters();
-//   result["errors"] = ipf.errors();
-//   result["maxError"] = ipf.maxError();
-//   return result;
-// }
 
 template<typename T, typename R>
 NDArray<T> convertRArray(R rArray)
@@ -615,57 +466,6 @@ List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
 }
 
 
-// ' Constraine a pre-generated population in 2 dimensions given a constraint matrix.
-// '
-// ' Using an iterative algorithm, this function
-// ' adjusts a 2-dimensional population table, reassigning populations in disallowed states to allowed ones, preserving the two marginal distributions
-// ' states where elements sum to the input marginals.
-// ' Users need to ensure that the supplied constraint matrix permits a valid population to be computed - this is not always obvious from the input data.
-// ' @param population an integer matrix containing the population.
-// ' @param permittedStates a matrix of booleans containing allowed states. The matrix dimensions must be the length of each marginal
-// ' @return an object containing: the adjusted population matrix and a convergence flag.
-// ' @examples
-// ' r = c(0, 3, 17, 124, 167, 79, 46, 22)
-// ' # rooms (1,2,3...9+)
-// ' b = c(0, 15, 165, 238, 33, 7) # bedrooms {0, 1,2...5+}
-// ' p = matrix(rep(TRUE,length(r)*length(b)), nrow=length(r)) # all states permitted
-// ' # now disallow bedrooms>rooms
-// ' for (i in 1:length(r)) {
-// '   for (j in 1:length(b)) {
-// '     if (j > i + 1)
-// '       p[i,j] = FALSE;
-// '   }
-// ' }
-// ' res = humanleague::synthPop(list(r,b)) # unconstrained synthesis
-// ' res = humanleague::constrain(res$x.hat, p)
-// ' @export
-// // [[Rcpp::export]]
-// List constrain(IntegerMatrix population, LogicalMatrix permittedStates)
-// {
-//   size_t d[2] = { (size_t)population.rows(), (size_t)population.cols() };
-//
-//   if (permittedStates.rows() != d[0] || permittedStates.cols() != d[1])
-//     throw std::runtime_error("CQIWS population / permittedStates matrix size mismatch");
-//
-//   NDArray<2,bool> permitted(d);
-//   NDArray<2,uint32_t> pop(d);
-//
-//   size_t idx[2];
-//
-//   for (idx[0] = 0; idx[0] < d[0]; ++idx[0])
-//   {
-//     for (idx[1] = 0; idx[1] < d[1]; ++idx[1])
-//     {
-//       pop[idx] = population(idx[0],idx[1]);
-//       permitted[idx] = permittedStates(idx[0],idx[1]);
-//     }
-//   }
-//   //
-//   List result;
-//   doConstrain(result, pop, permitted);
-//
-//   return result;
-// }
 
 //' Generate integer frequencies from discrete probabilities and an overall population.
 //'
@@ -726,34 +526,34 @@ NumericMatrix sobolSequence(int dim, int n, int skip = 0)
 }
 
 
-//' Generate correlated 2D Sobol' quasirandom sequence
-//'
-//' @param rho correlation
-//' @param n number of variates to sample
-//' @param skip number of variates to skip (actual number skipped will be largest power of 2 less than k)
-//' @return a n-by-2 matrix of uniform correlated probabilities in (0,1).
-//' @examples
-//' correlatedSobol2Sequence(0.2, 1000)
-//' @export
-// [[Rcpp::export]]
-NumericMatrix correlatedSobol2Sequence(double rho, int n, int skip = 0)
-{
-  static const double scale = 0.5 / (1ull<<31);
-
-  NumericMatrix m(n, 2);
-
-  Sobol s(2, skip);
-
-  Cholesky cholesky(rho);
-  for (int j = 0; j <n ; ++j)
-  {
-    const std::pair<uint32_t, uint32_t>& buf = cholesky(s.buf());
-    m(j,0) = buf.first * scale;
-    m(j,1) = buf.second * scale;
-  }
-
-  return m;
-}
+// //' Generate correlated 2D Sobol' quasirandom sequence
+// //'
+// //' @param rho correlation
+// //' @param n number of variates to sample
+// //' @param skip number of variates to skip (actual number skipped will be largest power of 2 less than k)
+// //' @return a n-by-2 matrix of uniform correlated probabilities in (0,1).
+// //' @examples
+// //' correlatedSobol2Sequence(0.2, 1000)
+// //' @export
+// // [[Rcpp::export]]
+// NumericMatrix correlatedSobol2Sequence(double rho, int n, int skip = 0)
+// {
+//   static const double scale = 0.5 / (1ull<<31);
+//
+//   NumericMatrix m(n, 2);
+//
+//   Sobol s(2, skip);
+//
+//   Cholesky cholesky(rho);
+//   for (int j = 0; j <n ; ++j)
+//   {
+//     const std::pair<uint32_t, uint32_t>& buf = cholesky(s.buf());
+//     m(j,0) = buf.first * scale;
+//     m(j,1) = buf.second * scale;
+//   }
+//
+//   return m;
+// }
 
 //' Convert multidimensional array of counts per state into table form. Each row in the table corresponds to one individual
 //'

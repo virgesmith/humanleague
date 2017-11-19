@@ -7,15 +7,10 @@
 #include <cassert>
 
 
-// Omit the second argument to loop over all elements
-Index::Index(const std::vector<int64_t>& sizes, const std::pair<int64_t, int64_t>& fixed)
-  : m_dim(sizes.size()), m_idx(sizes.size(), 0), m_sizes(sizes), m_fixed(fixed), m_atEnd(false)
+Index::Index(const std::vector<int64_t>& sizes)
+  : m_dim(sizes.size()), m_idx(sizes.size(), 0), m_sizes(sizes), m_atEnd(false)
 {
   assert(m_sizes.size());
-  if (m_fixed.first != Unfixed)
-  {
-    m_idx[m_fixed.first] = m_fixed.second;
-  }
   m_storageSize = m_sizes[0];
   for (size_t i = 1; i < m_dim; ++i)
     m_storageSize *= m_sizes[i];
@@ -24,7 +19,7 @@ Index::Index(const std::vector<int64_t>& sizes, const std::pair<int64_t, int64_t
 
 //TODO why TF linker errors when using Unfixed in init list????
 Index::Index(const std::vector<int64_t>& sizes, const std::vector<int64_t>& values)
-: m_dim(sizes.size()), m_idx(values), m_sizes(sizes), m_fixed({-1,-1}), m_atEnd(false)
+: m_dim(sizes.size()), m_idx(values), m_sizes(sizes), m_atEnd(false)
 {
   assert(m_sizes.size());
   assert(m_idx.size() == m_sizes.size());
@@ -38,7 +33,7 @@ Index::Index(const std::vector<int64_t>& sizes, const std::vector<int64_t>& valu
 
 
 Index::Index(const Index& rhs)
-  : m_dim(rhs.m_dim), m_idx(rhs.m_idx), m_sizes(rhs.m_sizes), m_fixed(rhs.m_fixed), m_storageSize(rhs.m_storageSize), m_atEnd(rhs.m_atEnd)
+  : m_dim(rhs.m_dim), m_idx(rhs.m_idx), m_sizes(rhs.m_sizes), m_storageSize(rhs.m_storageSize), m_atEnd(rhs.m_atEnd)
 {
 }
 
@@ -46,13 +41,10 @@ const std::vector<int64_t>& Index::operator++()
 {
   for (int64_t i = m_dim - 1; i != -1ll; --i)
   {
-    // ignore the iteration axis
-    if (i == m_fixed.first) continue;
-
     ++m_idx[i];
     if (m_idx[i] != m_sizes[i])
       break;
-    if (i == 0 || (m_fixed.first == 0 && i == 1))
+    if (i == 0)
       m_atEnd = true;
     m_idx[i] = 0;
   }
@@ -91,6 +83,7 @@ int64_t& Index::operator[](size_t i)
 // NB row-major offset calc is in NDArray itself
 
 // need this for e.g. R where storage is column-major
+// DEPRECATED as buggy, TODO delete
 size_t Index::colMajorOffset() const
 {
   size_t ret = 0;
@@ -116,8 +109,8 @@ bool Index::end() const
 }
 
 
-TransposedIndex::TransposedIndex(const std::vector<int64_t>& sizes) 
-: Index(sizes) 
+TransposedIndex::TransposedIndex(const std::vector<int64_t>& sizes)
+: Index(sizes)
 { }
 
 const std::vector<int64_t>& TransposedIndex::operator++()

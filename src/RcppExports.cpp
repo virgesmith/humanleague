@@ -93,19 +93,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// correlatedSobol2Sequence
-NumericMatrix correlatedSobol2Sequence(double rho, int n, int skip);
-RcppExport SEXP _humanleague_correlatedSobol2Sequence(SEXP rhoSEXP, SEXP nSEXP, SEXP skipSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< int >::type skip(skipSEXP);
-    rcpp_result_gen = Rcpp::wrap(correlatedSobol2Sequence(rho, n, skip));
-    return rcpp_result_gen;
-END_RCPP
-}
 // flatten
 DataFrame flatten(IntegerVector stateOccupancies, StringVector categoryNames);
 RcppExport SEXP _humanleague_flatten(SEXP stateOccupanciesSEXP, SEXP categoryNamesSEXP) {

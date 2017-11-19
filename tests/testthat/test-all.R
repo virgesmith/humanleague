@@ -646,23 +646,23 @@ test_that("sobol 4d skip", {
   expect_equal(res, matrix(c(0.1875, 0.6875, 0.9375, 0.3125, 0.8125, 0.0625, 0.3125, 0.8125, 0.5625, 0.6875, 0.1875, 0.9375), nrow=3))
 })
 
-test_that("sobol 2d rho=0", {
-  res1=humanleague::sobolSequence(2, 5)
-  res2=humanleague::correlatedSobol2Sequence(0.0, 5)
-  expect_equal(res1, res2)
-})
+# test_that("sobol 2d rho=0", {
+#   res1=humanleague::sobolSequence(2, 5)
+#   res2=humanleague::correlatedSobol2Sequence(0.0, 5)
+#   expect_equal(res1, res2)
+# })
 
-test_that("sobol 2d rho", {
-  rhos=seq(-1,1,0.1)
-  for (rho in rhos) {
-    #print(rho)
-    # correlated uniforms
-    u=humanleague::correlatedSobol2Sequence(rho, 65536)
-    # compute actual correlation of transformed normals
-    rho_actual = cor(qnorm(u))[1,2]
-    # check within 0.001 of expected value
-    expect_lt(abs(rho - rho_actual), 0.001)
-  }
-})
+# test_that("sobol 2d rho", {
+#   rhos=seq(-1,1,0.1)
+#   for (rho in rhos) {
+#     #print(rho)
+#     # correlated uniforms
+#     u=humanleague::correlatedSobol2Sequence(rho, 65536)
+#     # compute actual correlation of transformed normals
+#     rho_actual = cor(qnorm(u))[1,2]
+#     # check within 0.001 of expected value
+#     expect_lt(abs(rho - rho_actual), 0.001)
+#   }
+# })
 
 

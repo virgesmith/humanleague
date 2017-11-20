@@ -38,11 +38,6 @@ public:
   // allow modification of individual values
   int64_t& operator[](size_t i);
 
-  // // TODO deprecate this - it don't work correctly
-  // // need this for e.g. R where storage is column-major
-  // // NB row-major offset calc is in NDArray itself
-  size_t colMajorOffset() const;
-
   void reset();
 
   bool end() const;

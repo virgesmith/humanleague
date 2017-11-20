@@ -80,23 +80,6 @@ int64_t& Index::operator[](size_t i)
   return m_idx[i];
 }
 
-// NB row-major offset calc is in NDArray itself
-
-// need this for e.g. R where storage is column-major
-// DEPRECATED as buggy, TODO delete
-size_t Index::colMajorOffset() const
-{
-  size_t ret = 0;
-  size_t mult = m_storageSize;
-  for (int i = m_dim-1; i >= 0; --i)
-  {
-    //print(m_sizes);
-    mult /= m_sizes[i];
-    ret += mult * m_idx[i];
-  }
-  return ret;
-}
-
 void Index::reset()
 {
   m_idx.assign(m_dim, 0);

@@ -62,20 +62,15 @@ void doSolveGeneral(List& result, IntegerVector dims, const std::vector<std::vec
   result["conv"] = solver.solve();
 
   const typename QIWS::table_t& t = solver.result();
-  //
-  // const NDArray<2, double>& p = solver.stateProbabilities();
-  Index idx(t.sizes());
+  
+  // insert transposed result 
   IntegerVector values(t.storageSize());
-  // NumericVector probs(t.storageSize());
-  while (!idx.end())
+  size_t i = 0;
+  for (TransposedIndex idx(t.sizes()); !idx.end(); ++idx, ++i)
   {
-    values[idx.colMajorOffset()] = t[idx];
-  //   probs[idx.colMajorOffset()] = p[idx];
-    ++idx;
+    values[i] = t[idx];
   }
   values.attr("dim") = dims;
-  // probs.attr("dim") = dims;
-  // result["p.hat"] = probs;
   result["x.hat"] = values;
 }
 
@@ -128,10 +123,11 @@ List synthPop(List marginals)
 
   IntegerVector values(t.storageSize());
   NumericVector probs(t.storageSize());
-  for (Index idx(t.sizes()); !idx.end(); ++idx)
+  size_t i = 0;
+  for (TransposedIndex idx(t.sizes()); !idx.end(); ++idx, ++i)
   {
-    values[idx.colMajorOffset()] = t[idx];
-    probs[idx.colMajorOffset()] = p[idx];
+    values[i] = t[idx];
+    probs[i] = p[idx];
   }
   values.attr("dim") = sizes;
   probs.attr("dim") = sizes;

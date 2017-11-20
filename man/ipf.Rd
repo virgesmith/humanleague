@@ -9,13 +9,16 @@ ipf(seed, indices, marginals)
 \arguments{
 \item{seed}{an n-dimensional array of seed values}
 
-\item{indices}{an array listing the dimension indices of each marginal as they apply to the seed values}
+\item{indices}{a List of 1-d arrays specifying the dimension indices of each marginal as they apply to the seed values}
 
 \item{marginals}{a List of arrays containing marginal data. The sum of elements in each array must be identical}
 }
 \value{
-an object containing: ...
+an object containing: the population matrix, the occupancy probability matrix, a convergence flag, and error values
 }
 \description{
 C++ multidimensional IPF implementation
+}
+\examples{
+ipf(array(rep(1,12), dim=c(4,3)), list(1,2), list(c(1,2,3,4), c(3,4,3)))
 }

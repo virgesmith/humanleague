@@ -13,6 +13,7 @@ flatten(stateOccupancies, categoryNames)
 }
 \value{
 a DataFrame with columns corresponding to category values and rows corresponding to individuals.
+TODO examples
 }
 \description{
 This function

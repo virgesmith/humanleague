@@ -53,7 +53,68 @@ using namespace Rcpp;
 // TODO this doesnt seem to work, perhaps another approach (like a separate thread?)
 //void (*oldhandler)(int) = signal(SIGINT, sigint_handler);
 
+namespace Rhelpers {
 
+template<typename T, typename R>
+NDArray<T> convertArray(R rArray)
+{
+  // workaround for 1-d arrays (which don't have "dim" attribute)
+  //Dimension colMajorSizes(rArray.hasAttribute("dim") ? Dimension(rArray.attr("dim")) : Dimension((size_t)rArray.size()));
+  std::vector<int64_t> colMajorSizes;
+  if (rArray.hasAttribute("dim"))
+  {
+    colMajorSizes = as<std::vector<int64_t>>(rArray.attr("dim"));
+  }
+  else
+  {
+    colMajorSizes.push_back(rArray.size());
+  }
+  const size_t dim = colMajorSizes.size();
+
+  // This is column major data - reverse the dimensions but copy the data as-is for efficiency
+  NDArray<T> array(colMajorSizes);
+
+  // This makes IPF work correctly
+  size_t i = 0;
+  for (TransposedIndex idx(colMajorSizes); !idx.end(); ++idx, ++i)
+  {
+    array[idx] = rArray[i];
+  }
+
+  return array;
+}
+
+// Helper to get overall dimension and sizes before constructing QIS
+std::vector<int64_t> getDimension(List indices, List marginals)
+{
+  std::map<int64_t,int64_t> lookup;
+  // dont worry about inconsistencies here, QIS will detect and report them
+  for (size_t i = 0; i < indices.size(); ++i)
+  {
+    const IntegerVector& iv = indices[i];
+    const IntegerVector& mv = marginals[i];
+    std::vector<int64_t> colMajorSizes;
+    if (mv.hasAttribute("dim"))
+    {
+      colMajorSizes = as<std::vector<int64_t>>(mv.attr("dim"));
+    }
+    else
+    {
+      colMajorSizes.push_back(mv.size());
+    }
+    for (size_t j = 0; j < colMajorSizes.size(); ++j)
+    {
+      lookup[iv[j]] = colMajorSizes[j];
+    }
+  }
+  std::vector<int64_t> ret;
+  ret.reserve(lookup.size());
+  for (const auto& kv: lookup)
+    ret.push_back(kv.second);
+  return ret;
+}
+
+}
 
 void doSolveGeneral(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, const NDArray<double>& exoProbs)
 {
@@ -62,8 +123,8 @@ void doSolveGeneral(List& result, IntegerVector dims, const std::vector<std::vec
   result["conv"] = solver.solve();
 
   const typename QIWS::table_t& t = solver.result();
-  
-  // insert transposed result 
+
+  // insert transposed result
   IntegerVector values(t.storageSize());
   size_t i = 0;
   for (TransposedIndex idx(t.sizes()); !idx.end(); ++idx, ++i)
@@ -91,14 +152,11 @@ List synthPop(List marginals)
 
   std::vector<std::vector<uint32_t>> m(dim);
   IntegerVector sizes;
-  // TODO verbose flag? Rcout << "Dimension: " << dim << "\nMarginals:" << std::endl;
   for (size_t i = 0; i < dim; ++i)
   {
     const IntegerVector& iv = marginals[i];
     m[i].reserve(iv.size());
     std::copy(iv.begin(), iv.end(), std::back_inserter(m[i]));
-    //Rcout << "[" << std::accumulate(m[i].begin(), m[i].end(), 0) << "] ";
-    //print(m[i].data(), m[i].size(), m[i].size(), Rcout);
     sizes.push_back(iv.size());
   }
   List result;
@@ -118,9 +176,6 @@ List synthPop(List marginals)
   const typename QIWS::table_t& t = solver.result();
   const NDArray<double>& p = solver.stateProbabilities();
 
-  // Rcpp::Rcout << t.storageSize() << std::endl;
-  // print(t.sizes(), Rcpp::Rcout);
-
   IntegerVector values(t.storageSize());
   NumericVector probs(t.storageSize());
   size_t i = 0;
@@ -137,6 +192,16 @@ List synthPop(List marginals)
   return result;
 }
 
+//' Generate a population in n dimensions given n marginals.
+//'
+//' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
+//' generates an n-dimensional population table where elements sum to the input marginals, and supplemental data.
+//' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
+//' @param exoProbsIn a 2d array of exogenous state probabilities
+//' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
+//' @examples
+//' synthPopG(list(c(1,2,3,4), c(3,4,3)), array(rep(1,12), dim=c(4,3)))
+//' @export
 // [[Rcpp::export]]
 List synthPopG(List marginals, NumericMatrix exoProbsIn)
 {
@@ -176,44 +241,15 @@ List synthPopG(List marginals, NumericMatrix exoProbsIn)
 }
 
 
-
-template<typename T, typename R>
-NDArray<T> convertRArray(R rArray)
-{
-  // workaround for 1-d arrays (which don't have "dim" attribute)
-  //Dimension colMajorSizes(rArray.hasAttribute("dim") ? Dimension(rArray.attr("dim")) : Dimension((size_t)rArray.size()));
-  std::vector<int64_t> colMajorSizes;
-  if (rArray.hasAttribute("dim"))
-  {
-    colMajorSizes = as<std::vector<int64_t>>(rArray.attr("dim"));
-  }
-  else
-  {
-    colMajorSizes.push_back(rArray.size());
-  }
-  const size_t dim = colMajorSizes.size();
-
-  // This is column major data - reverse the dimensions but copy the data as-is for efficiency
-  NDArray<T> array(colMajorSizes);
-
-  // This makes IPF work correctly
-  size_t i = 0;
-  for (TransposedIndex idx(colMajorSizes); !idx.end(); ++idx, ++i)
-  {
-    array[idx] = rArray[i];
-  }
-
-  return array;
-}
-
-
 //' Multidimensional IPF
 //'
 //' C++ multidimensional IPF implementation
 //' @param seed an n-dimensional array of seed values
-//' @param indices an array listing the dimension indices of each marginal as they apply to the seed values
+//' @param indices a List of 1-d arrays specifying the dimension indices of each marginal as they apply to the seed values
 //' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
-//' @return an object containing: ...
+//' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, and error values
+//' @examples
+//' ipf(array(rep(1,12), dim=c(4,3)), list(1,2), list(c(1,2,3,4), c(3,4,3)))
 //' @export
 // [[Rcpp::export]]
 List ipf(NumericVector seed, List indices, List marginals)
@@ -253,11 +289,10 @@ List ipf(NumericVector seed, List indices, List marginals)
       idx.back()[j] = dim - iv[j];
     //std::copy(iv.begin(), iv.end(), idx.back().begin());
     // convert to NDArray
-    m.push_back(std::move(convertRArray<double, NumericVector>(nv)));
+    m.push_back(std::move(Rhelpers::convertArray<double, NumericVector>(nv)));
   }
 
   // Storage for result
-
   List result;
   // Read-only shallow copy of seed
   const NDArray<double> seedwrapper(s, (double*)&seed[0]);
@@ -277,43 +312,14 @@ List ipf(NumericVector seed, List indices, List marginals)
 }
 
 
-// Helper to get overall dimension and sizes before constructing QIS
-// (as dims/indices need to be reversed to interpret data as row-major)
-std::vector<int64_t> dimensionHelper(List indices, List marginals)
-{
-  std::map<int64_t,int64_t> lookup;
-  // dont worry about inconsistencies here, QIS will detect and report them
-  for (size_t i = 0; i < indices.size(); ++i)
-  {
-    const IntegerVector& iv = indices[i];
-    const IntegerVector& mv = marginals[i];
-    std::vector<int64_t> colMajorSizes;
-    if (mv.hasAttribute("dim"))
-    {
-      colMajorSizes = as<std::vector<int64_t>>(mv.attr("dim"));
-    }
-    else
-    {
-      colMajorSizes.push_back(mv.size());
-    }
-    for (size_t j = 0; j < colMajorSizes.size(); ++j)
-    {
-      lookup[iv[j]] = colMajorSizes[j];
-    }
-  }
-  std::vector<int64_t> ret;
-  ret.reserve(lookup.size());
-  for (const auto& kv: lookup)
-    ret.push_back(kv.second);
-  return ret;
-}
-
 //' Multidimensional QIS
 //'
 //' C++ multidimensional Quasirandom Integer Sampling implementation
-//' @param indices an array listing the dimension indices of each marginal as they apply to the seed values
+//' @param indices a List of 1-d arrays specifying the dimension indices of each marginal
 //' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
-//' @return an object containing: ...
+//' @param skips (optional, default 0) number of Sobol points to skip before sampling
+//' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, chi-square and p-value
+//' TODO examples
 //' @export
 // [[Rcpp::export]]
 List qis(List indices, List marginals, int skips = 0)
@@ -324,7 +330,7 @@ List qis(List indices, List marginals, int skips = 0)
   }
 
   // we need the overall dimension and sizes upfront to assemble the problem in row-major rather than col-major form.
-  std::vector<int64_t> rSizes = dimensionHelper(indices, marginals);
+  std::vector<int64_t> rSizes = Rhelpers::getDimension(indices, marginals);
   // rSizes confirmed to be equivalent to dims reported by seed
 
   const int64_t k = marginals.size();
@@ -348,10 +354,7 @@ List qis(List indices, List marginals, int skips = 0)
     for (size_t j = 0; j < iv.size(); ++j)
       idx.back()[j] = dim - iv[j];
     // convert to NDArray
-    m.push_back(std::move(convertRArray<int64_t, IntegerVector>(nv)));
-//
-//     Rcout << "dimensionHelper: marginal dim: ";
-//     print(idx.back(), Rcout);
+    m.push_back(std::move(Rhelpers::convertArray<int64_t, IntegerVector>(nv)));
   }
 
   // Storage for result
@@ -367,9 +370,6 @@ List qis(List indices, List marginals, int skips = 0)
   e.attr("dim") = rSizes;
   // Copy result data into R array
   const NDArray<int64_t>& tmp = qis.solve();
-  // temporarily return an empty array of dimension determined by dimensionHelper
-  //NDArray<int64_t> tmp(rSizes);
-  //tmp.assign(0);
   std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
 
   const NDArray<double>& tmpe = qis.expectation();
@@ -389,9 +389,11 @@ List qis(List indices, List marginals, int skips = 0)
 //'
 //' C++ QIS-IPF implementation
 //' @param seed an n-dimensional array of seed values
-//' @param indices
-//' @param marginals a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical
-//' @return an object containing: ...
+//' @param indices a List of 1-d arrays specifying the dimension indices of each marginal
+//' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
+//' @param skips (optional, default 0) number of Sobol points to skip before sampling
+//' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, chi-square and p-value
+//' TODO examples
 //' @export
 // [[Rcpp::export]]
 List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
@@ -430,7 +432,7 @@ List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
     for (size_t j = 0; j < iv.size(); ++j)
       idx.back()[j] = dim - iv[j];
     // convert to NDArray
-    m.push_back(std::move(convertRArray<int64_t, IntegerVector>(mv)));
+    m.push_back(std::move(Rhelpers::convertArray<int64_t, IntegerVector>(mv)));
   }
 
   IntegerVector r(rSizes);
@@ -460,8 +462,6 @@ List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
 
   return result;
 }
-
-
 
 //' Generate integer frequencies from discrete probabilities and an overall population.
 //'
@@ -557,12 +557,13 @@ NumericMatrix sobolSequence(int dim, int n, int skip = 0)
 //' @param stateOccupancies an arbitrary-dimension array of (integer) state occupation counts.
 //' @param categoryNames a string vector of unique column names.
 //' @return a DataFrame with columns corresponding to category values and rows corresponding to individuals.
+//' TODO examples
 //' @export
 // [[Rcpp::export]]
 DataFrame flatten(IntegerVector stateOccupancies, StringVector categoryNames)
 {
   //m.push_back(std::move(convertRArray<int64_t, IntegerVector>(nv)));
-  const NDArray<int64_t>& a = convertRArray<int64_t, IntegerVector>(stateOccupancies);
+  const NDArray<int64_t>& a = Rhelpers::convertArray<int64_t, IntegerVector>(stateOccupancies);
   int64_t pop = sum(a);
 
   // for R indices start at 1

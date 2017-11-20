@@ -14,6 +14,16 @@ synthPop <- function(marginals) {
     .Call('_humanleague_synthPop', PACKAGE = 'humanleague', marginals)
 }
 
+#' Generate a population in n dimensions given n marginals.
+#'
+#' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
+#' generates an n-dimensional population table where elements sum to the input marginals, and supplemental data.
+#' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
+#' @param exoProbsIn a 2d array of exogenous state probabilities
+#' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
+#' @examples
+#' synthPopG(list(c(1,2,3,4), c(3,4,3)), array(rep(1,12), dim=c(4,3)))
+#' @export
 synthPopG <- function(marginals, exoProbsIn) {
     .Call('_humanleague_synthPopG', PACKAGE = 'humanleague', marginals, exoProbsIn)
 }
@@ -22,9 +32,11 @@ synthPopG <- function(marginals, exoProbsIn) {
 #'
 #' C++ multidimensional IPF implementation
 #' @param seed an n-dimensional array of seed values
-#' @param indices an array listing the dimension indices of each marginal as they apply to the seed values
+#' @param indices a List of 1-d arrays specifying the dimension indices of each marginal as they apply to the seed values
 #' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
-#' @return an object containing: ...
+#' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, and error values
+#' @examples
+#' ipf(array(rep(1,12), dim=c(4,3)), list(1,2), list(c(1,2,3,4), c(3,4,3)))
 #' @export
 ipf <- function(seed, indices, marginals) {
     .Call('_humanleague_ipf', PACKAGE = 'humanleague', seed, indices, marginals)
@@ -33,9 +45,11 @@ ipf <- function(seed, indices, marginals) {
 #' Multidimensional QIS
 #'
 #' C++ multidimensional Quasirandom Integer Sampling implementation
-#' @param indices an array listing the dimension indices of each marginal as they apply to the seed values
+#' @param indices a List of 1-d arrays specifying the dimension indices of each marginal
 #' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
-#' @return an object containing: ...
+#' @param skips (optional, default 0) number of Sobol points to skip before sampling
+#' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, chi-square and p-value
+#' TODO examples
 #' @export
 qis <- function(indices, marginals, skips = 0L) {
     .Call('_humanleague_qis', PACKAGE = 'humanleague', indices, marginals, skips)
@@ -45,9 +59,11 @@ qis <- function(indices, marginals, skips = 0L) {
 #'
 #' C++ QIS-IPF implementation
 #' @param seed an n-dimensional array of seed values
-#' @param indices
-#' @param marginals a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical
-#' @return an object containing: ...
+#' @param indices a List of 1-d arrays specifying the dimension indices of each marginal
+#' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
+#' @param skips (optional, default 0) number of Sobol points to skip before sampling
+#' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, chi-square and p-value
+#' TODO examples
 #' @export
 qisi <- function(seed, indices, marginals, skips = 0L) {
     .Call('_humanleague_qisi', PACKAGE = 'humanleague', seed, indices, marginals, skips)
@@ -85,6 +101,7 @@ sobolSequence <- function(dim, n, skip = 0L) {
 #' @param stateOccupancies an arbitrary-dimension array of (integer) state occupation counts.
 #' @param categoryNames a string vector of unique column names.
 #' @return a DataFrame with columns corresponding to category values and rows corresponding to individuals.
+#' TODO examples
 #' @export
 flatten <- function(stateOccupancies, categoryNames) {
     .Call('_humanleague_flatten', PACKAGE = 'humanleague', stateOccupancies, categoryNames)

@@ -7,12 +7,15 @@
 qis(indices, marginals, skips = 0L)
 }
 \arguments{
-\item{indices}{an array listing the dimension indices of each marginal as they apply to the seed values}
+\item{indices}{a List of 1-d arrays specifying the dimension indices of each marginal}
 
 \item{marginals}{a List of arrays containing marginal data. The sum of elements in each array must be identical}
+
+\item{skips}{(optional, default 0) number of Sobol points to skip before sampling}
 }
 \value{
-an object containing: ...
+an object containing: the population matrix, the occupancy probability matrix, a convergence flag, chi-square and p-value
+TODO examples
 }
 \description{
 C++ multidimensional Quasirandom Integer Sampling implementation

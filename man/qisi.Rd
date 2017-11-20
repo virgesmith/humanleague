@@ -9,10 +9,15 @@ qisi(seed, indices, marginals, skips = 0L)
 \arguments{
 \item{seed}{an n-dimensional array of seed values}
 
-\item{marginals}{a List of n integer vectors containing marginal data. The sum of elements in each vector must be identical}
+\item{indices}{a List of 1-d arrays specifying the dimension indices of each marginal}
+
+\item{marginals}{a List of arrays containing marginal data. The sum of elements in each array must be identical}
+
+\item{skips}{(optional, default 0) number of Sobol points to skip before sampling}
 }
 \value{
-an object containing: ...
+an object containing: the population matrix, the occupancy probability matrix, a convergence flag, chi-square and p-value
+TODO examples
 }
 \description{
 C++ QIS-IPF implementation

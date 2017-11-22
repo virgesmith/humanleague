@@ -44,7 +44,8 @@ void recursive_pick(const NDArray<double>& p, const std::vector<uint32_t>& seq, 
 }
 
 
-void recursive_sample(std::vector<std::pair<int64_t, uint32_t>>& dims, const NDArray<int64_t>& marginal, MappedIndex& index)
+void recursive_sample(std::vector<std::pair<int64_t, uint32_t>>& dims, const NDArray<int64_t>& marginal,
+                      MappedIndex& index, std::map<int64_t, int64_t> slice_map)
 {
   static const double scale = 0.5 / (1u<<31);
 
@@ -66,18 +67,18 @@ void recursive_sample(std::vector<std::pair<int64_t, uint32_t>>& dims, const NDA
   }
   else
   {
-    const std::vector<int64_t>& r = reduce<int64_t>(marginal, dims.back().first);
+    const std::vector<int64_t>& r = reduce<int64_t>(marginal, slice_map[dims.back().first]);
     index[dims.back().first] = pick(r.data(), r.size(), dims.back().second * scale);
-    const NDArray<int64_t>& sliced = slice(marginal, { dims.back().first, index[dims.back().first] });
+    const NDArray<int64_t>& sliced = slice(marginal, { slice_map[dims.back().first], index[dims.back().first] });
 #ifdef VERBOSE
     std::cout << "marginal (>1d):";
     print(marginal.rawData(), marginal.storageSize());
-    std::cout << "recursive_sample picked: D" << dims.back().first << ":" << index[dims.back().first] << std::endl;
+    std::cout << "recursive_sample picked: D" << dims.back().first << "[" << slice_map[dims.back().first]<< "]" << ":" << index[dims.back().first] << std::endl;
     std::cout << "sliced marginal:";
     print(sliced.rawData(), sliced.storageSize());
 #endif
     dims.pop_back();
-    recursive_sample(dims, sliced, index);
+    recursive_sample(dims, sliced, index, slice_map);
   }
 }
 
@@ -92,13 +93,22 @@ void sample(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, const 
 #endif
   std::vector<std::pair<int64_t, int64_t>> dims_to_slice;
   std::vector<std::pair<int64_t, uint32_t>> dims_to_sample;
+  // this tracks dimensions as the array is sliced
+  std::map<int64_t, int64_t> slice_map;
+  int64_t slice_index = 0;
   for (size_t d = 0; d < dims.size(); ++d)
   {
     // d can be wrong here, perhaps because index is the wrong way round?
     if (index[d] > -1)
+    {
       dims_to_slice.push_back(std::make_pair(d, index[d]));
+    }
     else
+    {
       dims_to_sample.push_back(std::make_pair(d, seq[dims[d]]));
+      slice_map[d] = slice_index;
+      ++slice_index;
+    }
   }
 #ifdef VERBOSE
   std::cout << "slice:";
@@ -111,8 +121,12 @@ void sample(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, const 
   {
     std::cout << dims_to_sample[i].first << ":" << dims_to_sample[i].second << std::endl;
   }
+  std::cout << "remapped dims for sampling:";
+  for (auto it = slice_map.begin(); it != slice_map.end(); ++it)
+  {
+    std::cout << it->first << "->" << it->second << std::endl;
+  }
 #endif
-
 
   // nothing to do if all dims already sampled
   if (dims_to_sample.empty())
@@ -120,13 +134,30 @@ void sample(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, const 
 
   // first get slice in the free dimensions only
   const NDArray<int64_t>& free = slice(marginal, dims_to_slice);
+  // TODO bug if say slice dim 0 of 5d array, need to update dim_to_sample with new dims, e.g.
+  // 0 (sliced)
+  // 1 -> 0
+  // 2 -> 1
+  // 3 -> 2
+  // 4 -> 3
+  // TODO move into recursive_sample (otherwise index gets messed)
+  // for (size_t i = 0; i < dims_to_sample.size(); ++i)
+  // {
+  //   dims_to_sample[i].first = slice_map[dims_to_sample[i].first];
+  // }
+
 #ifdef VERBOSE
   std::cout << "sliced [" << free.dim() << "] ";
   print(free.rawData(), free.storageSize());
+  std::cout << "remapped dims to sample:";
+  for (size_t i = 0; i < dims_to_sample.size(); ++i)
+  {
+    std::cout << dims_to_sample[i].first << ":" << dims_to_sample[i].second << std::endl;
+  }
 #endif
 
   // should now have an array with dim = dims_to_sample.size()
-  recursive_sample(dims_to_sample, free, index);
+  recursive_sample(dims_to_sample, free, index, slice_map);
 }
 
 }
@@ -176,7 +207,6 @@ const NDArray<int64_t>& QIS::solve_p(bool reset)
   // loop over population
   for (int64_t i = 0; i < m_population; ++i)
   {
-
     const std::vector<uint32_t>& seq = m_sobolSeq.buf();
 
     recursive_pick(m_stateProbs, seq, main_index, m_dim-1);

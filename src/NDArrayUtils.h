@@ -120,7 +120,9 @@ std::vector<T> reduce(const NDArray<T>& input, size_t orient)
   // return reduced;
   // check valid orientation
   if (!(orient < input.dim()))
-    throw std::runtime_error("reduce dimension greather than array dimension");
+    throw std::runtime_error("reduce dimension " + std::to_string(orient)
+                                                 + " greater than array dimension "
+                                                 + std::to_string(input.dim()));
 
   std::vector<T> sums(input.size(orient), 0);
 
@@ -220,30 +222,7 @@ NDArray<T> reduce(const NDArray<T>& input, const std::vector<int64_t>& preserved
 template<typename T>
 NDArray<T> slice(const NDArray<T>& input, std::pair<int64_t, int64_t> index)
 {
-  // not working
   return slice(input, std::vector<std::pair<int64_t, int64_t>>(1, index));
-  // if ((size_t)index.first >= input.dim())
-  //   throw std::runtime_error("dimension out of bounds in slice");
-  // if (index.second >= input.sizes()[index.first])
-  //   throw std::runtime_error("index out of bounds in slice");
-
-  // std::vector<int64_t> remainingSizes;
-  // remainingSizes.reserve(input.dim() - 1);
-  // for (size_t i = 0; i < input.dim(); ++i)
-  // {
-  //   if (i != (size_t)index.first)
-  //   {
-  //     remainingSizes.push_back(input.sizes()[i]);
-  //   }
-  // }
-  // NDArray<T> output(remainingSizes);
-  // Index inputIndex(input.sizes(), index);
-  // Index outputIndex(output.sizes());
-  // for(;!inputIndex.end(); ++inputIndex, ++outputIndex)
-  // {
-  //   output[outputIndex] = input[inputIndex];
-  // }
-  // return output;
 }
 
 template<typename T>

@@ -284,6 +284,21 @@ test_that("QIS 3d (2)", {
   #expect_lt(t$degeneracy, ?)
 })
 
+test_that("QIS dimension indexing test", {
+
+  # tricky array indexing - 1st dimension of d0 already sampled, remaining dimension
+  # indices on slice of d0 need to be remapped
+
+  d0 = c(4,6,4,4)
+  d1 = c(4,4,4)
+
+  m0 = array(rep(prod(d1),prod(d0)),dim=d0)
+  m1 = array(rep(prod(d0),prod(d1)),dim=d1)
+
+  ms=qis(list(c(1,2,3,4),c(1,5,6)), list(m0,m1))
+  expect_true(ms$conv)
+})
+
 test_that("QIS degeneracy tests", {
 
   # 2D
@@ -355,7 +370,6 @@ test_that("QISI degeneracy tests", {
 })
 
 
-# Disabled pending fix
 test_that("QIS listify tests", {
 
   # 1D+1D

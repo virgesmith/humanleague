@@ -235,6 +235,24 @@ class Test(TestCase):
     self.assertTrue(np.allclose(np.sum(p["result"], 2), m))
     self.assertTrue(np.allclose(np.sum(p["result"], 0), m))
 
+  def test_QIS_dim_indexing(self):
+
+    # tricky array indexing - 1st dimension of d0 already sampled, remaining dimension
+    # indices on slice of d0 need to be remapped
+
+    m0 = np.ones([4,6,4,4], dtype=int) 
+    m1 = np.ones([4,4,4], dtype=int) * 6
+
+    ms=hl.qis([np.array([0,1,2,3]),np.array([0,4,5])], [m0,m1])
+    self.assertTrue(ms["conv"])
+
+    ms=hl.qis([np.array([0,4,5]),np.array([0,1,2,3])], [m1,m0])
+    self.assertTrue(ms["conv"])
+
+    ms=hl.qis([np.array([0,1,2]),np.array([0,3,4,5])], [m1,m0])
+    self.assertTrue(ms["conv"])
+
+
   def test_QISI(self):
     m0 = np.array([52, 48]) 
     m1 = np.array([10, 77, 13])

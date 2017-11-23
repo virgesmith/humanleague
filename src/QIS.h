@@ -29,11 +29,14 @@ private:
   const NDArray<int64_t>& solve_p(bool reset);
   const NDArray<int64_t>& solve_m(bool reset);
   
-  void updateStateProbs();
+  // state values are proportional to state occupancy probabilities
+  void updateStateValues(const Index& position, const std::vector<MappedIndex>& mappings);
+  void computeStateValues();
 
   Sobol m_sobolSeq;
 
-  NDArray<double> m_stateProbs;
+  // values proportional to state probs
+  NDArray<double> m_stateValues;
   // Required for chi-squared
   NDArray<double> m_expectedStateOccupancy;
   double m_chiSq;

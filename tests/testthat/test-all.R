@@ -51,7 +51,7 @@ test_that("simple 2D qis", {
   expect_true(all.equal(names(table), colnames))
   expect_equal(nrow(table), 125)
   expect_equal(ncol(table), 2)
-  expect_gt(res$pValue, 0.005)
+  expect_gt(res$pValue, 0.99)
 })
 
 
@@ -65,7 +65,7 @@ test_that("simple 5D qis", {
   expect_true(all.equal(names(table), colnames))
   expect_equal(nrow(table), 125^2)
   expect_equal(ncol(table), 5)
-  expect_gt(res$pValue, 0.005)
+  expect_gt(res$pValue, 0.99)
 })
 
 
@@ -79,7 +79,7 @@ test_that("simple 8D qiws", {
   expect_true(all.equal(names(table), colnames))
   expect_equal(nrow(table), 125^3)
   expect_equal(ncol(table), 8)
-  expect_gt(res$pValue, 0.005)
+  expect_gt(res$pValue, 0.99)
 })
 
 
@@ -88,7 +88,7 @@ test_that("simple 12D qiws", {
   res<-humanleague::qis(list(1,2,3,4,5,6,7,8,9,10,11,12),list(m,m,m,m,m,m,m,m,m,m,m,m))
   expect_equal(rowSums(res$result), m)
   expect_equal(res$conv, TRUE)
-  expect_gt(res$pValue, 0.005)
+  expect_gt(res$pValue, 0.03)
 })
 
 m = array(c(2^14,2^14,2^14,2^14),c(2,2))
@@ -96,7 +96,7 @@ test_that("Complex 8 x 2D -> 12D qiws", {
   res<-humanleague::qis(list(c(1,2),c(2,3),c(4,5),c(5,6),c(6,7),c(8,9),c(9,10),c(11,12)),list(m,m,m,m,m,m,m,m))
   expect_equal(rowSums(res$result), rowSums(m))
   expect_equal(res$conv, TRUE)
-  expect_gt(res$pValue, 0.005)
+  expect_gt(res$pValue, 0.02)
 })
 
 # realistic? case (iqrs fails)
@@ -258,7 +258,7 @@ test_that("QIS 3d", {
   expect_equal(apply(t$result, c(1,2), sum), m0)
   expect_equal(apply(t$result, c(3), sum), m1)
   expect_lt(t$chiSq, 2.2)
-  expect_gt(t$pValue, 0.3)
+  expect_gt(t$pValue, 0.6)
   # Chi-squared approximation may be incorrect
   # chi2 = chisq.test(t$result, t$expectation)
   # expect_equal(t$chiSq, as.numeric(chi2$statistic)) # as.numeric required as its a labelled value
@@ -275,8 +275,8 @@ test_that("QIS 3d (2)", {
   expect_equal(sum(t$result), 100)
   expect_equal(apply(t$result, c(1,2), sum), m0)
   expect_equal(apply(t$result, c(3), sum), m1)
-  expect_lt(t$chiSq, 10.0)
-  expect_gt(t$pValue, 0.1)
+  expect_lt(t$chiSq,7.0)
+  expect_gt(t$pValue, 0.3)
   # Chi-squared approximation may be incorrect
   # chi2 = chisq.test(t$result, t$expectation, simulate.p.value=T)
   # expect_equal(t$chiSq, as.numeric(chi2$statistic)) # as.numeric required as its a labelled value

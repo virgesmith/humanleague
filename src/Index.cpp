@@ -158,23 +158,11 @@ int64_t& MappedIndex::operator[](size_t i)
   return *m_mappedIndex[i];
 }
 
-
 bool MappedIndex::end()
 {
   return m_atEnd;
 }
 
-// std::vector<int64_t> MappedIndex::excludeFrom(const std::vector<int64_t>& dims, int64_t excludedDim)
-// {
-//   std::vector<int64_t> included;
-//   included.reserve(dims.size() - 1);
-//   for (int64_t i = 0; i < (int64_t)dims.size(); ++i)
-//   {
-//     if (i != excludedDim)
-//       included.push_back(dims[i]);
-//   }
-//   return included;
-// }
 
 FixedIndex::FixedIndex(const std::vector<int64_t>& sizes, const std::vector<std::pair<int64_t, int64_t>>& fixed)
   : m_freeDim(sizes.size() - fixed.size()), m_fullIndex(sizes), m_freeSizes(sizes.size() - fixed.size()), m_atEnd(false)

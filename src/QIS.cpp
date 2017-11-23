@@ -134,17 +134,6 @@ void sample(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, const 
 
   // first get slice in the free dimensions only
   const NDArray<int64_t>& free = slice(marginal, dims_to_slice);
-  // TODO bug if say slice dim 0 of 5d array, need to update dim_to_sample with new dims, e.g.
-  // 0 (sliced)
-  // 1 -> 0
-  // 2 -> 1
-  // 3 -> 2
-  // 4 -> 3
-  // TODO move into recursive_sample (otherwise index gets messed)
-  // for (size_t i = 0; i < dims_to_sample.size(); ++i)
-  // {
-  //   dims_to_sample[i].first = slice_map[dims_to_sample[i].first];
-  // }
 
 #ifdef VERBOSE
   std::cout << "sliced [" << free.dim() << "] ";
@@ -166,14 +155,19 @@ QIS::QIS(const index_list_t& indices, marginal_list_t& marginals, int64_t skips)
 : Microsynthesis(indices, marginals), m_sobolSeq(m_dim), m_conv(false)
 {
   m_sobolSeq.skip(skips);
-  //m_sobolSeq = Sobol(m_dim);
-  m_stateProbs.resize(m_array.sizes());
+  m_stateValues.resize(m_array.sizes());
   // compute initial state probabilities and keep a copy
-  updateStateProbs();
-  NDArray<double>::copy(m_stateProbs, m_expectedStateOccupancy);
-  // scale up
+  computeStateValues();
+  NDArray<double>::copy(m_stateValues, m_expectedStateOccupancy);
+  // scale up to get expected occupancy
+  double scale = m_population / sum(m_stateValues);
   for (Index index(m_expectedStateOccupancy.sizes()); !index.end(); ++index)
-    m_expectedStateOccupancy[index] *= m_population;
+    m_expectedStateOccupancy[index] *= scale;
+#ifdef VERBOSE
+  // if (sum(m_expectedStateOccupancy) != m_population)
+  //   throw std::logic_error("mismatch in expected state occupancy" + std::to_string(sum(m_expectedStateOccupancy)) + " vs " + std::to_string(m_population));
+  std::cout << "scaling factor = " << 1.0 / scale << std::endl;
+#endif
 }
 
 
@@ -209,7 +203,7 @@ const NDArray<int64_t>& QIS::solve_p(bool reset)
   {
     const std::vector<uint32_t>& seq = m_sobolSeq.buf();
 
-    recursive_pick(m_stateProbs, seq, main_index, m_dim-1);
+    recursive_pick(m_stateValues, seq, main_index, m_dim-1);
 
     ++m_array[main_index];
 
@@ -220,10 +214,10 @@ const NDArray<int64_t>& QIS::solve_p(bool reset)
         m_conv = false;
     }
 #ifdef VERBOSE
-    print(m_stateProbs.rawData(), m_stateProbs.storageSize(), m_stateProbs.sizes()[0]);
+    print(m_stateValues.rawData(), m_stateValues.storageSize(), m_stateValues.sizes()[0]);
 #endif
-    if (m_stateProbs[main_index] < 1.0)
-      updateStateProbs();
+    if (m_stateValues[main_index] < 1.0)
+      updateStateValues(main_index, mapped_indices);
   }
   m_chiSq = ::chiSq(m_array, m_expectedStateOccupancy);
 
@@ -249,13 +243,7 @@ const NDArray<int64_t>& QIS::solve_m(bool reset)
 
   Index main_index(m_array.sizes());
 
-  std::vector<MappedIndex> mapped_indices;
-  mapped_indices.reserve(m_marginals.size());
-  for (size_t i = 0; i < m_marginals.size(); ++i)
-  {
-    mapped_indices.push_back(MappedIndex(main_index, m_indices[i]));
-  }
-
+  std::vector<MappedIndex> mapped_indices = makeMarginalMappings(main_index);
 
   for (int64_t i = 0; i < m_population; ++i)
   {
@@ -322,28 +310,31 @@ const NDArray<double>& QIS::expectation()
   return m_expectedStateOccupancy;
 }
 
-// TODO something seems wrong here
-void QIS::updateStateProbs()
+void QIS::computeStateValues()
 {
   Index index_main(m_array.sizes());
 
   std::vector<MappedIndex> mappings = makeMarginalMappings(index_main);
 
-  m_stateProbs.assign(1.0);
+  m_stateValues.assign(1.0);
   for (; !index_main.end(); ++index_main)
   {
     for (size_t k = 0; k < m_marginals.size(); ++k)
     {
-      m_stateProbs[index_main] *= m_marginals[k][mappings[k]];
+      m_stateValues[index_main] *= m_marginals[k][mappings[k]];
     }
   }
+}
 
-  // TODO rescaling is unnecessary
-  double scale = 1.0 / sum(m_stateProbs);
-  for (Index index(m_array.sizes()); !index.end(); ++index)
+
+void QIS::updateStateValues(const Index& position, const std::vector<MappedIndex>& mappings)
+{
+  double update = 1.0;
+  for (size_t k = 0; k < m_marginals.size(); ++k)
   {
-    m_stateProbs[index] *= scale;
+    update *= m_marginals[k][mappings[k]]; 
   }
+  m_stateValues[position] = update;
 }
 
 double QIS::chiSq() const

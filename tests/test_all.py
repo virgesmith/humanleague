@@ -182,7 +182,7 @@ class Test(TestCase):
     p = hl.qis([i0, i1, i2], [m0, m1, m2])
     self.assertTrue(p["conv"])
     self.assertLess(p["chiSq"], 73.0) # TODO seems a bit high (probably )
-    self.assertGreater(p["pValue"], 0.0) # TODO this looks suspect
+    self.assertGreater(p["pValue"], 0.0) # TODO this is suspect
     self.assertEqual(p["pop"], 100.0)
     self.assertTrue(np.allclose(np.sum(p["result"], (0, 1)), m2))
     self.assertTrue(np.allclose(np.sum(p["result"], (1, 2)), m0))
@@ -229,7 +229,7 @@ class Test(TestCase):
     #print(p)
     self.assertTrue(p["conv"])
     self.assertLess(p["chiSq"], 10) 
-    self.assertGreater(p["pValue"], 0.2) # TODO this looks suspect too
+    self.assertGreater(p["pValue"], 0.27) 
     self.assertEqual(p["pop"], 120)
     print(np.sum(p["result"], 2))
     self.assertTrue(np.allclose(np.sum(p["result"], 2), m))
@@ -281,8 +281,8 @@ class Test(TestCase):
 
     p = hl.qisi(s, [i0, i1, i2], [m0, m1, m2])
     self.assertTrue(p["conv"])
-    self.assertLess(p["chiSq"], 73.0) # TODO seems a bit high (probably )
-    self.assertGreater(p["pValue"], 8e-7) # TODO this is suspect
+    self.assertLess(p["chiSq"], 70) # seems a bit high
+    self.assertGreater(p["pValue"], 0.0) # seems a bit low
     self.assertEqual(p["pop"], 100.0)
     self.assertTrue(np.allclose(np.sum(p["result"], (0, 1)), m2))
     self.assertTrue(np.allclose(np.sum(p["result"], (1, 2)), m0))
@@ -300,8 +300,8 @@ class Test(TestCase):
 
     p = hl.qisi(s, [i0, i1, i2, i3], [m0, m1, m2, m3])
     self.assertTrue(p["conv"])
-    self.assertLess(p["chiSq"], 10) 
-    self.assertGreater(p["pValue"], 0.0025) # TODO this looks suspect too
+    self.assertLess(p["chiSq"], 5.5) 
+    self.assertGreater(p["pValue"], 0.02)
     self.assertEqual(p["pop"], 100)
     self.assertTrue(np.allclose(np.sum(p["result"], (0, 1, 2)), m3))
     self.assertTrue(np.allclose(np.sum(p["result"], (1, 2, 3)), m0))

@@ -7,3 +7,5 @@ idx = [np.array([0,1]), np.array([2,1])]
 r = hl.qis(idx, [m, m])
 
 print(r)
+print(np.sum(r["result"]))
+print(np.sum(r["expectation"]))

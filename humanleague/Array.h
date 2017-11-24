@@ -94,12 +94,23 @@ namespace pycpp {
         *p = a[i];
       }
     }
+
+    // helper to convert dims to python type
+    static std::vector<npy_intp> convert(const std::vector<int64_t>& sizeIn)
+    {
+      std::vector<npy_intp> sizeOut(sizeIn.size());
+      for (size_t i = 0; i < sizeIn.size(); ++i)
+      {
+        sizeOut[i] = sizeIn[i];
+      }
+      return sizeOut;
+    }
   
   public:
   
     // Construct from NDArray<T>. Data is copied
     explicit Array(const NDArray<T>& a) 
-      : Array(a.dim(), const_cast<npy_intp*>(a.sizes().data())) 
+      : Array(a.dim(), convert(a.sizes()).data()) 
     {
       std::copy(a.rawData(), a.rawData() + a.storageSize(), rawData());
     }

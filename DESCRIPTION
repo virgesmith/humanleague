@@ -5,7 +5,7 @@ Description: Generates integer synthetic populations given integer marginal data
 Version: 2.0.0
 Author: Andrew Smith
 Maintainer: Andrew Smith <a.p.smith@leeds.ac.uk>
-License: GPL-3
+License: MIT + file LICENCE
 Encoding: UTF-8
 LazyData: true
 Imports:

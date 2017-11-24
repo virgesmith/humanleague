@@ -1,23 +1,3 @@
-/**********************************************************************
-
-Copyright 2017 The University of Leeds
-
-This file is part of the R humanleague package.
-
-humanleague is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-humanleague is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-A copy of the GNU General Public License can be found in LICENCE.txt
-in the project's root directory, or at <http://www.gnu.org/licenses/>.
-
-**********************************************************************/
 
 #include "NDArrayUtils.h"
 #include "Index.h"
@@ -116,26 +96,6 @@ std::vector<int64_t> getDimension(List indices, List marginals)
 
 }
 
-void doSolveGeneral(List& result, IntegerVector dims, const std::vector<std::vector<uint32_t>>& m, const NDArray<double>& exoProbs)
-{
-  GQIWS solver(m, exoProbs);
-  result["method"] = "QIWS-G";
-  result["conv"] = solver.solve();
-
-  const typename QIWS::table_t& t = solver.result();
-
-  // insert transposed result
-  IntegerVector values(t.storageSize());
-  size_t i = 0;
-  for (TransposedIndex idx(t.sizes()); !idx.end(); ++idx, ++i)
-  {
-    values[i] = t[idx];
-  }
-  values.attr("dim") = dims;
-  result["x.hat"] = values;
-}
-
-
 //' Generate a population in n dimensions given n marginals.
 //'
 //' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
@@ -221,7 +181,7 @@ List synthPopG(List marginals, NumericMatrix exoProbsIn)
   std::copy(iv1.begin(), iv1.end(), std::back_inserter(m[1]));
 
   if (exoProbsIn.rows() != dims[0] || exoProbsIn.cols() != dims[1])
-    throw std::runtime_error("CQIWS invalid permittedStates matrix size");
+    throw std::runtime_error("GQIWS invalid permittedStates matrix size");
 
   std::vector<int64_t> d{ dims[0], dims[1] };
   NDArray<double> exoProbs(d);
@@ -235,7 +195,21 @@ List synthPopG(List marginals, NumericMatrix exoProbsIn)
   }
 
   List result;
-  doSolveGeneral(result, dims, m, exoProbs);
+  GQIWS solver(m, exoProbs);
+  result["method"] = "QIWS-G";
+  result["conv"] = solver.solve();
+
+  const typename QIWS::table_t& t = solver.result();
+
+  // insert transposed result
+  IntegerVector values(t.storageSize());
+  size_t i = 0;
+  for (TransposedIndex idx(t.sizes()); !idx.end(); ++idx, ++i)
+  {
+    values[i] = t[idx];
+  }
+  values.attr("dim") = dims;
+  result["x.hat"] = values;
 
   return result;
 }

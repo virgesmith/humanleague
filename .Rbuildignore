@@ -2,3 +2,10 @@
 ^\.Rproj\.user$
 ^\.vscode
 ^\.travis\.yml$
+node.js/
+humanleague/
+humanleague.egg-info/
+dev/
+deprecated/
+requirements.txt
+setup.py

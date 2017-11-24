@@ -5,7 +5,7 @@
 #include "Sobol.h"
 #include "DDWR.h"
 
-#include <cstdlib>
+#include <random>
 
 //#define NO_R
 
@@ -19,6 +19,12 @@
 
 // private helper functions for CQIWS
 namespace {
+
+uint32_t rand()
+{
+  static std::mt19937 mt;
+  return mt();
+}
 
 bool constraintMet(const NDArray<bool>& allowed, QIWS::table_t& t)
 {
@@ -123,7 +129,7 @@ ConstrainG::Status constrain(NDArray<uint32_t>& pop, const NDArray<bool>& allowe
   size_t iter = 0;
   do
   {
-    
+
     // Loop over all states, until no population in forbidden states
     for (Index idx(pop.sizes()); !idx.end(); ++idx)
     {

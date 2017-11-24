@@ -101,13 +101,13 @@ namespace pycpp {
     explicit Array(const NDArray<T>& a) 
       : Array(a.dim(), const_cast<npy_intp*>(a.sizes().data())) 
     {
-      std::copy(a.rawData(), a.rawData() + a.storageSize(), (T*)PyArray_DATA((PyArrayObject*)m_obj));
+      std::copy(a.rawData(), a.rawData() + a.storageSize(), rawData());
     }
     
     ~Array()
     {
-      Py_DECREF(m_obj);
       // do we need to delete/decref?
+      //Py_DECREF(m_obj); segfaults
     }
     
     // generic n-D access??
@@ -137,17 +137,6 @@ namespace pycpp {
       return v;
     }
 
-    // template<size_t D>
-    // old::NDArray<D, T> toNDArrayOld() const
-    // {
-    //   size_t sizes[D];
-    //   for (size_t i = 0; i < D; ++i)
-    //     sizes[i] = shape()[i];
-    //   old::NDArray<D, T> tmp(sizes);
-    //   std::copy(rawData(), rawData() + tmp.storageSize(), const_cast<T*>(tmp.rawData()));
-    //   return tmp;
-    // }
-    
     NDArray<T> toNDArray() const
     {
       const size_t dim = this->dim();

@@ -83,30 +83,32 @@ public:
 
     m_array.resize(m_sizes);
 
-    // // print summary data
-    // std::cout << "Dim Size" << std::endl;
-    // for (size_t d = 0; d < m_sizes.size(); ++d)
-    // {
-    //     std::cout << d << ": " << m_sizes[d] << std::endl;
-    // }
+#ifdef VERBOSE
+    // print summary data
+    std::cout << "Dim Size" << std::endl;
+    for (size_t d = 0; d < m_sizes.size(); ++d)
+    {
+        std::cout << d << ": " << m_sizes[d] << std::endl;
+    }
 
-    // std::cout << "Mrg Dims" << std::endl;
-    // for (size_t k = 0; k < m_indices.size(); ++k)
-    // {
-    //     std::cout << k << ": ";
-    //     print(m_indices[k]);
-    // }
+    std::cout << "Mrg Dims" << std::endl;
+    for (size_t k = 0; k < m_indices.size(); ++k)
+    {
+        std::cout << k << ": ";
+        print(m_indices[k]);
+    }
 
-    // std::cout << "Dim Mrg,Dim" << std::endl;
-    // for (size_t d = 0; d < m_dim_lookup.size(); ++d)
-    // {
-    //     std::cout << d << ":";
-    //     for (size_t i = 0; i < m_dim_lookup[d].size(); ++i)
-    //     {
-    //     std::cout << m_dim_lookup[d][i].first << "," << m_dim_lookup[d][i].second << " ";
-    //     }
-    //     std::cout << std::endl;
-    // }
+    std::cout << "Dim Mrg,Dim" << std::endl;
+    for (size_t d = 0; d < m_dim_lookup.size(); ++d)
+    {
+        std::cout << d << ":";
+        for (size_t i = 0; i < m_dim_lookup[d].size(); ++i)
+        {
+        std::cout << m_dim_lookup[d][i].first << "," << m_dim_lookup[d][i].second << " ";
+        }
+        std::cout << std::endl;
+    }
+#endif
   }
 
   Microsynthesis(const Microsynthesis&) = delete;

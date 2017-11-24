@@ -17,7 +17,7 @@ public:
 
   typedef typename Microsynthesis<double, M>::index_list_t index_list_t;
   typedef typename Microsynthesis<double, M>::marginal_list_t marginal_list_t;
-  // TODO perhaps seed should be an arg to solve instead of being passed in here
+
   IPF(const typename Microsynthesis<double, M>::index_list_t& indices, typename Microsynthesis<double, M>::marginal_list_t& marginals)
     : Microsynthesis<double, M>(indices, marginals)
   {

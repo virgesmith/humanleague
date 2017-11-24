@@ -403,7 +403,7 @@ int main()
 
       qis.solve();
 
-      print(qis.expectation().rawData(), qis.expectation().storageSize(), 4);
+      //print(qis.expectation().rawData(), qis.expectation().storageSize(), 4);
     }
 
   }

@@ -99,6 +99,20 @@ test_that("Complex 8 x 2D -> 12D qiws", {
   expect_gt(res$pValue, 0.02)
 })
 
+# TODO add multidim tests to compare QIS expectation to IPF result with unity seed
+test_that("QIS expectation", {
+  m0 = c(52, 28,20)
+  m1 = c(87, 13)
+  m2 = c(67, 33)
+  m3 = c(55, 45)
+
+  p = qis(list(1,2,3,4), list(m0, m1, m2, m3))
+  # TODO dim checking appears not to work...
+  s=array(rep(1,24),dim=c(3,2,2,2))
+  z=ipf(s, list(1,2,3,4), list(m0, m1, m2, m3))
+  expect_equal(p$expectation, z$result, 1e-8)
+})
+
 # realistic? case (iqrs fails)
 m1 <- c(144, 150, 3, 2, 153, 345, 13, 11, 226, 304, 24, 18, 250, 336, 14, 21, 190, 176, 15, 14, 27, 10, 2, 3, 93, 135, 2, 6, 30, 465, 11, 28, 43, 463, 17, 76, 39, 458, 15, 88, 55, 316, 22, 50, 15, 25, 11, 17)
 m2 <- c(18, 1, 1, 3, 6, 5, 1, 2, 1, 8, 2, 3, 4, 2, 4, 2, 2, 2, 4, 2, 4, 2, 2, 8, 10, 6, 2, 1, 2, 2, 2, 1, 1, 1, 5, 1, 2, 1, 1, 1, 3, 2, 1, 3, 3, 1, 1, 4, 4, 1, 1, 5, 4, 10, 1, 6, 2, 67, 1, 10, 7, 9, 4, 21, 19, 9, 131, 17, 9, 8, 14, 17, 13, 11, 3, 6, 2, 2, 3, 1, 12, 1, 1, 1, 2, 1, 1, 1, 2, 21, 1, 26, 97, 10, 47, 6, 2, 3, 2, 7, 2, 17, 2, 6, 3, 1, 1, 2, 18, 9, 59, 5, 399, 71, 100, 157, 74, 199, 154, 98, 22, 7, 13, 39, 19, 6, 43, 41, 24, 14, 30, 30, 105, 604, 15, 69, 33, 1, 122, 17, 20, 9, 77, 4, 9, 4, 56, 1, 32, 10, 9, 79, 4, 2, 30, 116, 3, 6, 14, 18, 2, 2, 9, 4, 11, 12, 5, 5, 2, 1, 1, 3, 9, 2, 7, 3, 1, 4, 1, 3, 2, 1, 7, 1, 7, 4, 17, 3, 5, 2, 6, 11, 2, 2, 3, 13, 3, 5, 1, 3, 2, 4, 2, 1, 16, 4, 1, 3, 7, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 2, 2, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 6, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 9, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 330, 28, 281, 12)
@@ -277,6 +291,13 @@ test_that("QIS 3d (2)", {
   expect_equal(apply(t$result, c(3), sum), m1)
   expect_lt(t$chiSq,7.0)
   expect_gt(t$pValue, 0.3)
+
+  # check expectation matches IPF
+  s=t$result * 0 + 1
+  x=ipf(s,list(c(1,2),c(3)),list(m0,m1))
+  expect_lt(max(t$expectation-x$result), 1e-8)
+  expect_gt(min(t$expectation-x$result), -1e-8)
+
   # Chi-squared approximation may be incorrect
   # chi2 = chisq.test(t$result, t$expectation, simulate.p.value=T)
   # expect_equal(t$chiSq, as.numeric(chi2$statistic)) # as.numeric required as its a labelled value
@@ -553,49 +574,6 @@ test_that("constrained4", {
   expect_equal(colSums(res$x.hat), b)
 })
 
-# test_that("constrained5", {
-#   r = c(0, 3, 17, 124, 167, 79, 46, 22)
-#   b = c(0, 15, 165, 238, 33, 7)
-#   res = humanleague::qis(list(r,b))
-#   expect_equal(res$conv, TRUE)
-#   cres = humanleague::constrain(res$x.hat,makeConstraint(r,b))
-#   expect_equal(cres$conv, TRUE)
-#   expect_equal(rowSums(cres$x.hat), r)
-#   expect_equal(colSums(cres$x.hat), b)
-# })
-#
-# test_that("constrained6", {
-#   r = c( 1, 1, 8, 3,84, 21, 4, 4, 1)
-#   b = c( 0, 8, 3, 113, 2, 1)
-#   res = humanleague::qis(list(r,b))
-#   expect_equal(res$conv, TRUE)
-#   cres = humanleague::constrain(res$x.hat,makeConstraint(r,b))
-#   expect_equal(cres$conv, TRUE)
-#   expect_equal(rowSums(cres$x.hat), r)
-#   expect_equal(colSums(cres$x.hat), b)
-# })
-#
-# test_that("constrained7", {
-#   r = c( 1, 3, 7, 19, 96, 4, 5, 1, 1)
-#   b = c( 0, 7, 21, 109, 0, 0)
-#   res = humanleague::qis(list(r,b))
-#   expect_equal(res$conv, TRUE)
-#   cres = humanleague::constrain(res$x.hat,makeConstraint(r,b))
-#   expect_equal(cres$conv, TRUE)
-#   expect_equal(rowSums(cres$x.hat), r)
-#   expect_equal(colSums(cres$x.hat), b)
-# })
-#
-# test_that("constrained8", {
-#   r = c( 1, 1, 12, 43, 45, 1, 6, 0, 2)
-#   b = c( 0, 7, 46, 54, 1, 3)
-#   res = humanleague::qis(list(r,b))
-#   expect_equal(res$conv, TRUE)
-#   cres = humanleague::constrain(res$x.hat,makeConstraint(r,b))
-#   expect_equal(cres$conv, TRUE)
-#   expect_equal(rowSums(cres$x.hat), r)
-#   expect_equal(colSums(cres$x.hat), b)
-# })
 
 ##### Marginal integerisation tests
 

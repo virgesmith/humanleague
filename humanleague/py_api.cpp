@@ -129,7 +129,7 @@ extern "C" PyObject* humanleague_sobol(PyObject *self, PyObject *args)
       sequence[idx] = sobol() * scale;
     }
     
-    pycpp::Array<double> result(std::move(sequence));
+    pycpp::Array<double> result(sequence);
     
     return result.release();
   }
@@ -186,8 +186,7 @@ extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
     pycpp::Dict retval;
 
     IPF<double> ipf(indices, marginals); 
-    // THIS IS DESTRUCTIVE!
-    retval.insert("result", pycpp::Array<double>(std::move(const_cast<NDArray<double>&>(ipf.solve(seed.toNDArray())))));
+    retval.insert("result", pycpp::Array<double>(ipf.solve(seed.toNDArray())));
     retval.insert("conv", pycpp::Bool(ipf.conv()));
     retval.insert("pop", pycpp::Double(ipf.population()));
     retval.insert("iterations", pycpp::Int(ipf.iters()));
@@ -250,9 +249,8 @@ extern "C" PyObject* humanleague_qis(PyObject *self, PyObject *args)
     pycpp::Dict retval;
 
     QIS qis(indices, marginals, skips); 
-    // THIS IS DESTRUCTIVE!
-    retval.insert("result", pycpp::Array<int64_t>(std::move(const_cast<NDArray<int64_t>&>(qis.solve()))));
-    retval.insert("expectation", pycpp::Array<double>(std::move(const_cast<NDArray<double>&>(qis.expectation()))));
+    retval.insert("result", pycpp::Array<int64_t>(qis.solve()));
+    retval.insert("expectation", pycpp::Array<double>(qis.expectation()));
     retval.insert("conv", pycpp::Bool(qis.conv()));
     retval.insert("pop", pycpp::Double(qis.population()));
     retval.insert("chiSq", pycpp::Double(qis.chiSq()));
@@ -315,9 +313,8 @@ extern "C" PyObject* humanleague_qisi(PyObject *self, PyObject *args)
     pycpp::Dict retval;
 
     QISI qisi(indices, marginals, skips);
-    // THIS IS DESTRUCTIVE!
-    retval.insert("result", pycpp::Array<int64_t>(std::move(const_cast<NDArray<int64_t>&>(qisi.solve(seed.toNDArray())))));
-    retval.insert("ipf", pycpp::Array<double>(std::move(const_cast<NDArray<double>&>(qisi.expectation()))));
+    retval.insert("result", pycpp::Array<int64_t>(qisi.solve(seed.toNDArray())));
+    retval.insert("ipf", pycpp::Array<double>(qisi.expectation()));
     retval.insert("conv", pycpp::Bool(qisi.conv()));
     retval.insert("pop", pycpp::Double(qisi.population()));
     retval.insert("chiSq", pycpp::Double(qisi.chiSq()));

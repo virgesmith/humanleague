@@ -96,34 +96,17 @@ namespace pycpp {
     }
   
   public:
-
-    // // Construct from NDArray<D,T>. Data is presumed to be copied
-    // template<size_t D>
-    // explicit Array(old::NDArray<D, T>&& a) 
-    //   : Object(PyArray_SimpleNewFromData(D, 
-    //                                      const_cast<npy_intp*>(a.sizesl()), 
-    //                                      NpyType<T>::Type, 
-    //                                      const_cast<T*>((const T*)a.rawData()))) 
-    // {
-    //   // memory ownership transferred?
-    //   // leak if you dont, memory corruption if you do
-    //   a.release();
-    // }
-    
-    // Construct from NDArray<D,T>. Data is presumed to be copied
-    explicit Array(NDArray<T>&& a) 
-      : Object(PyArray_SimpleNewFromData(a.dim(), 
-                                         const_cast<npy_intp*>((npy_intp*)a.sizes().data()), 
-                                         NpyType<T>::Type, 
-                                         const_cast<T*>((const T*)a.rawData()))) 
+  
+    // Construct from NDArray<T>. Data is copied
+    explicit Array(const NDArray<T>& a) 
+      : Array(a.dim(), const_cast<npy_intp*>(a.sizes().data())) 
     {
-      // memory ownership transferred?
-      // leak if you dont, memory corruption if you do
-      a.release();
+      std::copy(a.rawData(), a.rawData() + a.storageSize(), (T*)PyArray_DATA((PyArrayObject*)m_obj));
     }
     
     ~Array()
     {
+      Py_DECREF(m_obj);
       // do we need to delete/decref?
     }
     

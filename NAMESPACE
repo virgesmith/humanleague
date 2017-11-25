@@ -1,4 +1,18 @@
-exportPattern("^[[:alpha:]]+")
+# Wildcard exports causes check to complain about undocumented (C++) functions to need to
+# manually specify exported functions (including those used in tests)
+# (Trying to use roxygen2 to autogenerate this file just causes massive problems - not resolving the C++ synbols at all)
+
+export("flatten");
+export("prob2IntFreq");
+export("sobolSequence");
+export("ipf");
+export("qis");
+export("qisi");
+export("unitTest");
+# legacy
+export("synthPop");
+export("synthPopG");
+
 importFrom(Rcpp, evalCpp)
 useDynLib(humanleague, .registration = T)
 

@@ -17,8 +17,13 @@ qisi(seed, indices, marginals, skips = 0L)
 }
 \value{
 an object containing: the population matrix, the occupancy probability matrix, a convergence flag, chi-square and p-value
-TODO examples
 }
 \description{
 C++ QIS-IPF implementation
+}
+\examples{
+gender=c(51,49)
+age=c(17,27,35,21)
+seed=array(c(8,7,9,6,10,8,7,9),dim=c(2,4))
+synthpop=qisi(seed, list(1,2),list(gender,age))
 }

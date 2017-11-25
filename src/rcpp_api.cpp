@@ -94,6 +94,23 @@ std::vector<int64_t> getDimension(List indices, List marginals)
   return ret;
 }
 
+void checkSeed(NumericVector seed, const std::vector<int64_t>& impliedDim)
+{
+  const Dimension& seedDim = seed.attr("dim");
+  for (size_t i = 0; i < seedDim.size(); ++i)
+  {
+    if (seedDim[i] != impliedDim[i])
+      throw std::runtime_error("mismatch between seed dimension " + std::to_string(i+1) + " and marginal");
+  }
+
+  // -ve seed values are not permitted
+  for (size_t i = 0; i < seed.size(); ++i)
+  {
+    if (seed[i] < 0)
+      throw std::runtime_error("negative value in seed");
+  }
+}
+
 }
 
 //' Generate a population in n dimensions given n marginals.
@@ -238,6 +255,9 @@ List ipf(NumericVector seed, List indices, List marginals)
   Dimension rSizes = seed.attr("dim");
   int64_t dim = rSizes.size();
 
+  // check consistency between seed and mapped marginal dims
+  Rhelpers::checkSeed(seed, Rhelpers::getDimension(indices, marginals));
+
   std::vector<NDArray<double>> m;
   m.reserve(k);
   std::vector<std::vector<int64_t>> idx;
@@ -367,7 +387,11 @@ List qis(List indices, List marginals, int skips = 0)
 //' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
 //' @param skips (optional, default 0) number of Sobol points to skip before sampling
 //' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, chi-square and p-value
-//' TODO examples
+//' @examples
+//' gender=c(51,49)
+//' age=c(17,27,35,21)
+//' seed=array(c(8,7,9,6,10,8,7,9),dim=c(2,4))
+//' synthpop=qisi(seed, list(1,2),list(gender,age))
 //' @export
 // [[Rcpp::export]]
 List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
@@ -381,6 +405,9 @@ List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
 
   Dimension rSizes = seed.attr("dim");
   const int64_t dim = rSizes.size();
+
+  // check consistency between seed and mapped marginal dims
+  Rhelpers::checkSeed(seed, Rhelpers::getDimension(indices, marginals));
 
   std::vector<NDArray<int64_t>> m;
   m.reserve(k);

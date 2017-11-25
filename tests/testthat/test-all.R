@@ -36,9 +36,22 @@ test_that("marginal has -ve value", {
   expect_error(humanleague::qis(list(1,2),list(c(10,-10),c(10,-10))))
 })
 
+test_that("seed has -ve value", {
+  expect_error(humanleague::ipf(array(rep(-1,4),dim=c(2,2)), list(1,2),list(c(10,10),c(10,10))))
+  expect_error(humanleague::qisi(array(rep(-1,4),dim=c(2,2)), list(1,2),list(c(10,10),c(10,10))))
+})
+
 test_that("invalid method", {
   expect_error(humanleague::qis(list(c(10,10),c(10,10)),"abcd"))
 })
+
+# dimension of seed and marginals inconsistent
+test_that("inconsistent dims", {
+  seed=array(rep(1,2*5*3),dim=c(2,5,3))
+  expect_error(humanleague::ipf(seed, list(1,c(2,3)),list(c(15,15),array(rep(2,15),dim=c(3,5)))))
+  expect_error(humanleague::qisi(seed, list(1,c(2,3)),list(c(15,15),array(rep(2,15),dim=c(3,5)))))
+})
+
 
 m<-c(25,25,25,25,25)
 # simple cases of various dimensions

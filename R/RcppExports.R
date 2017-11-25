@@ -63,7 +63,11 @@ qis <- function(indices, marginals, skips = 0L) {
 #' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
 #' @param skips (optional, default 0) number of Sobol points to skip before sampling
 #' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, chi-square and p-value
-#' TODO examples
+#' @examples
+#' gender=c(51,49)
+#' age=c(17,27,35,21)
+#' seed=array(c(8,7,9,6,10,8,7,9),dim=c(2,4))
+#' synthpop=qisi(seed, list(1,2),list(gender,age))
 #' @export
 qisi <- function(seed, indices, marginals, skips = 0L) {
     .Call('_humanleague_qisi', PACKAGE = 'humanleague', seed, indices, marginals, skips)

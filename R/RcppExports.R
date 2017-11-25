@@ -101,8 +101,13 @@ sobolSequence <- function(dim, n, skip = 0L) {
 #' @param stateOccupancies an arbitrary-dimension array of (integer) state occupation counts.
 #' @param categoryNames a string vector of unique column names.
 #' @return a DataFrame with columns corresponding to category values and rows corresponding to individuals.
-#' TODO examples
-#' @export
+#' @examples
+#' gender=c(51,49)
+#' age=c(17,27,35,21)
+#' states=qis(list(1,2),list(gender,age))$result
+#' table=flatten(states,c("Gender","Age"))
+#' print(nrow(table[table$Gender==1,])) # 51
+#' print(nrow(table[table$Age==2,])) # 27
 flatten <- function(stateOccupancies, categoryNames) {
     .Call('_humanleague_flatten', PACKAGE = 'humanleague', stateOccupancies, categoryNames)
 }

@@ -13,8 +13,15 @@ flatten(stateOccupancies, categoryNames)
 }
 \value{
 a DataFrame with columns corresponding to category values and rows corresponding to individuals.
-TODO examples
 }
 \description{
 This function
+}
+\examples{
+gender=c(51,49)
+age=c(17,27,35,21)
+states=qis(list(1,2),list(gender,age))$result
+table=flatten(states,c("Gender","Age"))
+print(nrow(table[table$Gender==1,])) # 51
+print(nrow(table[table$Age==2,])) # 27
 }

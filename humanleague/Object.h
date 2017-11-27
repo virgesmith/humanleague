@@ -21,8 +21,8 @@ namespace pycpp {
     PyObject* operator&() const ;
     bool operator!() const;
     
-    // Memory mgmt is now callers responsibility
-    //PyObject* release();
+    // [use with care!] Inc ref count and return pointer - use to return to python
+    PyObject* release();
     
   protected:
   
@@ -173,7 +173,7 @@ namespace pycpp {
     PyObject* operator[](const char*) const;
     
     // set (shallow copy semantics)
-    void insert(const char*, Object& obj);
+    //void insert(const char*, const Object& obj);
     
     // set (move semantics)
     void insert(const char*, Object&& obj);

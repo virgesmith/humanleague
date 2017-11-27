@@ -16,13 +16,12 @@ bool pycpp::Object::operator!() const
   return m_obj == nullptr;
 }
 
-// // Memory mgmt is now callers responsibility
-// PyObject* pycpp::Object::release()
-// {
-//   PyObject* p = m_obj;
-//   m_obj = nullptr;
-//   return p;
-// }
+// This will ensure refcount is at least 1 when returned to python
+PyObject* pycpp::Object::release()
+{
+  Py_INCREF(m_obj);
+  return m_obj;
+}
 
 pycpp::Object::Object(const pycpp::Object& obj)
 {
@@ -154,13 +153,11 @@ PyObject* pycpp::List::operator[](size_t i) const
 void pycpp::List::set(int index, pycpp::Object&& obj)
 {
   PyList_SetItem(m_obj, index, &obj);
-  Py_INCREF(&obj);
 }
 
 void pycpp::List::push_back(Object&& obj)
 {
   /*int*/PyList_Append(m_obj, &obj);
-  Py_INCREF(&obj);
 }
 
 pycpp::Dict::Dict() : pycpp::Object(PyDict_New()) { }
@@ -188,18 +185,18 @@ PyObject* pycpp::Dict::operator[](const char* k) const
   return p;
 }
 
-void pycpp::Dict::insert(const char* k, pycpp::Object& obj)
-{
-  // takes over mem mgmt
-  PyDict_SetItem(m_obj, &pycpp::String(k), &obj);
-  //Py_INCREF(&obj);
-}
+// Disabled due to mem leak, use rvalue ref version below
+// void pycpp::Dict::insert(const char* k, const pycpp::Object& obj)
+// {
+//   // takes over mem mgmt
+//   PyDict_SetItem(m_obj, &pycpp::String(k), &obj);
+//   //Py_INCREF(&obj);
+// }
 
 void pycpp::Dict::insert(const char* k, pycpp::Object&& obj)
 {
   // takes over mem mgmt
   PyDict_SetItem(m_obj, &pycpp::String(k), &obj);
-  //Py_INCREF(&obj);
 }
 
 

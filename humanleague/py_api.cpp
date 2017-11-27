@@ -129,17 +129,9 @@ extern "C" PyObject* humanleague_sobol(PyObject *self, PyObject *args)
       sequence[idx] = sobol() * scale;
     }
     
-    // no leak if return array directly
-    // pycpp::Array<double> result(sequence);
-    
-    // return &result;
+    pycpp::Array<double> result(sequence);
 
-    // Array init
-    // Array copy from NDArray
-    // Array dtor
-    pycpp::Dict retval;
-    retval.insert("result", pycpp::Array<double>(sequence));
-    return &retval;
+    return result.release();
   }
   catch(const std::exception& e)
   {
@@ -191,10 +183,11 @@ extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
       marginals.push_back(std::move(ma.toNDArray/*<double>*/()));
     }
 
-    pycpp::Dict retval;
-
     IPF<double> ipf(indices, marginals); 
-    retval.insert("result", pycpp::Array<double>(ipf.solve(seed.toNDArray())));
+    const NDArray<double>& result = ipf.solve(seed.toNDArray());
+
+    pycpp::Dict retval;
+    retval.insert("result", pycpp::Array<double>(result));
     retval.insert("conv", pycpp::Bool(ipf.conv()));
     retval.insert("pop", pycpp::Double(ipf.population()));
     retval.insert("iterations", pycpp::Int(ipf.iters()));
@@ -254,11 +247,13 @@ extern "C" PyObject* humanleague_qis(PyObject *self, PyObject *args)
       marginals.push_back(std::move(ma.toNDArray()));
     }
 
+    QIS qis(indices, marginals, skips); 
+    const NDArray<int64_t>& result = qis.solve();
+    const NDArray<double>& expect = qis.expectation();
     pycpp::Dict retval;
 
-    QIS qis(indices, marginals, skips); 
-    retval.insert("result", pycpp::Array<int64_t>(qis.solve()));
-    retval.insert("expectation", pycpp::Array<double>(qis.expectation()));
+    retval.insert("result", pycpp::Array<int64_t>(result));
+    retval.insert("expectation", pycpp::Array<double>(expect));
     retval.insert("conv", pycpp::Bool(qis.conv()));
     retval.insert("pop", pycpp::Double(qis.population()));
     retval.insert("chiSq", pycpp::Double(qis.chiSq()));

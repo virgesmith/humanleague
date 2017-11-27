@@ -60,16 +60,13 @@ namespace pycpp {
     explicit Array(size_t dim, npy_intp* sizes) 
       : Object(PyArray_SimpleNew(dim, sizes, NpyType<T>::Type)) 
     { 
-      //std::cout << "Array init\n";
+      Py_DECREF(m_obj); // this is necessary since both Object and PyArray_SimpleNew appear to increment the ref count
       PyArray_FILLWBYTE((PyArrayObject*)m_obj, 0);
     }
 
     // construct from an incoming numpy object (shallow copy)
     explicit Array(PyObject* array) : Object(array)
     {
-      //std::cout << "Array shallow copy\n";
-
-      Py_INCREF(array);
       // see https://docs.scipy.org/doc/numpy-1.13.0/reference/c-api.array.html
       if (PyArray_TYPE((PyArrayObject*)array) != NpyType<T>::Type)
         throw std::runtime_error("python array contains invalid type: " + std::to_string(PyArray_TYPE((PyArrayObject*)array)) 
@@ -118,24 +115,18 @@ namespace pycpp {
     explicit Array(const NDArray<T>& a) 
       : Array(a.dim(), convert(a.sizes()).data()) 
     {
-      //std::cout << "Array copy from NDArray\n";
       std::copy(a.rawData(), a.rawData() + a.storageSize(), rawData());
     }
 
     // shallow copy, increase ref count
     Array(const Array& a) : Object(a.m_obj)
     {
-      //std::cout << "Array copy ctor\n";
-
-      Py_INCREF(m_obj);
     }
 
     Array(Array&&) = delete;
     
     ~Array()
     {
-      //std::cout << "Array dtor\n";
-
       // Object destructor handles decref
     }
     

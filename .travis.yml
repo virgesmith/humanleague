@@ -13,18 +13,7 @@ matrix:
       dist: trusty
       language: r
       r: release
-# TODO Need to confirm if really unnecessary, or just getting away with it due to cache: packages
-#      r_packages:
-#        - stringi
-#        - digest
-#        - devtools
-#        - Rcpp
-#        - roxygen2
-#        - htmltools
-#        - rmarkdown
-#        - knitr
-#        - testthat
-#        - yaml
+        after_success: Rscript -e 'covr::codecov()'
 
     - os: linux
       dist: trusty
@@ -58,8 +47,8 @@ matrix:
 #  allow_failures:
 #    - r: devel
 
-after_success:
-  - Rscript -e 'covr::codecov()'
+#after_success:
+#  - Rscript -e 'covr::codecov()'
 
 warnings_are_errors: false
 

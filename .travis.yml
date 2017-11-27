@@ -4,6 +4,9 @@ cache: packages
 
 sudo: false
 
+r_github_packages:
+  - r-lib/covr
+
 matrix:
   include:
     - os: linux
@@ -27,7 +30,7 @@ matrix:
       dist: trusty
       language: r
       r: devel
-      
+
     - os: osx
       osx_image: xcode8
       language: r
@@ -52,8 +55,11 @@ matrix:
         - python3 setup.py install
         - python3 setup.py test
 
-  allow_failures:
-    - r: devel
+#  allow_failures:
+#    - r: devel
+
+after_success:
+  - Rscript -e 'covr::codecov()'
 
 warnings_are_errors: false
 

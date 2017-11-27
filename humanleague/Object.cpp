@@ -16,18 +16,24 @@ bool pycpp::Object::operator!() const
   return m_obj == nullptr;
 }
 
-// Memory mgmt is now callers responsibility
-PyObject* pycpp::Object::release()
-{
-  PyObject* p = m_obj;
-  m_obj = nullptr;
-  return p;
-}
+// // Memory mgmt is now callers responsibility
+// PyObject* pycpp::Object::release()
+// {
+//   PyObject* p = m_obj;
+//   m_obj = nullptr;
+//   return p;
+// }
 
 pycpp::Object::Object(const pycpp::Object& obj)
 {
-  m_obj = obj.m_obj;
   Py_INCREF(m_obj);
+  m_obj = obj.m_obj;
+}
+
+pycpp::Object::Object(pycpp::Object&& obj)
+{
+  Py_INCREF(m_obj);
+  m_obj = obj.m_obj;
 }
 
 pycpp::Object& pycpp::Object::operator=(const pycpp::Object& obj)
@@ -43,15 +49,14 @@ pycpp::Object& pycpp::Object::operator=(const pycpp::Object& obj)
 
 pycpp::Object::Object(PyObject* obj) : m_obj(obj) 
 { 
+  Py_INCREF(m_obj);
   if (m_obj == nullptr)
     throw std::runtime_error("PyObject init failure");
 }
 
 pycpp::Object::~Object() 
 { 
-  // TODO work out why this leads to a double delete
-  // NB valgrind shows no obvious leaks with this disabled
-  //Py_DECREF(m_obj);
+  Py_DECREF(m_obj);
 }
 
 pycpp::Bool::Bool(bool b) : pycpp::Object(b ? Py_True : Py_False) { }
@@ -142,19 +147,20 @@ int pycpp::List::size() const
 
 PyObject* pycpp::List::operator[](size_t i) const
 {
-  Py_INCREF(m_obj);
+  //Py_INCREF(m_obj);
   return PyList_GetItem(m_obj, i);
 }
 
 void pycpp::List::set(int index, pycpp::Object&& obj)
 {
-  // takes over mem mgmt
-  PyList_SetItem(m_obj, index, obj.release());
+  PyList_SetItem(m_obj, index, &obj);
+  Py_INCREF(&obj);
 }
 
 void pycpp::List::push_back(Object&& obj)
 {
-  /*int*/PyList_Append(m_obj, obj.release());
+  /*int*/PyList_Append(m_obj, &obj);
+  Py_INCREF(&obj);
 }
 
 pycpp::Dict::Dict() : pycpp::Object(PyDict_New()) { }
@@ -177,14 +183,27 @@ void pycpp::Dict::clear() const
 
 PyObject* pycpp::Dict::operator[](const char* k) const
 {
-  Py_INCREF(m_obj);
-  return PyDict_GetItem(m_obj, pycpp::String(k).release());
+  PyObject* p = PyDict_GetItem(m_obj, &pycpp::String(k));
+  Py_INCREF(p);
+  return p;
+}
+
+void pycpp::Dict::insert(const char* k, pycpp::Object& obj)
+{
+  // takes over mem mgmt
+  PyDict_SetItem(m_obj, &pycpp::String(k), &obj);
+  //Py_INCREF(&obj);
 }
 
 void pycpp::Dict::insert(const char* k, pycpp::Object&& obj)
 {
   // takes over mem mgmt
-  PyDict_SetItem(m_obj, pycpp::String(k).release(), obj.release());
+  PyDict_SetItem(m_obj, &pycpp::String(k), &obj);
+  //Py_INCREF(&obj);
 }
+
+
+
+
 
 

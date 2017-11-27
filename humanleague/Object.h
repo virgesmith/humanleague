@@ -22,11 +22,13 @@ namespace pycpp {
     bool operator!() const;
     
     // Memory mgmt is now callers responsibility
-    PyObject* release();
+    //PyObject* release();
     
   protected:
   
     Object(const Object& obj);
+    
+    Object(Object&& obj);
     
     Object& operator=(const Object& obj);
   
@@ -170,6 +172,9 @@ namespace pycpp {
     // return value given we don't know the actual type??
     PyObject* operator[](const char*) const;
     
+    // set (shallow copy semantics)
+    void insert(const char*, Object& obj);
+    
     // set (move semantics)
     void insert(const char*, Object&& obj);
     
@@ -179,6 +184,4 @@ namespace pycpp {
 
     int size() const;
   };
-  
-
 }

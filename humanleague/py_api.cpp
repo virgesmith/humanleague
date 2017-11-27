@@ -53,7 +53,7 @@ extern "C" PyObject* humanleague_flatten(PyObject* self, PyObject* args)
       pop += array[i];
     }
 
-    return flatten(pop, array).release();    
+    return &flatten(pop, array);    
   }
   catch(const std::exception& e)
   {
@@ -95,7 +95,7 @@ extern "C" PyObject* humanleague_prob2IntFreq(PyObject* self, PyObject* args)
     result.insert("freq", pycpp::Array<int64_t>(f));
     result.insert("var", pycpp::Double(var));
 
-    return result.release();
+    return &result;
   }
   catch(const std::exception& e)
   {
@@ -129,9 +129,17 @@ extern "C" PyObject* humanleague_sobol(PyObject *self, PyObject *args)
       sequence[idx] = sobol() * scale;
     }
     
-    pycpp::Array<double> result(sequence);
+    // no leak if return array directly
+    // pycpp::Array<double> result(sequence);
     
-    return result.release();
+    // return &result;
+
+    // Array init
+    // Array copy from NDArray
+    // Array dtor
+    pycpp::Dict retval;
+    retval.insert("result", pycpp::Array<double>(sequence));
+    return &retval;
   }
   catch(const std::exception& e)
   {
@@ -193,7 +201,7 @@ extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
     // result.insert("errors", ipf.errors());
     retval.insert("maxError", pycpp::Double(ipf.maxError()));
       
-    return retval.release();
+    return &retval;
   }
   catch(const std::exception& e)
   {
@@ -257,7 +265,7 @@ extern "C" PyObject* humanleague_qis(PyObject *self, PyObject *args)
     retval.insert("pValue", pycpp::Double(qis.pValue()));
     retval.insert("degeneracy", pycpp::Double(qis.degeneracy()));
     
-    return retval.release();
+    return &retval;
   }
   catch(const std::exception& e)
   {
@@ -321,7 +329,7 @@ extern "C" PyObject* humanleague_qisi(PyObject *self, PyObject *args)
     retval.insert("pValue", pycpp::Double(qisi.pValue()));
     retval.insert("degeneracy", pycpp::Double(qisi.degeneracy()));
     
-    return retval.release();
+    return &retval;
   }
   catch(const std::exception& e)
   {
@@ -356,7 +364,7 @@ extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
     {
       if (!PyArray_Check(list[i]))
         throw std::runtime_error("input should be a list of numpy integer arrays");
-      pycpp::Array<int64_t> a = pycpp::Array<int64_t>(list[i]);
+      pycpp::Array<int64_t> a(list[i]);
       sizes[i] = a.shape()[0];
       marginals[i] = a.toVector<uint32_t>();
     }
@@ -369,7 +377,8 @@ extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
     retval.insert("p-value", pycpp::Double(qiws.pValue().first));
     retval.insert("chiSq", pycpp::Double(qiws.chiSq()));
     retval.insert("pop", pycpp::Int(qiws.population()));
-    return retval.release();
+
+    return &retval;
   }
   catch(const std::exception& e)
   {
@@ -414,7 +423,8 @@ extern "C" PyObject* humanleague_synthPopG(PyObject *self, PyObject *args)
     retval.insert("result", flatten(gqiws.population(), gqiws.result()));
     //retval.insert("result", pycpp::Array<uint32_t>(std::move(const_cast<NDArray<2,uint32_t>&>(gqiws.result()))));
     retval.insert("pop", pycpp::Int(gqiws.population()));
-    return retval.release();
+    
+    return &retval;
   }
   catch(const std::exception& e)
   {
@@ -431,7 +441,7 @@ extern "C" PyObject* humanleague_synthPopG(PyObject *self, PyObject *args)
 extern "C" PyObject* humanleague_version(PyObject*, PyObject*)
 {
   static pycpp::Int v(MAJOR_VERSION);
-  return v.release();
+  return &v;
 }
 
 extern "C" PyObject* humanleague_unittest(PyObject*, PyObject*)
@@ -443,7 +453,7 @@ extern "C" PyObject* humanleague_unittest(PyObject*, PyObject*)
   result.insert("nFails", pycpp::Int(log.testsFailed));
   result.insert("errors", pycpp::List(log.errors));
 
-  return result.release();
+  return &result;
 }
 
 namespace {

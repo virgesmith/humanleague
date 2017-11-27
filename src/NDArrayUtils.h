@@ -12,7 +12,6 @@
 int32_t maxAbsElement(const std::vector<int32_t>& r);
 
 std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vector<uint32_t>& y);
-std::vector<double> diff(const std::vector<double>& x, const std::vector<double>& y);
 
 template<typename T, typename U>
 void diff(const NDArray<T>& x, const NDArray<U>& y, NDArray<double>& d)
@@ -146,48 +145,6 @@ std::vector<T> reduce(const NDArray<T>& input, size_t orient)
 
   return sums;
 }
-
-
-// // Reduce n-D array to 1-D sums
-// template<typename T>
-// std::vector<T> reduce(const NDArray<T>& input, size_t orient)
-// {
-//   const size_t n = input.size(orient);
-//   assert(orient < input.dim());
-
-//   std::vector<T> sums(n, T(0));
-
-//   // Loop over elements in the orient dimension
-//   for (size_t i = 0; i < n; ++i)
-//   {
-//     // sum over elements in all orther dims
-//     for (Index index(input.sizes(), { orient, i }); !index.end(); ++index)
-//     {
-//       sums[i] += input[index];
-//     }
-//   }
-
-//   return sums;
-// }
-
-// // Reduce n-D array to 1-D sums
-// template<typename T>
-// std::vector<T> reduce(const NDArray<T>& input, size_t orient)
-// {
-//   const size_t n = input.size(orient);
-//   assert(orient < input.dim());
-
-//   std::vector<T> sums(n, T(0));
-
-//   Index index(input.sizes());
-//   const int64_t& k = index[orient];
-//   for (; !index.end(); ++index)
-//   {
-//     sums[k] += input[index];
-//   }
-
-//   return sums;
-// }
 
 
 // Reduce n-D array to m-D sums (where m<n)

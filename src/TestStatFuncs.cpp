@@ -60,23 +60,22 @@ void unittest::testCholesky()
   u[0] = 1234567;
   u[1] = 8901234;
 
+  // conversion subject to rounding errors (only see this in 32bit)
+  // need to convert diff to signed before using abs
   {
     Cholesky cholesky(0.0);
-
-    CHECK(cholesky(u).first == u[0]);
-    CHECK(cholesky(u).second == u[1]);
+    CHECK(std::abs((int32_t)(cholesky(u).first - u[0])) <= 1);
+    CHECK(std::abs((int32_t)(cholesky(u).second - u[1])) <= 1);
   }
   {
     Cholesky cholesky(1.0);
-
-    CHECK(cholesky(u).first == u[0]);
-    CHECK(cholesky(u).second == u[0]);
+    CHECK(std::abs((int32_t)(cholesky(u).first - u[0])) <= 1);
+    CHECK(std::abs((int32_t)(cholesky(u).second - u[0])) <= 1);
   }
   {
     Cholesky cholesky(-1.0);
-
-    CHECK(cholesky(u).first == u[0]);
-    CHECK(cholesky(u).second == -u[0]);
+    CHECK(std::abs((int32_t)(cholesky(u).first - u[0])) <= 1);
+    CHECK(std::abs((int32_t)(cholesky(u).second + u[0])) <= 1);
   }
 
   CHECK_THROWS(Cholesky(2.0), std::exception);

@@ -13,7 +13,7 @@ matrix:
       dist: trusty
       language: r
       r: release
-        after_success: Rscript -e 'covr::codecov()'
+      after_success: Rscript -e 'covr::codecov()'
 
     - os: linux
       dist: trusty

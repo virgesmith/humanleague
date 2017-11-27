@@ -1,6 +1,7 @@
 # humanleague
 
 [![Build Status](https://travis-ci.org/virgesmith/humanleague.png?branch=master)](https://travis-ci.org/virgesmith/humanleague)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/virgesmith/humanleague?branch=master&svg=true)](https://ci.appveyor.com/project/virgesmith/humanleague)
 [![License](http://img.shields.io/badge/license-GPL%20%28%3E=%202%29-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html) 
 
 *humanleague* is a python and an R package for microsynthesising populations from marginal and (optionally) seed data. The core code is implemented in C++, and the current release is version 2.

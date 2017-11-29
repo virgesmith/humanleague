@@ -13,6 +13,11 @@ class Test(TestCase):
     print(res["errors"])
     self.assertTrue(res["nFails"] == 0)
 
+  def test_apitest(self):
+    res = hl.apitest()
+    print(res)
+    self.assertTrue(res is None)
+
   def test_sobolSequence(self):
     a = hl.sobolSequence(3, 5)
     self.assertTrue(a.size == 15)

@@ -19,6 +19,8 @@
 
 #include <iostream>
 
+
+// deprecated
 template<typename T>
 pycpp::List flatten(const size_t pop, const NDArray<T>& t)
 {
@@ -53,15 +55,22 @@ extern "C" PyObject* humanleague_flatten(PyObject* self, PyObject* args)
       pop += array[i];
     }
 
-    return &flatten(pop, array);    
+    const std::vector<std::vector<int>>& list = listify(pop, array);
+    pycpp::List outer(array.dim());
+    for (size_t i = 0; i < array.dim(); ++i)
+    {
+      outer.set(i, pycpp::List(list[i]));
+    }
+ 
+    return outer.release();
   }
   catch(const std::exception& e)
   {
-    return &pycpp::String(e.what());
+    return pycpp::String(e.what()).release();
   }
   catch(...)
   {
-    return &pycpp::String("unexpected exception");
+    return pycpp::String("unexpected exception").release();
   }
 }
 
@@ -95,15 +104,15 @@ extern "C" PyObject* humanleague_prob2IntFreq(PyObject* self, PyObject* args)
     result.insert("freq", pycpp::Array<int64_t>(f));
     result.insert("var", pycpp::Double(var));
 
-    return &result;
+    return result.release();;
   }
   catch(const std::exception& e)
   {
-    return &pycpp::String(e.what());
+    return pycpp::String(e.what()).release();
   }
   catch(...)
   {
-    return &pycpp::String("unexpected exception");
+    return pycpp::String("unexpected exception").release();
   }
 }
 
@@ -135,11 +144,11 @@ extern "C" PyObject* humanleague_sobol(PyObject *self, PyObject *args)
   }
   catch(const std::exception& e)
   {
-    return &pycpp::String(e.what());
+    return pycpp::String(e.what()).release();
   }
   catch(...)
   {
-    return &pycpp::String("unexpected exception");
+    return pycpp::String("unexpected exception").release();
   }
 }
 
@@ -194,15 +203,15 @@ extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
     // result.insert("errors", ipf.errors());
     retval.insert("maxError", pycpp::Double(ipf.maxError()));
       
-    return &retval;
+    return retval.release();
   }
   catch(const std::exception& e)
   {
-    return &pycpp::String(e.what());
+    return pycpp::String(e.what()).release();
   }
   catch(...)
   {
-    return &pycpp::String("unexpected exception");
+    return pycpp::String("unexpected exception").release();
   }
 }
 
@@ -260,15 +269,15 @@ extern "C" PyObject* humanleague_qis(PyObject *self, PyObject *args)
     retval.insert("pValue", pycpp::Double(qis.pValue()));
     retval.insert("degeneracy", pycpp::Double(qis.degeneracy()));
     
-    return &retval;
+    return retval.release();
   }
   catch(const std::exception& e)
   {
-    return &pycpp::String(e.what());
+    return pycpp::String(e.what()).release();
   }
   catch(...)
   {
-    return &pycpp::String("unexpected exception");
+    return pycpp::String("unexpected exception").release();
   }
 }
 
@@ -324,15 +333,15 @@ extern "C" PyObject* humanleague_qisi(PyObject *self, PyObject *args)
     retval.insert("pValue", pycpp::Double(qisi.pValue()));
     retval.insert("degeneracy", pycpp::Double(qisi.degeneracy()));
     
-    return &retval;
+    return retval.release();;
   }
   catch(const std::exception& e)
   {
-    return &pycpp::String(e.what());
+    return pycpp::String(e.what()).release();
   }
   catch(...)
   {
-    return &pycpp::String("unexpected exception");
+    return pycpp::String("unexpected exception").release();
   }
 }
 
@@ -373,15 +382,15 @@ extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
     retval.insert("chiSq", pycpp::Double(qiws.chiSq()));
     retval.insert("pop", pycpp::Int(qiws.population()));
 
-    return &retval;
+    return retval.release();;
   }
   catch(const std::exception& e)
   {
-    return &pycpp::String(e.what());
+    return pycpp::String(e.what()).release();
   }
   catch(...)
   {
-    return &pycpp::String("unexpected exception");
+    return pycpp::String("unexpected exception").release();
   }
 }
 
@@ -419,15 +428,15 @@ extern "C" PyObject* humanleague_synthPopG(PyObject *self, PyObject *args)
     //retval.insert("result", pycpp::Array<uint32_t>(std::move(const_cast<NDArray<2,uint32_t>&>(gqiws.result()))));
     retval.insert("pop", pycpp::Int(gqiws.population()));
     
-    return &retval;
+    return retval.release();
   }
   catch(const std::exception& e)
   {
-    return &pycpp::String(e.what());
+    return pycpp::String(e.what()).release();
   }
   catch(...)
   {
-    return &pycpp::String("unexpected exception");
+    return pycpp::String("unexpected exception").release();
   }
 }
 
@@ -435,20 +444,102 @@ extern "C" PyObject* humanleague_synthPopG(PyObject *self, PyObject *args)
 // until I find a better way...
 extern "C" PyObject* humanleague_version(PyObject*, PyObject*)
 {
-  static pycpp::Int v(MAJOR_VERSION);
-  return &v;
+  try
+  {
+    static pycpp::Int v(MAJOR_VERSION);
+    return &v; // static, so dont use release
+  }
+  catch(const std::exception& e)
+  {
+    return pycpp::String(e.what()).release();
+  }
+  catch(...)
+  {
+    return pycpp::String("unexpected exception").release();
+  }
 }
 
 extern "C" PyObject* humanleague_unittest(PyObject*, PyObject*)
 {
-  const unittest::Logger& log = unittest::run();
+  try
+  {
+    const unittest::Logger& log = unittest::run();
 
-  pycpp::Dict result;
-  result.insert("nTests", pycpp::Int(log.testsRun));
-  result.insert("nFails", pycpp::Int(log.testsFailed));
-  result.insert("errors", pycpp::List(log.errors));
+    pycpp::Dict result;
+    result.insert("nTests", pycpp::Int(log.testsRun));
+    result.insert("nFails", pycpp::Int(log.testsFailed));
+    result.insert("errors", pycpp::List(log.errors));
 
-  return &result;
+    return result.release();
+  }
+  catch(const std::exception& e)
+  {
+    return pycpp::String(e.what()).release();
+  }
+  catch(...)
+  {
+    return pycpp::String("unexpected exception").release();
+  }
+}
+
+#define APICHECK_EQ(x, y) if (!((x) == (y))) \
+  throw std::logic_error(std::string(#x "==" #y "[") + std::to_string(x) + "==" + std::to_string(y) \
+    + "] is not true (" + __FILE__ + ":" + std::to_string(__LINE__) + ")");
+
+extern "C" PyObject* humanleague_apitest(PyObject*, PyObject*)
+{
+  try
+  {
+    PyObject* p;
+
+    pycpp::Int i0(377027465); // rc=1
+    APICHECK_EQ(i0.refcount(), 1);
+    {
+      pycpp::Int i1(i0);  // rc=2
+      APICHECK_EQ(i0.refcount(), 2);
+      APICHECK_EQ(i1.refcount(), 2);
+    }
+    APICHECK_EQ(i0.refcount(), 1);
+
+    p = []() {
+      pycpp::List l(1);
+      l.set(0, pycpp::Int(12347543));
+      APICHECK_EQ(l.refcount(), 1);
+      //APICHECK_EQ(Py_REFCNT(l[0]), 3); // leak?
+      return l.release();
+    }();
+    APICHECK_EQ(Py_REFCNT(p), 1);
+    APICHECK_EQ(Py_REFCNT(PyList_GetItem(p, 0)), 1);
+
+    p = []() {
+      pycpp::Dict d;
+      d.insert("key0", pycpp::Int(12375443));
+      APICHECK_EQ(d.refcount(), 1);
+      APICHECK_EQ(Py_REFCNT(d["key0"]), 1); 
+      return d.release();
+    }();
+    APICHECK_EQ(Py_REFCNT(p), 1);
+    APICHECK_EQ(Py_REFCNT(PyDict_GetItem(p, &pycpp::String("key0"))), 1);
+
+    {
+      npy_intp s[] = { 3, 5 };
+      pycpp::Array<double> a(2, s);
+      p = &a;
+      APICHECK_EQ(a.refcount(), 1);
+    }
+    //APICHECK_EQ(Py_REFCNT(p), 0); // fails, but probably not a problem (memory could have been overwritten)
+
+
+    Py_RETURN_NONE;
+  }
+  catch(const std::exception& e)
+  {
+    return pycpp::String(e.what()).release();
+  }
+  catch(...)
+  {
+    return pycpp::String("unexpected exception").release();
+  }
 }
 
 namespace {
@@ -465,6 +556,7 @@ PyMethodDef entryPoints[] = {
   {"synthPopG", humanleague_synthPopG, METH_VARARGS, "Synthpop generalised."},
   {"version", humanleague_version, METH_NOARGS, "version info"},
   {"unittest", humanleague_unittest, METH_NOARGS, "unit testing"},
+  {"apitest", humanleague_apitest, METH_NOARGS, "api (memory) testing"},
   {nullptr, nullptr, 0, nullptr}        /* terminator */
 };
 

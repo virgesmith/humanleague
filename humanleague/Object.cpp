@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+// This DOESNT increment the refcount, use with care
 PyObject* pycpp::Object::operator&() const 
 {
   return m_obj;
@@ -23,16 +24,21 @@ PyObject* pycpp::Object::release()
   return m_obj;
 }
 
-pycpp::Object::Object(const pycpp::Object& obj)
-{
-  Py_INCREF(m_obj);
-  m_obj = obj.m_obj;
+// Return the ref count (useful for memory debugging)
+int pycpp::Object::refcount() const
+{ 
+  return Py_REFCNT(m_obj);
 }
 
-pycpp::Object::Object(pycpp::Object&& obj)
+
+pycpp::Object::Object(const pycpp::Object& obj) : m_obj(obj.m_obj)
 {
   Py_INCREF(m_obj);
-  m_obj = obj.m_obj;
+}
+
+pycpp::Object::Object(pycpp::Object&& obj) : m_obj(obj.m_obj)
+{
+  Py_INCREF(m_obj);
 }
 
 pycpp::Object& pycpp::Object::operator=(const pycpp::Object& obj)
@@ -48,7 +54,6 @@ pycpp::Object& pycpp::Object::operator=(const pycpp::Object& obj)
 
 pycpp::Object::Object(PyObject* obj) : m_obj(obj) 
 { 
-  Py_INCREF(m_obj);
   if (m_obj == nullptr)
     throw std::runtime_error("PyObject init failure");
 }
@@ -58,10 +63,14 @@ pycpp::Object::~Object()
   Py_DECREF(m_obj);
 }
 
-pycpp::Bool::Bool(bool b) : pycpp::Object(b ? Py_True : Py_False) { }
+pycpp::Bool::Bool(bool b) : pycpp::Object(b ? Py_True : Py_False) 
+{ 
+  Py_INCREF(m_obj); // now entirely sure that this is necessary
+}
 
 pycpp::Bool::Bool(PyObject* p) : pycpp::Object(p) 
 { 
+  Py_INCREF(m_obj);
   if (!PyBool_Check(m_obj))
     throw std::runtime_error("object is not a bool");
 }
@@ -82,9 +91,12 @@ pycpp::Int::Int(size_t i) : pycpp::Object(PyLong_FromSize_t(i)) { }
 
 pycpp::Int::Int(PyObject* p) : pycpp::Object(p) 
 { 
+  Py_INCREF(m_obj);
   if (!PyLong_Check(m_obj))
     throw std::runtime_error("object is not an int");
 }
+
+//pycpp::Int::Int(const pycpp::Int& o) : pycpp::Object(o) { }
 
 pycpp::Int::operator int() const 
 {
@@ -106,6 +118,7 @@ pycpp::Double::Double(double x) : pycpp::Object(PyFloat_FromDouble(x)) { }
 
 pycpp::Double::Double(PyObject* p) : pycpp::Object(p) 
 { 
+  Py_INCREF(m_obj);
   if (!PyFloat_Check(m_obj))
     throw std::runtime_error("object is not a double");
 }
@@ -122,6 +135,7 @@ pycpp::String::String(const std::string& s) : pycpp::Object(PyUnicode_FromString
 
 pycpp::String::String(PyObject* p) : pycpp::Object(p) 
 { 
+  Py_INCREF(m_obj);
   if (!PyUnicode_Check(m_obj))
     throw std::runtime_error("object is not a string");
 }
@@ -135,6 +149,7 @@ pycpp::List::List(size_t length) : pycpp::Object(PyList_New(length)) { }
 
 pycpp::List::List(PyObject* list) : pycpp::Object((PyObject*)list) 
 { 
+  Py_INCREF(m_obj);
   if (!PyList_Check(m_obj))
     throw std::runtime_error("object is not a list");
 }
@@ -146,13 +161,14 @@ int pycpp::List::size() const
 
 PyObject* pycpp::List::operator[](size_t i) const
 {
-  //Py_INCREF(m_obj);
-  return PyList_GetItem(m_obj, i);
+  PyObject* p = PyList_GetItem(m_obj, i); 
+  Py_INCREF(p); // returns a borrowed reference, need to increment
+  return p;
 }
 
 void pycpp::List::set(int index, pycpp::Object&& obj)
 {
-  PyList_SetItem(m_obj, index, &obj);
+  PyList_SetItem(m_obj, index, obj.release());
 }
 
 void pycpp::List::push_back(Object&& obj)
@@ -164,6 +180,7 @@ pycpp::Dict::Dict() : pycpp::Object(PyDict_New()) { }
 
 pycpp::Dict::Dict(PyObject* dict) : pycpp::Object((PyObject*)dict) 
 { 
+  Py_INCREF(m_obj);
   if (!PyDict_Check(m_obj))
     throw std::runtime_error("object is not a dict");
 }
@@ -180,22 +197,13 @@ void pycpp::Dict::clear() const
 
 PyObject* pycpp::Dict::operator[](const char* k) const
 {
-  PyObject* p = PyDict_GetItem(m_obj, &pycpp::String(k));
-  Py_INCREF(p);
+  PyObject* p = PyDict_GetItem(m_obj, &pycpp::String(k)); // returns a borrowed reference, unlike list, dont need to increment
   return p;
 }
 
-// Disabled due to mem leak, use rvalue ref version below
-// void pycpp::Dict::insert(const char* k, const pycpp::Object& obj)
-// {
-//   // takes over mem mgmt
-//   PyDict_SetItem(m_obj, &pycpp::String(k), &obj);
-//   //Py_INCREF(&obj);
-// }
-
 void pycpp::Dict::insert(const char* k, pycpp::Object&& obj)
 {
-  // takes over mem mgmt
+  // takes reference not ownership
   PyDict_SetItem(m_obj, &pycpp::String(k), &obj);
 }
 

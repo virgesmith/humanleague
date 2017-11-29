@@ -60,13 +60,13 @@ namespace pycpp {
     explicit Array(size_t dim, npy_intp* sizes) 
       : Object(PyArray_SimpleNew(dim, sizes, NpyType<T>::Type)) 
     { 
-      Py_DECREF(m_obj); // this is necessary since both Object and PyArray_SimpleNew appear to increment the ref count
       PyArray_FILLWBYTE((PyArrayObject*)m_obj, 0);
     }
 
     // construct from an incoming numpy object (shallow copy)
     explicit Array(PyObject* array) : Object(array)
     {
+      Py_INCREF(m_obj);
       // see https://docs.scipy.org/doc/numpy-1.13.0/reference/c-api.array.html
       if (PyArray_TYPE((PyArrayObject*)array) != NpyType<T>::Type)
         throw std::runtime_error("python array contains invalid type: " + std::to_string(PyArray_TYPE((PyArrayObject*)array)) 
@@ -118,10 +118,11 @@ namespace pycpp {
       std::copy(a.rawData(), a.rawData() + a.storageSize(), rawData());
     }
 
-    // shallow copy, increase ref count
-    Array(const Array& a) : Object(a.m_obj)
-    {
-    }
+    // // shallow copy, increase ref count
+    // Array(const Array& a) : Object(a.m_obj)
+    // {
+    //   Py_INCREF(m_obj);
+    // }
 
     Array(Array&&) = delete;
     

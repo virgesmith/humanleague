@@ -7,9 +7,17 @@
 #include <map>
 #include <cstddef>
 
-// TODO fix fwd decl
 typedef struct _object PyObject;
-//typedef struct _list PyList;
+
+// To understand the memory management, read:
+// https://docs.python.org/3/extending/extending.html#ownership-rules
+// Basically:
+// All pycpp::Objects constructed with a Py_... "constructor" function have their refcount already set
+// Copy, move and assigment requires modification of the refcount
+// Destruction always decrements the refcount
+// All functions that accept or return a PyObject* directly must explicitly increment the ref count
+// Returning values to python should be done via release() (which does a Py_INCREF to avoid the object being deleted on exit)
+// Note difference between list and dict mem management above
 
 namespace pycpp {
 
@@ -21,8 +29,11 @@ namespace pycpp {
     PyObject* operator&() const ;
     bool operator!() const;
     
-    // [use with care!] Inc ref count and return pointer - use to return to python
+    // Inc ref count and return pointer - use to safely return object to python (only)
     PyObject* release();
+
+    // Return the ref count (useful for memory debugging)
+    int refcount() const;
     
   protected:
   
@@ -63,6 +74,8 @@ namespace pycpp {
     explicit Int(size_t x);
     
     explicit Int(PyObject* p);
+
+//    Int(const Int& o);
     
     operator int() const;
     // NB python doesnt have native unsigned type

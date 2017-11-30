@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{synthPop}
 \alias{synthPop}
-\title{Generate a population in n dimensions given n marginals.}
+\title{[Legacy] Generate a population in n dimensions given n 1-d marginals.}
 \usage{
 synthPop(marginals)
 }
@@ -15,6 +15,7 @@ an object containing: the population matrix, the occupancy probability matrix, a
 \description{
 Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
 generates an n-dimensional population table where elements sum to the input marginals, and supplemental data.
+The scope of this function is rather limited (qis is more general), but it is fast.
 }
 \examples{
 synthPop(list(c(1,2,3,4), c(3,4,3)))

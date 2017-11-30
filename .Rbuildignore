@@ -2,6 +2,8 @@
 ^\.Rproj\.user$
 ^\.vscode
 ^\.travis\.yml$
+^appveyor\.yml$
+build/
 node.js/
 humanleague/
 humanleague.egg-info/

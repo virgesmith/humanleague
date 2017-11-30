@@ -25,7 +25,7 @@ int64_t pick(const T* dist, size_t len, double r)
   throw std::runtime_error("pick failed");
 }
 
-
+#ifdef USE_STATE_SAMPLING
 void recursive_pick(const NDArray<double>& p, const std::vector<uint32_t>& seq, Index& index, size_t dim)
 {
   static const double scale = 0.5 / (1u<<31);
@@ -46,8 +46,8 @@ void recursive_pick(const NDArray<double>& p, const std::vector<uint32_t>& seq, 
   }
 }
 
+#endif
 //#ifdef USE_STATE_SAMPLING
-//#endif
 
 void recursive_sample(std::vector<std::pair<int64_t, uint32_t>>& dims, const NDArray<int64_t>& marginal,
                       MappedIndex& index, std::map<int64_t, int64_t> slice_map)
@@ -342,6 +342,7 @@ void QIS::computeStateValues()
   }
 }
 
+#ifdef USE_STATE_SAMPLING
 std::vector<std::pair<int64_t, int64_t>> getFixed(const Index& position, const std::vector<int64_t>& dim_indices)
 {
   std::vector<std::pair<int64_t, int64_t>> fixed;
@@ -354,7 +355,6 @@ std::vector<std::pair<int64_t, int64_t>> getFixed(const Index& position, const s
   return fixed;
 }
 
-#ifdef USE_STATE_SAMPLING
 void QIS::updateStateValues(const Index& position, const std::vector<MappedIndex>& mappings)
 {
   // need to know each marginal before or after value - multiplier is after/(after+1) = (before-1)/before

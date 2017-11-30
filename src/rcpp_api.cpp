@@ -113,10 +113,11 @@ void checkSeed(NumericVector seed, const std::vector<int64_t>& impliedDim)
 
 }
 
-//' Generate a population in n dimensions given n marginals.
+//' [Legacy] Generate a population in n dimensions given n 1-d marginals.
 //'
 //' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
 //' generates an n-dimensional population table where elements sum to the input marginals, and supplemental data.
+//' The scope of this function is rather limited (qis is more general), but it is fast.
 //' @param marginals a List of n integer vectors containing marginal data (2 <= n <= 12). The sum of elements in each vector must be identical
 //' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
 //' @examples
@@ -169,10 +170,11 @@ List synthPop(List marginals)
   return result;
 }
 
-//' Generate a population in n dimensions given n marginals.
+//' [Legacy] Generate a population in 2 dimensions given 2 1-d marginals and a further constraint.
 //'
 //' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
 //' generates an n-dimensional population table where elements sum to the input marginals, and supplemental data.
+//' The scope of this function is rather limited (qisi is more general).
 //' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
 //' @param exoProbsIn a 2d array of exogenous state probabilities
 //' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)

@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{synthPopG}
 \alias{synthPopG}
-\title{Generate a population in n dimensions given n marginals.}
+\title{[Legacy] Generate a population in 2 dimensions given 2 1-d marginals and a further constraint.}
 \usage{
 synthPopG(marginals, exoProbsIn)
 }
@@ -17,6 +17,7 @@ an object containing: the population matrix, the occupancy probability matrix, a
 \description{
 Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
 generates an n-dimensional population table where elements sum to the input marginals, and supplemental data.
+The scope of this function is rather limited (qisi is more general).
 }
 \examples{
 synthPopG(list(c(1,2,3,4), c(3,4,3)), array(rep(1,12), dim=c(4,3)))

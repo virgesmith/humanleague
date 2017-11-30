@@ -82,27 +82,27 @@ test_that("simple 5D qis", {
 })
 
 
-m = m * 125
-test_that("simple 8D qiws", {
-  res<-humanleague::qis(list(1,2,3,4,5,6,7,8),list(m,m,m,m,m,m,m,m))
-  expect_equal(rowSums(res$result), m)
-  expect_equal(res$conv, TRUE)
-  colnames = c("A","B","C","D","E","F","G","H")
-  table = flatten(res$result, colnames)
-  expect_true(all.equal(names(table), colnames))
-  expect_equal(nrow(table), 125^3)
-  expect_equal(ncol(table), 8)
-  expect_gt(res$pValue, 0.99)
-})
-
-
-m = c(2^15,2^15)
-test_that("simple 12D qiws", {
-  res<-humanleague::qis(list(1,2,3,4,5,6,7,8,9,10,11,12),list(m,m,m,m,m,m,m,m,m,m,m,m))
-  expect_equal(rowSums(res$result), m)
-  expect_equal(res$conv, TRUE)
-  expect_gt(res$pValue, 0.03)
-})
+# m = m * 125
+# test_that("simple 8D qiws", {
+#   res<-humanleague::qis(list(1,2,3,4,5,6,7,8),list(m,m,m,m,m,m,m,m))
+#   expect_equal(rowSums(res$result), m)
+#   expect_equal(res$conv, TRUE)
+#   colnames = c("A","B","C","D","E","F","G","H")
+#   table = flatten(res$result, colnames)
+#   expect_true(all.equal(names(table), colnames))
+#   expect_equal(nrow(table), 125^3)
+#   expect_equal(ncol(table), 8)
+#   expect_gt(res$pValue, 0.99)
+# })
+#
+#
+# m = c(2^15,2^15)
+# test_that("simple 12D qiws", {
+#   res<-humanleague::qis(list(1,2,3,4,5,6,7,8,9,10,11,12),list(m,m,m,m,m,m,m,m,m,m,m,m))
+#   expect_equal(rowSums(res$result), m)
+#   expect_equal(res$conv, TRUE)
+#   expect_gt(res$pValue, 0.03)
+# })
 
 m = array(c(2^14,2^14,2^14,2^14),c(2,2))
 test_that("Complex 8 x 2D -> 12D qiws", {

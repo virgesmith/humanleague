@@ -3,6 +3,8 @@
 #include "Index.h"
 #include "StatFuncs.h"
 
+// uncomment to sample from a (dynamic) state array rather than directly from marginals (can be slower for high dimensionality)
+//#define USE_STATE_SAMPLING
 
 namespace {
 
@@ -22,6 +24,7 @@ int64_t pick(const T* dist, size_t len, double r)
   }
   throw std::runtime_error("pick failed");
 }
+
 
 void recursive_pick(const NDArray<double>& p, const std::vector<uint32_t>& seq, Index& index, size_t dim)
 {
@@ -43,6 +46,8 @@ void recursive_pick(const NDArray<double>& p, const std::vector<uint32_t>& seq, 
   }
 }
 
+//#ifdef USE_STATE_SAMPLING
+//#endif
 
 void recursive_sample(std::vector<std::pair<int64_t, uint32_t>>& dims, const NDArray<int64_t>& marginal,
                       MappedIndex& index, std::map<int64_t, int64_t> slice_map)
@@ -159,8 +164,8 @@ QIS::QIS(const index_list_t& indices, marginal_list_t& marginals, int64_t skips)
   // compute initial state probabilities and keep a copy
   computeStateValues();
   NDArray<double>::copy(m_stateValues, m_expectedStateOccupancy);
-  // scale up to get expected occupancy
-  double scale = m_population / sum(m_stateValues);
+  // scale to get expected occupancy
+  double scale = double(m_population) / sum(m_stateValues);
   for (Index index(m_expectedStateOccupancy.sizes()); !index.end(); ++index)
     m_expectedStateOccupancy[index] *= scale;
 #ifdef VERBOSE
@@ -173,12 +178,16 @@ QIS::QIS(const index_list_t& indices, marginal_list_t& marginals, int64_t skips)
 
 const NDArray<int64_t>& QIS::solve(bool reset)
 {
-  // slow, but simpler - samples from expected values
-  //return solve_p(reset);
+  // sample from (updated) expected values, can be slow for hi
+#ifdef USE_STATE_SAMPLING
+  return solve_p(reset);
+#else
   // fast, but complicated - slices and dices each marginal
   return solve_m(reset);
+#endif
 }
 
+#ifdef USE_STATE_SAMPLING
 const NDArray<int64_t>& QIS::solve_p(bool reset)
 {
   if (reset)
@@ -205,6 +214,9 @@ const NDArray<int64_t>& QIS::solve_p(bool reset)
 
     recursive_pick(m_stateValues, seq, main_index, m_dim-1);
 
+#ifdef VERBOSE
+    print(main_index.operator const std::vector<int64_t> &());
+#endif
     ++m_array[main_index];
 
     for (size_t m = 0; m < m_marginals.size(); ++m)
@@ -212,12 +224,15 @@ const NDArray<int64_t>& QIS::solve_p(bool reset)
       --m_marginals[m][mapped_indices[m]];
       if (m_marginals[m][mapped_indices[m]] < 0)
         m_conv = false;
-    }
 #ifdef VERBOSE
+      print(m_marginals[m].rawData(), m_marginals[m].storageSize());
+#endif
+    }
+    updateStateValues(main_index, mapped_indices);
+#ifdef VERBOSE
+    std::cout << "m_stateValues:\n";
     print(m_stateValues.rawData(), m_stateValues.storageSize(), m_stateValues.sizes()[0]);
 #endif
-    if (m_stateValues[main_index] < 1.0)
-      updateStateValues(main_index, mapped_indices);
   }
   m_chiSq = ::chiSq(m_array, m_expectedStateOccupancy);
 
@@ -227,6 +242,7 @@ const NDArray<int64_t>& QIS::solve_p(bool reset)
 
   return m_array;
 }
+#endif
 
 // control state of Sobol via arg?
 // better solution? construct set of 1-d marginals and sample from these
@@ -326,16 +342,38 @@ void QIS::computeStateValues()
   }
 }
 
+std::vector<std::pair<int64_t, int64_t>> getFixed(const Index& position, const std::vector<int64_t>& dim_indices)
+{
+  std::vector<std::pair<int64_t, int64_t>> fixed;
+  fixed.reserve(dim_indices.size());
 
+  for (size_t i = 0; i < dim_indices.size(); ++i)
+  {
+    fixed.push_back({dim_indices[i], position[dim_indices[i]]});
+  }
+  return fixed;
+}
+
+#ifdef USE_STATE_SAMPLING
 void QIS::updateStateValues(const Index& position, const std::vector<MappedIndex>& mappings)
 {
-  double update = 1.0;
-  for (size_t k = 0; k < m_marginals.size(); ++k)
+  // need to know each marginal before or after value - multiplier is after/(after+1) = (before-1)/before
+  // loop over marginals
+  for (size_t m = 0; m < m_marginals.size(); ++m)
   {
-    update *= m_marginals[k][mappings[k]]; 
+    //adjustment (assumes marginal has been decremented)
+    double scaling = (double)m_marginals[m][mappings[m]] / (1 + m_marginals[m][mappings[m]]);
+#ifdef VERBOSE
+    std::cout << "marginal " << m << " scaling: " << m_marginals[m][mappings[m]] << "/" << (1 + m_marginals[m][mappings[m]]) << std::endl;
+#endif
+    // now apply this adjustment to all dims in state array not in marginal...
+    for (FixedIndex index(m_array.sizes(), getFixed(position, m_indices[m])); !index.end(); ++index)
+    {
+      m_stateValues[index.operator const Index &()] *= scaling;
+    }
   }
-  m_stateValues[position] = update;
 }
+#endif
 
 double QIS::chiSq() const
 {

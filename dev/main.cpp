@@ -392,19 +392,50 @@ int main()
 
     //   print(qis.expectation().rawData(), qis.expectation().storageSize(), 4);
     // }
+    // {
+    //   std::vector<NDArray<int64_t>> m;
+    //   int64_t m0raw[] = {1,4,3,2};
+    //   m.emplace_back(std::vector<int64_t>{2,2}, m0raw);
+    //   int64_t m1raw[] = {1,3,4,2};
+    //   m.emplace_back(std::vector<int64_t>{2,2}, m1raw);
+    //   std::vector<std::vector<int64_t>> idx{{0,1},{1,2}};
+    //   QIS qis(idx, m);
+
+    //   qis.solve();
+
+    //   //print(qis.expectation().rawData(), qis.expectation().storageSize(), 4);
+    // }
     {
+      const int64_t n = 16;
       std::vector<NDArray<int64_t>> m;
-      int64_t m0raw[] = {1,4,3,2};
-      m.emplace_back(std::vector<int64_t>{2,2}, m0raw);
-      int64_t m1raw[] = {1,3,4,2};
-      m.emplace_back(std::vector<int64_t>{2,2}, m1raw);
+      m.emplace_back(std::vector<int64_t>{4,4});
+      m.emplace_back(std::vector<int64_t>{4,4});
+      m[0].assign(n);
+      m[1].assign(n);
       std::vector<std::vector<int64_t>> idx{{0,1},{1,2}};
       QIS qis(idx, m);
 
       qis.solve();
+      std::cout << qis.conv() << std::endl;
 
       //print(qis.expectation().rawData(), qis.expectation().storageSize(), 4);
     }
+    // {
+    //   const int64_t n = 16;
+    //   std::vector<NDArray<int64_t>> m;
+    //   m.emplace_back(std::vector<int64_t>{4});
+    //   m.emplace_back(std::vector<int64_t>{4});
+    //   m.emplace_back(std::vector<int64_t>{4});
+    //   m[0].assign(n);
+    //   m[1].assign(n);
+    //   m[2].assign(n);
+    //   std::vector<std::vector<int64_t>> idx{{0}, {1}, {2}};
+    //   QIS qis(idx, m);
+
+    //   qis.solve();
+    //   std::cout << qis.conv() << std::endl;
+    //   //print(qis.expectation().rawData(), qis.expectation().storageSize(), 4);
+    // }
 
   }
   catch(const std::exception& e)

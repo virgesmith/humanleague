@@ -14,10 +14,8 @@ public:
 
   explicit Index(const std::vector<int64_t>& sizes);
 
-  // Create an index with a predefined position (all dims unfixed)
-  Index(const std::vector<int64_t>& sizes, const std::vector<int64_t>& values);
-
-  Index(const Index& rhs);
+  // Disable copy (purely because its not used, could re-enable if necessary)
+  Index(const Index& rhs) = delete;
 
   virtual ~Index() {}
 

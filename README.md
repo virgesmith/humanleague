@@ -8,7 +8,7 @@
 *humanleague* is a python and an R package for microsynthesising populations from marginal and (optionally) seed data. The core code is implemented in C++, and the current release is version 2.
 
 The package contains algorithms that use a number of different microsynthesis techniques:
-- Iterative Proportional Fitting (IPF)
+- [Iterative Proportional Fitting (IPF)](https://en.wikipedia.org/wiki/Iterative_proportional_fitting)
 - [Quasirandom Integer Sampling (QIS)](http://jasss.soc.surrey.ac.uk/20/4/14.html) (no seed population)
 - Quasirandom Integer Sampling of IPF (QISI): A combination of the two techniques whereby IPF solutions are used to sample an integer population.
 
@@ -39,8 +39,6 @@ Or, for the previous version
 ```
 > devtools::install_github("virgesmith/humanleague@1.0.1")
 ```
-Version 1.0.1 reflects the work described in the [Quasirandom Integer Sampling (QIS)](http://jasss.soc.surrey.ac.uk/20/4/14.html) paper.
-
 ## python installation
 
 Requires Python 3, with numpy installed
@@ -57,3 +55,15 @@ user@host:~/dev/humanleague/python$ ./setup.py install
 ```
 The latter command may require admin rights. On linux, `sudo` is unnecessary if you have group (e.g. staff) write access to /usr/local/lib.
 
+### Examples
+
+Consult the package documentation, e.g.
+```
+> library(humanleague)
+> ?humanleague
+```
+in R, or for python:
+```
+>>> import humanleague as hl
+>>> help(hl)
+```

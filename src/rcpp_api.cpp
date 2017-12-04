@@ -240,9 +240,19 @@ List synthPopG(List marginals, NumericMatrix exoProbsIn)
 //' @param seed an n-dimensional array of seed values
 //' @param indices a List of 1-d arrays specifying the dimension indices of each marginal as they apply to the seed values
 //' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
-//' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, and error values
+//' @return an object containing:
+//' \itemize{
+//'   \item{a flag indicating if the solution converged}
+//'   \item{the population matrix}
+//'   \item{the total population}
+//'   \item{the number of iterations required}
+//'   \item{the maximum error between the generated population and the marginals}
+//' }
 //' @examples
-//' ipf(array(rep(1,12), dim=c(4,3)), list(1,2), list(c(1,2,3,4), c(3,4,3)))
+//' ageByGender = array(c(1,2,5,3,4,3,4,5,1,2), dim=c(5,2))
+//' ageByEthnicity = array(c(4,6,5,6,4,5), dim=c(3,2))
+//' seed = array(rep(1,30), dim=c(5,2,3))
+//' result = ipf(seed, list(c(1,2), c(3,2)), list(ageByGender, ageByEthnicity))
 //' @export
 // [[Rcpp::export]]
 List ipf(NumericVector seed, List indices, List marginals)
@@ -314,8 +324,18 @@ List ipf(NumericVector seed, List indices, List marginals)
 //' @param indices a List of 1-d arrays specifying the dimension indices of each marginal
 //' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
 //' @param skips (optional, default 0) number of Sobol points to skip before sampling
-//' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, chi-square and p-value
-//' TODO examples
+//' @return an object containing:
+//' \itemize{
+//'   \item{a flag indicating if the solution converged}
+//'   \item{the population matrix}
+//'   \item{the exepected state occupancy matrix}
+//'   \item{the total population}
+//'   \item{chi-square and p-value}
+//' }
+//' @examples
+//' ageByGender = array(c(1,2,5,3,4,3,4,5,1,2), dim=c(5,2))
+//' ageByEthnicity = array(c(4,6,5,6,4,5), dim=c(3,2))
+//' result = qis(list(c(1,2), c(3,2)), list(ageByGender, ageByEthnicity))
 //' @export
 // [[Rcpp::export]]
 List qis(List indices, List marginals, int skips = 0)
@@ -388,12 +408,19 @@ List qis(List indices, List marginals, int skips = 0)
 //' @param indices a List of 1-d arrays specifying the dimension indices of each marginal
 //' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
 //' @param skips (optional, default 0) number of Sobol points to skip before sampling
-//' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, chi-square and p-value
+//' @return an object containing:
+//' \itemize{
+//'   \item{a flag indicating if the solution converged}
+//'   \item{the population matrix}
+//'   \item{the exepected state occupancy matrix}
+//'   \item{the total population}
+//'   \item{chi-square and p-value}
+//' }
 //' @examples
-//' gender=c(51,49)
-//' age=c(17,27,35,21)
-//' seed=array(c(8,7,9,6,10,8,7,9),dim=c(2,4))
-//' synthpop=qisi(seed, list(1,2),list(gender,age))
+//' ageByGender = array(c(1,2,5,3,4,3,4,5,1,2), dim=c(5,2))
+//' ageByEthnicity = array(c(4,6,5,6,4,5), dim=c(3,2))
+//' seed = array(rep(1,30), dim=c(5,2,3))
+//' result = qisi(seed, list(c(1,2), c(3,2)), list(ageByGender, ageByEthnicity))
 //' @export
 // [[Rcpp::export]]
 List qisi(NumericVector seed, List indices, List marginals, int skips = 0)

@@ -14,11 +14,21 @@ ipf(seed, indices, marginals)
 \item{marginals}{a List of arrays containing marginal data. The sum of elements in each array must be identical}
 }
 \value{
-an object containing: the population matrix, the occupancy probability matrix, a convergence flag, and error values
+an object containing:
+\itemize{
+  \item{a flag indicating if the solution converged}
+  \item{the population matrix}
+  \item{the total population}
+  \item{the number of iterations required}
+  \item{the maximum error between the generated population and the marginals}
+}
 }
 \description{
 C++ multidimensional IPF implementation
 }
 \examples{
-ipf(array(rep(1,12), dim=c(4,3)), list(1,2), list(c(1,2,3,4), c(3,4,3)))
+ageByGender = array(c(1,2,5,3,4,3,4,5,1,2), dim=c(5,2))
+ageByEthnicity = array(c(4,6,5,6,4,5), dim=c(3,2))
+seed = array(rep(1,30), dim=c(5,2,3))
+result = ipf(seed, list(c(1,2), c(3,2)), list(ageByGender, ageByEthnicity))
 }

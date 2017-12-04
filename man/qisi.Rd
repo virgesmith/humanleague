@@ -16,14 +16,21 @@ qisi(seed, indices, marginals, skips = 0L)
 \item{skips}{(optional, default 0) number of Sobol points to skip before sampling}
 }
 \value{
-an object containing: the population matrix, the occupancy probability matrix, a convergence flag, chi-square and p-value
+an object containing:
+\itemize{
+  \item{a flag indicating if the solution converged}
+  \item{the population matrix}
+  \item{the exepected state occupancy matrix}
+  \item{the total population}
+  \item{chi-square and p-value}
+}
 }
 \description{
 C++ QIS-IPF implementation
 }
 \examples{
-gender=c(51,49)
-age=c(17,27,35,21)
-seed=array(c(8,7,9,6,10,8,7,9),dim=c(2,4))
-synthpop=qisi(seed, list(1,2),list(gender,age))
+ageByGender = array(c(1,2,5,3,4,3,4,5,1,2), dim=c(5,2))
+ageByEthnicity = array(c(4,6,5,6,4,5), dim=c(3,2))
+seed = array(rep(1,30), dim=c(5,2,3))
+result = qisi(seed, list(c(1,2), c(3,2)), list(ageByGender, ageByEthnicity))
 }

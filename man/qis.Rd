@@ -14,9 +14,20 @@ qis(indices, marginals, skips = 0L)
 \item{skips}{(optional, default 0) number of Sobol points to skip before sampling}
 }
 \value{
-an object containing: the population matrix, the occupancy probability matrix, a convergence flag, chi-square and p-value
-TODO examples
+an object containing:
+\itemize{
+  \item{a flag indicating if the solution converged}
+  \item{the population matrix}
+  \item{the exepected state occupancy matrix}
+  \item{the total population}
+  \item{chi-square and p-value}
+}
 }
 \description{
 C++ multidimensional Quasirandom Integer Sampling implementation
+}
+\examples{
+ageByGender = array(c(1,2,5,3,4,3,4,5,1,2), dim=c(5,2))
+ageByEthnicity = array(c(4,6,5,6,4,5), dim=c(3,2))
+result = qis(list(c(1,2), c(3,2)), list(ageByGender, ageByEthnicity))
 }

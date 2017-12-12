@@ -8,6 +8,7 @@ node.js/
 humanleague/
 humanleague.egg-info/
 dev/
+doc/
 deprecated/
 requirements.txt
 setup.py

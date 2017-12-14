@@ -4,10 +4,11 @@ Title: Synthetic Population Generator
 Version: 2.0.2
 Description: Generates high-entropy integer synthetic populations from marginal and (optionally) seed data using quasirandom sampling, 
   in arbitrary dimensionality (Smith, Lovelace and Birkin (2017) <doi:10.18564/jasss.3550>). 
-  The package also provides an implementation of the iterative Iterative Proportional Fitting (IPF) algorithm (Zaloznik (2011) <doi:10.13140/2.1.2480.9923>).
+  The package also provides an implementation of the Iterative Proportional Fitting (IPF) algorithm (Zaloznik (2011) <doi:10.13140/2.1.2480.9923>).
 Authors@R: c(
   person("Andrew", "Smith", email="a.p.smith@leeds.ac.uk", role=c("aut", "cre")),
-  person("Steven", "Johnson", role=c("ctb","cph"), comment="Sobol sequence generator implementation"),
+  person("Steven", "Johnson", role=c("ctb"), comment="Sobol sequence generator implementation"),
+  person("Massachusetts Institute of Technology", role=c("cph"), comment="Sobol sequence generator implementation"),
   person("John", "Burkhardt", role=c("ctb","cph"), comment="C++ implementation of incomplete gamma function"),
   person("G", "Bhattacharjee", role=c("ctb"), comment="Original FORTRAN implementation of incomplete gamma function"))
 License: MIT + file LICENCE

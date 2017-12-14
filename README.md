@@ -7,7 +7,6 @@
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/95961787.svg)](https://zenodo.org/badge/latestdoi/95961787)
 
-
 *humanleague* is a python and an R package for microsynthesising populations from marginal and (optionally) seed data. The core code is implemented in C++, and the current release is version 2.
 
 The package contains algorithms that use a number of different microsynthesis techniques:
@@ -35,10 +34,15 @@ The package also contains the following utility functions:
 Version 1.0.1 reflects the work described in the [Quasirandom Integer Sampling (QIS)](http://jasss.soc.surrey.ac.uk/20/4/14.html) paper.
 
 ## R installation
+Official release:
+```
+> install.packages("humanleague")
+```
+For development version
 ```
 > devtools::install_github("virgesmith/humanleague")
 ```
-Or, for the previous version
+Or, for the legacy version
 ```
 > devtools::install_github("virgesmith/humanleague@1.0.1")
 ```

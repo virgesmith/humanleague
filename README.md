@@ -1,6 +1,7 @@
 # humanleague
 
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/humanleague)](http://cran.r-project.org/web/packages/humanleague)
+[![CRAN Downloads](http://cranlogs.r-pkg.org/badges/grand-total/humanleague?color=black)](http://cran.r-project.org/package=humanleague)
 [![Travis Build Status](https://travis-ci.org/virgesmith/humanleague.png?branch=master)](https://travis-ci.org/virgesmith/humanleague)
 [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/x9oypgryt21ndc3p?svg=true)](https://ci.appveyor.com/project/virgesmith/humanleague)
 [![codecov](https://codecov.io/gh/virgesmith/humanleague/branch/master/graph/badge.svg)](https://codecov.io/gh/virgesmith/humanleague)

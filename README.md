@@ -7,7 +7,7 @@
 [![codecov](https://codecov.io/gh/virgesmith/humanleague/branch/master/graph/badge.svg)](https://codecov.io/gh/virgesmith/humanleague)
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1116318.svg)](https://doi.org/10.5281/zenodo.1116318)
-
+[![status](http://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4/status.svg)](http://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4)
 
 *humanleague* is a python and an R package for microsynthesising populations from marginal and (optionally) seed data. The core code is implemented in C++, and the current release is version 2.
 

@@ -508,9 +508,9 @@ List prob2IntFreq(NumericVector pIn, int pop)
   double var;
   const std::vector<double>& p = as<std::vector<double>>(pIn);
 
-  if (pop < 1)
+  if (pop < 0)
   {
-    throw std::runtime_error("population must be strictly positive");
+    throw std::runtime_error("population cannot be negative");
   }
 
   if (fabs(std::accumulate(p.begin(), p.end(), -1.0)) > 1000*std::numeric_limits<double>::epsilon())

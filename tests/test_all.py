@@ -55,8 +55,13 @@ class Test(TestCase):
     self.assertTrue(r == "probabilities do not sum to unity")
 
     # pop not valid
+    r = hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), -1)
+    self.assertTrue(r == "population cannot be negative")
+
+    # zero pop
     r = hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), 0)
-    self.assertTrue(r == "population must be strictly positive")
+    self.assertTrue(r["var"] == 0.0)
+    self.assertTrue(np.array_equal(r["freq"], np.array([0, 0, 0, 0])))
 
     # exact
     r = hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), 10)

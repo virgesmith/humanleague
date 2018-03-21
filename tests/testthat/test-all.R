@@ -615,6 +615,13 @@ test_that("probabilities must sum to zero", {
   expect_error(humanleague::prob2IntFreq(c(0.5,0.4999), 100))
 })
 
+test_that("population zero returns a zero array (and zero var)", {
+  res = humanleague::prob2IntFreq(c(0.5,0.4,0.1), 0)
+  expect_equal(res$var, 0.0)
+  expect_equal(length(res$freq), 3)
+  expect_equal(unique(res$freq), 0)
+})
+
 test_that("simple1", {
   res<-humanleague::prob2IntFreq(c(0.1,0.2,0.3,0.4), 10)
   expect_equal(res$freq, c(1,2,3,4))

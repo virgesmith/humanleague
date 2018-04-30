@@ -50,7 +50,7 @@ Or, for the legacy version
 ```
 ## python installation
 
-Requires Python 3, with numpy installed
+Requires Python 3, with numpy installed (also pytest and distutils-pytest if you want to run the regression tests)
 ```
 pip install git+https://github.com/virgesmith/humanleague.git@master
 ```

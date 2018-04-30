@@ -250,9 +250,9 @@ List synthPopG(List marginals, NumericMatrix exoProbsIn)
 //' }
 //' @examples
 //' ageByGender = array(c(1,2,5,3,4,3,4,5,1,2), dim=c(5,2))
-//' ageByEthnicity = array(c(4,6,5,6,4,5), dim=c(3,2))
+//' ethnicityByGender = array(c(4,6,5,6,4,5), dim=c(3,2))
 //' seed = array(rep(1,30), dim=c(5,2,3))
-//' result = ipf(seed, list(c(1,2), c(3,2)), list(ageByGender, ageByEthnicity))
+//' result = ipf(seed, list(c(1,2), c(3,2)), list(ageByGender, ethnicityByGender))
 //' @export
 // [[Rcpp::export]]
 List ipf(NumericVector seed, List indices, List marginals)
@@ -334,8 +334,8 @@ List ipf(NumericVector seed, List indices, List marginals)
 //' }
 //' @examples
 //' ageByGender = array(c(1,2,5,3,4,3,4,5,1,2), dim=c(5,2))
-//' ageByEthnicity = array(c(4,6,5,6,4,5), dim=c(3,2))
-//' result = qis(list(c(1,2), c(3,2)), list(ageByGender, ageByEthnicity))
+//' ethnicityByGender = array(c(4,6,5,6,4,5), dim=c(3,2))
+//' result = qis(list(c(1,2), c(3,2)), list(ageByGender, ethnicityByGender))
 //' @export
 // [[Rcpp::export]]
 List qis(List indices, List marginals, int skips = 0)
@@ -418,9 +418,9 @@ List qis(List indices, List marginals, int skips = 0)
 //' }
 //' @examples
 //' ageByGender = array(c(1,2,5,3,4,3,4,5,1,2), dim=c(5,2))
-//' ageByEthnicity = array(c(4,6,5,6,4,5), dim=c(3,2))
+//' ethnicityByGender = array(c(4,6,5,6,4,5), dim=c(3,2))
 //' seed = array(rep(1,30), dim=c(5,2,3))
-//' result = qisi(seed, list(c(1,2), c(3,2)), list(ageByGender, ageByEthnicity))
+//' result = qisi(seed, list(c(1,2), c(3,2)), list(ageByGender, ethnicityByGender))
 //' @export
 // [[Rcpp::export]]
 List qisi(NumericVector seed, List indices, List marginals, int skips = 0)

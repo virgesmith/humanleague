@@ -12,6 +12,11 @@ matrix:
     - os: linux
       dist: trusty
       language: r
+      r: oldrel
+
+    - os: linux
+      dist: trusty
+      language: r
       r: release
       after_success: Rscript -e 'covr::codecov()'
 
@@ -19,11 +24,6 @@ matrix:
       dist: trusty
       language: r
       r: devel
-
-    - os: osx
-      osx_image: xcode8
-      language: r
-      r: release
 
     - os: linux
       dist: trusty
@@ -33,8 +33,29 @@ matrix:
         - python3 setup.py install
         - python3 setup.py test
 
+    - os: linux
+      dist: trusty
+      language: python
+      python: 3.6
+      script:
+        - python3 setup.py install
+        - python3 setup.py test
+
+    - os: linux
+      dist: trusty
+      language: python
+      python: 3.7-dev
+      script:
+        - python3 setup.py install
+        - python3 setup.py test
+
     - os: osx
-      osx_image: xcode8
+      osx_image: xcode8.3
+      language: r
+      r: release
+
+    - os: osx
+      osx_image: xcode8.3
       language: generic
       before_install:
         - brew update

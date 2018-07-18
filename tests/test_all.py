@@ -3,9 +3,9 @@
 import humanleague as hl
 import numpy as np
 
-from unittest import TestCase
+import unittest
 
-class Test(TestCase):
+class Test(unittest.TestCase):
 
   def test_unittest(self):
     res = hl.unittest()
@@ -317,3 +317,7 @@ class Test(TestCase):
     self.assertTrue(np.allclose(np.sum(p["result"], (1, 2, 3)), m0))
     self.assertTrue(np.allclose(np.sum(p["result"], (2, 3, 0)), m1))
     self.assertTrue(np.allclose(np.sum(p["result"], (3, 0, 1)), m2))
+    self.assertTrue(False)
+
+if __name__ == "__main__":
+  unittest.main()

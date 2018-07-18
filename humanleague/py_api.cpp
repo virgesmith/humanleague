@@ -446,8 +446,8 @@ extern "C" PyObject* humanleague_version(PyObject*, PyObject*)
 {
   try
   {
-    static pycpp::Int v(MAJOR_VERSION);
-    return &v; // static, so dont use release
+    std::string v = std::to_string(MAJOR_VERSION) + "." + std::to_string(MINOR_VERSION) + "." + std::to_string(PATCH_VERSION);
+    return pycpp::String(v.c_str()).release();
   }
   catch(const std::exception& e)
   {

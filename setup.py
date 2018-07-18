@@ -1,22 +1,32 @@
 #!/usr/bin/env python3
 
-import os
-import numpy
-from distutils.core import Extension, setup
-import distutils_pytest
+from setuptools import Extension, setup
+from setuptools.command.build_ext import build_ext
+
+def readme():
+  with open('README.md') as f:
+    return f.read()
+
+# Workaround for setup dependency on numpy
+# delays getting the numpy include dir until numpy has been installed
+class BuildExtNumpyWorkaround(build_ext):
+  def run(self):
+    import numpy
+    # Add numpy headers to include_dirs
+    self.include_dirs.append(numpy.get_include())
+    # Call original build_ext command
+    build_ext.run(self)
 
 # seems that this will clean build every time, might make more sense to just have a lightweight wrapper & precompiled lib?
 cppmodule = Extension(
   'humanleague',
   define_macros = [('MAJOR_VERSION', '2'),
                    ('MINOR_VERSION', '0'),
-                   ('PATCH_VERSION', '0'),
+                   ('PATCH_VERSION', '3'),
                    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
                   ],
   extra_compile_args=['-Wall', '-std=c++11'],
-  include_dirs = ['.', '/usr/include', '/usr/local/include', numpy.get_include()],
-#             libraries = [':humanleague.so'],
-#             library_dirs = ['/usr/local/lib','../src'],
+  include_dirs = ['.', '/usr/include', '/usr/local/include'], # numpy include appended later
   sources = ['src/Sobol.cpp',
              'src/SobolImpl.cpp',
              'src/QIS.cpp',
@@ -38,22 +48,22 @@ cppmodule = Extension(
              'humanleague/Object.cpp',
              'humanleague/py_api.cpp'],
   # for now safer to put up with full rebuilds every time
-  depends = ['Object.h', 'Array.h']
+  depends = ['humanleague/Object.h', 'humanleague/Array.h']
 )
 
+#setuptools.
 setup(
   name = 'humanleague',
-  version = '2.0.0',
-  description = 'microsynthesis using quasirandom sampling',
-  author = 'Andrew Smith',
+  version = '2.0.3',
+  description = 'Microsynthesis using quasirandom sampling and/or IPF',
+  author = 'Andrew P Smith',
   author_email = 'a.p.smith@leeds.ac.uk',
-  url = '',
-  long_description = '''
-microsynthesis using quasirandom sampling and/or IPF
-''',
+  url = 'http://github.com/virgesmith/humanleague',
+  long_description = readme(),
+  long_description_content_type="text/markdown",
+  cmdclass = {'build_ext': BuildExtNumpyWorkaround},
   ext_modules = [cppmodule],
-  # these settings appear not to be required
-#  tests_require=['nose'],
-#  test_suite='tests',
+  setup_requires=['numpy'],
+  install_requires=['numpy'],
 )
 

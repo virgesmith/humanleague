@@ -13,4 +13,5 @@ src/*.dll
 dist/
 *.egg-info/
 __pycache__/
+.eggs/
 

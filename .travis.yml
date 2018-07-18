@@ -28,26 +28,29 @@ matrix:
     - os: linux
       dist: trusty
       language: python
-      python: 3.5
+      python: 
+        - "3.5"
+        - "3.6"
+        - "3.7-dev"
       script:
         - python3 setup.py install
-        - python3 setup.py test
+        - python3 tests/test_all.py
 
-    - os: linux
-      dist: trusty
-      language: python
-      python: 3.6
-      script:
-        - python3 setup.py install
-        - python3 setup.py test
+    # - os: linux
+    #   dist: trusty
+    #   language: python
+    #   python: 3.6
+    #   script:
+    #     - python3 setup.py install
+    #     - python3 setup.py test
 
-    - os: linux
-      dist: trusty
-      language: python
-      python: 3.7-dev
-      script:
-        - python3 setup.py install
-        - python3 setup.py test
+    # - os: linux
+    #   dist: trusty
+    #   language: python
+    #   python: 3.7-dev
+    #   script:
+    #     - python3 setup.py install
+    #     - python3 setup.py test
 
     - os: osx
       osx_image: xcode8.3
@@ -66,8 +69,8 @@ matrix:
         - python3 setup.py install
         - python3 setup.py test
 
-#  allow_failures:
-#    - r: devel
+  allow_failures:
+    - python: "3.7-dev"
 
 #after_success:
 #  - Rscript -e 'covr::codecov()'

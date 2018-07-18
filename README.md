@@ -2,6 +2,7 @@
 
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/humanleague)](https://CRAN.R-project.org/package=humanleague)
 [![CRAN Downloads](http://cranlogs.r-pkg.org/badges/grand-total/humanleague?color=black)](http://cran.r-project.org/package=humanleague)
+[![PyPI version](https://badge.fury.io/py/humanleague.svg)](https://badge.fury.io/py/humanleague)
 [![Travis Build Status](https://travis-ci.org/virgesmith/humanleague.png?branch=master)](https://travis-ci.org/virgesmith/humanleague)
 [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/x9oypgryt21ndc3p?svg=true)](https://ci.appveyor.com/project/virgesmith/humanleague)
 [![codecov](https://codecov.io/gh/virgesmith/humanleague/branch/master/graph/badge.svg)](https://codecov.io/gh/virgesmith/humanleague)
@@ -41,26 +42,31 @@ Official release:
 > install.packages("humanleague")
 ```
 For development version
-```
+```bash
 > devtools::install_github("virgesmith/humanleague")
 ```
 Or, for the legacy version
-```
+```bash
 > devtools::install_github("virgesmith/humanleague@1.0.1")
 ```
 ## python installation
 
-Requires Python 3, with numpy installed (also pytest and distutils-pytest if you want to run the regression tests)
+Requires Python 3 and numpy. PyPI package:
+```bash
+python3 -m pip install humanleague
 ```
-pip install git+https://github.com/virgesmith/humanleague.git@master
+[Conda pacakage is being worked on]
+
+### Build and test (from local cloned repo)
+```bash
+$ ./setup.py build
 ```
-### Build and test (from local repo)
-```
-user@host:~/dev/humanleague/python$ ./setup.py test
+```bash
+$ python3 tests/test_all.py
 ```
 ### Install (from local repo)
-```
-user@host:~/dev/humanleague/python$ ./setup.py install
+```bash
+$ ./setup.py install
 ```
 The latter command may require admin rights. On linux, `sudo` is unnecessary if you have group (e.g. staff) write access to /usr/local/lib.
 

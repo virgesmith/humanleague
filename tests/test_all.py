@@ -317,7 +317,6 @@ class Test(unittest.TestCase):
     self.assertTrue(np.allclose(np.sum(p["result"], (1, 2, 3)), m0))
     self.assertTrue(np.allclose(np.sum(p["result"], (2, 3, 0)), m1))
     self.assertTrue(np.allclose(np.sum(p["result"], (3, 0, 1)), m2))
-    self.assertTrue(False)
 
 if __name__ == "__main__":
   unittest.main()

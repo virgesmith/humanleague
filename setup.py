@@ -51,6 +51,12 @@ cppmodule = Extension(
   depends = ['humanleague/Object.h', 'humanleague/Array.h']
 )
 
+import unittest
+def test_suite():
+    test_loader = unittest.TestLoader()
+    test_suite = test_loader.discover('tests', pattern='test_*.py')
+    return test_suite
+
 #setuptools.
 setup(
   name = 'humanleague',
@@ -65,5 +71,6 @@ setup(
   ext_modules = [cppmodule],
   setup_requires=['numpy'],
   install_requires=['numpy'],
+  test_suite='setup.test_suite'
 )
 

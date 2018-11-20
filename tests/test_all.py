@@ -318,5 +318,13 @@ class Test(unittest.TestCase):
     self.assertTrue(np.allclose(np.sum(p["result"], (2, 3, 0)), m1))
     self.assertTrue(np.allclose(np.sum(p["result"], (3, 0, 1)), m2))
 
-if __name__ == "__main__":
-  unittest.main()
+    s = np.ones([2,3,5,7], dtype=float)
+    m1 = np.ones([2,3]) * 5 * 7
+    m2 = np.ones([3,5]) * 7 * 2
+    m3 = np.ones([5,7]) * 2 * 3
+    p = hl.qisi(s, [np.array([0,1]), np.array([1,2]), np.array([2,3]), ], [m1, m2, m3])
+    print(p)
+    self.assertTrue(p["result"])
+
+# if __name__ == "__main__":
+#   unittest.main()

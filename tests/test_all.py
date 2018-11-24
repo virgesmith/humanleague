@@ -15,7 +15,7 @@ class Test(unittest.TestCase):
 
   def test_apitest(self):
     res = hl.apitest()
-    print(res)
+    #print("api test: ", res)
     self.assertTrue(res is None)
 
   def test_sobolSequence(self):
@@ -98,9 +98,9 @@ class Test(unittest.TestCase):
     i = [np.array([0]),np.array([1]),np.array([2])]
     s = np.array([[[1.0, 1.0], [1.0, 1.0]], [[1.0, 1.0], [1.0, 1.0]]])
     p = hl.ipf(s, i, [m0, m1, m2])
-    print(np.sum(p["result"], (0, 1)))
-    print(np.sum(p["result"], (1, 2)))
-    print(np.sum(p["result"], (2, 0)))
+    #print(np.sum(p["result"], (0, 1)))
+    #print(np.sum(p["result"], (1, 2)))
+    #print(np.sum(p["result"], (2, 0)))
     self.assertTrue(p["conv"])
     # check overall population and marginals correct
     self.assertAlmostEqual(np.sum(p["result"]), p["pop"]) # default is 7d.p.
@@ -142,9 +142,9 @@ class Test(unittest.TestCase):
 
     s = np.array([[[1.0, 1.0], [1.0, 1.0]], [[1.0, 1.0], [1.0, 1.0]]])
     p = hl.ipf(s, [np.array([0]),np.array([1]),np.array([2])], [m0, m1, m2])
-    print(np.sum(p["result"], (0, 1)))
-    print(np.sum(p["result"], (1, 2)))
-    print(np.sum(p["result"], (2, 0)))
+    #print(np.sum(p["result"], (0, 1)))
+    #print(np.sum(p["result"], (1, 2)))
+    #print(np.sum(p["result"], (2, 0)))
     self.assertTrue(p["conv"])
     # check overall population and marginals correct
     self.assertAlmostEqual(np.sum(p["result"]), p["pop"]) # default is 7d.p.
@@ -172,7 +172,7 @@ class Test(unittest.TestCase):
     i1 = np.array([1])
 
     p = hl.qis([i0, i1], [m0, m1])
-    print(p)
+    #print(p)
     self.assertTrue(p["conv"])
     self.assertLess(p["chiSq"], 0.04) 
     self.assertGreater(p["pValue"], 0.9) 
@@ -241,7 +241,7 @@ class Test(unittest.TestCase):
     self.assertLess(p["chiSq"], 10) 
     self.assertGreater(p["pValue"], 0.27) 
     self.assertEqual(p["pop"], 120)
-    print(np.sum(p["result"], 2))
+    #print(np.sum(p["result"], 2))
     self.assertTrue(np.allclose(np.sum(p["result"], 2), m))
     self.assertTrue(np.allclose(np.sum(p["result"], 0), m))
 
@@ -271,7 +271,7 @@ class Test(unittest.TestCase):
     s = np.ones([len(m0), len(m1)])
 
     p = hl.qisi(s, [i0, i1], [m0, m1])
-    print(p)
+    #print(p)
     self.assertTrue(p["conv"])
     self.assertLess(p["chiSq"], 0.04) 
     self.assertGreater(p["pValue"], 0.9) 
@@ -318,13 +318,17 @@ class Test(unittest.TestCase):
     self.assertTrue(np.allclose(np.sum(p["result"], (2, 3, 0)), m1))
     self.assertTrue(np.allclose(np.sum(p["result"], (3, 0, 1)), m2))
 
-    s = np.ones([2,3,5,7], dtype=float)
-    m1 = np.ones([2,3]) * 5 * 7
-    m2 = np.ones([3,5]) * 7 * 2
-    m3 = np.ones([5,7]) * 2 * 3
-    p = hl.qisi(s, [np.array([0,1]), np.array([1,2]), np.array([2,3]), ], [m1, m2, m3])
-    print(p)
-    self.assertTrue(p["result"])
+    # check dimension consistency check works
+    s = np.ones([2,3,7,5])
+    m1 = np.ones([2,3], dtype=int) * 5 * 7
+    m2 = np.ones([3,5], dtype=int) * 7 * 2
+    m3 = np.ones([5,7], dtype=int) * 2 * 3
+    p = hl.qisi(s, [np.array([0,1]), np.array([1,2]), np.array([2,3])], [m1, m2, m3])
+    self.assertEqual(p, "seed dimensions [2, 3, 7, 5] are inconsistent with that implied by marginals ([2, 3, 5, 7])")
+
+    s = np.ones((2,3,5))
+    p = hl.qisi(s, [np.array([0,1]), np.array([1,2]), np.array([2,3])], [m1, m2, m3])
+    self.assertEqual(p, "seed dimensions 3 is inconsistent with that implied by marginals (4)")
 
 # if __name__ == "__main__":
 #   unittest.main()

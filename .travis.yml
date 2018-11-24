@@ -18,6 +18,10 @@ matrix:
       dist: xenial
       language: r
       r: release
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
       after_success: Rscript -e 'covr::codecov()'
 
     - os: linux

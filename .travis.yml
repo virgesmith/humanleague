@@ -19,8 +19,7 @@ matrix:
       language: r
       r: release
       before_install:
-      - sudo apt-get update
-      - sudo apt-get -y install curl 
+      - sudo ln -s /usr/lib/x86_64-linux-gnu/librtmp.so.1 /usr/lib/x86_64-linux-gnu/librtmp.so.0
       after_success: Rscript -e 'covr::codecov()'
 
     - os: linux

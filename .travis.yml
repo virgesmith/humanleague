@@ -18,10 +18,9 @@ matrix:
       dist: xenial
       language: r
       r: release
-      addons:
-        apt:
-          sources:
-          - ubuntu-toolchain-r-test
+      before_install:
+      - sudo apt-get update
+      - sudo apt-get -y install curl 
       after_success: Rscript -e 'covr::codecov()'
 
     - os: linux

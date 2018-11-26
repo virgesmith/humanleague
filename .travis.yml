@@ -16,8 +16,6 @@ matrix:
           - ubuntu-toolchain-r-test
           packages:
           - g++-5
-      env:
-        - CXX=g++-5
       language: r
       r: oldrel
 
@@ -28,9 +26,6 @@ matrix:
           - ubuntu-toolchain-r-test
           packages:
           - g++-5
-      env:
-        - CXX=g++-5
-        - CXX11=g++-5
       language: r
       r: release
       after_success: Rscript -e 'covr::codecov()'
@@ -42,8 +37,6 @@ matrix:
           - ubuntu-toolchain-r-test
           packages:
           - g++-5
-      env:
-        - CXX=g++-5
       language: r
       r: devel
 

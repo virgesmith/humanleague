@@ -8,7 +8,7 @@
 // C++14 implements the ""s literal -> std::string but there are so many issues with it (namespace, gcc warnings)
 // just stick with the home-made version 
 
-std::string operator ""_s(const char* p, size_t s)
+inline std::string operator "" _s(const char* p, size_t s)
 {
   return std::string(p, p + s);
 }

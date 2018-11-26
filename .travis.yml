@@ -10,7 +10,14 @@ r_github_packages:
 matrix:
   include:
     - os: linux
-      dist: xenial
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
+          - g++-5
+      env:
+        - CXX=g++-5
       language: r
       r: oldrel
 
@@ -23,12 +30,20 @@ matrix:
           - g++-5
       env:
         - CXX=g++-5
+        - CXX11=g++-5
       language: r
       r: release
       after_success: Rscript -e 'covr::codecov()'
 
     - os: linux
-      dist: xenial
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
+          - g++-5
+      env:
+        - CXX=g++-5
       language: r
       r: devel
 

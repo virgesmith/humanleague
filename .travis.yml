@@ -19,6 +19,10 @@ matrix:
         apt:
           sources:
           - ubuntu-toolchain-r-test
+          packages:
+          - g++-5
+      env:
+        - CXX=g++-5
       language: r
       r: release
       after_success: Rscript -e 'covr::codecov()'

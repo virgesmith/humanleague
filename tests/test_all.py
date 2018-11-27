@@ -326,8 +326,14 @@ class Test(unittest.TestCase):
     p = hl.qisi(s, [np.array([0,1]), np.array([1,2]), np.array([2,3])], [m1, m2, m3])
     self.assertEqual(p, "seed dimensions [2, 3, 7, 5] are inconsistent with that implied by marginals ([2, 3, 5, 7])")
 
+    p = hl.ipf(s, [np.array([0,1]), np.array([1,2]), np.array([2,3])], [m1.astype(float), m2.astype(float), m3.astype(float)])
+    self.assertEqual(p, "seed dimensions [2, 3, 7, 5] are inconsistent with that implied by marginals ([2, 3, 5, 7])")
+
     s = np.ones((2,3,5))
     p = hl.qisi(s, [np.array([0,1]), np.array([1,2]), np.array([2,3])], [m1, m2, m3])
+    self.assertEqual(p, "seed dimensions 3 is inconsistent with that implied by marginals (4)")
+
+    p = hl.ipf(s, [np.array([0,1]), np.array([1,2]), np.array([2,3])], [m1.astype(float), m2.astype(float), m3.astype(float)])
     self.assertEqual(p, "seed dimensions 3 is inconsistent with that implied by marginals (4)")
 
 # if __name__ == "__main__":

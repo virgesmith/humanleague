@@ -30,7 +30,7 @@ def list_files(dirs, exts, exclude=[]):
   files = []
   for directory in dirs:
     for ext in exts:
-      files.extend(glob.glob(directory + "/*." + ext))
+      files.extend(glob.glob(os.path.join(directory, "*." + ext)))
   [files.remove(f) for f in exclude]
   return files
 
@@ -44,7 +44,7 @@ cppmodule = Extension(
                   ],
   extra_compile_args=platform_specific_compile_args(),
   include_dirs = ['.', '/usr/include', '/usr/local/include'], # numpy include appended later
-  sources = list_files(["src", "humanleague"], ["cpp"], exclude=["src/rcpp_api.cpp", "src/RcppExports.cpp"]),
+  sources = list_files(["src", "humanleague"], ["cpp"], exclude=[os.path.join("src", "rcpp_api.cpp"), os.path.join("src", "RcppExports.cpp")]),
   # for now safer to put up with full rebuilds every time
   depends = list_files(["src", "humanleague"], ["h"])
 )

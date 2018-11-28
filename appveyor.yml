@@ -1,45 +1,105 @@
-# DO NOT CHANGE the "init" and "install" sections below
+# # DO NOT CHANGE the "init" and "install" sections below
 
-# Download script file from GitHub
-init:
-  ps: |
-        $ErrorActionPreference = "Stop"
-        Invoke-WebRequest http://raw.github.com/krlmlr/r-appveyor/master/scripts/appveyor-tool.ps1 -OutFile "..\appveyor-tool.ps1"
-        Import-Module '..\appveyor-tool.ps1'
+# # Download script file from GitHub
+# init:
+#   ps: |
+#         $ErrorActionPreference = "Stop"
+#         Invoke-WebRequest http://raw.github.com/krlmlr/r-appveyor/master/scripts/appveyor-tool.ps1 -OutFile "..\appveyor-tool.ps1"
+#         Import-Module '..\appveyor-tool.ps1'
 
-install:
-  ps: Bootstrap
+# install:
+#   ps: Bootstrap
 
-cache:
-  - C:\RLibrary
+# cache:
+#   - C:\RLibrary
 
-# Adapt as necessary starting from here
+# # Adapt as necessary starting from here
 
-build_script:
-  - travis-tool.sh install_deps
+# build_script:
+#   - travis-tool.sh install_deps
 
-test_script:
-  - travis-tool.sh run_tests
+# test_script:
+#   - travis-tool.sh run_tests
 
-on_failure:
-  - 7z a failure.zip *.Rcheck\*
-  - appveyor PushArtifact failure.zip
+# on_failure:
+#   - 7z a failure.zip *.Rcheck\*
+#   - appveyor PushArtifact failure.zip
+
+# artifacts:
+#   - path: '*.Rcheck\**\*.log'
+#     name: Logs
+
+#   - path: '*.Rcheck\**\*.out'
+#     name: Logs
+
+#   - path: '*.Rcheck\**\*.fail'
+#     name: Logs
+
+#   - path: '*.Rcheck\**\*.Rout'
+#     name: Logs
+
+#   - path: '\*_*.tar.gz'
+#     name: Bits
+
+#   - path: '\*_*.zip'
+#     name: Bits
+
+#######################################
+# using the conda-forger appveyor.yml #
+#######################################
+skip_commits:
+  message: /^Merge pull request /
+
+environment:
+
+  CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
+
+  matrix:
+    - PLATFORM: "64"
 
 artifacts:
-  - path: '*.Rcheck\**\*.log'
-    name: Logs
+    # Store built conda packages as artifacts
+    - path: 'conda_packages\*.bz2'
 
-  - path: '*.Rcheck\**\*.out'
-    name: Logs
+platform:
+    - x64
 
-  - path: '*.Rcheck\**\*.fail'
-    name: Logs
+install:
+    # If there is a newer build queued for the same PR, cancel this one.
+    - cmd: |
+        powershell -Command "(New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/conda-forge/conda-forge-build-setup-feedstock/master/recipe/ff_ci_pr_build.py', 'ff_ci_pr_build.py')"
+        ff_ci_pr_build -v --ci "appveyor" "%APPVEYOR_ACCOUNT_NAME%/%APPVEYOR_PROJECT_SLUG%" "%APPVEYOR_BUILD_NUMBER%" "%APPVEYOR_PULL_REQUEST_NUMBER%"
+        del ff_ci_pr_build.py
 
-  - path: '*.Rcheck\**\*.Rout'
-    name: Logs
+    # Find the recipes from master in this PR and remove them.
+    - cmd: echo Finding recipes merged in master and removing them.
+    - cmd: cd recipes
+    - cmd: |
+             for /f "tokens=*" %%a in ('git ls-tree --name-only master -- .') do rmdir /s /q %%a && echo Removing recipe: %%a
+    - cmd: cd ..
 
-  - path: '\*_*.tar.gz'
-    name: Bits
+    # Remove cygwin (and therefore the git that comes with it).
+    - cmd: rmdir C:\cygwin /s /q
 
-  - path: '\*_*.zip'
-    name: Bits
+    # Use the pre-installed Miniconda for the desired arch
+    - cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
+    - cmd: conda.exe config --add channels conda-forge
+    - cmd: conda.exe config --set show_channel_urls true
+    - cmd: appveyor-retry conda.exe update --yes --quiet conda
+
+
+    - cmd: appveyor-retry conda.exe install --yes --quiet conda-forge-pinning conda-forge-ci-setup=1.* networkx conda-build>=3.16
+
+    - cmd: appveyor-retry run_conda_forge_build_setup
+
+# Skip .NET project specific build phase.
+build: off
+
+test_script:
+    - python .ci_support\build_all.py recipes --arch %PLATFORM%
+
+    # copy any newly created conda packages into the conda_packages dir
+    - cmd: mkdir conda_packages
+    # Uncomment the following two lines to make any conda packages created
+    # available as build artifacts in AppVeyor
+    #- cmd: 'copy /Y C:\Miniconda-x64\conda-bld\win-64\*.bz2 conda_packages || cmd /c "exit /b 0"'

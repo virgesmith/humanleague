@@ -2,6 +2,7 @@
 
 import os
 import glob
+from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 def readme():
   with open('README.md') as f:
@@ -33,7 +34,7 @@ cppmodule = Extension(
                    ('PATCH_VERSION', '5'),
                    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
                   ],
-  extra_compile_args=['-Wall', '-std=c++11']
+  extra_compile_args = ['-Wall', '-std=c++11'],
   include_dirs = ['.', '/usr/include', '/usr/local/include'], # numpy include appended later
   sources = list_files(["src", "humanleague"], ["cpp"], exclude=[os.path.join("src", "rcpp_api.cpp"), os.path.join("src", "RcppExports.cpp")]),
   # for now safer to put up with full rebuilds every time

@@ -10,7 +10,8 @@
 #include <vector>
 #include <map>
 
-#include <iostream>
+#include <string>
+#include <stdexcept>
 
 // T = population, M = marginals (defaults to same type)
 template<typename T, typename M = T>

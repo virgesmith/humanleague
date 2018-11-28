@@ -39,7 +39,7 @@ cppmodule = Extension(
   'humanleague',
   define_macros = [('MAJOR_VERSION', '2'),
                    ('MINOR_VERSION', '0'),
-                   ('PATCH_VERSION', '4'),
+                   ('PATCH_VERSION', '5'),
                    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
                   ],
   extra_compile_args=platform_specific_compile_args(),
@@ -58,7 +58,7 @@ def test_suite():
 #setuptools.
 setup(
   name = 'humanleague',
-  version = '2.0.4',
+  version = '2.0.5',
   description = 'Microsynthesis using quasirandom sampling and/or IPF',
   author = 'Andrew P Smith',
   author_email = 'a.p.smith@leeds.ac.uk',

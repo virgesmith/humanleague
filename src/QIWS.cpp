@@ -7,6 +7,7 @@
 #include "Sobol.h"
 #include "DDWR.h"
 #include "StatFuncs.h"
+#include <string>
 #include <stdexcept>
 #include <cmath>
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
@@ -17,6 +18,13 @@ class BuildExtNumpyWorkaround(build_ext):
     # Call original build_ext command
     build_ext.run(self)
 
+def platform_specific_compile_args():
+  # this isnt really good enough as assumes MSVC on windows (will likely break windows R build)
+  if os.name == 'nt':
+    return ['/std:c++11']
+  else:
+    return ['-Wall', '-std=c++11']
+
 # seems that this will clean build every time, might make more sense to just have a lightweight wrapper & precompiled lib?
 cppmodule = Extension(
   'humanleague',
@@ -25,7 +33,7 @@ cppmodule = Extension(
                    ('PATCH_VERSION', '4'),
                    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
                   ],
-  extra_compile_args=['-Wall', '-std=c++11'],
+  extra_compile_args=platform_specific_compile_args(),
   include_dirs = ['.', '/usr/include', '/usr/local/include'], # numpy include appended later
   sources = ['src/Sobol.cpp',
              'src/SobolImpl.cpp',

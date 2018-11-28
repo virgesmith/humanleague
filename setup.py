@@ -19,13 +19,6 @@ class BuildExtNumpyWorkaround(build_ext):
     # Call original build_ext command
     build_ext.run(self)
 
-# this is far from ideal - checking the OS to imply the compiler
-def platform_specific_compile_args():
-  if os.name == 'nt':
-    return ['/std:c++11']
-  else:
-    return ['-Wall', '-std=c++11']
-
 def list_files(dirs, exts, exclude=[]):
   files = []
   for directory in dirs:
@@ -42,7 +35,7 @@ cppmodule = Extension(
                    ('PATCH_VERSION', '5'),
                    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
                   ],
-  extra_compile_args=platform_specific_compile_args(),
+  extra_compile_args = ['-Wall', '-std=c++11'],
   include_dirs = ['.', '/usr/include', '/usr/local/include'], # numpy include appended later
   sources = list_files(["src", "humanleague"], ["cpp"], exclude=[os.path.join("src", "rcpp_api.cpp"), os.path.join("src", "RcppExports.cpp")]),
   # for now safer to put up with full rebuilds every time

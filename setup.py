@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 import os
-from setuptools import Extension, setup
+import glob
 from setuptools.command.build_ext import build_ext
-
 def readme():
   with open('README.md') as f:
     return f.read()
@@ -18,45 +17,27 @@ class BuildExtNumpyWorkaround(build_ext):
     # Call original build_ext command
     build_ext.run(self)
 
-def platform_specific_compile_args():
-  # this isnt really good enough as assumes MSVC on windows (will likely break windows R build)
-  if os.name == 'nt':
-    return ['/std:c++11']
-  else:
-    return ['-Wall', '-std=c++11']
+def list_files(dirs, exts, exclude=[]):
+  files = []
+  for directory in dirs:
+    for ext in exts:
+      files.extend(glob.glob(os.path.join(directory, "*." + ext)))
+  [files.remove(f) for f in exclude]
+  return files
 
 # seems that this will clean build every time, might make more sense to just have a lightweight wrapper & precompiled lib?
 cppmodule = Extension(
   'humanleague',
   define_macros = [('MAJOR_VERSION', '2'),
                    ('MINOR_VERSION', '0'),
-                   ('PATCH_VERSION', '4'),
+                   ('PATCH_VERSION', '5'),
                    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
                   ],
-  extra_compile_args=platform_specific_compile_args(),
+  extra_compile_args=['-Wall', '-std=c++11']
   include_dirs = ['.', '/usr/include', '/usr/local/include'], # numpy include appended later
-  sources = ['src/Sobol.cpp',
-             'src/SobolImpl.cpp',
-             'src/QIS.cpp',
-             'src/QISI.cpp',
-             'src/QIWS.cpp',
-             'src/GQIWS.cpp',
-             'src/StatFuncs.cpp',
-             'src/NDArrayUtils.cpp',
-             'src/Index.cpp',
-             'src/Integerise.cpp',
-             'src/UnitTester.cpp',
-             'src/TestNDArray.cpp',
-             'src/TestQIWS.cpp',
-             'src/TestSobol.cpp',
-             'src/TestStatFuncs.cpp',
-             'src/TestIndex.cpp',
-             'src/TestSlice.cpp',
-             'src/TestReduce.cpp',
-             'humanleague/Object.cpp',
-             'humanleague/py_api.cpp'],
+  sources = list_files(["src", "humanleague"], ["cpp"], exclude=[os.path.join("src", "rcpp_api.cpp"), os.path.join("src", "RcppExports.cpp")]),
   # for now safer to put up with full rebuilds every time
-  depends = ['humanleague/Object.h', 'humanleague/Array.h']
+  depends = list_files(["src", "humanleague"], ["h"])
 )
 
 import unittest
@@ -68,7 +49,7 @@ def test_suite():
 #setuptools.
 setup(
   name = 'humanleague',
-  version = '2.0.4',
+  version = '2.0.5',
   description = 'Microsynthesis using quasirandom sampling and/or IPF',
   author = 'Andrew P Smith',
   author_email = 'a.p.smith@leeds.ac.uk',

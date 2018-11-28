@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import os
+import glob
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
@@ -17,6 +19,21 @@ class BuildExtNumpyWorkaround(build_ext):
     # Call original build_ext command
     build_ext.run(self)
 
+# this is far from ideal - checking the OS to imply the compiler
+def platform_specific_compile_args():
+  if os.name == 'nt':
+    return ['/std:c++11']
+  else:
+    return ['-Wall', '-std=c++11']
+
+def list_files(dirs, exts, exclude=[]):
+  files = []
+  for directory in dirs:
+    for ext in exts:
+      files.extend(glob.glob(directory + "/*." + ext))
+  [files.remove(f) for f in exclude]
+  return files
+
 # seems that this will clean build every time, might make more sense to just have a lightweight wrapper & precompiled lib?
 cppmodule = Extension(
   'humanleague',
@@ -25,30 +42,11 @@ cppmodule = Extension(
                    ('PATCH_VERSION', '4'),
                    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
                   ],
-  extra_compile_args=['-Wall', '-std=c++11'],
+  extra_compile_args=platform_specific_compile_args(),
   include_dirs = ['.', '/usr/include', '/usr/local/include'], # numpy include appended later
-  sources = ['src/Sobol.cpp',
-             'src/SobolImpl.cpp',
-             'src/QIS.cpp',
-             'src/QISI.cpp',
-             'src/QIWS.cpp',
-             'src/GQIWS.cpp',
-             'src/StatFuncs.cpp',
-             'src/NDArrayUtils.cpp',
-             'src/Index.cpp',
-             'src/Integerise.cpp',
-             'src/UnitTester.cpp',
-             'src/TestNDArray.cpp',
-             'src/TestQIWS.cpp',
-             'src/TestSobol.cpp',
-             'src/TestStatFuncs.cpp',
-             'src/TestIndex.cpp',
-             'src/TestSlice.cpp',
-             'src/TestReduce.cpp',
-             'humanleague/Object.cpp',
-             'humanleague/py_api.cpp'],
+  sources = list_files(["src", "humanleague"], ["cpp"], exclude=["src/rcpp_api.cpp", "src/RcppExports.cpp"]),
   # for now safer to put up with full rebuilds every time
-  depends = ['humanleague/Object.h', 'humanleague/Array.h']
+  depends = list_files(["src", "humanleague"], ["h"])
 )
 
 import unittest

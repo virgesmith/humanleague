@@ -336,5 +336,5 @@ class Test(unittest.TestCase):
     p = hl.ipf(s, [np.array([0,1]), np.array([1,2]), np.array([2,3])], [m1.astype(float), m2.astype(float), m3.astype(float)])
     self.assertEqual(p, "seed dimensions 3 is inconsistent with that implied by marginals (4)")
 
-# if __name__ == "__main__":
-#   unittest.main()
+if __name__ == "__main__":
+  unittest.main()

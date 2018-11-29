@@ -48,9 +48,7 @@
 #'
 #' \code{\link{sobolSequence}}
 #'
-#' \code{\link{synthPop}}
-#'
-#' \code{\link{synthPopG}}
+#' \code{\link{integerise}}
 #'
 #' \code{\link{unitTest}}
 #'

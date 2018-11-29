@@ -57,9 +57,7 @@ The package also contains the following utility functions:
 
 \code{\link{sobolSequence}}
 
-\code{\link{synthPop}}
-
-\code{\link{synthPopG}}
+\code{\link{integerise}}
 
 \code{\link{unitTest}}
 }

@@ -8,9 +8,6 @@
 #include "StatFuncs.h"
 #include "Sobol.h"
 
-#include "QIWS.h" // TODO deprecate
-#include "GQIWS.h" // TODO deprecate
-
 #include "UnitTester.h"
 
 #include <Rcpp.h>
@@ -111,126 +108,6 @@ void checkSeed(NumericVector seed, const std::vector<int64_t>& impliedDim)
   }
 }
 
-}
-
-//' [Legacy] Generate a population in n dimensions given n 1-d marginals.
-//'
-//' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
-//' generates an n-dimensional population table where elements sum to the input marginals, and supplemental data.
-//' The scope of this function is rather limited (qis is more general), but it is fast.
-//' @param marginals a List of n integer vectors containing marginal data (2 <= n <= 12). The sum of elements in each vector must be identical
-//' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
-//' @examples
-//' synthPop(list(c(1,2,3,4), c(3,4,3)))
-//' @export
-// [[Rcpp::export]]
-List synthPop(List marginals)
-{
-  const size_t dim = marginals.size();
-
-  std::vector<std::vector<uint32_t>> m(dim);
-  IntegerVector sizes;
-  for (size_t i = 0; i < dim; ++i)
-  {
-    const IntegerVector& iv = marginals[i];
-    m[i].reserve(iv.size());
-    std::copy(iv.begin(), iv.end(), std::back_inserter(m[i]));
-    sizes.push_back(iv.size());
-  }
-  List result;
-
-  QIWS solver(m);
-
-  result["method"] = "QIWS";
-  result["conv"] = solver.solve();
-  result["chiSq"] = solver.chiSq();
-  std::pair<double, bool> pVal = solver.pValue();
-  result["pValue"] = pVal.first;
-  if (!pVal.second)
-  {
-    result["warning"] = "p-value may be inaccurate";
-  }
-  result["error.margins"] = solver.residuals();
-  const typename QIWS::table_t& t = solver.result();
-  const NDArray<double>& p = solver.stateProbabilities();
-
-  IntegerVector values(t.storageSize());
-  NumericVector probs(t.storageSize());
-  size_t i = 0;
-  for (TransposedIndex idx(t.sizes()); !idx.end(); ++idx, ++i)
-  {
-    values[i] = t[idx];
-    probs[i] = p[idx];
-  }
-  values.attr("dim") = sizes;
-  probs.attr("dim") = sizes;
-  result["p.hat"] = probs;
-  result["x.hat"] = values;
-
-  return result;
-}
-
-//' [Legacy] Generate a population in 2 dimensions given 2 1-d marginals and a further constraint.
-//'
-//' Using Quasirandom Integer Without-replacement Sampling (QIWS), this function
-//' generates an n-dimensional population table where elements sum to the input marginals, and supplemental data.
-//' The scope of this function is rather limited (qisi is more general).
-//' @param marginals a List of 2 integer vectors containing marginal data. The sum of elements in each vector must be identical
-//' @param exoProbsIn a 2d array of exogenous state probabilities
-//' @return an object containing: the population matrix, the occupancy probability matrix, a convergence flag, the chi-squared statistic, p-value, and error value (nonzero if not converged)
-//' @examples
-//' synthPopG(list(c(1,2,3,4), c(3,4,3)), array(rep(1,12), dim=c(4,3)))
-//' @export
-// [[Rcpp::export]]
-List synthPopG(List marginals, NumericMatrix exoProbsIn)
-{
-  if (marginals.size() != 2)
-    throw std::runtime_error("CQIWS invalid dimensionality: " + std::to_string(marginals.size()));
-
-  std::vector<std::vector<uint32_t>> m(2);
-
-  const IntegerVector& iv0 = marginals[0];
-  const IntegerVector& iv1 = marginals[1];
-  IntegerVector dims(2);
-  dims[0] = iv0.size();
-  dims[1] = iv1.size();
-  m[0].reserve(dims[0]);
-  m[1].reserve(dims[1]);
-  std::copy(iv0.begin(), iv0.end(), std::back_inserter(m[0]));
-  std::copy(iv1.begin(), iv1.end(), std::back_inserter(m[1]));
-
-  if (exoProbsIn.rows() != dims[0] || exoProbsIn.cols() != dims[1])
-    throw std::runtime_error("GQIWS invalid permittedStates matrix size");
-
-  std::vector<int64_t> d{ dims[0], dims[1] };
-  NDArray<double> exoProbs(d);
-
-  for (d[0] = 0; d[0] < dims[0]; ++d[0])
-  {
-    for (d[1] = 0; d[1] < dims[1]; ++d[1])
-    {
-      exoProbs[d] = exoProbsIn(d[0],d[1]);
-    }
-  }
-
-  List result;
-  GQIWS solver(m, exoProbs);
-  result["method"] = "QIWS-G";
-  result["conv"] = solver.solve();
-
-  const typename QIWS::table_t& t = solver.result();
-
-  // insert transposed result
-  IntegerVector values(t.storageSize());
-  size_t i = 0;
-  for (TransposedIndex idx(t.sizes()); !idx.end(); ++idx, ++i)
-  {
-    values[i] = t[idx];
-  }
-  values.attr("dim") = dims;
-  result["x.hat"] = values;
-
-  return result;
 }
 
 
@@ -493,6 +370,23 @@ List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
   return result;
 }
 
+//' Generate integer population from a fractional one where the 1-d partial sums along each axis have an integral total
+//'
+//' This function will generate the closest integer array to the fractional population provided, preserving the sums in every dimension.
+//' @param population a numeric vector of state occupation probabilities. Must sum to unity (to within double precision epsilon)
+//' @return an integer vector of frequencies that sums to pop.
+//' @examples
+//' prob2IntFreq(c(0.1,0.2,0.3,0.4), 11)
+//' @export
+// [[Rcpp::export]]
+List integerise(NumericVector population)
+{
+  List result;
+  result["conv"] = false;
+  return result;
+}
+
+
 //' Generate integer frequencies from discrete probabilities and an overall population.
 //'
 //' This function will generate the closest integer vector to the probabilities scaled to the population.
@@ -550,36 +444,6 @@ NumericMatrix sobolSequence(int dim, int n, int skip = 0)
 
   return m;
 }
-
-
-// //' Generate correlated 2D Sobol' quasirandom sequence
-// //'
-// //' @param rho correlation
-// //' @param n number of variates to sample
-// //' @param skip number of variates to skip (actual number skipped will be largest power of 2 less than k)
-// //' @return a n-by-2 matrix of uniform correlated probabilities in (0,1).
-// //' @examples
-// //' correlatedSobol2Sequence(0.2, 1000)
-// //' @export
-// // [[Rcpp::export]]
-// NumericMatrix correlatedSobol2Sequence(double rho, int n, int skip = 0)
-// {
-//   static const double scale = 0.5 / (1ull<<31);
-//
-//   NumericMatrix m(n, 2);
-//
-//   Sobol s(2, skip);
-//
-//   Cholesky cholesky(rho);
-//   for (int j = 0; j <n ; ++j)
-//   {
-//     const std::pair<uint32_t, uint32_t>& buf = cholesky(s.buf());
-//     m(j,0) = buf.first * scale;
-//     m(j,1) = buf.second * scale;
-//   }
-//
-//   return m;
-// }
 
 //' Convert multidimensional array of counts per state into table form. Each row in the table corresponds to one individual
 //'

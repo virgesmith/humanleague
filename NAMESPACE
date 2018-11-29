@@ -9,9 +9,7 @@ export("ipf");
 export("qis");
 export("qisi");
 export("unitTest");
-# legacy
-export("synthPop");
-export("synthPopG");
+export("integerise");
 
 importFrom(Rcpp, evalCpp)
 useDynLib(humanleague, .registration = T)

@@ -5,29 +5,6 @@
 
 using namespace Rcpp;
 
-// synthPop
-List synthPop(List marginals);
-RcppExport SEXP _humanleague_synthPop(SEXP marginalsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
-    rcpp_result_gen = Rcpp::wrap(synthPop(marginals));
-    return rcpp_result_gen;
-END_RCPP
-}
-// synthPopG
-List synthPopG(List marginals, NumericMatrix exoProbsIn);
-RcppExport SEXP _humanleague_synthPopG(SEXP marginalsSEXP, SEXP exoProbsInSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type exoProbsIn(exoProbsInSEXP);
-    rcpp_result_gen = Rcpp::wrap(synthPopG(marginals, exoProbsIn));
-    return rcpp_result_gen;
-END_RCPP
-}
 // ipf
 List ipf(NumericVector seed, List indices, List marginals);
 RcppExport SEXP _humanleague_ipf(SEXP seedSEXP, SEXP indicesSEXP, SEXP marginalsSEXP) {
@@ -65,6 +42,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
     Rcpp::traits::input_parameter< int >::type skips(skipsSEXP);
     rcpp_result_gen = Rcpp::wrap(qisi(seed, indices, marginals, skips));
+    return rcpp_result_gen;
+END_RCPP
+}
+// integerise
+List integerise(NumericVector population);
+RcppExport SEXP _humanleague_integerise(SEXP populationSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type population(populationSEXP);
+    rcpp_result_gen = Rcpp::wrap(integerise(population));
     return rcpp_result_gen;
 END_RCPP
 }

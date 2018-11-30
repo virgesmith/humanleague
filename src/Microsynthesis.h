@@ -6,6 +6,7 @@
 #include "NDArray.h"
 #include "NDArrayUtils.h"
 #include "Index.h"
+#include "Log.h"
 
 #include <vector>
 #include <map>
@@ -31,14 +32,14 @@ public:
   {
     // i and m should be same size and >2
     if (m_indices.size() != m_marginals.size() || m_indices.size() < 2)
-      throw std::runtime_error("index and marginal lists differ in size or too small");
+      throw std::runtime_error("index list size %% too small or differs from marginal size %%"_s % m_indices.size() % m_marginals.size());
 
     // count all unique values in i...
     std::map<int64_t, int64_t> dim_sizes;
     for (size_t k = 0; k < m_indices.size(); ++k)
     {
       if (m_indices[k].size() != m_marginals[k].dim())
-        throw std::runtime_error("index/marginal dimension mismatch " + std::to_string(m_indices[k].size()) + " vs " + std::to_string(m_marginals[k].dim()));
+        throw std::runtime_error("index/marginal dimension mismatch %% vs %%"_s % m_indices[k].size() % m_marginals[k].dim());
       //std::cout << "index " << k << std::endl;
       for (size_t j = 0; j < m_indices[k].size(); ++j)
       {
@@ -49,9 +50,7 @@ public:
         if (posit == dim_sizes.end())
           dim_sizes.insert(std::make_pair(dim, size));
         else if (posit->second != size)
-          throw std::runtime_error("mismatch at index " + std::to_string(k) +
-            ": dimension " + std::to_string(dim) + " size " + std::to_string(posit->second) + " redefined to " + std::to_string(size));
-        //std::cout << "  " << dim << ":" << size << std::endl;
+          throw std::runtime_error("mismatch at index %%: dimension %% size %% redefined to %%"_s % k % dim % posit->second % size);
       }
     }
 
@@ -62,7 +61,7 @@ public:
     for (size_t k = 0; k < m_marginals.size(); ++k)
     {
       if (min(m_marginals[k]) < 0)
-        throw std::runtime_error("negative value in marginal " + std::to_string(k));
+        throw std::runtime_error("negative value in marginal %%: %%"_s % k % min(m_marginals[k]));
     }
 
     m_dim = dim_sizes.size();
@@ -76,7 +75,7 @@ public:
     {
       auto it = dim_sizes.find(k);
       if (it == dim_sizes.end())
-        throw std::runtime_error("dimension " + std::to_string(k) + " size not defined");
+        throw std::runtime_error("dimension %% size not defined"_s % k);
       m_sizes.push_back(it->second);
     }
 

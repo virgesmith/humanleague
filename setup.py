@@ -30,14 +30,16 @@ def list_files(dirs, exts, exclude=[]):
 cppmodule = Extension(
   'humanleague',
   define_macros = [('MAJOR_VERSION', '2'),
-                   ('MINOR_VERSION', '0'),
-                   ('PATCH_VERSION', '5'),
+                   ('MINOR_VERSION', '1'),
+                   ('PATCH_VERSION', '0'),
                    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
                   ],
   extra_compile_args = ['-Wall', '-std=c++11'],
   include_dirs = ['.', '/usr/include', '/usr/local/include'], # numpy include appended later
-  sources = list_files(["src", "humanleague"], ["cpp"], exclude=[os.path.join("src", "rcpp_api.cpp"), os.path.join("src", "RcppExports.cpp")]),
-  # for now safer to put up with full rebuilds every time
+  # full rebuild triggers if any of sources/depends are modified
+  sources = list_files(["src", "humanleague"], ["cpp", "c"], exclude=[os.path.join("src", "rcpp_api.cpp"), 
+                                                                      os.path.join("src", "RcppExports.cpp"),
+                                                                      os.path.join("src", "humanleague_init.c")]),
   depends = list_files(["src", "humanleague"], ["h"])
 )
 
@@ -50,7 +52,7 @@ def test_suite():
 #setuptools.
 setup(
   name = 'humanleague',
-  version = '2.0.5',
+  version = '2.1.0',
   description = 'Microsynthesis using quasirandom sampling and/or IPF',
   author = 'Andrew P Smith',
   author_email = 'a.p.smith@leeds.ac.uk',

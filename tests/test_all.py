@@ -24,30 +24,6 @@ class Test(unittest.TestCase):
     self.assertTrue(a.shape == (5, 3))
     self.assertTrue(np.array_equal(a[0, :], [0.5, 0.5, 0.5]))
 
-  def test_synthPop(self):
-
-    p = hl.synthPop([np.array([4, 2]), np.array([1, 2, 3])])
-    print(p)
-    self.assertTrue(p["conv"])
-
-    p = hl.synthPop([np.array([4, 1]), np.array([1, 2, 3])])
-    self.assertTrue(p == "invalid marginals")
-
-    p = hl.synthPop([[4, 2], [1, 2, 3]])
-    self.assertTrue(p == "input should be a list of numpy integer arrays")
-
-    p = hl.synthPop([np.array([1.0]), np.array([1, 2, 3, 4, 5, 6])])
-    self.assertTrue(p == 'python array contains invalid type: 12 when expecting 7')
-
-    p = hl.synthPop([np.array([4, 2]), np.array([1, 2, 3]), np.array([3, 3])])
-    self.assertTrue(p["conv"])
-
-  def test_synthPopG(self):
-
-    p = hl.synthPopG(np.array([4, 2]), np.array([1, 2, 3]), np.array([[1.0, 0.9, 0.8], [0.5, 0.6, 0.7]]))
-    self.assertTrue(p["conv"])
-    self.assertTrue(p["pop"] == 6)
-
   def test_integerise(self):
 
     # probs not valid
@@ -72,6 +48,11 @@ class Test(unittest.TestCase):
     r = hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), 17)
     self.assertAlmostEqual(r["var"], 0.075)
     self.assertTrue(np.array_equal(r["freq"], np.array([7, 5, 3, 2])))
+
+    # TODO multidim integerisation
+    s = np.array([[1.0, 1.0], [1.0, 1.0]])
+    r = hl.integerise(s)
+    self.assertTrue(r["conv"])
 
   def test_IPF(self):
     m0 = np.array([52.0, 48.0])

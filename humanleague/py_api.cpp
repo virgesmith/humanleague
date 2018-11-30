@@ -3,8 +3,6 @@
 #include "Array.h"
 
 #include "src/Sobol.h"
-#include "src/QIWS.h"
-#include "src/GQIWS.h"
 #include "src/Integerise.h"
 #include "src/IPF.h"
 #include "src/QIS.h"
@@ -115,6 +113,43 @@ extern "C" PyObject* humanleague_prob2IntFreq(PyObject* self, PyObject* args)
     return pycpp::String("unexpected exception").release();
   }
 }
+
+extern "C" PyObject* humanleague_integerise(PyObject *self, PyObject *args)
+{
+  try
+  {
+    PyObject* seedArg;
+
+    if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, & seedArg))
+      return nullptr;
+
+    pycpp::Array<double> npSeed(seedArg);
+
+    NDArray<double> seed = npSeed.toNDArray();
+    std::unique_ptr<QISI> qisi = integerise_multidim(seed);
+    const NDArray<int64_t>& result = qisi->solve(seed);
+
+    pycpp::Dict retval;
+    retval.insert("result", pycpp::Array<int64_t>(result));
+    retval.insert("conv", pycpp::Bool(qisi->conv()));
+    // TODO RMSE? R2?
+    // retval.insert("pop", pycpp::Double(ipf.population()));
+    // retval.insert("iterations", pycpp::Int(ipf.iters()));
+    // // result.insert("errors", ipf.errors());
+    // retval.insert("maxError", pycpp::Double(ipf.maxError()));
+
+    return retval.release();
+  }
+  catch(const std::exception& e)
+  {
+    return pycpp::String(e.what()).release();
+  }
+  catch(...)
+  {
+    return pycpp::String("unexpected exception").release();
+  }
+}
+
 
 // prevents name mangling (but works without this)
 extern "C" PyObject* humanleague_sobol(PyObject *self, PyObject *args)
@@ -346,101 +381,6 @@ extern "C" PyObject* humanleague_qisi(PyObject *self, PyObject *args)
 }
 
 
-// prevents name mangling (but works without this)
-extern "C" PyObject* humanleague_synthPop(PyObject *self, PyObject *args)
-{
-  try
-  {
-    PyObject* arrayArg;
-
-    // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
-    if (!PyArg_ParseTuple(args, "O!", &PyList_Type, &arrayArg))
-      return nullptr;
-
-    // expects a list of numpy arrays containing int64
-    pycpp::List list(arrayArg);
-
-    size_t dim = list.size();
-    std::vector<size_t> sizes(dim);
-    std::vector<std::vector<uint32_t>> marginals(dim);
-
-    for (size_t i = 0; i < dim; ++i)
-    {
-      if (!PyArray_Check(list[i]))
-        throw std::runtime_error("input should be a list of numpy integer arrays");
-      pycpp::Array<int64_t> a(list[i]);
-      sizes[i] = a.shape()[0];
-      marginals[i] = a.toVector<uint32_t>();
-    }
-
-    pycpp::Dict retval;
-    QIWS qiws(marginals);
-    retval.insert("conv", pycpp::Bool(qiws.solve()));
-    // cannot easily output uint32_t array...
-    retval.insert("result", flatten(qiws.population(), qiws.result()));
-    retval.insert("p-value", pycpp::Double(qiws.pValue().first));
-    retval.insert("chiSq", pycpp::Double(qiws.chiSq()));
-    retval.insert("pop", pycpp::Int(qiws.population()));
-
-    return retval.release();;
-  }
-  catch(const std::exception& e)
-  {
-    return pycpp::String(e.what()).release();
-  }
-  catch(...)
-  {
-    return pycpp::String("unexpected exception").release();
-  }
-}
-
-// prevents name mangling (but works without this)
-extern "C" PyObject* humanleague_synthPopG(PyObject *self, PyObject *args)
-{
-  try
-  {
-    PyObject* marginal0Arg;
-    PyObject* marginal1Arg;
-    PyObject* exoProbsArg;
-
-    // args e.g. "s" for string "i" for integer, "d" for float "ss" for 2 strings
-    if (!PyArg_ParseTuple(args, "O!O!O!", &PyArray_Type, &marginal0Arg, &PyArray_Type, &marginal1Arg, &PyArray_Type, &exoProbsArg))
-      return nullptr;
-
-    pycpp::Array<int64_t> marginal0(marginal0Arg);
-    pycpp::Array<int64_t> marginal1(marginal1Arg);
-    pycpp::Array<double> exoProbs(exoProbsArg);
-
-    std::vector<std::vector<uint32_t>> marginals(2);
-
-    marginals[0] = marginal0.toVector<uint32_t>();
-    marginals[1] = marginal1.toVector<uint32_t>();
-
-    // Borrow memory from the numpy array
-    std::vector<int64_t> shape(exoProbs.shape(), exoProbs.shape() + exoProbs.dim());
-    NDArray<double> xp(shape, exoProbs.rawData());
-
-    GQIWS gqiws(marginals, xp);
-    pycpp::Dict retval;
-    retval.insert("conv", pycpp::Bool(gqiws.solve()));
-    // cannot easily output uint32_t array...
-    retval.insert("result", flatten(gqiws.population(), gqiws.result()));
-    //retval.insert("result", pycpp::Array<uint32_t>(std::move(const_cast<NDArray<2,uint32_t>&>(gqiws.result()))));
-    retval.insert("pop", pycpp::Int(gqiws.population()));
-
-    return retval.release();
-  }
-  catch(const std::exception& e)
-  {
-    return pycpp::String(e.what()).release();
-  }
-  catch(...)
-  {
-    return pycpp::String("unexpected exception").release();
-  }
-}
-
-
 // until I find a better way...
 extern "C" PyObject* humanleague_version(PyObject*, PyObject*)
 {
@@ -547,13 +487,12 @@ namespace {
 // Python2.7
 PyMethodDef entryPoints[] = {
   {"prob2IntFreq", humanleague_prob2IntFreq, METH_VARARGS, "Returns nearest-integer population given probs and overall population."},
+  {"integerise", humanleague_integerise, METH_VARARGS, "Returns mulidimensional nearest-integer population constrained to marginal sums in every dimension."},
   {"flatten", humanleague_flatten, METH_VARARGS, "Converts n-D integer array into a table with columns referencing the value indices."},
   {"sobolSequence", humanleague_sobol, METH_VARARGS, "Returns a Sobol sequence."},
   {"ipf", humanleague_ipf, METH_VARARGS, "Synthpop (IPF)."},
   {"qis", humanleague_qis, METH_VARARGS, "QIS."},
   {"qisi", humanleague_qisi, METH_VARARGS, "QIS-IPF."},
-  {"synthPop", humanleague_synthPop, METH_VARARGS, "Synthpop."},
-  {"synthPopG", humanleague_synthPopG, METH_VARARGS, "Synthpop generalised."},
   {"version", humanleague_version, METH_NOARGS, "version info"},
   {"unittest", humanleague_unittest, METH_NOARGS, "unit testing"},
   {"apitest", humanleague_apitest, METH_NOARGS, "api (memory) testing"},

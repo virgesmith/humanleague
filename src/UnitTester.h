@@ -82,12 +82,9 @@ namespace unittest {
 // insert test function declarations here
 void testNDArray();
 void testSobol();
-//void testDDWR();
 void testCumNorm();
 void testCholesky();
 void testPValue();
-void testQIWS();
-//void testConstrainedSampling();
 void testSlice();
 void testReduce();
 void testIndex();

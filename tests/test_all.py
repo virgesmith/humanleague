@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import humanleague as hl
 import numpy as np
+import humanleague as hl
 
 import unittest
 
@@ -46,13 +46,30 @@ class Test(unittest.TestCase):
 
     # inexact
     r = hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), 17)
-    self.assertAlmostEqual(r["var"], 0.075)
+    self.assertAlmostEqual(r["var"], np.sqrt(0.075))
     self.assertTrue(np.array_equal(r["freq"], np.array([7, 5, 3, 2])))
 
-    # TODO multidim integerisation
-    s = np.array([[1.0, 1.0], [1.0, 1.0]])
+    # multidim integerisation 
+    # invalid population
+    s = np.array([[1.1, 1.0], [1.0, 1.0]])
     r = hl.integerise(s)
-    self.assertTrue(r["conv"])
+    self.assertEqual(r, "Marginal or total value 4.100000 is not an integer (within tolerance 0.000100)")
+    # invalid marginals
+    s = np.array([[1.1, 1.0], [0.9, 1.0]])
+    r = hl.integerise(s)
+    self.assertEqual(r, "Marginal or total value 2.100000 is not an integer (within tolerance 0.000100)")
+
+    # use IPF to generate a valid fractional population
+    m0 = np.array([111,112,113,114,110], dtype=float)
+    m1 = np.array([136,142,143,139], dtype=float)
+    s = np.ones([len(m0),len(m1),len(m0)])
+
+    fpop = hl.ipf(s, [np.array([0]),np.array([1]),np.array([2])], [m0,m1,m0])["result"]
+
+    result = hl.integerise(fpop)
+    self.assertTrue(result["conv"])
+    self.assertEqual(np.sum(result["result"]), sum(m0))
+    self.assertTrue(result["rmse"] < 1.05717) 
 
   def test_IPF(self):
     m0 = np.array([52.0, 48.0])

@@ -6,9 +6,22 @@
 
 #include <algorithm>
 #include <numeric>
+#include <cmath>
 #include <iostream>
 
-std::vector<int> integeriseMarginalDistribution(const std::vector<double>& p, int pop, double& mse)
+namespace {
+
+int64_t checked_round(double x, double tol=1e-4) // loose tolerance ~1/4 mantissa precision
+{
+  //std::cout << "x=%% round(x)=%% -> %%"_s % x % round(x) %  << std::endl;
+  if (fabs(x - round(x)) > tol)
+    throw std::runtime_error("Marginal or total value %% is not an integer (within tolerance %%)"_s % x % tol);
+  return (int64_t)round(x); 
+}
+
+}
+
+std::vector<int> integeriseMarginalDistribution(const std::vector<double>& p, int pop, double& rmse)
 {
   const size_t n = p.size();
   std::vector<int> f(n);
@@ -28,48 +41,68 @@ std::vector<int> integeriseMarginalDistribution(const std::vector<double>& p, in
     --*it;
   }
 
-  mse = 0.0;
-  for(size_t i = 0; i < n; ++i)
+  rmse = 0.0;
+  for (size_t i = 0; i < n; ++i)
   {
-    mse += r[i] * r[i];
+    rmse += r[i] * r[i];
   }
-  mse /= n;
+  rmse = sqrt(rmse / n);
 
   return f;
 }
 
-
-
-// TODO needs to be an object (derived from QISI) (marginals are references in base class)
-std::unique_ptr<QISI> integerise_multidim(const NDArray<double>& seed)
+Integeriser::Integeriser(const NDArray<double>& seed) : m_seed(seed)
 {
   // construct 1-d integer marginals in each dim
-  size_t dim = seed.dim();
-  double fsum = sum(seed);
+  size_t dim = m_seed.dim();
+  // check total population is integral (or close)
+  checked_round(sum(m_seed));
 
-  std::cout << "dim=%% sum=%%"_s % dim % fsum << std::endl;
+  std::cout << "fsum=%% isum=%%"_s % sum(m_seed) % checked_round(sum(m_seed)) << std::endl;
 
-  // TODO check (close to) integer
-  (void)fsum;
-  
-  QISI::index_list_t indices(dim); // 0..n-1
-  // hack
-  static QISI::marginal_list_t marginals(dim);
+  m_indices.resize(dim); // 0..n-1
+  m_marginals.resize(dim);
 
   for (size_t d = 0; d < dim; ++d)
   {
     const std::vector<double>& mf = reduce(seed, d);
     // TODO check (close to) integers
-    indices[d] = {(int64_t)d};
-    marginals[d].resize({(int64_t)mf.size()});
-    std::cout << "%%: %% %% %%" % indices[d] % marginals[d].dim() % marginals[d].sizes() % mf << std::endl;
+    m_indices[d] = {(int64_t)d};
+    m_marginals[d].resize({(int64_t)mf.size()});
+    std::cout << "%%: %% %% %%" % m_indices[d] % m_marginals[d].dim() % m_marginals[d].sizes() % mf << std::endl;
     for (size_t i = 0; i < mf.size(); ++i)
     {
-      *(marginals[d].begin() + i) = int64_t(mf[i] + 0.5); 
+      *(m_marginals[d].begin() + i) = checked_round(mf[i]); 
     }
   }
+  
+  QISI qisi(m_indices, m_marginals);
+  
+  NDArray<int64_t>::copy(qisi.solve(m_seed), m_result);
+  m_conv = qisi.conv();
 
-  return std::unique_ptr<QISI>(new QISI(indices, marginals));
+  m_rmse = 0.0; 
+  for (Index index(m_result.sizes()); !index.end(); ++index)
+  {
+    m_rmse += (m_result[index] - m_seed[index]) * (m_result[index] - m_seed[index]);
+  }
+  m_rmse = sqrt(m_rmse / m_result.storageSize());
 }
+
+const NDArray<int64_t>& Integeriser::result() const
+{
+  return m_result;
+}
+
+bool Integeriser::conv() const
+{
+  return m_conv;
+}
+
+double Integeriser::rmse() const
+{
+  return m_rmse;
+}
+
 
 

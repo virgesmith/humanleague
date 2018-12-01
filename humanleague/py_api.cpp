@@ -126,13 +126,15 @@ extern "C" PyObject* humanleague_integerise(PyObject *self, PyObject *args)
     pycpp::Array<double> npSeed(seedArg);
 
     NDArray<double> seed = npSeed.toNDArray();
-    std::unique_ptr<QISI> qisi = integerise_multidim(seed);
-    const NDArray<int64_t>& result = qisi->solve(seed);
+    Integeriser integeriser(seed);
+
+    // std::unique_ptr<QISI> qisi = integerise_multidim(seed);
+    // const NDArray<int64_t>& result = qisi->solve(seed);
 
     pycpp::Dict retval;
-    retval.insert("result", pycpp::Array<int64_t>(result));
-    retval.insert("conv", pycpp::Bool(qisi->conv()));
-    // TODO RMSE? R2?
+    retval.insert("result", pycpp::Array<int64_t>(integeriser.result()));
+    retval.insert("conv", pycpp::Bool(integeriser.conv()));
+    retval.insert("rmse", pycpp::Double(integeriser.rmse()));
     // retval.insert("pop", pycpp::Double(ipf.population()));
     // retval.insert("iterations", pycpp::Int(ipf.iters()));
     // // result.insert("errors", ipf.errors());
@@ -484,18 +486,17 @@ extern "C" PyObject* humanleague_apitest(PyObject*, PyObject*)
 
 namespace {
 
-// Python2.7
 PyMethodDef entryPoints[] = {
   {"prob2IntFreq", humanleague_prob2IntFreq, METH_VARARGS, "Returns nearest-integer population given probs and overall population."},
   {"integerise", humanleague_integerise, METH_VARARGS, "Returns mulidimensional nearest-integer population constrained to marginal sums in every dimension."},
   {"flatten", humanleague_flatten, METH_VARARGS, "Converts n-D integer array into a table with columns referencing the value indices."},
-  {"sobolSequence", humanleague_sobol, METH_VARARGS, "Returns a Sobol sequence."},
-  {"ipf", humanleague_ipf, METH_VARARGS, "Synthpop (IPF)."},
-  {"qis", humanleague_qis, METH_VARARGS, "QIS."},
-  {"qisi", humanleague_qisi, METH_VARARGS, "QIS-IPF."},
+  {"sobolSequence", humanleague_sobol, METH_VARARGS, "Returns a Sobol sequence given a dimension and a length."},
+  {"ipf", humanleague_ipf, METH_VARARGS, "Iterative proportional fitting, given a seed population and marginal distributions."},
+  {"qis", humanleague_qis, METH_VARARGS, "Quasirandom integer (unweighted) sampling of population given marginal distributions."},
+  {"qisi", humanleague_qisi, METH_VARARGS, "Quasirandom integer (weighted) sampling, of population given marginal distributions, using IPF to update the sample distribution."},
   {"version", humanleague_version, METH_NOARGS, "version info"},
-  {"unittest", humanleague_unittest, METH_NOARGS, "unit testing"},
-  {"apitest", humanleague_apitest, METH_NOARGS, "api (memory) testing"},
+  {"unittest", humanleague_unittest, METH_NOARGS, "run unit tests"},
+  {"apitest", humanleague_apitest, METH_NOARGS, "run api (memory) tests"},
   {nullptr, nullptr, 0, nullptr}        /* terminator */
 };
 

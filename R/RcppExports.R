@@ -90,7 +90,7 @@ integerise <- function(population) {
 #' This function will generate the closest integer vector to the probabilities scaled to the population.
 #' @param pIn a numeric vector of state occupation probabilities. Must sum to unity (to within double precision epsilon)
 #' @param pop the total population
-#' @return an integer vector of frequencies that sums to pop.
+#' @return an integer vector of frequencies that sum to pop, and the RMS difference from the original values.
 #' @examples
 #' prob2IntFreq(c(0.1,0.2,0.3,0.4), 11)
 #' @export

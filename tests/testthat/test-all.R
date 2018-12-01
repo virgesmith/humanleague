@@ -569,7 +569,7 @@ test_that("probabilities must sum to zero", {
 
 test_that("population zero returns a zero array (and zero var)", {
   res = humanleague::prob2IntFreq(c(0.5,0.4,0.1), 0)
-  expect_equal(res$var, 0.0)
+  expect_equal(res$rmse, 0.0)
   expect_equal(length(res$freq), 3)
   expect_equal(unique(res$freq), 0)
 })
@@ -577,19 +577,19 @@ test_that("population zero returns a zero array (and zero var)", {
 test_that("simple1", {
   res<-humanleague::prob2IntFreq(c(0.1,0.2,0.3,0.4), 10)
   expect_equal(res$freq, c(1,2,3,4))
-  expect_equal(res$var, 0)
+  expect_equal(res$rmse, 0)
 })
 
 test_that("simple2", {
   res<-humanleague::prob2IntFreq(c(0.1,0.2,0.3,0.4), 11)
   expect_equal(res$freq, c(1,2,3,5))
-  expect_equal(res$var, 0.125)
+  expect_equal(res$rmse, sqrt(0.125))
 })
 
 test_that("degenerate", {
   res<-humanleague::prob2IntFreq(c(0.2,0.2,0.2,0.2,0.2), 11)
   expect_equal(res$freq, c(3,2,2,2,2))
-  expect_equal(res$var, 0.16)
+  expect_equal(res$rmse, 0.4)
 })
 
 ###### Sobol sequence tests

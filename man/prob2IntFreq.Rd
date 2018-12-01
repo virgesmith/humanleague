@@ -12,7 +12,7 @@ prob2IntFreq(pIn, pop)
 \item{pop}{the total population}
 }
 \value{
-an integer vector of frequencies that sums to pop.
+an integer vector of frequencies that sum to pop, and the RMS difference from the original values.
 }
 \description{
 This function will generate the closest integer vector to the probabilities scaled to the population.

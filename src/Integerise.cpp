@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <numeric>
 #include <cmath>
-#include <iostream>
+//#include <iostream>
 
 namespace {
 
@@ -16,7 +16,7 @@ int64_t checked_round(double x, double tol=1e-4) // loose tolerance ~1/4 mantiss
   //std::cout << "x=%% round(x)=%% -> %%"_s % x % round(x) %  << std::endl;
   if (fabs(x - round(x)) > tol)
     throw std::runtime_error("Marginal or total value %% is not an integer (within tolerance %%)"_s % x % tol);
-  return (int64_t)round(x); 
+  return (int64_t)round(x);
 }
 
 }
@@ -58,8 +58,6 @@ Integeriser::Integeriser(const NDArray<double>& seed) : m_seed(seed)
   // check total population is integral (or close)
   checked_round(sum(m_seed));
 
-  std::cout << "fsum=%% isum=%%"_s % sum(m_seed) % checked_round(sum(m_seed)) << std::endl;
-
   m_indices.resize(dim); // 0..n-1
   m_marginals.resize(dim);
 
@@ -69,19 +67,19 @@ Integeriser::Integeriser(const NDArray<double>& seed) : m_seed(seed)
     // TODO check (close to) integers
     m_indices[d] = {(int64_t)d};
     m_marginals[d].resize({(int64_t)mf.size()});
-    std::cout << "%%: %% %% %%" % m_indices[d] % m_marginals[d].dim() % m_marginals[d].sizes() % mf << std::endl;
+    //std::cout << "%%: %% %% %%" % m_indices[d] % m_marginals[d].dim() % m_marginals[d].sizes() % mf << std::endl;
     for (size_t i = 0; i < mf.size(); ++i)
     {
-      *(m_marginals[d].begin() + i) = checked_round(mf[i]); 
+      *(m_marginals[d].begin() + i) = checked_round(mf[i]);
     }
   }
-  
+
   QISI qisi(m_indices, m_marginals);
-  
+
   NDArray<int64_t>::copy(qisi.solve(m_seed), m_result);
   m_conv = qisi.conv();
 
-  m_rmse = 0.0; 
+  m_rmse = 0.0;
   for (Index index(m_result.sizes()); !index.end(); ++index)
   {
     m_rmse += (m_result[index] - m_seed[index]) * (m_result[index] - m_seed[index]);

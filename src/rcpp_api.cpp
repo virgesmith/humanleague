@@ -392,14 +392,14 @@ List integerise(NumericVector population)
 //' This function will generate the closest integer vector to the probabilities scaled to the population.
 //' @param pIn a numeric vector of state occupation probabilities. Must sum to unity (to within double precision epsilon)
 //' @param pop the total population
-//' @return an integer vector of frequencies that sums to pop.
+//' @return an integer vector of frequencies that sum to pop, and the RMS difference from the original values.
 //' @examples
 //' prob2IntFreq(c(0.1,0.2,0.3,0.4), 11)
 //' @export
 // [[Rcpp::export]]
 List prob2IntFreq(NumericVector pIn, int pop)
 {
-  double var;
+  double rmse;
   const std::vector<double>& p = as<std::vector<double>>(pIn);
 
   if (pop < 0)
@@ -411,11 +411,11 @@ List prob2IntFreq(NumericVector pIn, int pop)
   {
     throw std::runtime_error("probabilities do not sum to unity");
   }
-  std::vector<int> f = integeriseMarginalDistribution(p, pop, var);
+  std::vector<int> f = integeriseMarginalDistribution(p, pop, rmse);
 
   List result;
   result["freq"] = f;
-  result["var"] = var;
+  result["rmse"] = rmse;
 
   return result;
 }

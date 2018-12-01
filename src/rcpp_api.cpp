@@ -381,8 +381,30 @@ List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
 // [[Rcpp::export]]
 List integerise(NumericVector population)
 {
+  Dimension rSizes = population.attr("dim");
+  const int64_t dim = rSizes.size();
+
+  std::vector<int64_t> s;
+  s.reserve(dim);
+
+  // assemble dimensions (row major) for seed
+  for (int64_t i = dim-1; i >= 0; --i)
+    s.push_back(rSizes[(size_t)i]);
+
+  // Read-only shallow copy of seed
+  const NDArray<double> popwrapper(s, (double*)&population[0]);
+
+  Integeriser integeriser(popwrapper);
+
+  IntegerVector r(rSizes);
+  // copy result into R array
+  const NDArray<int64_t>& tmp = integeriser.result();
+  std::copy(tmp.rawData(), tmp.rawData() + tmp.storageSize(), r.begin());
+
   List result;
-  result["conv"] = false;
+  result["result"] = r;
+  result["conv"] = integeriser.conv();
+  result["rmse"] = integeriser.rmse();
   return result;
 }
 

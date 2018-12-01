@@ -553,10 +553,38 @@ makeConstraint = function(r, b) {
 
 ##### Marginal/population integerisation tests
 
-test_that("new2.1 - integerise", {
-  r = c(0, 3, 17, 124, 167, 79, 46, 22)
+test_that("integerise non integral population", {
+  r=array(c(1.1, 1, 1, 1), dim=c(2,2))
+
+  expect_error(humanleague::integerise(r))
+})
+
+test_that("integerise non integral marginal", {
+  r=array(c(1.1, 0.9, 1, 1), dim=c(2,2))
+
+  expect_error(humanleague::integerise(r))
+})
+
+test_that("integerise no-op", {
+  r=array(c(1, 1, 1, 1), dim=c(2,2))
   res = humanleague::integerise(r)
-  expect_equal(res$conv, FALSE)
+  expect_true(res$conv)
+  expect_equal(res$rmse, 0.0)
+})
+
+test_that("integerise", {
+  m0 = c(111,112,113,114,110)
+  m1 = c(136,142,143,139)
+  s = array(rep(1, length(m0)*length(m1)),  dim=c(length(m0),length(m1)))
+
+  fpop = humanleague::ipf(s, list(1,2),list(m0,m1))$result
+  #print(fpop)
+
+  result = humanleague::integerise(fpop)
+  #print(result$result)
+  expect_true(result$conv)
+  expect_equal(sum(result$result), sum(m0))
+  expect_lt(result$rmse, 0.8772)
 })
 
 test_that("population must be positive", {

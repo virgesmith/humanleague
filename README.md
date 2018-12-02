@@ -10,6 +10,54 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1116318.svg)](https://doi.org/10.5281/zenodo.1116318)
 [![status](http://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4/status.svg)](http://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4)
 
+> ## Latest news: 2.1.0 pre-release
+> - adds new functionality for multidimensional integerisation. 
+> - deletes previously deprecated functionality `synthPop` and `synthPopG`.
+> ### Multidimensional integerisation
+> Building on the `prob2IntFreq` function - which takes a discrete probability distribution and a count, and returns the closest integer population to the distribution that sums to the count - a multidimensional equivalent `integerise` is introduced.
+> 
+> In one dimension, for example:
+> ```python
+> >>> import numpy as np
+> >>> import humanleague
+> >>> p=np.array([0.1, 0.2, 0.3, 0.4])
+> >>> humanleague.prob2IntFreq(p, 11)
+> {'freq': array([1, 2, 3, 5]), 'rmse': 0.3535533905932736}
+> ```
+> produces the optimal (i.e. closest possible) integer population to the discrete distribution.
+>  
+> The `integerise` function generalises this problem and applies it to higher dimensions: given an n-dimensional array of real numbers where the 1-d marginal sums in every dimension are integral (and thus the total population is too), it attempts to find an integral array that also satisfies these constraints. 
+
+> The QISI algorithm is repurposed to this end. As it is a sampling algorithm it cannot guarantee that a solution is found, and if so, whether the solution is optimal. If it fails this does not prove that a solution does not exist for the given input.
+
+> ```python
+> >>> a = np.array([[ 0.3,  1.2,  2. ,  1.5],
+>                   [ 0.6,  2.4,  4. ,  3. ],
+>                   [ 1.5,  6. , 10. ,  7.5],
+>                   [ 0.6,  2.4,  4. ,  3. ]])
+> # marginal sums
+> >> sum(a)
+> array([ 3., 12., 20., 15.])
+> >>> sum(a.T)
+> array([ 5., 10., 25., 10.])
+> # perform integerisation
+> >>> r = humanleague.integerise(a)
+> >>> r["conv"]
+> True
+> >>> r["result"]
+> array([[ 0,  2,  2,  1],
+>        [ 0,  3,  4,  3],
+>        [ 2,  6, 10,  7],
+>        [ 1,  1,  4,  4]])
+> >>> r["rmse"]
+> 0.5766281297335398
+> # check marginals are preserved
+> >>> sum(r["result"]) == sum(a)
+> array([ True,  True,  True,  True])
+> >>> sum(r["result"].T) == sum(a.T)
+> array([ True,  True,  True,  True])
+> ```
+
 *humanleague* is a python and an R package for microsynthesising populations from marginal and (optionally) seed data. The core code is implemented in C++, and the current release is version 2.
 
 The package contains algorithms that use a number of different microsynthesis techniques:

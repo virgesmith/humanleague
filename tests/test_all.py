@@ -36,17 +36,17 @@ class Test(unittest.TestCase):
 
     # zero pop
     r = hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), 0)
-    self.assertTrue(r["var"] == 0.0)
+    self.assertTrue(r["rmse"] == 0.0)
     self.assertTrue(np.array_equal(r["freq"], np.array([0, 0, 0, 0])))
 
     # exact
     r = hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), 10)
-    self.assertTrue(r["var"] == 0.0)
+    self.assertTrue(r["rmse"] == 0.0)
     self.assertTrue(np.array_equal(r["freq"], np.array([4, 3, 2, 1])))
 
     # inexact
     r = hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), 17)
-    self.assertAlmostEqual(r["var"], np.sqrt(0.075))
+    self.assertAlmostEqual(r["rmse"], np.sqrt(0.075))
     self.assertTrue(np.array_equal(r["freq"], np.array([7, 5, 3, 2])))
 
     # multidim integerisation 

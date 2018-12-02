@@ -100,7 +100,7 @@ extern "C" PyObject* humanleague_prob2IntFreq(PyObject* self, PyObject* args)
 
     pycpp::Dict result;
     result.insert("freq", pycpp::Array<int64_t>(f));
-    result.insert("var", pycpp::Double(var));
+    result.insert("rmse", pycpp::Double(var));
 
     return result.release();;
   }
@@ -128,18 +128,10 @@ extern "C" PyObject* humanleague_integerise(PyObject *self, PyObject *args)
     NDArray<double> seed = npSeed.toNDArray();
     Integeriser integeriser(seed);
 
-    // std::unique_ptr<QISI> qisi = integerise_multidim(seed);
-    // const NDArray<int64_t>& result = qisi->solve(seed);
-
     pycpp::Dict retval;
     retval.insert("result", pycpp::Array<int64_t>(integeriser.result()));
     retval.insert("conv", pycpp::Bool(integeriser.conv()));
     retval.insert("rmse", pycpp::Double(integeriser.rmse()));
-    // retval.insert("pop", pycpp::Double(ipf.population()));
-    // retval.insert("iterations", pycpp::Int(ipf.iters()));
-    // // result.insert("errors", ipf.errors());
-    // retval.insert("maxError", pycpp::Double(ipf.maxError()));
-
     return retval.release();
   }
   catch(const std::exception& e)

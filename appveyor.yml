@@ -1,98 +1,98 @@
- # DO NOT CHANGE the "init" and "install" sections below
+#  # DO NOT CHANGE the "init" and "install" sections below
 
- # Download script file from GitHub
- init:
-   ps: |
-         $ErrorActionPreference = "Stop"
-         Invoke-WebRequest http://raw.github.com/krlmlr/r-appveyor/master/scripts/appveyor-tool.ps1 -OutFile "..\appveyor-tool.ps1"
-         Import-Module '..\appveyor-tool.ps1'
+#  # Download script file from GitHub
+#  init:
+#    ps: |
+#          $ErrorActionPreference = "Stop"
+#          Invoke-WebRequest http://raw.github.com/krlmlr/r-appveyor/master/scripts/appveyor-tool.ps1 -OutFile "..\appveyor-tool.ps1"
+#          Import-Module '..\appveyor-tool.ps1'
 
- install:
-   ps: Bootstrap
+#  install:
+#    ps: Bootstrap
 
- cache:
-   - C:\RLibrary
+#  cache:
+#    - C:\RLibrary
 
- # Adapt as necessary starting from here
+#  # Adapt as necessary starting from here
 
- build_script:
-   - travis-tool.sh install_deps
+#  build_script:
+#    - travis-tool.sh install_deps
 
- test_script:
-   - travis-tool.sh run_tests
+#  test_script:
+#    - travis-tool.sh run_tests
 
- on_failure:
-   - 7z a failure.zip *.Rcheck\*
-   - appveyor PushArtifact failure.zip
+#  on_failure:
+#    - 7z a failure.zip *.Rcheck\*
+#    - appveyor PushArtifact failure.zip
 
- artifacts:
-   - path: '*.Rcheck\**\*.log'
-     name: Logs
+#  artifacts:
+#    - path: '*.Rcheck\**\*.log'
+#      name: Logs
 
-   - path: '*.Rcheck\**\*.out'
-     name: Logs
+#    - path: '*.Rcheck\**\*.out'
+#      name: Logs
 
-   - path: '*.Rcheck\**\*.fail'
-     name: Logs
+#    - path: '*.Rcheck\**\*.fail'
+#      name: Logs
 
-   - path: '*.Rcheck\**\*.Rout'
-     name: Logs
+#    - path: '*.Rcheck\**\*.Rout'
+#      name: Logs
 
-   - path: '\*_*.tar.gz'
-     name: Bits
+#    - path: '\*_*.tar.gz'
+#      name: Bits
 
-   - path: '\*_*.zip'
-     name: Bits
+#    - path: '\*_*.zip'
+#      name: Bits
 
 #######################################
 
-#environment:
-#  matrix:
-#    - PYTHON: "C:\\Python35-x64"
-#      PYTHON_ARCH: 64
-#      MSVC_VERSION: "Visual Studio 14 Win64"
+environment:
+ matrix:
+   - PYTHON: "C:\\Python35-x64"
+     PYTHON_ARCH: 64
+     MSVC_VERSION: "Visual Studio 14 Win64"
 
-#    - PYTHON: "C:\\Python36-x64"
-#      PYTHON_ARCH: 64
-#      MSVC_VERSION: "Visual Studio 14 Win64"
+   - PYTHON: "C:\\Python36-x64"
+     PYTHON_ARCH: 64
+     MSVC_VERSION: "Visual Studio 14 Win64"
 
-#    - PYTHON: "C:\\Python37-x64"
-#      PYTHON_ARCH: 64
-#      MSVC_VERSION: "Visual Studio 14 Win64"
+   - PYTHON: "C:\\Python37-x64"
+     PYTHON_ARCH: 64
+     MSVC_VERSION: "Visual Studio 14 Win64"
 
-#init:
-#  - "ECHO %PYTHON% %PYTHON_ARCH% %MSVC_VERSION%"
-#  - "%PYTHON%\\python.exe --version"
+init:
+ - "ECHO %PYTHON% %PYTHON_ARCH% %MSVC_VERSION%"
+ - "%PYTHON%\\python.exe --version"
 
-#install:
-#  # python requirements needed to create distribution
-#  - "%PYTHON%\\python.exe -m pip install wheel"
+install:
+ # python requirements needed to create distribution
+ - "%PYTHON%\\python.exe -m pip install wheel"
 
-#  # try to fix cython install, see:
-#  # * https://matthew-brett.github.io/pydagogue/python_msvc.html
-#  # * https://blog.ionelmc.ro/2014/12/21/compiling-python-extensions-on-windows/
-#  - echo "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64 > "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\amd64/vcvars64.bat"
+ # try to fix cython install, see:
+ # * https://matthew-brett.github.io/pydagogue/python_msvc.html
+ # * https://blog.ionelmc.ro/2014/12/21/compiling-python-extensions-on-windows/
+ - echo "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64 > "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\amd64/vcvars64.bat"
 
-#  # note: VS 2010 has stdint.h bundled so simply copy it. Cython should not
-#  #       depend on it for py27 (works fine when compiling using C code)
-#  #       but this works differently for C++ (maybe there is some other issue
-#  #       with environment setup).
-#  # try to do a dirty workaround for Cython with C++ for py27
-#  #- cp "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stdint.h" "C:\Users\appveyor\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\VC\include\stdint.h"
-#  # get latest version of all submodules
-##  - "git submodule update --init --recursive"
-##  - "%PYTHON%\\python.exe -m pip install -r doc/requirements-test.txt"
+ # note: VS 2010 has stdint.h bundled so simply copy it. Cython should not
+ #       depend on it for py27 (works fine when compiling using C code)
+ #       but this works differently for C++ (maybe there is some other issue
+ #       with environment setup).
+ # try to do a dirty workaround for Cython with C++ for py27
+ #- cp "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stdint.h" "C:\Users\appveyor\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\VC\include\stdint.h"
+ # get latest version of all submodules
+#  - "git submodule update --init --recursive"
+#  - "%PYTHON%\\python.exe -m pip install -r doc/requirements-test.txt"
 
-#build: off
+build: off
 
-#build_script:
-#  #- "ci\\appveyor_build.cmd %PYTHON%/python.exe -m pip wheel . -w dist"
-#  - "%PYTHON%/python.exe setup.py install"
+build_script:
+ #- "ci\\appveyor_build.cmd %PYTHON%/python.exe -m pip wheel . -w dist"
+ - "%PYTHON%/python.exe setup.py install"
 
-#test_script:
-#  - "%PYTHON%/python.exe setup.py test"
+test_script:
+ - "%PYTHON%/python.exe setup.py test"
 
-#on_success:
+on_success:
 
-#artifacts:
-#  - path: dist\*
+artifacts:
+ - path: dist\*

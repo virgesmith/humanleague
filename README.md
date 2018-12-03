@@ -63,7 +63,7 @@
 The package contains algorithms that use a number of different microsynthesis techniques:
 - [Iterative Proportional Fitting (IPF)](https://en.wikipedia.org/wiki/Iterative_proportional_fitting)
 - [Quasirandom Integer Sampling (QIS)](http://jasss.soc.surrey.ac.uk/20/4/14.html) (no seed population)
-- Quasirandom Integer Sampling of IPF (QISI): A combination of the two techniques whereby IPF solutions are used to sample an integer population.
+- Quasirandom Integer Sampling of IPF (QISI): A combination of the two techniques whereby the results of repeated IPF algorithms are used to sample an integer population.
 
 The latter provides a bridge between deterministic reweighting and combinatorial optimisation, offering advantages of both techniques:
 - generates high-entropy integral populations 
@@ -75,12 +75,11 @@ The algorithms:
 - support arbitrary dimensionality* for both the marginals and the seed.
 - produce statistical data to ascertain the likelihood/degeneracy of the population (where appropriate).
 
-[* excluding the legacy functions retained for backward compatibility with version 1.0.1]
-
 The package also contains the following utility functions:
 - a Sobol sequence generator
-- functionality to convert fractional to nearest-integer marginals (in 1D). This can also be achieved in multiple dimensions by using the QISI algorithm.
-- functionality to 'flatten' a population into a table: this converts a multidimensional array containing the population count for each state into a table listing individuals and their characteristics. 
+- construct a closest integer population from a discrete univariate probability distribution.
+- an algorithm for creating multidimensional integer populations from fractional ones, constrained to the marginal sums in each dimension.  
+- 'flatten' a multidimensional population into a table: this converts a multidimensional array containing the population count for each state into a table listing individuals and their characteristics. 
 
 Version 1.0.1 reflects the work described in the [Quasirandom Integer Sampling (QIS)](http://jasss.soc.surrey.ac.uk/20/4/14.html) paper.
 
@@ -101,23 +100,17 @@ Or, for the legacy version
 
 Requires Python 3 and numpy. PyPI package:
 ```bash
-python3 -m pip install humanleague
+python3 -m pip install humanleague --user
 ```
-[Conda pacakage is being worked on]
+[Conda-forge package is being worked on]
 
-### Build and test (from local cloned repo)
+### Build, install and test (from local cloned repo)
 ```bash
-$ ./setup.py build
+$ ./setup.py install --user
 ```
 ```bash
-$ python3 tests/test_all.py
+$ ./setup.py test
 ```
-### Install (from local repo)
-```bash
-$ ./setup.py install
-```
-The latter command may require admin rights. On linux, `sudo` is unnecessary if you have group (e.g. staff) write access to /usr/local/lib.
-
 ### Examples
 
 Consult the package documentation, e.g.

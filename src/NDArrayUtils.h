@@ -112,7 +112,8 @@ T marginalProduct(const std::vector<std::vector<T>>& m, const std::vector<int64_
   return p;
 }
 
-// Reduce n-D array to 1-D sums
+// Reduce n-D array to 1-D sums.
+// NB if the input is already 1d this just returns the original NDArray as a vector
 template<typename T>
 std::vector<T> reduce(const NDArray<T>& input, size_t orient)
 {
@@ -125,18 +126,7 @@ std::vector<T> reduce(const NDArray<T>& input, size_t orient)
 
   std::vector<T> sums(input.size(orient), 0);
 
-  // Index indexer(input.sizes(), std::make_pair(orient, 0));
-  // for (; !indexer.end(); ++indexer)
-  // {
-  //   // Pass index in directly to avoid
-  //   typename NDArray<T>::ConstIterator it(input, orient, indexer);
-  //   for(size_t i = 0; !it.end(); ++it, ++i)
-  //   {
-  //     sums[i] += *it;
-  //   }
-  // }
-
-  // this is MUCH slower!!! according to callgrind, VTune says otherwise
+  // this is a bottleneck slower according to callgrind, but VTune says otherwise
   Index indexer(input.sizes());
   for (; !indexer.end(); ++indexer)
   {

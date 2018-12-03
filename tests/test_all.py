@@ -49,6 +49,12 @@ class Test(unittest.TestCase):
     self.assertAlmostEqual(r["rmse"], np.sqrt(0.075))
     self.assertTrue(np.array_equal(r["freq"], np.array([7, 5, 3, 2])))
 
+    # 1-d case
+    r = hl.integerise(np.array([2.0, 1.5, 1.0, 0.5]))
+    print(r)
+    self.assertTrue(r["conv"])
+
+
     # multidim integerisation 
     # invalid population
     s = np.array([[1.1, 1.0], [1.0, 1.0]])

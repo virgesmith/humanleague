@@ -40,9 +40,9 @@ namespace pycpp {
   //template<> struct NpyType<int> { static const int Type = NPY_LONG; }; // value may be incorrect
   //template<> struct NpyType<uint32_t> { static const int Type = NPY_ULONG; }; // value may be incorrect
   // TODO This may cause issues on LLP64 / 32bit platforms
-  template<> struct NpyType<int64_t> { static const int Type = NPY_LONG;  static const int Size = NPY_SIZEOF_LONG; };
+  // force long long in hope fixes LLP64 issues 
+  template<> struct NpyType<int64_t> { static const int Type = NPY_LONG;  static const int Size = NPY_SIZEOF_LONGLONG; };
   //template<> struct NpyType<bool> { static const int Type = NPY_BOOL;     static const int Size = 4 /*guess as no NPY_SIZEOF_BOOL*/; };
-
   // numpy arrays 
   template<typename T>
   class Array : public Object

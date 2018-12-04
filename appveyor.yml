@@ -41,8 +41,8 @@ install:
       }
       if ($env:TEST_LANGUAGE -eq "Python") {
         $python = $env:PYTHON + "\python.exe"
-        & $python -m pip install --upgrade pip --no-warn-script-location
-        & $python -m pip install wheel setuptools numpy --no-warn-script-location
+        & $python -m pip install --upgrade pip wheel setuptools --no-warn-script-location
+        & $python -m pip install numpy --no-warn-script-location
       }
   # try to fix cython install, see:
   # * https://matthew-brett.github.io/pydagogue/python_msvc.html

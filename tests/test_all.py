@@ -51,9 +51,7 @@ class Test(unittest.TestCase):
 
     # 1-d case
     r = hl.integerise(np.array([2.0, 1.5, 1.0, 0.5]))
-    print(r)
     self.assertTrue(r["conv"])
-
 
     # multidim integerisation 
     # invalid population

@@ -118,8 +118,6 @@ namespace pycpp {
       std::copy(a.rawData(), a.rawData() + a.storageSize(), rawData());
     }
 
-    // TODO specialise for int...
-
     // // shallow copy, increase ref count
     // Array(const Array& a) : Object(a.m_obj)
     // {

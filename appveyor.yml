@@ -35,13 +35,14 @@ init:
       }
 
 install:
-  - cmd: |
-      if %TEST_LANGUAGE% == "R" (
+  - ps: |
+      if ($env:TEST_LANGUAGE -eq "R") {
         Bootstrap
-      )
-      if %TEST_LANGUAGE% == "Python" (
-        "%PYTHON%/python.exe -m pip install wheel"
-      )
+      }
+      if ($env:TEST_LANGUAGE -eq "Python") {
+        $python = $env:PYTHON + "\python.exe"
+        & $python -m pip install wheel"
+      }
   # try to fix cython install, see:
   # * https://matthew-brett.github.io/pydagogue/python_msvc.html
   # * https://blog.ionelmc.ro/2014/12/21/compiling-python-extensions-on-windows/

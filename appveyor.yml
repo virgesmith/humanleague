@@ -68,18 +68,11 @@ cache:
 
 build_script:
   # install deps
-  - ps: |
-      if ($env:TEST_LANGUAGE -eq "R") {
-        TravisTool install_deps
-      }
+  - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool install_deps }
 
 test_script:
-  - ps: |
-      if ($env:TEST_LANGUAGE -eq "R") {
-        TravisTool run_tests
-        exit
-      }
-  - if %TEST_LANGUAGE% == "Python" ( "%PYTHON%/python.exe setup.py test" )
+  - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool run_tests }
+  - cmd: if %TEST_LANGUAGE% == "Python" ( "%PYTHON%/python.exe setup.py test" )
 
 on_failure:
   - 7z a failure.zip *.Rcheck\*

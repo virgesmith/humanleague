@@ -30,7 +30,8 @@ init:
       }
       if ($env:TEST_LANGUAGE -eq "Python") {
         Write-Host "$env:PYTHON $env:PYTHON_ARCH $env:MSVC_VERSION"
-        $env:PYTHON\\python.exe --version
+        $python = $env:PYTHON + "\python.exe"
+        & $python --version
       }
 
 install:

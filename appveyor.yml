@@ -41,7 +41,7 @@ install:
       }
       if ($env:TEST_LANGUAGE -eq "Python") {
         $python = $env:PYTHON + "\python.exe"
-        & $python -m pip install wheel
+        & $python -m pip install wheel --no-warn-script-location
       }
   # try to fix cython install, see:
   # * https://matthew-brett.github.io/pydagogue/python_msvc.html
@@ -67,22 +67,24 @@ cache:
 
 build_script:
   # install deps
-  - cmd: |
-      if %TEST_LANGUAGE% == "R" (
-        travis-tool.sh install_deps
-      )
-      if %TEST_LANGUAGE% == "Python" (
-        "%PYTHON%/python.exe setup.py install"
-      )
+  - ps: |
+      if ($env:TEST_LANGUAGE -eq "R") {
+        TravisTool install_deps
+      }
+      if ($env:TEST_LANGUAGE -eq "Python") {
+        $python = $env:PYTHON + "\python.exe"
+        & $python setup.py install
+      }
 
 test_script:
-  - cmd: |
-      if %TEST_LANGUAGE% == "R" (
-        travis-tool.sh run_tests
-      )
-      if %TEST_LANGUAGE% == "Python" (
-        "%PYTHON%/python.exe setup.py test"
-      )
+  - ps: |
+      if ($env:TEST_LANGUAGE -eq "R") {
+        TravisTool run_tests
+      }
+      if ($env:TEST_LANGUAGE -eq "Python") {
+        $python = $env:PYTHON + "\python.exe"
+        & $python setup.py test
+      }
 
 on_failure:
   - 7z a failure.zip *.Rcheck\*

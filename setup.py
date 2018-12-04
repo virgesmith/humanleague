@@ -2,6 +2,7 @@
 
 import os
 import glob
+import warnings
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 def readme():
@@ -48,6 +49,9 @@ def test_suite():
   test_loader = unittest.TestLoader()
   test_suite = test_loader.discover('tests', pattern='test_*.py')
   return test_suite
+
+# ignore distutils/setup warnings triggered by long_description_content_type
+warnings.simplefilter("ignore", UserWarning)
 
 #setuptools.
 setup(

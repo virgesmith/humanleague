@@ -110,8 +110,9 @@ namespace pycpp {
   
   public:
   
-    // Construct from NDArray<T>. Data is copied
-    explicit Array(const NDArray<T>& a) 
+    // Construct from NDArray<U>
+    template<typename U>
+    explicit Array(const NDArray<U>& a) 
       : Array(a.dim(), convert(a.sizes()).data()) 
     {
       std::copy(a.rawData(), a.rawData() + a.storageSize(), rawData());

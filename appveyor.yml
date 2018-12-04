@@ -79,8 +79,7 @@ test_script:
         TravisTool run_tests
         exit
       }
-      $python = $env:PYTHON + "\python.exe"
-      & $python setup.py test
+  - if %TEST_LANGUAGE% == "Python" ( "%PYTHON%/python.exe setup.py test" )
 
 on_failure:
   - 7z a failure.zip *.Rcheck\*

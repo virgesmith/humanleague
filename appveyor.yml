@@ -21,6 +21,10 @@ environment:
      PYTHON_ARCH: ""
      MSVC_VERSION: ""
 
+# fail fast
+matrix:
+  fast_finish: true
+
 init:
   - ps: |
       if ($env:TEST_LANGUAGE -eq "R") {
@@ -71,7 +75,8 @@ build_script:
   - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool install_deps }
 
 test_script:
-  - if %TEST_LANGUAGE% == "Python" ( "%PYTHON%\python.exe" setup.py test ) else ( travis-tool.sh run_tests )
+  - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool run_tests }
+  - cmd: if %TEST_LANGUAGE% == "Python" ( "%PYTHON%\python.exe" setup.py test ) else ( echo %TEST_LANGUAGE% )
 
 on_failure:
   - 7z a failure.zip *.Rcheck\*

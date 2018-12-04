@@ -72,10 +72,6 @@ build_script:
       if ($env:TEST_LANGUAGE -eq "R") {
         TravisTool install_deps
       }
-      if ($env:TEST_LANGUAGE -eq "Python") {
-        $python = $env:PYTHON + "\python.exe"
-        & $python setup.py install
-      }
 
 test_script:
   - ps: |

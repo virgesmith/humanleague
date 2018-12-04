@@ -37,7 +37,7 @@ cppmodule = Extension(
   extra_compile_args = ['-Wall', '-std=c++11'],
   include_dirs = ['.', '/usr/include', '/usr/local/include'], # numpy include appended later
   # full rebuild triggers if any of sources/depends are modified
-  sources = list_files(["src", "humanleague"], ["cpp", "c"], exclude=[os.path.join("src", "rcpp_api.cpp"), 
+  sources = list_files(["src", "humanleague"], ["cpp", "c"], exclude=[os.path.join("src", "rcpp_api.cpp"),
                                                                       os.path.join("src", "RcppExports.cpp"),
                                                                       os.path.join("src", "humanleague_init.c")]),
   depends = list_files(["src", "humanleague"], ["h"])
@@ -63,6 +63,7 @@ setup(
   ext_modules = [cppmodule],
   setup_requires=['numpy'],
   install_requires=['numpy'],
-  test_suite='setup.test_suite'
+  test_suite='setup.test_suite',
+  # py_api references __FILE__ and easy_install complains that's not zip_safe
+  zip_safe=False
 )
-

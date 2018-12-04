@@ -77,11 +77,10 @@ test_script:
   - ps: |
       if ($env:TEST_LANGUAGE -eq "R") {
         TravisTool run_tests
+        exit
       }
-      if ($env:TEST_LANGUAGE -eq "Python") {
-        $python = $env:PYTHON + "\python.exe"
-        & $python setup.py test
-      }
+      $python = $env:PYTHON + "\python.exe"
+      & $python setup.py test
 
 on_failure:
   - 7z a failure.zip *.Rcheck\*

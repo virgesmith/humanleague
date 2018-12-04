@@ -36,10 +36,10 @@ init:
 
 install:
   - cmd: |
-      if "%TEST_LANGUAGE%"== "R" (
+      if %TEST_LANGUAGE% == "R" (
         Bootstrap
       )
-      if "%TEST_LANGUAGE%"== "Python" (
+      if %TEST_LANGUAGE% == "Python" (
         "%PYTHON%/python.exe -m pip install wheel"
       )
   # try to fix cython install, see:
@@ -67,19 +67,19 @@ cache:
 build_script:
   # install deps
   - cmd: |
-      if "%TEST_LANGUAGE%"== "R" (
+      if %TEST_LANGUAGE% == "R" (
         travis-tool.sh install_deps
       )
-      if "%TEST_LANGUAGE%"== "Python" (
+      if %TEST_LANGUAGE% == "Python" (
         "%PYTHON%/python.exe setup.py install"
       )
 
 test_script:
   - cmd: |
-      if "%TEST_LANGUAGE%"== "R" (
+      if %TEST_LANGUAGE% == "R" (
         travis-tool.sh run_tests
       )
-      if "%TEST_LANGUAGE%"== "Python" (
+      if %TEST_LANGUAGE% == "Python" (
         "%PYTHON%/python.exe setup.py test"
       )
 

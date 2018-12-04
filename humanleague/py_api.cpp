@@ -43,9 +43,9 @@ extern "C" PyObject* humanleague_flatten(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, &arrayArg))
       return nullptr;
 
-    pycpp::Array<int64_t> pyarray(arrayArg);
+    pycpp::Array<long> pyarray(arrayArg);
 
-    NDArray<int64_t> array(pyarray.toNDArray());
+    NDArray<int64_t> array(pyarray.toNDArray<int64_t>());
 
     size_t pop = 0;
     for (Index i(array.sizes()); !i.end(); ++i)
@@ -99,7 +99,7 @@ extern "C" PyObject* humanleague_prob2IntFreq(PyObject* self, PyObject* args)
     std::vector<int> f = integeriseMarginalDistribution(prob, pop, var);
 
     pycpp::Dict result;
-    result.insert("freq", pycpp::Array<int64_t>(f));
+    result.insert("freq", pycpp::Array<long>(f));
     result.insert("rmse", pycpp::Double(var));
 
     return result.release();;
@@ -125,11 +125,11 @@ extern "C" PyObject* humanleague_integerise(PyObject *self, PyObject *args)
 
     pycpp::Array<double> npSeed(seedArg);
 
-    NDArray<double> seed = npSeed.toNDArray();
+    NDArray<double> seed = npSeed.toNDArray<double>();
     Integeriser integeriser(seed);
 
     pycpp::Dict retval;
-    retval.insert("result", pycpp::Array<int64_t>(integeriser.result()));
+    retval.insert("result", pycpp::Array<long>(integeriser.result()));
     retval.insert("conv", pycpp::Bool(integeriser.conv()));
     retval.insert("rmse", pycpp::Double(integeriser.rmse()));
     return retval.release();
@@ -214,15 +214,15 @@ extern "C" PyObject* humanleague_ipf(PyObject *self, PyObject *args)
         throw std::runtime_error("index input should be a list of numpy integer arrays");
       if (!PyArray_Check(mlist[i]))
         throw std::runtime_error("marginal input should be a list of numpy float arrays");
-      pycpp::Array<int64_t> ia(ilist[i]);
+      pycpp::Array<long> ia(ilist[i]);
       pycpp::Array<double> ma(mlist[i]);
         //sizes[i] = a.shape()[0];
       indices[i] = ia.toVector<int64_t>();
-      marginals.push_back(std::move(ma.toNDArray/*<double>*/()));
+      marginals.push_back(std::move(ma.toNDArray<double>()));
     }
 
     IPF<double> ipf(indices, marginals);
-    const NDArray<double>& result = ipf.solve(seed.toNDArray());
+    const NDArray<double>& result = ipf.solve(seed.toNDArray<double>());
 
     pycpp::Dict retval;
     retval.insert("result", pycpp::Array<double>(result));
@@ -278,11 +278,11 @@ extern "C" PyObject* humanleague_qis(PyObject *self, PyObject *args)
         throw std::runtime_error("index input should be a list of numpy integer arrays");
       if (!PyArray_Check(mlist[i]))
         throw std::runtime_error("marginal input should be a list of numpy float arrays");
-      pycpp::Array<int64_t> ia(ilist[i]);
-      pycpp::Array<int64_t> ma(mlist[i]);
+      pycpp::Array<long> ia(ilist[i]);
+      pycpp::Array<long> ma(mlist[i]);
         //sizes[i] = a.shape()[0];
       indices[i] = ia.toVector<int64_t>();
-      marginals.push_back(std::move(ma.toNDArray()));
+      marginals.push_back(std::move(ma.toNDArray<int64_t>()));
     }
 
     QIS qis(indices, marginals, skips);
@@ -290,7 +290,7 @@ extern "C" PyObject* humanleague_qis(PyObject *self, PyObject *args)
     const NDArray<double>& expect = qis.expectation();
     pycpp::Dict retval;
 
-    retval.insert("result", pycpp::Array<int64_t>(result));
+    retval.insert("result", pycpp::Array<long>(result));
     retval.insert("expectation", pycpp::Array<double>(expect));
     retval.insert("conv", pycpp::Bool(qis.conv()));
     retval.insert("pop", pycpp::Double(qis.population()));
@@ -344,17 +344,17 @@ extern "C" PyObject* humanleague_qisi(PyObject *self, PyObject *args)
         throw std::runtime_error("index input should be a list of numpy integer arrays");
       if (!PyArray_Check(mlist[i]))
         throw std::runtime_error("marginal input should be a list of numpy float arrays");
-      pycpp::Array<int64_t> ia(ilist[i]);
-      pycpp::Array<int64_t> ma(mlist[i]);
+      pycpp::Array<long> ia(ilist[i]);
+      pycpp::Array<long> ma(mlist[i]);
         //sizes[i] = a.shape()[0];
       indices[i] = ia.toVector<int64_t>();
-      marginals.push_back(std::move(ma.toNDArray()));
+      marginals.push_back(std::move(ma.toNDArray<int64_t>()));
     }
 
     pycpp::Dict retval;
 
     QISI qisi(indices, marginals, skips);
-    retval.insert("result", pycpp::Array<int64_t>(qisi.solve(seed.toNDArray())));
+    retval.insert("result", pycpp::Array<long>(qisi.solve(seed.toNDArray<double>())));
     retval.insert("ipf", pycpp::Array<double>(qisi.expectation()));
     retval.insert("conv", pycpp::Bool(qisi.conv()));
     retval.insert("pop", pycpp::Double(qisi.population()));

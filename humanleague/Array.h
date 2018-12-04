@@ -39,9 +39,8 @@ namespace pycpp {
   template<> struct NpyType<double> { static const int Type = NPY_DOUBLE; static const int Size = NPY_SIZEOF_DOUBLE; };
   //template<> struct NpyType<int> { static const int Type = NPY_LONG; }; // value may be incorrect
   //template<> struct NpyType<uint32_t> { static const int Type = NPY_ULONG; }; // value may be incorrect
-  // TODO This may cause issues on LLP64 / 32bit platforms
-  // force long long in hope fixes LLP64 issues 
-  template<> struct NpyType<int64_t> { static const int Type = NPY_LONG;  static const int Size = NPY_SIZEOF_LONGLONG; };
+  // Note differences between LP64/ LLP64 and 32bit platforms
+  template<> struct NpyType<long> { static const int Type = NPY_LONG;  static const int Size = NPY_SIZEOF_LONG; };
   //template<> struct NpyType<bool> { static const int Type = NPY_BOOL;     static const int Size = 4 /*guess as no NPY_SIZEOF_BOOL*/; };
   // numpy arrays 
   template<typename T>
@@ -118,6 +117,8 @@ namespace pycpp {
       std::copy(a.rawData(), a.rawData() + a.storageSize(), rawData());
     }
 
+    // TODO specialise for int...
+
     // // shallow copy, increase ref count
     // Array(const Array& a) : Object(a.m_obj)
     // {
@@ -158,18 +159,19 @@ namespace pycpp {
       return v;
     }
 
-    NDArray<T> toNDArray() const
+    template<typename U>
+    NDArray<U> toNDArray() const
     {
       const size_t dim = this->dim();
       std::vector<int64_t> sizes(dim);
       for (size_t i = 0; i < dim; ++i)
         sizes[i] = shape()[i];
-      NDArray<T> tmp(sizes);
-      std::copy(rawData(), rawData() + tmp.storageSize(), const_cast<T*>(tmp.rawData()));
+      NDArray<U> tmp(sizes);
+      std::copy(rawData(), rawData() + tmp.storageSize(), const_cast<U*>(tmp.rawData()));
       return tmp;
     }
     
-    // TODO dimension
+    // dimension
     int dim() const 
     {
       return PyArray_NDIM((PyArrayObject*)m_obj);

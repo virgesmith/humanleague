@@ -15,8 +15,7 @@ License: MIT + file LICENCE
 Encoding: UTF-8
 LazyData: true
 Imports:
-    Rcpp (>= 0.12.8),
-    curl
+    Rcpp (>= 0.12.8)
 LinkingTo: Rcpp
 RoxygenNote: 6.0.1
 Suggests: 

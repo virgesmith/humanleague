@@ -63,7 +63,5 @@ setup(
   ext_modules = [cppmodule],
   setup_requires=['numpy'],
   install_requires=['numpy'],
-  test_suite='setup.test_suite',
-  # py_api references __FILE__ and easy_install complains that's not zip_safe
-  zip_safe=False
+  test_suite='setup.test_suite'
 )

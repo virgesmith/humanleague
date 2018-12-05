@@ -1,14 +1,14 @@
 # humanleague
 
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/humanleague)](https://CRAN.R-project.org/package=humanleague)
-[![CRAN Downloads](http://cranlogs.r-pkg.org/badges/grand-total/humanleague?color=black)](http://cran.r-project.org/package=humanleague)
+[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/humanleague)](https://CRAN.R-project.org/package=humanleague)
+[![CRAN Downloads](https://cranlogs.r-pkg.org/badges/grand-total/humanleague?color=black)](https://cran.r-project.org/package=humanleague)
 [![PyPI version](https://badge.fury.io/py/humanleague.svg)](https://badge.fury.io/py/humanleague)
 [![Travis Build Status](https://travis-ci.org/virgesmith/humanleague.png?branch=master)](https://travis-ci.org/virgesmith/humanleague)
 [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/x9oypgryt21ndc3p?svg=true)](https://ci.appveyor.com/project/virgesmith/humanleague)
 [![codecov](https://codecov.io/gh/virgesmith/humanleague/branch/master/graph/badge.svg)](https://codecov.io/gh/virgesmith/humanleague)
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1116318.svg)](https://doi.org/10.5281/zenodo.1116318)
-[![status](http://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4/status.svg)](http://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4)
+[![status](https://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4/status.svg)](https://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4)
 
 > ## Latest news: 2.1.0 release
 > - adds new functionality for multidimensional integerisation. 

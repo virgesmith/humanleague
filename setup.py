@@ -24,7 +24,7 @@ def list_files(dirs, exts, exclude=[]):
   for directory in dirs:
     for ext in exts:
       files.extend(glob.glob(os.path.join(directory, "*." + ext)))
-  [files.remove(f) for f in exclude]
+  [f in files and files.remove(f) for f in exclude]
   return files
 
 # seems that this will clean build every time, might make more sense to just have a lightweight wrapper & precompiled lib?

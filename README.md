@@ -10,7 +10,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1116318.svg)](https://doi.org/10.5281/zenodo.1116318)
 [![status](https://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4/status.svg)](https://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4)
 
-> ## Latest news: 2.1.0 release
+> ## Latest news: 2.1 release
 > - adds new functionality for multidimensional integerisation. 
 > - deletes previously deprecated functionality `synthPop` and `synthPopG`.
 > ### Multidimensional integerisation

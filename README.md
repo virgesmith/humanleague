@@ -10,7 +10,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1116318.svg)](https://doi.org/10.5281/zenodo.1116318)
 [![status](http://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4/status.svg)](http://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4)
 
-> ## Latest news: 2.1.0 pre-release
+> ## Latest news: 2.1.0 release
 > - adds new functionality for multidimensional integerisation. 
 > - deletes previously deprecated functionality `synthPop` and `synthPopG`.
 > ### Multidimensional integerisation
@@ -57,13 +57,20 @@
 > >>> sum(r["result"].T) == sum(a.T)
 > array([ True,  True,  True,  True])
 > ```
+>
+> ### Removed functions
+> The functions `synthPop` and `synthPopG` implement restricted versions of algorithms that are available in other functions.
+>
+> Use `qis` ins place of `synthPop`, and `qisi` in place of `synthPopG`.
 
-*humanleague* is a python and an R package for microsynthesising populations from marginal and (optionally) seed data. The core code is implemented in C++, and the current release is version 2.
+### Introduction
+
+*humanleague* is a python and an R package for microsynthesising populations from marginal and (optionally) seed data. The package is implemented in C++ for performance.
 
 The package contains algorithms that use a number of different microsynthesis techniques:
 - [Iterative Proportional Fitting (IPF)](https://en.wikipedia.org/wiki/Iterative_proportional_fitting)
 - [Quasirandom Integer Sampling (QIS)](http://jasss.soc.surrey.ac.uk/20/4/14.html) (no seed population)
-- Quasirandom Integer Sampling of IPF (QISI): A combination of the two techniques whereby the results of repeated IPF algorithms are used to sample an integer population.
+- Quasirandom Integer Sampling of IPF (QISI): A combination of the two techniques whereby the integral population is sampled (without replacement) from a distribution constructed from a dynamic IPF solution.
 
 The latter provides a bridge between deterministic reweighting and combinatorial optimisation, offering advantages of both techniques:
 - generates high-entropy integral populations 
@@ -78,7 +85,7 @@ The algorithms:
 The package also contains the following utility functions:
 - a Sobol sequence generator
 - construct a closest integer population from a discrete univariate probability distribution.
-- an algorithm for creating multidimensional integer populations from fractional ones, constrained to the marginal sums in each dimension.  
+- an algorithm for sampling an integer population from a discrete multivariate probability distribution, constrained to the marginal sums in every dimension.
 - 'flatten' a multidimensional population into a table: this converts a multidimensional array containing the population count for each state into a table listing individuals and their characteristics. 
 
 Version 1.0.1 reflects the work described in the [Quasirandom Integer Sampling (QIS)](http://jasss.soc.surrey.ac.uk/20/4/14.html) paper.

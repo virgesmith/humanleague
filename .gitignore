@@ -15,3 +15,5 @@ dist/
 __pycache__/
 .eggs/
 
+.venv/
+

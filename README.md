@@ -5,7 +5,7 @@
 [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/x9oypgryt21ndc3p?svg=true)](https://ci.appveyor.com/project/virgesmith/humanleague)
 [![codecov](https://codecov.io/gh/virgesmith/humanleague/branch/master/graph/badge.svg)](https://codecov.io/gh/virgesmith/humanleague)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1116318.svg)](https://doi.org/10.5281/zenodo.1116318)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1970941.svg)](https://doi.org/10.5281/zenodo.1970941)
 [![status](https://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4/status.svg)](https://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4)
 
 [![PyPI version](https://badge.fury.io/py/humanleague.svg)](https://badge.fury.io/py/humanleague)

@@ -46,8 +46,6 @@ NDArray<T> convertArray(R rArray)
   {
     colMajorSizes.push_back(rArray.size());
   }
-  const size_t dim = colMajorSizes.size();
-
   // This is column major data - reverse the dimensions but copy the data as-is for efficiency
   NDArray<T> array(colMajorSizes);
 
@@ -492,7 +490,6 @@ DataFrame flatten(IntegerVector stateOccupancies, StringVector categoryNames)
 
   // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
   List proxyDf;
-  std::string s("C");
   for (size_t i = 0; i < a.dim(); ++i)
   {
     proxyDf[as<std::string>(categoryNames[i])] = list[i];

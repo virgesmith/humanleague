@@ -53,7 +53,7 @@ class Test(unittest.TestCase):
     r = hl.integerise(np.array([2.0, 1.5, 1.0, 0.5]))
     self.assertTrue(r["conv"])
 
-    # multidim integerisation 
+    # multidim integerisation
     # invalid population
     s = np.array([[1.1, 1.0], [1.0, 1.0]])
     r = hl.integerise(s)
@@ -73,7 +73,7 @@ class Test(unittest.TestCase):
     result = hl.integerise(fpop)
     self.assertTrue(result["conv"])
     self.assertEqual(np.sum(result["result"]), sum(m0))
-    self.assertTrue(result["rmse"] < 1.05717) 
+    self.assertTrue(result["rmse"] < 1.05717)
 
   def test_IPF(self):
     m0 = np.array([52.0, 48.0])
@@ -168,7 +168,7 @@ class Test(unittest.TestCase):
     # r = hl.qis(idx, [m, m])
     # self.assertTrue(false)
 
-    m0 = np.array([52, 48]) 
+    m0 = np.array([52, 48])
     m1 = np.array([10, 77, 13])
     i0 = np.array([0])
     i1 = np.array([1])
@@ -176,15 +176,15 @@ class Test(unittest.TestCase):
     p = hl.qis([i0, i1], [m0, m1])
     #print(p)
     self.assertTrue(p["conv"])
-    self.assertLess(p["chiSq"], 0.04) 
-    self.assertGreater(p["pValue"], 0.9) 
+    self.assertLess(p["chiSq"], 0.04)
+    self.assertGreater(p["pValue"], 0.9)
     #self.assertLess(p["degeneracy"], 0.04) TODO check the calculation
     self.assertEqual(p["pop"], 100.0)
     self.assertTrue(np.allclose(np.sum(p["result"], 0), m1))
     self.assertTrue(np.allclose(np.sum(p["result"], 1), m0))
     #self.assertTrue(np.array_equal(p["result"], np.array([[5, 40, 7],[5, 37, 6]])))
 
-    m0 = np.array([52, 40, 4, 4]) 
+    m0 = np.array([52, 40, 4, 4])
     m1 = np.array([87, 10, 3])
     m2 = np.array([55, 15, 6, 12, 12])
     i0 = np.array([0])
@@ -208,15 +208,15 @@ class Test(unittest.TestCase):
     # length of element is pop
     self.assertTrue(len(table[0]) == p["pop"])
     # check consistent with marginals
-    for i in range(0, len(m0)):
-      self.assertTrue(table[0].count(i) == m0[i])
-    for i in range(0, len(m1)):
-      self.assertTrue(table[1].count(i) == m1[i])
-    for i in range(0, len(m2)):
-      self.assertTrue(table[2].count(i) == m2[i])
+    for i, mi in enumerate(m0):
+      self.assertTrue(table[0].count(i) == mi)
+    for i, mi in enumerate(m1):
+      self.assertTrue(table[1].count(i) == mi)
+    for i, mi in enumerate(m2):
+      self.assertTrue(table[2].count(i) == mi)
 
 
-    m0 = np.array([52, 48]) 
+    m0 = np.array([52, 48])
     m1 = np.array([87, 13])
     m2 = np.array([67, 33])
     m3 = np.array([55, 45])
@@ -227,7 +227,7 @@ class Test(unittest.TestCase):
 
     p = hl.qis([i0, i1, i2, i3], [m0, m1, m2, m3])
     self.assertTrue(p["conv"])
-    self.assertLess(p["chiSq"], 10) 
+    self.assertLess(p["chiSq"], 10)
     self.assertGreater(p["pValue"], 0.002) # TODO this looks suspect too
     self.assertEqual(p["pop"], 100)
     self.assertTrue(np.allclose(np.sum(p["result"], (0, 1, 2)), m3))
@@ -240,8 +240,8 @@ class Test(unittest.TestCase):
     p = hl.qis(idx, [m, m])
     #print(p)
     self.assertTrue(p["conv"])
-    self.assertLess(p["chiSq"], 10) 
-    self.assertGreater(p["pValue"], 0.27) 
+    self.assertLess(p["chiSq"], 10)
+    self.assertGreater(p["pValue"], 0.27)
     self.assertEqual(p["pop"], 120)
     #print(np.sum(p["result"], 2))
     self.assertTrue(np.allclose(np.sum(p["result"], 2), m))
@@ -252,7 +252,7 @@ class Test(unittest.TestCase):
     # tricky array indexing - 1st dimension of d0 already sampled, remaining dimension
     # indices on slice of d0 need to be remapped
 
-    m0 = np.ones([4,6,4,4], dtype=int) 
+    m0 = np.ones([4,6,4,4], dtype=int)
     m1 = np.ones([4,4,4], dtype=int) * 6
 
     ms=hl.qis([np.array([0,1,2,3]),np.array([0,4,5])], [m0,m1])
@@ -266,7 +266,7 @@ class Test(unittest.TestCase):
 
 
   def test_QISI(self):
-    m0 = np.array([52, 48]) 
+    m0 = np.array([52, 48])
     m1 = np.array([10, 77, 13])
     i0 = np.array([0])
     i1 = np.array([1])
@@ -275,15 +275,15 @@ class Test(unittest.TestCase):
     p = hl.qisi(s, [i0, i1], [m0, m1])
     #print(p)
     self.assertTrue(p["conv"])
-    self.assertLess(p["chiSq"], 0.04) 
-    self.assertGreater(p["pValue"], 0.9) 
+    self.assertLess(p["chiSq"], 0.04)
+    self.assertGreater(p["pValue"], 0.9)
     #self.assertLess(p["degeneracy"], 0.04) TODO check the calculation
     self.assertEqual(p["pop"], 100.0)
     self.assertTrue(np.allclose(np.sum(p["result"], 0), m1))
     self.assertTrue(np.allclose(np.sum(p["result"], 1), m0))
     #self.assertTrue(np.array_equal(p["result"], np.array([[5, 40, 7],[5, 37, 6]])))
 
-    m0 = np.array([52, 40, 4, 4]) 
+    m0 = np.array([52, 40, 4, 4])
     m1 = np.array([87, 10, 3])
     m2 = np.array([55, 15, 6, 12, 12])
     i0 = np.array([0])
@@ -300,7 +300,7 @@ class Test(unittest.TestCase):
     self.assertTrue(np.allclose(np.sum(p["result"], (1, 2)), m0))
     self.assertTrue(np.allclose(np.sum(p["result"], (2, 0)), m1))
 
-    m0 = np.array([52, 48]) 
+    m0 = np.array([52, 48])
     m1 = np.array([87, 13])
     m2 = np.array([67, 33])
     m3 = np.array([55, 45])
@@ -312,7 +312,7 @@ class Test(unittest.TestCase):
 
     p = hl.qisi(s, [i0, i1, i2, i3], [m0, m1, m2, m3])
     self.assertTrue(p["conv"])
-    self.assertLess(p["chiSq"], 5.5) 
+    self.assertLess(p["chiSq"], 5.5)
     self.assertGreater(p["pValue"], 0.02)
     self.assertEqual(p["pop"], 100)
     self.assertTrue(np.allclose(np.sum(p["result"], (0, 1, 2)), m3))

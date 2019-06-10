@@ -1,6 +1,6 @@
 #!/usr/bin/nodejs
 
-if (process.argv.length != 3) {
+if (process.argv.length !== 3) {
   console.log("usage: nodejs test_server.js <host:port>");
   return;
 }

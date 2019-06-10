@@ -35,7 +35,7 @@ cppmodule = Extension(
                    ('PATCH_VERSION', '1'),
                    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
                   ],
-  extra_compile_args = ['-Wall', '-std=c++14'],
+  extra_compile_args = ['-Wall', '-std=c++11'],
   include_dirs = ['.', '/usr/include', '/usr/local/include'], # numpy include appended later
   # full rebuild triggers if any of sources/depends are modified
   sources = list_files(["src", "humanleague"], ["cpp", "c"], exclude=[os.path.join("src", "rcpp_api.cpp"),

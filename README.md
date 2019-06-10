@@ -1,5 +1,6 @@
 # humanleague
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/9cb56a2ff5f84817805d593823bee3e7)](https://app.codacy.com/app/virgesmith/humanleague?utm_source=github.com&utm_medium=referral&utm_content=virgesmith/humanleague&utm_campaign=Badge_Grade_Dashboard)
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 [![Travis Build Status](https://travis-ci.org/virgesmith/humanleague.png?branch=master)](https://travis-ci.org/virgesmith/humanleague)
 [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/x9oypgryt21ndc3p?svg=true)](https://ci.appveyor.com/project/virgesmith/humanleague)

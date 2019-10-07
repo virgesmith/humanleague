@@ -16,6 +16,7 @@ matrix:
           - ubuntu-toolchain-r-test
           packages:
           - g++-5
+          - libgfortran3
       language: r
       r: oldrel
 
@@ -38,6 +39,7 @@ matrix:
           - ubuntu-toolchain-r-test
           packages:
           - g++-5
+          - libgfortran3
       language: r
       r: devel
 

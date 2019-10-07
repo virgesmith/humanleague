@@ -26,6 +26,7 @@ matrix:
           - ubuntu-toolchain-r-test
           packages:
           - g++-5
+          - libgfortran3
       language: r
       r: release
       after_success: Rscript -e 'covr::codecov()'

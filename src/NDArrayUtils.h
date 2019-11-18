@@ -7,6 +7,7 @@
 #include <numeric>
 #include <cassert>
 #include <iostream>
+#include <cmath>
 
 
 int32_t maxAbsElement(const std::vector<int32_t>& r);

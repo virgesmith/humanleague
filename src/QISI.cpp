@@ -64,7 +64,11 @@ void getIndex(const NDArray<double>& p, const std::vector<uint32_t>& r, Index& i
 
 
 QISI::QISI(const index_list_t& indices, marginal_list_t& marginals, int64_t skips)
-: Microsynthesis(indices, marginals), m_sobolSeq(m_dim), m_conv(false)
+: Microsynthesis(indices, marginals), m_sobolSeq(m_dim), 
+  m_chiSq(std::numeric_limits<double>::quiet_NaN()), 
+  m_pValue(std::numeric_limits<double>::quiet_NaN()), 
+  m_degeneracy(std::numeric_limits<double>::quiet_NaN()),
+  m_conv(false)
 {
   m_sobolSeq.skip(skips);
 }

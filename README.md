@@ -10,8 +10,8 @@
 [![status](https://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4/status.svg)](https://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4)
 
 [![PyPI version](https://badge.fury.io/py/humanleague.svg)](https://badge.fury.io/py/humanleague)
-[![Anaconda-Server Version Badge](https://anaconda.org/conda-forge/humanleague/badges/version.svg)](https://anaconda.org/conda-forge/ukcensusapi)
-[![Anaconda-Server Downloads Badge](https://anaconda.org/conda-forge/humanleague/badges/downloads.svg)](https://anaconda.org/conda-forge/ukcensusapi)
+[![Anaconda-Server Version Badge](https://anaconda.org/conda-forge/humanleague/badges/version.svg)](https://anaconda.org/conda-forge/humanleague)
+[![Anaconda-Server Downloads Badge](https://anaconda.org/conda-forge/humanleague/badges/downloads.svg)](https://anaconda.org/conda-forge/humanleague)
 
 [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/humanleague)](https://CRAN.R-project.org/package=humanleague)
 [![CRAN Downloads](https://cranlogs.r-pkg.org/badges/grand-total/humanleague?color=black)](https://cran.r-project.org/package=humanleague)
@@ -83,7 +83,7 @@ The latter provides a bridge between deterministic reweighting and combinatorial
 - generates high-entropy integral populations 
 - can be used to generate multiple populations for sensitivity analysis
 - goes some way to address the 'empty cells' issues that can occur in straight IPF
-- relatively fast compuation time
+- relatively fast computation time
 
 The algorithms: 
 - support arbitrary dimensionality* for both the marginals and the seed.

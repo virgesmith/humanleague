@@ -68,12 +68,12 @@ matrix:
         - python3 tests/test_all.py
 
     - os: osx
-      osx_image: xcode8.3
+      #osx_image: xcode8.3
       language: r
       r: release
 
     - os: osx
-      osx_image: xcode8.3
+      #osx_image: xcode8.3
       language: generic
       before_install:
         - brew update

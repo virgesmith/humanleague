@@ -4,12 +4,12 @@
 ^\.travis\.yml$
 ^appveyor\.yml$
 build/
-node.js/
 humanleague/
 humanleague.egg-info/
 dev/
 doc/
-deprecated/
 requirements.txt
 setup.py
 LICENSE
+MANIFEST.in
+scripts/

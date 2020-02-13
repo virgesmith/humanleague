@@ -3,7 +3,6 @@
 \docType{package}
 \name{humanleague}
 \alias{humanleague}
-\alias{humanleague-package}
 \title{humanleague}
 \description{
 R package for synthesising populations from aggregate and (optionally) seed data

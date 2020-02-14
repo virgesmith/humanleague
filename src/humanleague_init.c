@@ -7,9 +7,9 @@
 extern SEXP _humanleague_flatten(SEXP, SEXP);
 extern SEXP _humanleague_prob2IntFreq(SEXP, SEXP);
 extern SEXP _humanleague_sobolSequence(SEXP, SEXP, SEXP);
-extern SEXP _humanleague_ipf(SEXP, SEXP);
-extern SEXP _humanleague_qis(SEXP, SEXP);
-extern SEXP _humanleague_qisi(SEXP, SEXP);
+extern SEXP _humanleague_ipf(SEXP, SEXP, SEXP);
+extern SEXP _humanleague_qis(SEXP, SEXP, SEXP);
+extern SEXP _humanleague_qisi(SEXP, SEXP, SEXP, SEXP);
 extern SEXP _humanleague_integerise(SEXP);
 extern SEXP _humanleague_unitTest();
 
@@ -19,9 +19,9 @@ static const R_CallMethodDef CallEntries[] = {
   {"humanleague_prob2IntFreq",  (DL_FUNC) &_humanleague_prob2IntFreq,  2},
   {"humanleague_integerise",    (DL_FUNC) &_humanleague_integerise,  1},
   {"humanleague_sobolSequence", (DL_FUNC) &_humanleague_sobolSequence, 3},
-  {"humanleague_ipf",           (DL_FUNC) &_humanleague_ipf,           2},
-  {"humanleague_qis",           (DL_FUNC) &_humanleague_qis,           2},
-  {"humanleague_qisi",          (DL_FUNC) &_humanleague_qisi,          2},
+  {"humanleague_ipf",           (DL_FUNC) &_humanleague_ipf,           3},
+  {"humanleague_qis",           (DL_FUNC) &_humanleague_qis,           3},
+  {"humanleague_qisi",          (DL_FUNC) &_humanleague_qisi,          4},
   {"humanleague_unitTest",      (DL_FUNC) &_humanleague_unitTest,      0},
   {NULL, NULL, 0}
 };

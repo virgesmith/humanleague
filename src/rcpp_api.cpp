@@ -64,7 +64,7 @@ std::vector<int64_t> getDimension(List indices, List marginals)
 {
   std::map<int64_t,int64_t> lookup;
   // dont worry about inconsistencies here, QIS will detect and report them
-  for (size_t i = 0; i < indices.size(); ++i)
+  for (R_xlen_t i = 0; i < indices.size(); ++i)
   {
     const IntegerVector& iv = indices[i];
     const IntegerVector& mv = marginals[i];
@@ -92,14 +92,14 @@ std::vector<int64_t> getDimension(List indices, List marginals)
 void checkSeed(NumericVector seed, const std::vector<int64_t>& impliedDim)
 {
   const Dimension& seedDim = seed.attr("dim");
-  for (size_t i = 0; i < seedDim.size(); ++i)
+  for (size_t i = 0; i < static_cast<size_t>(seedDim.size()); ++i)
   {
     if (seedDim[i] != impliedDim[i])
       throw std::runtime_error("mismatch between seed dimension " + std::to_string(i+1) + " and marginal");
   }
 
   // -ve seed values are not permitted
-  for (size_t i = 0; i < seed.size(); ++i)
+  for (R_xlen_t i = 0; i < seed.size(); ++i)
   {
     if (seed[i] < 0)
       throw std::runtime_error("negative value in seed");
@@ -166,7 +166,7 @@ List ipf(NumericVector seed, List indices, List marginals)
     const NumericVector& nv = marginals[i];
     idx.push_back(std::vector<int64_t>(iv.size()));
     // also need to reverse dimension indices
-    for (size_t j = 0; j < iv.size(); ++j)
+    for (R_xlen_t j = 0; j < iv.size(); ++j)
       idx.back()[j] = dim - iv[j];
     //std::copy(iv.begin(), iv.end(), idx.back().begin());
     // convert to NDArray
@@ -242,7 +242,7 @@ List qis(List indices, List marginals, int skips = 0)
     const IntegerVector& nv = marginals[i];
     idx.push_back(std::vector<int64_t>(iv.size()));
     // also need to reverse dimension indices
-    for (size_t j = 0; j < iv.size(); ++j)
+    for (R_xlen_t j = 0; j < iv.size(); ++j)
       idx.back()[j] = dim - iv[j];
     // convert to NDArray
     m.push_back(std::move(Rhelpers::convertArray<int64_t, IntegerVector>(nv)));
@@ -334,7 +334,7 @@ List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
     const IntegerVector& mv = marginals[i];
     idx.push_back(std::vector<int64_t>(iv.size()));
     // also need to reverse dimension indices
-    for (size_t j = 0; j < iv.size(); ++j)
+    for (R_xlen_t j = 0; j < iv.size(); ++j)
       idx.back()[j] = dim - iv[j];
     // convert to NDArray
     m.push_back(std::move(Rhelpers::convertArray<int64_t, IntegerVector>(mv)));

@@ -84,5 +84,5 @@ void unittest::testNDArray()
   //
   // std::vector<size_t> m(20,2); // 2^20 elements = ~4MB
   // old::NDArray<10, uint32_t> multid(&m[0]);
-};
+}
 

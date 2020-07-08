@@ -74,10 +74,10 @@ matrix:
       language: generic
       before_install:
         - brew update
-        - brew unlink python@2
-        - brew upgrade python
-        #- brew install python3
-        #- pip3 install numpy distutils_pytest pytest
+        # - brew unlink python@2
+        # - brew upgrade python
+        - brew install python3
+        - pip3 install numpy distutils_pytest pytest
       script:
         - python3 setup.py install
         - python3 tests/test_all.py

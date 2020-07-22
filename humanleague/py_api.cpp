@@ -156,6 +156,9 @@ extern "C" PyObject* humanleague_sobol(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "ii|i", &dim, &length, &skips))
       return nullptr;
 
+    if (dim < 1 || dim > 1111)
+      return pycpp::String("Dim %% is not in valid range [1,1111]"_s % dim).release();
+
     std::vector<int64_t> sizes{ length, dim };
     NDArray<double> sequence(sizes);
 

@@ -24,6 +24,16 @@ class Test(unittest.TestCase):
     self.assertTrue(a.shape == (5, 3))
     self.assertTrue(np.array_equal(a[0, :], [0.5, 0.5, 0.5]))
 
+    # invalid dimension
+    a = hl.sobolSequence(0, 10)
+    self.assertTrue(isinstance(a, str))
+    a = hl.sobolSequence(100000, 10)
+    self.assertTrue(isinstance(a, str))
+    
+    # invalid length
+    a = hl.sobolSequence(1, -10)
+    self.assertTrue(isinstance(a, str))
+
   def test_integerise(self):
 
     # probs not valid

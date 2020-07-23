@@ -72,7 +72,7 @@ matrix:
 
     - os: osx
       language: python
-      python: 3.8
+      python: 3
       #before_install:
       # - brew update
       # - brew unlink python@2

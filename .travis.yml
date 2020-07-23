@@ -71,19 +71,19 @@ matrix:
       r: release
 
     - os: osx
-      language: generic
-      before_install:
-        - brew update
+      language: python
+      #before_install:
+        #- brew update
         # - brew unlink python@2
         # - brew upgrade python
-        - brew install python3
-        - pip3 install numpy distutils_pytest pytest
+        #- brew install python3
+        - python3 -m pip install numpy distutils pytest
       script:
         - python3 setup.py install
         - python3 tests/test_all.py
 
-#  allow_failures:
-#    - python: "3.7-dev"
+ allow_failures:
+   - os: osx
 
 warnings_are_errors: false
 
@@ -91,4 +91,3 @@ notifications:
   email:
     on_success: change
     on_failure: change
-  #slack: spenser-workspace:QzyXfMnQd5tUJaFZPK6Psl4M

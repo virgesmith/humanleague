@@ -83,8 +83,8 @@ matrix:
         - python3 setup.py install
         - python3 tests/test_all.py
 
- allow_failures:
-   - os: osx
+allow_failures:
+  - os: osx
 
 warnings_are_errors: false
 

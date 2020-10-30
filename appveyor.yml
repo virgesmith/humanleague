@@ -2,7 +2,7 @@
 environment:
  matrix:
    - TEST_LANGUAGE: "Python"
-     PYTHON: "C:\\Python35-x64"
+     PYTHON: "C:\\Python38-x64"
      PYTHON_ARCH: 64
      MSVC_VERSION: "Visual Studio 14 Win64"
 

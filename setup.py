@@ -21,16 +21,46 @@ def version():
       if line.startswith("Version:"):
         return line.rstrip().split(":")[1].lstrip()
 
-def list_files(dirs, exts, exclude=[]):
-  print("list_files")
-  files = []
-  if isinstance(exclude, str):
-    exclude = [exclude]
-  for directory in dirs:
-    for ext in exts:
-      files.extend(glob.glob(os.path.join(directory, "*." + ext)))
-  [f in files and files.remove(f) for f in exclude]
-  return files
+def source_files():
+  return [
+    "src/Index.cpp",
+    "src/Integerise.cpp",
+    "src/module.cpp",
+    "src/NDArrayUtils.cpp",
+    "src/QIS.cpp",
+    "src/QISI.cpp",
+    "src/Sobol.cpp",
+    "src/SobolImpl.cpp",
+    "src/StatFuncs.cpp",
+    "src/TestIndex.cpp",
+    "src/TestNDArray.cpp",
+    "src/TestReduce.cpp",
+    "src/TestSlice.cpp",
+    "src/TestSobol.cpp",
+    "src/TestStatFuncs.cpp",
+    "src/UnitTester.cpp"
+  ]
+
+def header_files():
+  return [
+    "src/DDWR.h",
+    "src/Global.h",
+    "src/Index.h",
+    "src/Integerise.h",
+    "src/IPF.h",
+    "src/Log.h",
+    "src/Microsynthesis.h",
+    "src/NDArray.h",
+    "src/NDArrayUtils.h",
+    "src/QIS.h",
+    "src/QISI.h",
+    "src/SobolData.h",
+    "src/Sobol.h",
+    "src/SobolImpl.h",
+    "src/StatFuncs.h",
+    "src/UnitTester.h"   
+  ]
+
 
 def cxxflags(platform):
   print("cxxflags")
@@ -50,7 +80,7 @@ def cxxflags(platform):
       "-fvisibility=hidden"
     ]
   elif platform == "msvc":
-    return ['/std:c++11', '/EHsc']
+    return ['/EHsc']
   else:
     return []
 
@@ -78,11 +108,11 @@ class get_pybind_include(object):
 ext_modules = [
   Extension(
     'humanleague',
-    sources=list_files(['src'], ["cpp"], exclude=["src/rcpp_api.cpp", "src/RcppExports.cpp", "src/humanleague_init.c"]),
+    sources=source_files(),
     include_dirs=[
       get_pybind_include(),
     ],
-    depends=["DESCRIPTION"] + list_files(["src"], ["h"]),
+    depends=["DESCRIPTION"] + header_files(),
     language='c++'
   ),
 ]

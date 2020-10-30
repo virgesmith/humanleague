@@ -2,70 +2,142 @@
 
 import os
 import glob
-import warnings
-from setuptools import Extension, setup
+from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
+import sys
+import setuptools
+
+# see https://github.com/pybind/python_example
+
 def readme():
   with open('README.md') as f:
     return f.read()
 
-# Workaround for setup dependency on numpy
-# delays getting the numpy include dir until numpy has been installed
-class BuildExtNumpyWorkaround(build_ext):
-  def run(self):
-    import numpy
-    # Add numpy headers to include_dirs
-    self.include_dirs.append(numpy.get_include())
-    # Call original build_ext command
-    build_ext.run(self)
+def version():
+  """ The R file DESCRIPTION in the project root is now the single source of version info """
+  with open("DESCRIPTION") as fd:
+    lines = fd.readlines()
+    for line in lines:
+      if line.startswith("Version:"):
+        return line.rstrip().split(":")[1].lstrip()
 
 def list_files(dirs, exts, exclude=[]):
+  print("list_files")
   files = []
+  if isinstance(exclude, str):
+    exclude = [exclude]
   for directory in dirs:
     for ext in exts:
       files.extend(glob.glob(os.path.join(directory, "*." + ext)))
   [f in files and files.remove(f) for f in exclude]
   return files
 
-# seems that this will clean build every time, might make more sense to just have a lightweight wrapper & precompiled lib?
-cppmodule = Extension(
-  'humanleague',
-  define_macros = [('MAJOR_VERSION', '2'),
-                   ('MINOR_VERSION', '1'),
-                   ('PATCH_VERSION', '3'),
-                   ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
-                  ],
-  extra_compile_args = ['-Wall', '-std=c++11'],
-  include_dirs = ['.', '/usr/include', '/usr/local/include'], # numpy include appended later
-  # full rebuild triggers if any of sources/depends are modified
-  sources = list_files(["src", "humanleague"], ["cpp", "c"], exclude=[os.path.join("src", "rcpp_api.cpp"),
-                                                                      os.path.join("src", "RcppExports.cpp"),
-                                                                      os.path.join("src", "humanleague_init.c")]),
-  depends = list_files(["src", "humanleague"], ["h"])
-)
+def cxxflags(platform):
+  print("cxxflags")
+  if platform == "unix":
+    return [
+      "-Wall",
+      "-Werror",
+      "-pedantic",
+      "-pthread",
+      "-Wsign-compare",
+      "-fstack-protector-strong",
+      "-Wformat",
+      "-Werror=format-security",
+      "-Wdate-time",
+      "-fPIC",
+      "-std=c++11", # Rcpp compatibility
+      "-fvisibility=hidden"
+    ]
+  elif platform == "msvc":
+    return ['/std:c++11', '/EHsc']
+  else:
+    return []
 
-import unittest
-def test_suite():
-  test_loader = unittest.TestLoader()
-  test_suite = test_loader.discover('tests', pattern='test_*.py')
-  return test_suite
+def ldflags(_platform):
+  return []
 
-# ignore distutils/setup warnings triggered by long_description_content_type
-warnings.simplefilter("ignore", UserWarning)
+def defines(platform):
+  return [
+    ("HUMANLEAGUE_VERSION", version()),
+    ("PYTHON_MODULE", "")
+  ]
 
-#setuptools.
+class get_pybind_include(object):
+  """Helper class to determine the pybind11 include path
+
+  The purpose of this class is to postpone importing pybind11
+  until it is actually installed, so that the ``get_include()``
+  method can be invoked. """
+
+  def __str__(self):
+    import pybind11
+    return pybind11.get_include()
+
+
+ext_modules = [
+  Extension(
+    'humanleague',
+    sources=list_files(['src'], ["cpp"], exclude=["src/rcpp_api.cpp", "src/RcppExports.cpp", "src/humanleague_init.c"]),
+    include_dirs=[
+      get_pybind_include(),
+    ],
+    depends=["DESCRIPTION"] + list_files(["src"], ["h"]),
+    language='c++'
+  ),
+]
+
+class BuildExt(build_ext):
+  """A custom build extension for adding compiler-specific options."""
+  # c_opts = {
+  #     'msvc': ['/EHsc'],
+  #     'unix': [],
+  # }
+  # l_opts = {
+  #     'msvc': [],
+  #     'unix': [],
+  # }
+
+  # if sys.platform == 'darwin':
+  #   darwin_opts = ['-stdlib=libc++', '-mmacosx-version-min=10.7']
+  #   c_opts['unix'] += darwin_opts
+  #   l_opts['unix'] += darwin_opts
+
+  def build_extensions(self):
+    ct = self.compiler.compiler_type
+
+    # opts = self.c_opts.get(ct, [])
+    # link_opts = self.l_opts.get(ct, [])
+    # if ct == 'unix':
+    #   if True: #has_flag(self.compiler, '-fvisibility=hidden'):
+    #     opts.append('-fvisibility=hidden')
+
+    for ext in self.extensions:
+      print(self.distribution.get_version())
+      ext.define_macros = defines(ct) 
+      ext.extra_compile_args = cxxflags(ct)
+      ext.extra_link_args = ldflags(ct)
+
+    build_ext.build_extensions(self)
+
 setup(
   name = 'humanleague',
-  version = '2.1.1',
+  version = version(),
   description = 'Microsynthesis using quasirandom sampling and/or IPF',
   author = 'Andrew P Smith',
   author_email = 'a.p.smith@leeds.ac.uk',
   url = 'http://github.com/virgesmith/humanleague',
   long_description = readme(),
   long_description_content_type="text/markdown",
-  cmdclass = {'build_ext': BuildExtNumpyWorkaround},
-  ext_modules = [cppmodule],
-  setup_requires=['numpy'],
-  install_requires=['numpy'],
-  test_suite='setup.test_suite'
+  ext_modules=ext_modules,
+  cmdclass={'build_ext': BuildExt},
+  install_requires=['numpy>=1.19.1'],
+  setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
+  tests_require=['pytest'],
+  classifiers=[
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+  ],
+  zip_safe=False,
 )

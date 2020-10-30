@@ -1,3 +1,4 @@
+#if 0 //DEPRECATED
 
 #pragma once
 
@@ -198,3 +199,5 @@ namespace pycpp {
     int size() const;
   };
 }
+
+#endif

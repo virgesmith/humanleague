@@ -1,3 +1,4 @@
+#if 0 //DEPRECATED
 
 #include "Object.h"
 #include <Python.h>
@@ -207,6 +208,7 @@ void pycpp::Dict::insert(const char* k, pycpp::Object&& obj)
   PyDict_SetItem(m_obj, &pycpp::String(k), &obj);
 }
 
+#endif
 
 
 

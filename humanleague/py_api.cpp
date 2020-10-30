@@ -1,3 +1,4 @@
+#if 0
 
 #include "Object.h"
 #include "Array.h"
@@ -481,6 +482,8 @@ extern "C" PyObject* humanleague_apitest(PyObject*, PyObject*)
 
 namespace {
 
+#include "docstr.inl"
+
 PyMethodDef entryPoints[] = {
   {"prob2IntFreq", humanleague_prob2IntFreq, METH_VARARGS, "Returns nearest-integer population given probs and overall population."},
   {"integerise", humanleague_integerise, METH_VARARGS, "Returns mulidimensional nearest-integer population constrained to marginal sums in every dimension."},
@@ -489,7 +492,7 @@ PyMethodDef entryPoints[] = {
   {"ipf", humanleague_ipf, METH_VARARGS, "Iterative proportional fitting, given a seed population and marginal distributions."},
   {"qis", humanleague_qis, METH_VARARGS, "Quasirandom integer (unweighted) sampling of population given marginal distributions."},
   {"qisi", humanleague_qisi, METH_VARARGS, "Quasirandom integer (weighted) sampling, of population given marginal distributions, using IPF to update the sample distribution."},
-  {"version", humanleague_version, METH_NOARGS, "version info"},
+  {"version", humanleague_version, METH_NOARGS, version_docstr },
   {"unittest", humanleague_unittest, METH_NOARGS, "run unit tests"},
   {"apitest", humanleague_apitest, METH_NOARGS, "run api (memory) tests"},
   {nullptr, nullptr, 0, nullptr}        /* terminator */
@@ -528,4 +531,4 @@ PyMODINIT_FUNC PyInit_humanleague()
   return module;
 }
 
-
+#endif

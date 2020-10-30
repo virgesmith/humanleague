@@ -1,4 +1,4 @@
-
+#if 0 //DEPRECATED
 #pragma once 
 
 #include "Object.h"
@@ -200,3 +200,4 @@ namespace pycpp {
   };
   
 }
+#endif

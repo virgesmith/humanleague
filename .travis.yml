@@ -43,13 +43,14 @@ matrix:
       language: r
       r: devel
 
-    - python:
+    - language: python
+      python:
         - 3.6
         - 3.7 
         - 3.8
       script:
-        - python3 setup.py install
-        - python3 setup.py test
+        - python setup.py install
+        - python setup.py test
 
     # - os: linux
     #   dist: bionic

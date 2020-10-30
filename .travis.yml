@@ -1,6 +1,8 @@
 
 
 cache: packages
+os: linux
+dist: bionic
 
 r_github_packages:
   - r-lib/covr
@@ -41,10 +43,7 @@ matrix:
       language: r
       r: devel
 
-    - os: linux
-      dist: bionic
-      language: python
-      python:
+    - python:
         - 3.6
         - 3.7 
         - 3.8

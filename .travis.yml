@@ -42,28 +42,31 @@ matrix:
       r: devel
 
     - os: linux
-      dist: xenial
+      dist: bionic
       language: python
-      python: 3.8
+      python:
+        - 3.6
+        - 3.7 
+        - 3.8
       script:
         - python3 setup.py install
-        - python3 tests/test_all.py
+        - python3 setup.py test
 
-    - os: linux
-      dist: xenial
-      language: python
-      python: 3.6
-      script:
-        - python3 setup.py install
-        - python3 tests/test_all.py
+    # - os: linux
+    #   dist: bionic
+    #   language: python
+    #   python: 3.7
+    #   script:
+    #     - python3 setup.py install
+    #     - python3 setup.py test
 
-    - os: linux
-      dist: xenial
-      language: python
-      python: 3.7
-      script:
-        - python3 setup.py install
-        - python3 tests/test_all.py
+    # - os: linux
+    #   dist: bionic
+    #   language: python
+    #   python: 3.8
+    #   script:
+    #     - python3 setup.py install
+    #     - python3 setup.py test
 
     - os: osx
       osx_image: xcode10.13 # reinstate older toolchain in attempt to fix LaTeX Error: File `inconsolata.sty' not found. 

@@ -1,5 +1,5 @@
 // module.cpp - skip if not a python build
-//#ifdef PYTHON_MODULE
+#ifdef PYTHON_MODULE
 
 #include "Sobol.h"
 #include "Integerise.h"
@@ -172,4 +172,4 @@ PYBIND11_MODULE(humanleague, m) {
 }
 
 
-//#endif
+#endif

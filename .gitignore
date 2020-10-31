@@ -18,3 +18,5 @@ __pycache__/
 .venv*/
 
 */ipch/*
+
+.vscode/

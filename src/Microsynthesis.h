@@ -220,7 +220,7 @@ protected:
     for (size_t i = 1; i < m_marginals.size(); ++i)
     {
       if (sum(m_marginals[i]) != m_population)
-        throw std::runtime_error("marginal sum mismatch");
+        throw std::runtime_error("marginal sum mismatch at index %%: %% vs %%"_s % i % sum(m_marginals[i]) % m_population);
     }
 
     // check that for each dimension included in more than one marginal, the partial sums in that dimension are equal

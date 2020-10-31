@@ -7,10 +7,18 @@ const char* version_docstr = R"docstr(
     Gets the module version
 )docstr";
 
+const char* flatten_docstr = R"docstr(
+    Converts an n-dimensional array of counts into an n-column table with a row for each unit
+    Args:
+        pop: The population.
+    Returns:
+        A 2-d array of size n by sum(pop). 
+)docstr";
+
 const char* prob2IntFreq_docstr = R"docstr(
     Computes the closest integer frequencies given fractional counts and a total population. 
     Args:
-        probs: The probabilities.
+        frac: The fractional counts (must be a 1-d array).
         pop: The growth rate
     Returns:
         The frequencies and the RMS error
@@ -27,11 +35,39 @@ const char* integerise_docstr = R"docstr(
 
 
 const char* sobolSequence_docstr = R"docstr(
-    Returns a Sobol' sequence given of supplied dimension and length, optionally skipping values:
+    Returns a Sobol' sequence given of supplied dimension and length, optionally skipping values.
         dim: The dimension of the sequence (between 1 and 1111).
         length: The length of the returned sequence
         skips: The number of values to skip. NB the actual number skipped will be the largest power of 2 smaller than the supplied value.
     Returns:
         A 2d array containing Sobol sequence values in (0,1). 
+)docstr";
+
+const char* ipf_docstr = R"docstr(
+    Uses iterative proportional fitting to construct an n-dimensional array from a seed population that matches the specified marginal sums.
+        seed: The seed population as an array.
+        indices: A list of the indices in the overall array that each marginal represents 
+        marginals: A list of arrays containing the marginal sums.
+    Returns:
+        A dictionary containing the result, a convergence flag, the total population, the iterations and the error
+)docstr";
+
+const char* qis_docstr = R"docstr(
+    Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
+        indices: A list of the indices in the overall array that each marginal represents 
+        marginals: A list of arrays containing the marginal sums.
+        skips: The number of Sobol values to skip. NB the actual number skipped will be the largest power of 2 smaller than the supplied value.
+    Returns:
+        A dictionary containing the result, a convergence flag, the total population, the iterations and the some statistical measures.
+)docstr";
+
+const char* qisi_docstr = R"docstr(
+    Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
+        seed: The dimension of the sequence (between 1 and 1111).
+        indices: A list of the indices in the overall array that each marginal represents 
+        marginals: A list of arrays containing the marginal sums.
+        skips: The number of Sobol values to skip. NB the actual number skipped will be the largest power of 2 smaller than the supplied value.
+    Returns:
+        A dictionary containing the result, a convergence flag, the total population, the iterations and the some statistical measures.
 )docstr";
 

@@ -49,6 +49,16 @@ const T* cend(const py::array_t<T>& a)
   return (const T*)a.request().ptr + a.size();
 }
 
+template<typename T> 
+std::vector<T> toVector(const py::array_t<T>& a)
+{
+  if (a.ndim() != 1)
+  {
+    throw py::value_error("cannot convert multidimensional array to vector");
+  }
+  return std::vector<T>(cbegin(a), cend(a));
+}
+
 template<typename T>
 NDArray<T> toNDArray(const py::array_t<T>& np)
 {
@@ -65,7 +75,7 @@ template<typename T>
 NDArray<T> asNDArray(const py::array_t<T>& np)
 {
   // this is a bit iffy re: constness
-  return NDArray<T>(std::vector<int64_t>(np.shape(), np.shape() + np.ndim()), const_cast<double*>(cbegin(np)));
+  return NDArray<T>(std::vector<int64_t>(np.shape(), np.shape() + np.ndim()), const_cast<T*>(cbegin(np)));
 }
 
 template<typename T>
@@ -83,16 +93,41 @@ py::array_t<T> fromNDArray(const NDArray<T>& a)
 //                 ptr, base) { }
 
 
-// TODO -> integerise
-py::dict prob2IntFreq(py::array_t<double> prob_a, int pop)
+py::list flatten(const py::array_t<int64_t>& a)
+{
+  const NDArray<int64_t> array = asNDArray<int64_t>(a);
+
+  size_t pop = 0;
+  for (Index i(array.sizes()); !i.end(); ++i)
+  {
+    pop += array[i];
+  }
+
+  const std::vector<std::vector<int>>& list = listify(pop, array);
+  py::list outer; //array.dim());
+  for (size_t i = 0; i < array.dim(); ++i)
+  {
+    py::list l(list[i].size());
+    for(size_t j = 0; j < list[i].size(); ++j) { l[j] = list[i][j]; }
+    outer.insert(i, l);
+  }
+
+  return outer;
+}
+
+py::dict prob2IntFreq(py::array_t<double> frac_a, int pop)
 {
   if (pop < 0)
   {
     throw py::value_error("population cannot be negative");
   }
 
-  // convert py::array_t to vector
-  const std::vector<double> prob(cbegin(prob_a), cend(prob_a));
+  // convert py::array_t to vector and normalise it to get probabilities
+  std::vector<double> prob = toVector(frac_a);
+  double sum = std::accumulate(prob.begin(), prob.end(), 0.0);
+  for (double& p: prob) {
+    p /= sum;
+  }
   double var = 0.0;
   const std::vector<int>& freq = integeriseMarginalDistribution(prob, pop, var);
 
@@ -137,6 +172,110 @@ py::dict integerise(const py::array_t<double>& npseed)
   return retval;
 }
 
+py::dict ipf(const py::array_t<double>& seed, const py::list& ilist, const py::list& mlist)
+{
+  size_t k = ilist.size();
+  if (k != mlist.size())
+    throw py::value_error("index and marginals lists differ in size");
+  std::vector<std::vector<int64_t>> indices(k);
+  std::vector<NDArray<double>> marginals;
+  marginals.reserve(k);
+
+  // TODO assert dtypes are as expected
+
+  for (size_t i = 0; i < k; ++i)
+  {
+    const py::array_t<int64_t> ia = ilist[i].cast<py::array_t<int64_t>>();
+    const py::array_t<double> ma = mlist[i].cast<py::array_t<double>>();
+    indices[i] = toVector<int64_t>(ia);
+    marginals.push_back(asNDArray<double>(ma));
+  }
+
+  IPF<double> ipf(indices, marginals);
+  const NDArray<double>& result = ipf.solve(asNDArray<double>(seed));
+
+  py::dict retval;
+  retval["result"] = fromNDArray<double>(result);
+  retval["conv"] = ipf.conv();
+  retval["pop"] = ipf.population();
+  retval["iterations"] = ipf.iters();
+  retval["maxError"] = ipf.maxError();
+
+  return retval;
+}
+
+
+py::dict qis(const py::list& ilist, const py::list& mlist, int64_t skips)
+{
+  size_t k = ilist.size();
+  if (k != mlist.size())
+    throw py::value_error("index and marginals lists differ in size");
+  std::vector<std::vector<int64_t>> indices(k);
+  std::vector<NDArray<int64_t>> marginals;
+  marginals.reserve(k);
+
+  // TODO assert dtypes are as expected
+
+  for (size_t i = 0; i < k; ++i)
+  {
+    const py::array_t<int64_t> ia = ilist[i].cast<py::array_t<int64_t>>();
+    const py::array_t<int64_t> ma = mlist[i].cast<py::array_t<int64_t>>();
+    indices[i] = toVector<int64_t>(ia);
+    marginals.emplace_back(toNDArray<int64_t>(ma));
+  }
+
+  QIS qis(indices, marginals, skips);
+  const NDArray<int64_t>& result = qis.solve();
+  const NDArray<double>& expect = qis.expectation();
+  py::dict retval;
+
+  retval["result"] = fromNDArray<int64_t>(result);
+  retval["expectation"] = fromNDArray<double>(expect);
+  retval["conv"] = qis.conv();
+  retval["pop"] = qis.population();
+  retval["chiSq"] = qis.chiSq();
+  retval["pValue"] = qis.pValue();
+  retval["degeneracy"] = qis.degeneracy();
+
+  return retval;
+}
+
+py::dict qisi(const py::array_t<double> seed, const py::list& ilist, const py::list& mlist, int64_t skips)
+{
+  size_t k = ilist.size();
+  if (k != mlist.size())
+    throw py::value_error("index and marginals lists differ in size");
+  std::vector<std::vector<int64_t>> indices(k);
+  std::vector<NDArray<int64_t>> marginals;
+  marginals.reserve(k);
+
+  // TODO assert dtypes are as expected
+
+  for (size_t i = 0; i < k; ++i)
+  {
+    const py::array_t<int64_t> ia = ilist[i].cast<py::array_t<int64_t>>();
+    const py::array_t<int64_t> ma = mlist[i].cast<py::array_t<int64_t>>();
+    indices[i] = toVector<int64_t>(ia);
+    marginals.emplace_back(toNDArray<int64_t>(ma));
+  }
+
+  QISI qisi(indices, marginals, skips);
+  const NDArray<int64_t>& result = qisi.solve(asNDArray<double>(seed));
+  const NDArray<double>& expect = qisi.expectation();
+  py::dict retval;
+
+  retval["result"] = fromNDArray<int64_t>(result);
+  retval["expectation"] = fromNDArray<double>(expect);
+  retval["conv"] = qisi.conv();
+  retval["pop"] = qisi.population();
+  retval["chiSq"] = qisi.chiSq();
+  retval["pValue"] = qisi.pValue();
+  retval["degeneracy"] = qisi.degeneracy();
+
+  return retval;
+}
+
+
 py::dict unittest()
 {
     const unittest::Logger& log = unittest::run();
@@ -161,15 +300,56 @@ PYBIND11_MODULE(humanleague, m) {
 
   m.doc() = module_docstr;
 
-  m.def("version", []() { return STR(HUMANLEAGUE_VERSION); }, version_docstr)
-   .def("prob2IntFreq", hl::prob2IntFreq, prob2IntFreq_docstr, "probs"_a, "pop"_a)
-   .def("integerise", hl::prob2IntFreq, prob2IntFreq_docstr, "probs"_a, "pop"_a)
-   .def("integerise", hl::integerise, integerise_docstr, "pop"_a)
-   .def("sobolSequence", hl::sobol, sobolSequence_docstr, "dim"_a, "length"_a, "skips"_a)
-   .def("sobolSequence", [](int dim, int length) { return hl::sobol(dim, length, 0); }, sobolSequence_docstr, "dim"_a, "length"_a)
-   .def("unittest", hl::unittest);
-  ;
+  m.def("version", 
+        []() { return STR(HUMANLEAGUE_VERSION); }, 
+        version_docstr)
+   .def("flatten", 
+        hl::flatten, 
+        flatten_docstr, 
+        "pop"_a)
+   .def("prob2IntFreq", 
+        hl::prob2IntFreq, 
+        prob2IntFreq_docstr, 
+        "probs"_a, "pop"_a)
+   .def("integerise", 
+        hl::prob2IntFreq, 
+        prob2IntFreq_docstr, 
+        "probs"_a, "pop"_a)
+   .def("integerise", 
+        hl::integerise, 
+        integerise_docstr, 
+        "pop"_a)
+   .def("sobolSequence", 
+        hl::sobol, 
+        sobolSequence_docstr, 
+        "dim"_a, "length"_a, "skips"_a)
+   .def("sobolSequence", 
+        [](int dim, int length) { return hl::sobol(dim, length, 0); }, 
+        sobolSequence_docstr, 
+        "dim"_a, "length"_a)
+   .def("ipf", 
+        hl::ipf, 
+        ipf_docstr, 
+        "seed"_a, "indices"_a, "marginals"_a)
+   .def("qis", 
+        hl::qis, 
+        qis_docstr, 
+        "indices"_a, "marginals"_a, "skips"_a)
+   .def("qis", 
+        [](const py::list& indices, const py::list& marginals) { return hl::qis(indices, marginals, 0); }, 
+        qis_docstr, 
+        "indices"_a, "marginals"_a)
+   .def("qisi", 
+        hl::qisi, 
+        qisi_docstr, 
+        "seed"_a, "indices"_a, "marginals"_a, "skips"_a)
+   .def("qisi", 
+        [](const py::array_t<double>& seed, const py::list& indices, const py::list& marginals) { return hl::qisi(seed, indices, marginals, 0); }, 
+        qis_docstr, 
+        "seed"_a, "indices"_a, "marginals"_a)
+   .def("unittest", 
+        hl::unittest)
+    ;
 }
-
 
 #endif

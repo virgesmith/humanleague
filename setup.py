@@ -63,7 +63,6 @@ def header_files():
 
 
 def cxxflags(platform):
-  print("cxxflags")
   if platform == "unix":
     return [
       "-Wall",
@@ -143,7 +142,6 @@ class BuildExt(build_ext):
     #     opts.append('-fvisibility=hidden')
 
     for ext in self.extensions:
-      print(self.distribution.get_version())
       ext.define_macros = defines(ct) 
       ext.extra_compile_args = cxxflags(ct)
       ext.extra_link_args = ldflags(ct)

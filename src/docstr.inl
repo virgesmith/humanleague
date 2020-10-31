@@ -71,3 +71,7 @@ const char* qisi_docstr = R"docstr(
         A dictionary containing the result, a convergence flag, the total population, the iterations and the some statistical measures.
 )docstr";
 
+const char* unittest_docstr = R"docstr(
+    Developers only. Runs the C++ unit tests. 
+)docstr";
+

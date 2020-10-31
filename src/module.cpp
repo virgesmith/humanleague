@@ -291,7 +291,7 @@ py::dict unittest()
 
 } // namespace hl
 
-using namespace py::literals;
+using py::literals::operator ""_a;
 
 
 PYBIND11_MODULE(humanleague, m) {
@@ -314,7 +314,7 @@ PYBIND11_MODULE(humanleague, m) {
    .def("integerise", 
         hl::prob2IntFreq, 
         prob2IntFreq_docstr, 
-        "probs"_a, "pop"_a)
+        "frac"_a, "pop"_a)
    .def("integerise", 
         hl::integerise, 
         integerise_docstr, 
@@ -348,7 +348,8 @@ PYBIND11_MODULE(humanleague, m) {
         qis_docstr, 
         "seed"_a, "indices"_a, "marginals"_a)
    .def("unittest", 
-        hl::unittest)
+        hl::unittest,
+        unittest_docstr)
     ;
 }
 

@@ -43,16 +43,25 @@ matrix:
       language: r
       r: devel
 
-    - language: python
-      python:
-        - "3.6"
-        - "3.7" 
-        - "3.8"
-      script:
-        - python setup.py install
-        - python setup.py test
+      - language: python
+        python: 3.6
+        script:
+          - python setup.py install
+          - python setup.py test
 
-    # - os: linux
+      - language: python
+        python: 3.6
+        script:
+          - python setup.py install
+          - python setup.py test
+  
+      - language: python
+        python: 3.6
+        script:
+          - python setup.py install
+          - python setup.py test
+    
+          # - os: linux
     #   dist: bionic
     #   language: python
     #   python: 3.7
@@ -87,8 +96,8 @@ matrix:
         - python3 setup.py install
         - python3 tests/test_all.py
 
-allow_failures:
-  - language: generic
+# allow_failures:
+#   - language: generic
 
 warnings_are_errors: false
 

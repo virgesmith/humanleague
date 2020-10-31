@@ -89,7 +89,7 @@ def ldflags(_platform):
 def defines(platform):
   return [
     ("HUMANLEAGUE_VERSION", version()),
-    ("PYTHON_MODULE", "")
+    ("PYTHON_MODULE", None)
   ]
 
 class get_pybind_include(object):
@@ -111,7 +111,7 @@ ext_modules = [
     include_dirs=[
       get_pybind_include(),
     ],
-    depends=["DESCRIPTION"] + header_files(),
+    depends=["setup.py", "DESCRIPTION", "src/docstr.inl"] + header_files(),
     language='c++'
   ),
 ]

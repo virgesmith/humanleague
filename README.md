@@ -16,17 +16,17 @@
 [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/humanleague)](https://CRAN.R-project.org/package=humanleague)
 [![CRAN Downloads](https://cranlogs.r-pkg.org/badges/grand-total/humanleague?color=black)](https://cran.r-project.org/package=humanleague)
 
-> ## Latest news:
+> ## Latest news
 >
-> The 2.1.3 release is a non-functional-change release that affects the python version only:
+> The 2.1.3 release is a non-functional change that affects the python version only:
 >
-> - migrate to [pybind11](pybind11.readthedocs.io/) from the native C python API, to reduce and simplify the code,
-> - improve the python API documentation.
+> - migrate to [pybind11](pybind11.readthedocs.io/) from the native C python API, to reduce and simplify the code, and
+> - provide improved python API documentation.
 
 ## 2.1 release
 
-- now available on [conda](https://conda.io/docs/index.html). 
-- adds new functionality for multidimensional integerisation. 
+- now available on [conda](https://conda.io/docs/index.html).
+- adds new functionality for multidimensional integerisation.
 - removes previously deprecated functionality: `synthPop` and `synthPopG` functions.
 
 ### Multidimensional integerisation
@@ -82,26 +82,30 @@ array([ True,  True,  True,  True])
 The functions `synthPop` and `synthPopG` implement restricted versions of algorithms that are available in other functions.
 Use `qis` ins place of `synthPop`, and `qisi` in place of `synthPopG`.
 
-### Introduction
+## Introduction
 
 *humanleague* is a python and an R package for microsynthesising populations from marginal and (optionally) seed data. The package is implemented in C++ for performance.
 
 The package contains algorithms that use a number of different microsynthesis techniques:
+
 - [Iterative Proportional Fitting (IPF)](https://en.wikipedia.org/wiki/Iterative_proportional_fitting)
 - [Quasirandom Integer Sampling (QIS)](http://jasss.soc.surrey.ac.uk/20/4/14.html) (no seed population)
 - Quasirandom Integer Sampling of IPF (QISI): A combination of the two techniques whereby the integral population is sampled (without replacement) from a distribution constructed from a dynamic IPF solution.
 
 The latter provides a bridge between deterministic reweighting and combinatorial optimisation, offering advantages of both techniques:
+
 - generates high-entropy integral populations 
 - can be used to generate multiple populations for sensitivity analysis
 - goes some way to address the 'empty cells' issues that can occur in straight IPF
 - relatively fast computation time
 
-The algorithms: 
+The algorithms:
+
 - support arbitrary dimensionality* for both the marginals and the seed.
 - produce statistical data to ascertain the likelihood/degeneracy of the population (where appropriate).
 
 The package also contains the following utility functions:
+
 - a Sobol sequence generator
 - construct a closest integer population from a discrete univariate probability distribution.
 - an algorithm for sampling an integer population from a discrete multivariate probability distribution, constrained to the marginal sums in every dimension.
@@ -109,48 +113,61 @@ The package also contains the following utility functions:
 
 Version 1.0.1 reflects the work described in the [Quasirandom Integer Sampling (QIS)](http://jasss.soc.surrey.ac.uk/20/4/14.html) paper.
 
-## python installation
-Requires Python 3.5 or newer. 
+## Installation
+
+Requires Python 3.5 or newer.
+
 ### PyPI
+
 ```bash
 python3 -m pip install humanleague --user
 ```
+
 ### Anaconda
+
 ```bash
-$ conda install -c conda-forge humanleague
+conda install -c conda-forge humanleague
 ```
+
 ### Build, install and test (from cloned repo)
+
 ```bash
-$ ./setup.py install --user
+python setup.py install --user
+python setup.py test
 ```
-```bash
-$ ./setup.py test
-```
-## R installation
+
+### R
+
 Official release:
-```
+
+```r
 > install.packages("humanleague")
 ```
-For development version
-```bash
+
+For a development version
+
+```r
 > devtools::install_github("virgesmith/humanleague")
 ```
+
 Or, for the legacy version
-```bash
+
+```r
 > devtools::install_github("virgesmith/humanleague@1.0.1")
 ```
 
-### Documentation and Examples
+## Documentation and Examples
 
-#### R
+### R
 
 Consult the package documentation, e.g.
-```
+
+```r
 > library(humanleague)
 > ?humanleague
 ```
 
-#### Python:
+### Python
 
 See [here](doc/api.md), or
 

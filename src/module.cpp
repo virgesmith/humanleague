@@ -1,5 +1,5 @@
 // module.cpp - skip if not a python build
-#ifdef PYTHON_MODULE
+//#ifdef PYTHON_MODULE
 
 #include "Sobol.h"
 #include "Integerise.h"
@@ -49,6 +49,40 @@ const T* cend(const py::array_t<T>& a)
   return (const T*)a.request().ptr + a.size();
 }
 
+template<typename T>
+NDArray<T> toNDArray(const py::array_t<T>& np)
+{
+  const size_t dim = np.ndim();
+  std::vector<int64_t> sizes(dim);
+  for (size_t i = 0; i < dim; ++i)
+    sizes[i] = np.shape(i);
+  NDArray<T> tmp(sizes);
+  std::copy(cbegin(np), cend(np), const_cast<T*>(tmp.rawData()));
+  return tmp;
+}
+
+template<typename T>
+NDArray<T> asNDArray(const py::array_t<T>& np)
+{
+  // this is a bit iffy re: constness
+  return NDArray<T>(std::vector<int64_t>(np.shape(), np.shape() + np.ndim()), const_cast<double*>(cbegin(np)));
+}
+
+template<typename T>
+py::array_t<T> fromNDArray(const NDArray<T>& a)
+{
+  // TODO ensure this is safe. may need to explicitly copy data 
+  return py::array_t<T>(a.sizes(), a.rawData());
+
+}
+// explicit array_t(ShapeContainer shape, const T *ptr = nullptr, handle base = handle())
+//         : array_t(private_ctor{}, std::move(shape),
+//                 ExtraFlags & f_style
+//                 ? detail::f_strides(*shape, itemsize())
+//                 : detail::c_strides(*shape, itemsize()),
+//                 ptr, base) { }
+
+
 // TODO -> integerise
 py::dict prob2IntFreq(py::array_t<double> prob_a, int pop)
 {
@@ -91,6 +125,30 @@ extern py::array_t<double> sobol(int dim, int length, int skips = 0)
   return sequence;
 }
 
+py::dict integerise(const py::array_t<double>& npseed)
+{
+  const NDArray<double> seed = asNDArray<double>(npseed); // shallow copy
+  Integeriser integeriser(seed);
+
+  py::dict retval;
+  retval["result"] = fromNDArray<int64_t>(integeriser.result());
+  retval["conv"] = integeriser.conv();
+  retval["rmse"] = integeriser.rmse();
+  return retval;
+}
+
+py::dict unittest()
+{
+    const unittest::Logger& log = unittest::run();
+
+    py::dict result;
+    result["nTests"] = log.testsRun;
+    result["nFails"] = log.testsFailed;
+    result["errors"] = log.errors;
+
+    return result;
+}
+
 
 } // namespace hl
 
@@ -106,10 +164,12 @@ PYBIND11_MODULE(humanleague, m) {
   m.def("version", []() { return STR(HUMANLEAGUE_VERSION); }, version_docstr)
    .def("prob2IntFreq", hl::prob2IntFreq, prob2IntFreq_docstr, "probs"_a, "pop"_a)
    .def("integerise", hl::prob2IntFreq, prob2IntFreq_docstr, "probs"_a, "pop"_a)
-   .def("sobolSequence", hl::sobol, "dim"_a, "length"_a, "skips"_a)
-   .def("sobolSequence", [](int dim, int length) { return hl::sobol(dim, length, 0); })
+   .def("integerise", hl::integerise, integerise_docstr, "pop"_a)
+   .def("sobolSequence", hl::sobol, sobolSequence_docstr, "dim"_a, "length"_a, "skips"_a)
+   .def("sobolSequence", [](int dim, int length) { return hl::sobol(dim, length, 0); }, sobolSequence_docstr, "dim"_a, "length"_a)
+   .def("unittest", hl::unittest);
   ;
 }
 
 
-#endif
+//#endif

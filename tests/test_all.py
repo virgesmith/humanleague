@@ -12,16 +12,11 @@ def assert_throws(e, f, *args, **kwargs):
   else:
     assert False, "expected exception %s not thrown" % e
 
-# def test_unittest():
-#   res = hl.unittest()
-#   print("unit test fails/tests: ", res["nFails"], "/", res["nTests"])
-#   print(res["errors"])
-#   assert res["nFails"] == 0
-
-# def test_apitest():
-#   res = hl.apitest()
-#   #print("api test: ", res)
-#   assert res is None
+def test_unittest():
+  res = hl.unittest()
+  print("unit test fails/tests: ", res["nFails"], "/", res["nTests"])
+  print(res["errors"])
+  assert res["nFails"] == 0
 
 def test_sobolSequence():
   a = hl.sobolSequence(3, 5)
@@ -59,19 +54,17 @@ def test_integerise():
   assert r["rmse"] == 0.273861278752583
   assert np.array_equal(r["freq"], np.array([7, 5, 3, 2]))
 
-#   # 1-d case
-#   r = hl.integerise(np.array([2.0, 1.5, 1.0, 0.5]))
-#   assert r["conv"]
+  # 1-d case
+  r = hl.integerise(np.array([2.0, 1.5, 1.0, 0.5]))
+  assert r["conv"]
 
-#   # multidim integerisation
-#   # invalid population
-#   s = np.array([[1.1, 1.0], [1.0, 1.0]])
-#   r = hl.integerise(s)
-#   .assertEqual(r, "Marginal or total value 4.100000 is not an integer (within tolerance 0.000100)")
-#   # invalid marginals
-#   s = np.array([[1.1, 1.0], [0.9, 1.0]])
-#   r = hl.integerise(s)
-#   .assertEqual(r, "Marginal or total value 2.100000 is not an integer (within tolerance 0.000100)")
+  # multidim integerisation
+  # invalid population
+  s = np.array([[1.1, 1.0], [1.0, 1.0]])
+  assert_throws(RuntimeError, hl.integerise, s)
+  # invalid marginals
+  s = np.array([[1.1, 1.0], [0.9, 1.0]])
+  assert_throws(RuntimeError, hl.integerise, s)
 
 #   # use IPF to generate a valid fractional population
 #   m0 = np.array([111,112,113,114,110], dtype=float)

@@ -26,11 +26,11 @@ const char* prob2IntFreq_docstr = R"docstr(
 
         frac: The fractional counts (must be a 1-d array).
 
-        pop: The growth rate
+        pop: The total population
 
     Returns:
 
-        The frequencies and the RMS error
+        A dictionary containing the frequencies and the RMS error
 )docstr";
 
 const char* integerise_docstr = R"docstr(
@@ -55,6 +55,18 @@ const char* sobolSequence_docstr = R"docstr(
         length: The length of the returned sequence
 
         skips: The number of values to skip. NB the actual number skipped will be the largest power of 2 smaller than the supplied value.
+
+    Returns:
+
+        A 2d array containing Sobol sequence values in (0,1). 
+)docstr";
+
+const char* sobolSequence2_docstr = R"docstr(
+    Returns a Sobol' sequence given of supplied dimension and length, optionally skipping values.
+
+        dim: The dimension of the sequence (between 1 and 1111).
+
+        length: The length of the returned sequence
 
     Returns:
 
@@ -89,6 +101,18 @@ const char* qis_docstr = R"docstr(
         A dictionary containing the result, a convergence flag, the total population, the iterations and the some statistical measures.
 )docstr";
 
+const char* qis2_docstr = R"docstr(
+    Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
+
+        indices: A list of the indices in the overall array that each marginal represents 
+
+        marginals: A list of arrays containing the marginal sums.
+
+    Returns:
+
+        A dictionary containing the result, a convergence flag, the total population, the iterations and the some statistical measures.
+)docstr";
+
 const char* qisi_docstr = R"docstr(
     Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
 
@@ -105,7 +129,21 @@ const char* qisi_docstr = R"docstr(
         A dictionary containing the result, a convergence flag, the total population, the iterations and the some statistical measures.
 )docstr";
 
+const char* qisi2_docstr = R"docstr(
+    Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
+
+        seed: The dimension of the sequence (between 1 and 1111).
+
+        indices: A list of the indices in the overall array that each marginal represents 
+
+        marginals: A list of arrays containing the marginal sums.
+
+    Returns:
+
+        A dictionary containing the result, a convergence flag, the total population, the iterations and the some statistical measures.
+)docstr";
+
 const char* unittest_docstr = R"docstr(
-    Developers only. Runs the C++ unit tests. 
+    For developers. Runs the C++ unit tests. 
 )docstr";
 

@@ -310,7 +310,7 @@ PYBIND11_MODULE(humanleague, m) {
    .def("prob2IntFreq", 
         hl::prob2IntFreq, 
         prob2IntFreq_docstr, 
-        "probs"_a, "pop"_a)
+        "frac"_a, "pop"_a)
    .def("integerise", 
         hl::prob2IntFreq, 
         prob2IntFreq_docstr, 
@@ -325,7 +325,7 @@ PYBIND11_MODULE(humanleague, m) {
         "dim"_a, "length"_a, "skips"_a)
    .def("sobolSequence", 
         [](int dim, int length) { return hl::sobol(dim, length, 0); }, 
-        sobolSequence_docstr, 
+        sobolSequence2_docstr, 
         "dim"_a, "length"_a)
    .def("ipf", 
         hl::ipf, 
@@ -337,7 +337,7 @@ PYBIND11_MODULE(humanleague, m) {
         "indices"_a, "marginals"_a, "skips"_a)
    .def("qis", 
         [](const py::list& indices, const py::list& marginals) { return hl::qis(indices, marginals, 0); }, 
-        qis_docstr, 
+        qis2_docstr, 
         "indices"_a, "marginals"_a)
    .def("qisi", 
         hl::qisi, 
@@ -345,7 +345,7 @@ PYBIND11_MODULE(humanleague, m) {
         "seed"_a, "indices"_a, "marginals"_a, "skips"_a)
    .def("qisi", 
         [](const py::array_t<double>& seed, const py::list& indices, const py::list& marginals) { return hl::qisi(seed, indices, marginals, 0); }, 
-        qis_docstr, 
+        qisi2_docstr, 
         "seed"_a, "indices"_a, "marginals"_a)
    .def("unittest", 
         hl::unittest,

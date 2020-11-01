@@ -35,11 +35,11 @@ Args:
 
 frac: The fractional counts (must be a 1-d array).
 
-pop: The growth rate
+pop: The total population
 
 Returns:
 
-The frequencies and the RMS error
+A dictionary containing the frequencies and the RMS error
 
 
 ```python
@@ -82,7 +82,7 @@ A dictionary containing the result, a convergence flag, the total population, th
 ## `humanleague.prob2IntFreq` (function)
 
 ```python
-prob2IntFreq(probs: numpy.ndarray[numpy.float64], pop: int) -> dict
+prob2IntFreq(frac: numpy.ndarray[numpy.float64], pop: int) -> dict
 ```
 
 
@@ -92,11 +92,11 @@ Args:
 
 frac: The fractional counts (must be a 1-d array).
 
-pop: The growth rate
+pop: The total population
 
 Returns:
 
-The frequencies and the RMS error
+A dictionary containing the frequencies and the RMS error
 
 
 ## `humanleague.qis` (function)
@@ -134,8 +134,6 @@ Uses quasirandom integer sampling to construct an n-dimensional population array
 indices: A list of the indices in the overall array that each marginal represents 
 
 marginals: A list of arrays containing the marginal sums.
-
-skips: The number of Sobol values to skip. NB the actual number skipped will be the largest power of 2 smaller than the supplied value.
 
 Returns:
 
@@ -176,11 +174,11 @@ A dictionary containing the result, a convergence flag, the total population, th
 
 Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
 
+seed: The dimension of the sequence (between 1 and 1111).
+
 indices: A list of the indices in the overall array that each marginal represents 
 
 marginals: A list of arrays containing the marginal sums.
-
-skips: The number of Sobol values to skip. NB the actual number skipped will be the largest power of 2 smaller than the supplied value.
 
 Returns:
 
@@ -223,8 +221,6 @@ dim: The dimension of the sequence (between 1 and 1111).
 
 length: The length of the returned sequence
 
-skips: The number of values to skip. NB the actual number skipped will be the largest power of 2 smaller than the supplied value.
-
 Returns:
 
 A 2d array containing Sobol sequence values in (0,1). 
@@ -237,7 +233,7 @@ unittest() -> dict
 ```
 
 
-Developers only. Runs the C++ unit tests. 
+For developers. Runs the C++ unit tests. 
 
 
 ## `humanleague.version` (function)

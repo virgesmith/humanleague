@@ -1,13 +1,13 @@
 #!/bin/bash
 
-version=2.1.0
+version=$(grep "Version:" DESCRIPTION |cut -f2 -d " ")
 
 # package
 # no binary dist as C++
 python3 setup.py sdist 
 # upload
-twine upload --repository-url https://test.pypi.org/legacy/ dist/humanleague-$version.tar.gz
-#twine upload --repository-url https://upload.pypi.org/legacy/ dist/humanleague-$version*
+#twine upload --repository-url https://test.pypi.org/legacy/ dist/humanleague-$version.tar.gz
+twine upload --repository-url https://upload.pypi.org/legacy/ dist/humanleague-$version.tar.gz
 
 # # test package in tmp env
 # # segregrated env PYTHONPATH="" to be certain

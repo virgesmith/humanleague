@@ -1,6 +1,8 @@
 
 
 cache: packages
+os: linux
+dist: bionic
 
 r_github_packages:
   - r-lib/covr
@@ -41,29 +43,39 @@ matrix:
       language: r
       r: devel
 
-    - os: linux
-      dist: xenial
-      language: python
-      python: 3.8
-      script:
-        - python3 setup.py install
-        - python3 tests/test_all.py
-
-    - os: linux
-      dist: xenial
-      language: python
+    - language: python
       python: 3.6
       script:
-        - python3 setup.py install
-        - python3 tests/test_all.py
+        - python setup.py install
+        - python setup.py test
 
-    - os: linux
-      dist: xenial
-      language: python
+    - language: python
       python: 3.7
       script:
-        - python3 setup.py install
-        - python3 tests/test_all.py
+        - python setup.py install
+        - python setup.py test
+
+    - language: python
+      python: 3.8
+      script:
+        - python setup.py install
+        - python setup.py test
+    
+          # - os: linux
+    #   dist: bionic
+    #   language: python
+    #   python: 3.7
+    #   script:
+    #     - python3 setup.py install
+    #     - python3 setup.py test
+
+    # - os: linux
+    #   dist: bionic
+    #   language: python
+    #   python: 3.8
+    #   script:
+    #     - python3 setup.py install
+    #     - python3 setup.py test
 
     - os: osx
       osx_image: xcode10.13 # reinstate older toolchain in attempt to fix LaTeX Error: File `inconsolata.sty' not found. 
@@ -84,8 +96,8 @@ matrix:
         - python3 setup.py install
         - python3 tests/test_all.py
 
-allow_failures:
-  - language: generic
+# allow_failures:
+#   - language: generic
 
 warnings_are_errors: false
 

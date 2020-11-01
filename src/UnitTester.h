@@ -51,7 +51,7 @@ bool withinTolerance(double x, double y, double tol = std::numeric_limits<double
     {                                                                          \
       expr;                                                                    \
     }                                                                          \
-    catch(except& e)                                                           \
+    catch(except&)                                                             \
     {                                                                          \
       caught = true;                                                           \
     }                                                                          \

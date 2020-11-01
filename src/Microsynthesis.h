@@ -216,10 +216,10 @@ protected:
     // more validation
 
     // check marginal sums all the same
-    m_population = sum(m_marginals[0]);
+    m_population = static_cast<int64_t>(sum(m_marginals[0]));
     for (size_t i = 1; i < m_marginals.size(); ++i)
     {
-      if (sum(m_marginals[i]) != m_population)
+      if (static_cast<int64_t>(sum(m_marginals[i])) != m_population)
         throw std::runtime_error("marginal sum mismatch at index %%: %% vs %%"_s % i % sum(m_marginals[i]) % m_population);
     }
 

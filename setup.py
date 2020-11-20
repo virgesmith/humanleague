@@ -66,8 +66,6 @@ def cxxflags(platform):
   if platform == "unix":
     return [
       "-Wall",
-      "-Werror",
-      "-Wno-unused-command-line-argument",
       "-pedantic",
       "-pthread",
       "-Wsign-compare",

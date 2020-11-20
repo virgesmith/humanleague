@@ -67,6 +67,7 @@ def cxxflags(platform):
     return [
       "-Wall",
       "-Werror",
+      "-Wno-unused-command-line-argument",
       "-pedantic",
       "-pthread",
       "-Wsign-compare",

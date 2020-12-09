@@ -1,6 +1,7 @@
 #!/bin/bash
 
 version=$(grep "Version:" DESCRIPTION |cut -f2 -d " ")
+echo $version
 
 # package
 # no binary dist as C++

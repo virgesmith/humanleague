@@ -45,8 +45,6 @@ matrix:
 
     - language: python
       python: 3.6
-      before_install:
-        - python -m pip install "numpy<1.20"
       script:
         - python setup.py install
         - python setup.py test
@@ -98,8 +96,8 @@ matrix:
         - python3 setup.py install
         - python3 tests/test_all.py
 
-# allow_failures:
-#   - language: generic
+  allow_failures:
+    - python: 3.6
 
 warnings_are_errors: false
 

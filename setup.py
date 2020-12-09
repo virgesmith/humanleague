@@ -58,7 +58,7 @@ def header_files():
     "src/Sobol.h",
     "src/SobolImpl.h",
     "src/StatFuncs.h",
-    "src/UnitTester.h"   
+    "src/UnitTester.h"
   ]
 
 
@@ -141,7 +141,7 @@ class BuildExt(build_ext):
     #     opts.append('-fvisibility=hidden')
 
     for ext in self.extensions:
-      ext.define_macros = defines(ct) 
+      ext.define_macros = defines(ct)
       ext.extra_compile_args = cxxflags(ct)
       ext.extra_link_args = ldflags(ct)
 
@@ -158,7 +158,7 @@ setup(
   long_description_content_type="text/markdown",
   ext_modules=ext_modules,
   cmdclass={'build_ext': BuildExt},
-  install_requires=['numpy>=1.19.1'],
+  install_requires=['numpy>=1.19.1,<1.20.0rc1'],
   setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
   tests_require=['pytest'],
   classifiers=[

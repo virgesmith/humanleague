@@ -45,6 +45,8 @@ matrix:
 
     - language: python
       python: 3.6
+      before_install:
+        - python -m pip install "numpy<1.20"
       script:
         - python setup.py install
         - python setup.py test
@@ -60,7 +62,7 @@ matrix:
       script:
         - python setup.py install
         - python setup.py test
-    
+
           # - os: linux
     #   dist: bionic
     #   language: python
@@ -78,7 +80,7 @@ matrix:
     #     - python3 setup.py test
 
     - os: osx
-      osx_image: xcode10.13 # reinstate older toolchain in attempt to fix LaTeX Error: File `inconsolata.sty' not found. 
+      osx_image: xcode10.13 # reinstate older toolchain in attempt to fix LaTeX Error: File `inconsolata.sty' not found.
       language: r
       r: release
 

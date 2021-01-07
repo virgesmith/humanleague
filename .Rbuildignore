@@ -1,11 +1,18 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\.vscode
+^\.venv
 ^\.travis\.yml$
 ^appveyor\.yml$
+^\.eggs
+^\.pytest_cache
+^humanleague.cpython
+setup.cfg
+dist/
 build/
 humanleague/
 humanleague.egg-info/
+humanleague
 dev/
 doc/
 requirements.txt
@@ -13,3 +20,4 @@ setup.py
 LICENSE
 MANIFEST.in
 scripts/
+src/docstr.inl

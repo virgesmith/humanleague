@@ -1,12 +1,28 @@
 # Build environments
 environment:
   matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      PYTHON: "3.7"
+      APPVEYOR_YML_DISABLE_PS_LINUX: true
+
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
       PYTHON: "3.8"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
 
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+      PYTHON: "3.9"
+      APPVEYOR_YML_DISABLE_PS_LINUX: true
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+      PYTHON: "3.7"
+      APPVEYOR_YML_DISABLE_PS_LINUX: true
+
     - APPVEYOR_BUILD_WORKER_IMAGE: macOS
       PYTHON: "3.8"
+      APPVEYOR_YML_DISABLE_PS_LINUX: true
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+      PYTHON: "3.9"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
 
     - TEST_LANGUAGE: "Python"
@@ -15,7 +31,7 @@ environment:
       MSVC_VERSION: "Visual Studio 19 Win64"
 
     - TEST_LANGUAGE: "Python"
-      PYTHON: "C:\\Python39-x64"
+      PYTHON: "C:\\Python38-x64"
       PYTHON_ARCH: 64
       MSVC_VERSION: "Visual Studio 19 Win64"
 

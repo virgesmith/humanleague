@@ -83,7 +83,7 @@ install:
         & $python -m pip install --upgrade pip wheel setuptools --no-warn-script-location
         & $python -m pip install numpy --no-warn-script-location
       }
-  - sh: [[ "$MINICONDA" == "true" ]] && scripts/create-conda-env.sh
+  - sh: if [ "$MINICONDA" == "true" ]; then scripts/create-conda-env.sh; fi
 
 cache:
   - C:\RLibrary

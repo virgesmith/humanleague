@@ -7,47 +7,52 @@ environment:
       PYTHON_ARCH: 64
       MSVC_VERSION: "Visual Studio 19 Win64"
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      TEST_LANGUAGE: "Python"
-      PYTHON: "C:\\Python39-x64"
-      PYTHON_ARCH: 64
-      MSVC_VERSION: "Visual Studio 19 Win64"
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #   TEST_LANGUAGE: "Python"
+    #   PYTHON: "C:\\Python39-x64"
+    #   PYTHON_ARCH: 64
+    #   MSVC_VERSION: "Visual Studio 19 Win64"
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      TEST_LANGUAGE: "Python"
-      PYTHON: "C:\\Python37-x64"
-      PYTHON_ARCH: 64
-      MSVC_VERSION: "Visual Studio 19 Win64"
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #   TEST_LANGUAGE: "Python"
+    #   PYTHON: "C:\\Python37-x64"
+    #   PYTHON_ARCH: 64
+    #   MSVC_VERSION: "Visual Studio 19 Win64"
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      TEST_LANGUAGE: "R"
-      PYTHON: ""
-      PYTHON_ARCH: ""
-      MSVC_VERSION: ""
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #   TEST_LANGUAGE: "R"
+    #   PYTHON: ""
+    #   PYTHON_ARCH: ""
+    #   MSVC_VERSION: ""
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-      PYTHON: "3.7"
-      APPVEYOR_YML_DISABLE_PS_LINUX: true
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+    #   PYTHON: "3.7"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
-      PYTHON: "3.8"
-      APPVEYOR_YML_DISABLE_PS_LINUX: true
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+    #   PYTHON: "3.8"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
 
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
       PYTHON: "3.9"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
-      PYTHON: "3.7"
-      APPVEYOR_YML_DISABLE_PS_LINUX: true
-
-    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+      MINICONDA: true
       PYTHON: "3.8"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
-      PYTHON: "3.9"
-      APPVEYOR_YML_DISABLE_PS_LINUX: true
+    # - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+    #   PYTHON: "3.7"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
+
+    # - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+    #   PYTHON: "3.8"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
+
+    # - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+    #   PYTHON: "3.9"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
 
 stack: python %PYTHON%
 
@@ -78,6 +83,7 @@ install:
         & $python -m pip install --upgrade pip wheel setuptools --no-warn-script-location
         & $python -m pip install numpy --no-warn-script-location
       }
+  - sh: [[ "$MINICONDA" == "true" ]] && scripts/create-conda-env.sh
 
 cache:
   - C:\RLibrary
@@ -89,7 +95,12 @@ build_script:
 test_script:
   - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool run_tests }
   - cmd: if "%TEST_LANGUAGE%" == "Python" ( "%PYTHON%\python.exe" setup.py test ) else ( echo %TEST_LANGUAGE% )
-  - sh: python setup.py test
+  - sh: |
+      if [ "$MINICONDA" == "true" ]; then
+      source "${HOME}/.miniconda/etc/profile.d/conda.sh"
+      conda activate conda-env
+      fi
+      python setup.py test
 
 on_failure:
   - 7z a failure.zip *.Rcheck\*

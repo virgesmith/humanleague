@@ -1,7 +1,7 @@
 
 #include "UnitTester.h"
 
-//#include <Rcpp.h>
+#include <limits>
 #include <cmath>
 
 void unittest::Logger::reset()

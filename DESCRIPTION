@@ -1,9 +1,9 @@
 Package: humanleague
 Type: Package
 Title: Synthetic Population Generator
-Version: 2.1.7
-Description: Generates high-entropy integer synthetic populations from marginal and (optionally) seed data using quasirandom sampling, 
-  in arbitrary dimensionality (Smith, Lovelace and Birkin (2017) <doi:10.18564/jasss.3550>). 
+Version: 2.1.8rc
+Description: Generates high-entropy integer synthetic populations from marginal and (optionally) seed data using quasirandom sampling,
+  in arbitrary dimensionality (Smith, Lovelace and Birkin (2017) <doi:10.18564/jasss.3550>).
   The package also provides an implementation of the Iterative Proportional Fitting (IPF) algorithm (Zaloznik (2011) <doi:10.13140/2.1.2480.9923>).
 Authors@R: c(
   person("Andrew", "Smith", email="andrew@friarswood.net", role=c("aut", "cre")),
@@ -18,5 +18,5 @@ Imports:
     Rcpp (>= 0.12.8)
 LinkingTo: Rcpp
 RoxygenNote: 7.0.2
-Suggests: 
+Suggests:
     testthat

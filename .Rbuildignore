@@ -15,6 +15,7 @@ humanleague.egg-info/
 humanleague
 dev/
 doc/
+README.md
 requirements.txt
 setup.py
 LICENSE

@@ -74,7 +74,7 @@ def cxxflags(platform):
       "-Werror=format-security",
       "-Wdate-time",
       "-fPIC",
-      "-std=c++11", # Rcpp compatibility
+      "-std=c++14", # Rcpp compatibility
       "-fvisibility=hidden"
     ]
   elif platform == "msvc":

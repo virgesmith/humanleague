@@ -3,6 +3,7 @@
 ^\.vscode
 ^\.venv
 ^\.travis\.yml$
+^\.travis\.yml_disabled$
 ^appveyor\.yml$
 ^\.eggs
 ^\.pytest_cache
@@ -12,7 +13,6 @@ dist/
 build/
 humanleague/
 humanleague.egg-info/
-humanleague
 dev/
 doc/
 README.md
@@ -22,3 +22,5 @@ LICENSE
 MANIFEST.in
 scripts/
 src/docstr.inl
+tests/test_all.py
+tests/__pycache__

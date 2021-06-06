@@ -15,6 +15,9 @@ def assert_throws(e, f, *args, **kwargs):
 def assert_close(x, y, tol=1e-8): # ~sqrt(epsilon)
   assert abs(x-y) < tol
 
+def test_version():
+  assert hl.__version__
+
 def test_unittest():
   res = hl.unittest()
   print("unit test fails/tests: ", res["nFails"], "/", res["nTests"])

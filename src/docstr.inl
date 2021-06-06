@@ -3,10 +3,6 @@ const char* module_docstr = R"docstr(
     Microsynthesis using quasirandom sampling and IPF, plus related functionality
 )docstr";
 
-const char* version_docstr = R"docstr(
-    Gets the module version
-)docstr";
-
 const char* flatten_docstr = R"docstr(
     Converts an n-dimensional array of counts into an n-column table with a row for each unit
 
@@ -16,11 +12,11 @@ const char* flatten_docstr = R"docstr(
 
     Returns:
 
-        A 2-d array of size n by sum(pop). 
+        A 2-d array of size n by sum(pop).
 )docstr";
 
 const char* prob2IntFreq_docstr = R"docstr(
-    Computes the closest integer frequencies given fractional counts and a total population. 
+    Computes the closest integer frequencies given fractional counts and a total population.
 
     Args:
 
@@ -34,7 +30,7 @@ const char* prob2IntFreq_docstr = R"docstr(
 )docstr";
 
 const char* integerise_docstr = R"docstr(
-    Tries to construct and integer multidimensional array that has identical marginal sums to the fractional input array (which of course must have 
+    Tries to construct and integer multidimensional array that has identical marginal sums to the fractional input array (which of course must have
     integer marginal sums). The algorithm may not always find a solution and will return an approximate array in this case.
 
     Args:
@@ -43,7 +39,7 @@ const char* integerise_docstr = R"docstr(
 
     Returns:
 
-        A dictionary containing The integral population, the RMS error, and a boolean indicating whether the population matches the marginal sums. 
+        A dictionary containing The integral population, the RMS error, and a boolean indicating whether the population matches the marginal sums.
 )docstr";
 
 
@@ -58,7 +54,7 @@ const char* sobolSequence_docstr = R"docstr(
 
     Returns:
 
-        A 2d array containing Sobol sequence values in (0,1). 
+        A 2d array containing Sobol sequence values in (0,1).
 )docstr";
 
 const char* sobolSequence2_docstr = R"docstr(
@@ -70,7 +66,7 @@ const char* sobolSequence2_docstr = R"docstr(
 
     Returns:
 
-        A 2d array containing Sobol sequence values in (0,1). 
+        A 2d array containing Sobol sequence values in (0,1).
 )docstr";
 
 const char* ipf_docstr = R"docstr(
@@ -78,7 +74,7 @@ const char* ipf_docstr = R"docstr(
 
         seed: The seed population as an array.
 
-        indices: A list of the indices in the overall array that each marginal represents 
+        indices: A list of the indices in the overall array that each marginal represents
 
         marginals: A list of arrays containing the marginal sums.
 
@@ -90,7 +86,7 @@ const char* ipf_docstr = R"docstr(
 const char* qis_docstr = R"docstr(
     Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
 
-        indices: A list of the indices in the overall array that each marginal represents 
+        indices: A list of the indices in the overall array that each marginal represents
 
         marginals: A list of arrays containing the marginal sums.
 
@@ -104,7 +100,7 @@ const char* qis_docstr = R"docstr(
 const char* qis2_docstr = R"docstr(
     Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
 
-        indices: A list of the indices in the overall array that each marginal represents 
+        indices: A list of the indices in the overall array that each marginal represents
 
         marginals: A list of arrays containing the marginal sums.
 
@@ -118,7 +114,7 @@ const char* qisi_docstr = R"docstr(
 
         seed: The dimension of the sequence (between 1 and 1111).
 
-        indices: A list of the indices in the overall array that each marginal represents 
+        indices: A list of the indices in the overall array that each marginal represents
 
         marginals: A list of arrays containing the marginal sums.
 
@@ -134,7 +130,7 @@ const char* qisi2_docstr = R"docstr(
 
         seed: The dimension of the sequence (between 1 and 1111).
 
-        indices: A list of the indices in the overall array that each marginal represents 
+        indices: A list of the indices in the overall array that each marginal represents
 
         marginals: A list of arrays containing the marginal sums.
 
@@ -144,6 +140,6 @@ const char* qisi2_docstr = R"docstr(
 )docstr";
 
 const char* unittest_docstr = R"docstr(
-    For developers. Runs the C++ unit tests. 
+    For developers. Runs the C++ unit tests.
 )docstr";
 

@@ -49,7 +49,7 @@ const T* cend(const py::array_t<T>& a)
   return (const T*)a.request().ptr + a.size();
 }
 
-template<typename T> 
+template<typename T>
 std::vector<T> toVector(const py::array_t<T>& a)
 {
   if (a.ndim() != 1)
@@ -81,7 +81,7 @@ NDArray<T> asNDArray(const py::array_t<T>& np)
 template<typename T>
 py::array_t<T> fromNDArray(const NDArray<T>& a)
 {
-  // TODO ensure this is safe. may need to explicitly copy data 
+  // TODO ensure this is safe. may need to explicitly copy data
   return py::array_t<T>(a.sizes(), a.rawData());
 
 }
@@ -300,54 +300,53 @@ PYBIND11_MODULE(humanleague, m) {
 
   m.doc() = module_docstr;
 
-  m.def("version", 
-        []() { return STR(HUMANLEAGUE_VERSION); }, 
-        version_docstr)
-   .def("flatten", 
-        hl::flatten, 
-        flatten_docstr, 
+  m.attr("__version__") = STR(HUMANLEAGUE_VERSION);
+
+  m.def("flatten",
+        hl::flatten,
+        flatten_docstr,
         "pop"_a)
-   .def("prob2IntFreq", 
-        hl::prob2IntFreq, 
-        prob2IntFreq_docstr, 
+   .def("prob2IntFreq",
+        hl::prob2IntFreq,
+        prob2IntFreq_docstr,
         "frac"_a, "pop"_a)
-   .def("integerise", 
-        hl::prob2IntFreq, 
-        prob2IntFreq_docstr, 
+   .def("integerise",
+        hl::prob2IntFreq,
+        prob2IntFreq_docstr,
         "frac"_a, "pop"_a)
-   .def("integerise", 
-        hl::integerise, 
-        integerise_docstr, 
+   .def("integerise",
+        hl::integerise,
+        integerise_docstr,
         "pop"_a)
-   .def("sobolSequence", 
-        hl::sobol, 
-        sobolSequence_docstr, 
+   .def("sobolSequence",
+        hl::sobol,
+        sobolSequence_docstr,
         "dim"_a, "length"_a, "skips"_a)
-   .def("sobolSequence", 
-        [](int dim, int length) { return hl::sobol(dim, length, 0); }, 
-        sobolSequence2_docstr, 
+   .def("sobolSequence",
+        [](int dim, int length) { return hl::sobol(dim, length, 0); },
+        sobolSequence2_docstr,
         "dim"_a, "length"_a)
-   .def("ipf", 
-        hl::ipf, 
-        ipf_docstr, 
+   .def("ipf",
+        hl::ipf,
+        ipf_docstr,
         "seed"_a, "indices"_a, "marginals"_a)
-   .def("qis", 
-        hl::qis, 
-        qis_docstr, 
+   .def("qis",
+        hl::qis,
+        qis_docstr,
         "indices"_a, "marginals"_a, "skips"_a)
-   .def("qis", 
-        [](const py::list& indices, const py::list& marginals) { return hl::qis(indices, marginals, 0); }, 
-        qis2_docstr, 
+   .def("qis",
+        [](const py::list& indices, const py::list& marginals) { return hl::qis(indices, marginals, 0); },
+        qis2_docstr,
         "indices"_a, "marginals"_a)
-   .def("qisi", 
-        hl::qisi, 
-        qisi_docstr, 
+   .def("qisi",
+        hl::qisi,
+        qisi_docstr,
         "seed"_a, "indices"_a, "marginals"_a, "skips"_a)
-   .def("qisi", 
-        [](const py::array_t<double>& seed, const py::list& indices, const py::list& marginals) { return hl::qisi(seed, indices, marginals, 0); }, 
-        qisi2_docstr, 
+   .def("qisi",
+        [](const py::array_t<double>& seed, const py::list& indices, const py::list& marginals) { return hl::qisi(seed, indices, marginals, 0); },
+        qisi2_docstr,
         "seed"_a, "indices"_a, "marginals"_a)
-   .def("unittest", 
+   .def("unittest",
         hl::unittest,
         unittest_docstr)
     ;

@@ -31,6 +31,7 @@ jobs:
         conda create -q -n conda-env python=$PYTHON gxx_linux-64 numpy pybind11 pytest
     - name: Build
       run: |
+        conda init bash
         conda activate conda-env
         python setup.py install
     - name: Test

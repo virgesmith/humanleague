@@ -26,14 +26,11 @@ jobs:
       with:
         auto-update-conda: true
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+    - name: Install deps, build & test
       run: |
-        conda create -q -n conda-env python=$PYTHON gxx_linux-64 numpy pybind11 pytest
-    - name: Build
-      run: |
-        conda init bash
-        conda activate conda-env
+        conda install gxx_linux-64 numpy pybind11 pytest
         python setup.py install
+        python -m pytest
     - name: Test
       run: |
         python -m pytest

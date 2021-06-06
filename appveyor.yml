@@ -57,8 +57,8 @@ environment:
 stack: python %PYTHON%
 
 # fail fast
-matrix:
-  fast_finish: true
+# matrix:
+#   fast_finish: true
 
 init:
   - ps: |

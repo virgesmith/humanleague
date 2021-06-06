@@ -21,8 +21,11 @@ def version():
 def source_files():
 
   sources = glob.glob("src/*.cpp")
-  skip = ["src/RcppExports.cpp", "src/rcpp_api.cpp"]
-  [sources.remove(s) for s in skip]
+  # can't use compile skips as some files are auto-generated
+  skip = ["RcppExports.cpp", "rcpp_api.cpp"]
+  for s in skip:
+    sources = [f for f in sources if not s in f]
+
   return sources
 
 def header_files():
@@ -51,23 +54,23 @@ ext_modules = [
 
 ParallelCompile().install()
 
-setup(
-  name = 'humanleague',
-  version = version(),
-  description = 'Microsynthesis using quasirandom sampling and/or IPF',
-  author = 'Andrew P Smith',
-  author_email = 'a.p.smith@leeds.ac.uk',
-  url = 'http://github.com/virgesmith/humanleague',
-  long_description = readme(),
-  long_description_content_type="text/markdown",
-  ext_modules=ext_modules,
-  install_requires=['numpy>=1.19.1'],
-  setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
-  tests_require=['pytest'],
-  classifiers=[
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-  ],
-  zip_safe=False,
-)
+# setup(
+#   name = 'humanleague',
+#   version = version(),
+#   description = 'Microsynthesis using quasirandom sampling and/or IPF',
+#   author = 'Andrew P Smith',
+#   author_email = 'a.p.smith@leeds.ac.uk',
+#   url = 'http://github.com/virgesmith/humanleague',
+#   long_description = readme(),
+#   long_description_content_type="text/markdown",
+#   ext_modules=ext_modules,
+#   install_requires=['numpy>=1.19.1'],
+#   setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
+#   tests_require=['pytest'],
+#   classifiers=[
+#     "Programming Language :: Python :: 3",
+#     "License :: OSI Approved :: MIT License",
+#     "Operating System :: OS Independent",
+#   ],
+#   zip_safe=False,
+# )

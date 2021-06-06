@@ -80,7 +80,7 @@ install:
       }
       if ($env:TEST_LANGUAGE -eq "Python") {
         $python = $env:PYTHON + "\python.exe"
-        & $python -m pip install --upgrade pip wheel setuptools pybind11 --no-warn-script-location
+        & $python -m pip install --upgrade pip wheel setuptools pybind11 pytest --no-warn-script-location
         & $python -m pip install numpy --no-warn-script-location
       }
   - sh: if [ "$MINICONDA" == "true" ]; then scripts/create-conda-env.sh; fi
@@ -95,7 +95,7 @@ build_script:
 test_script:
   - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool run_tests }
   #- cmd: if "%TEST_LANGUAGE%" == "Python" ( "%PYTHON%\python.exe" setup.py test ) else ( echo %TEST_LANGUAGE% )
-  - cmd: if "%TEST_LANGUAGE%" == "Python" ( "%PYTHON%\python.exe" -m pip install . )
+  - cmd: if "%TEST_LANGUAGE%" == "Python" ( "%PYTHON%\python.exe" -m pip install -e . )
   - sh: |
       if [ "$MINICONDA" == "true" ]; then
       source "${HOME}/.miniconda/etc/profile.d/conda.sh"

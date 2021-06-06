@@ -28,9 +28,10 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        conda install pybind11 pytest
+        conda create -q -n conda-env python=$PYTHON gxx_linux-64 numpy pybind11 pytest
     - name: Build
       run: |
+        conda activate conda-env
         python setup.py install
     - name: Test
       run: |

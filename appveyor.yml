@@ -101,6 +101,7 @@ test_script:
       source "${HOME}/.miniconda/etc/profile.d/conda.sh"
       conda activate conda-env
       fi
+      pip install -e .
       python -m pytest
 
 on_failure:

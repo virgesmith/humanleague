@@ -42,6 +42,11 @@ environment:
       PYTHON: "3.8"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
 
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      CODECOV_BUILD: true
+      PYTHON: "3.8"
+      APPVEYOR_YML_DISABLE_PS_LINUX: true
+
     # - APPVEYOR_BUILD_WORKER_IMAGE: macOS
     #   PYTHON: "3.7"
     #   APPVEYOR_YML_DISABLE_PS_LINUX: true
@@ -91,6 +96,16 @@ cache:
 build_script:
   # install deps
   - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool install_deps }
+  - sh: |
+      if [ "$CODECOV_BUILD" == "true" ]; then
+      export CFLAGS=--coverage
+      gcc --version # things go badly wrong is gcc and gcov versions arent in sync
+      gcov --version
+      elif [ "$MINICONDA" == "true" ]; then
+      source "${HOME}/.miniconda/etc/profile.d/conda.sh"
+      conda activate conda-env
+      fi
+      python -m pip install -e .
 
 test_script:
   - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool run_tests }
@@ -101,8 +116,10 @@ test_script:
       source "${HOME}/.miniconda/etc/profile.d/conda.sh"
       conda activate conda-env
       fi
-      pip install -e .
       python -m pytest
+      if [ "$CODECOV_BUILD" == "true" ]; then
+      bash <(curl -s https://codecov.io/bash) -Z
+      fi
 
 on_failure:
   - 7z a failure.zip *.Rcheck\*

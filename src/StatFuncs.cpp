@@ -66,7 +66,6 @@ double gamain ( double x, double p, int *ifault )
   int iter;
   double a;
   static const double acu = 1.0E-08;
-  double an;
   double arg;
   double b;
   double dif;
@@ -161,7 +160,7 @@ double gamain ( double x, double p, int *ifault )
     a = a + 1.0;
     b = b + 2.0;
     term = term + 1.0;
-    an = a * term;
+    double an = a * term;
     for ( i = 0; i <= 1; i++ )
     {
       pn[i+4] = b * pn[i+2] - an * pn[i];

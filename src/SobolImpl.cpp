@@ -9,17 +9,17 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 /* Generation of Sobol sequences in up to 1111 dimensions, based on the
@@ -59,7 +59,7 @@ extern "C" {
  * This code uses a 32-bit version of algorithm to find the rightmost
  * one bit in Knuth, _The Art of Computer Programming_, volume 4A
  * (draft fascicle), section 7.1.3, "Bitwise tricks and
- * techniques." 
+ * techniques."
  *
  * Assumes n has a zero bit, i.e. n < 2^32 - 1.
  *
@@ -82,24 +82,24 @@ static uint32_t rightzero32(uint32_t n)
    (if too many #'s generated) */
 static int sobol_gen(SobolData *sd, uint32_t *x)
 {
-  uint32_t c, b, i, sdim;
-  
-  if (sd->n == 4294967295U) 
+  uint32_t c, i, sdim;
+
+  if (sd->n == 4294967295U)
     return 0; /* n == 2^32 - 1 ... we would
 		      need to switch to a 64-bit version
 		      to generate more terms. */
   c = rightzero32(sd->n++);
   sdim = sd->sdim;
-  for (i = 0; i < sdim; ++i) 
+  for (i = 0; i < sdim; ++i)
   {
-	  b = sd->b[i];
-	  if (b >= c) 
+	  uint32_t b = sd->b[i];
+	  if (b >= c)
 	  {
       sd->x[i] ^= sd->m[c][i] << (b - c);
       //x[i] = ((double) (sd->x[i])) / (1U << (b+1));
       x[i] = sd->x[i] << (31 - b);
 	  }
-	  else 
+	  else
 	  {
       sd->x[i] = (sd->x[i] << (c - b)) ^ sd->m[c][i];
       sd->b[i] = c;
@@ -117,19 +117,19 @@ static int sobol_init(SobolData *sd, uint32_t sdim)
 {
   uint32_t i,j;
 
-  if (!sdim || sdim > MAXDIM) 
+  if (!sdim || sdim > MAXDIM)
     return 0;
 
   sd->mdata = (uint32_t *) malloc(sizeof(uint32_t) * (sdim * 32));
-  if (!sd->mdata) 
+  if (!sd->mdata)
     return 0;
 
-  for (j = 0; j < 32; ++j) 
+  for (j = 0; j < 32; ++j)
   {
     sd->m[j] = sd->mdata + j * sdim;
     sd->m[j][0] = 1; /* special-case Sobol sequence */
   }
-  for (i = 1; i < sdim; ++i) 
+  for (i = 1; i < sdim; ++i)
   {
     uint32_t a = sobol_a[i-1];
     uint32_t d = 0, k;
@@ -145,11 +145,11 @@ static int sobol_init(SobolData *sd, uint32_t sdim)
       sd->m[j][i] = sobol_minit[j][i-1];
 
     /* fill in remaining values using recurrence */
-    for (j = d; j < 32; ++j) 
+    for (j = d; j < 32; ++j)
     {
       a = sobol_a[i-1];
       sd->m[j][i] = sd->m[j - d][i];
-      for (k = 0; k < d; ++k) 
+      for (k = 0; k < d; ++k)
       {
         sd->m[j][i] ^= ((a & 1) * sd->m[j-d+k][i]) << (d-k);
         a >>= 1;
@@ -158,18 +158,18 @@ static int sobol_init(SobolData *sd, uint32_t sdim)
   }
 
   sd->x = (uint32_t *) malloc(sizeof(uint32_t) * sdim);
-  if (!sd->x) 
-  { 
-    free(sd->mdata); 
-    return 0; 
+  if (!sd->x)
+  {
+    free(sd->mdata);
+    return 0;
   }
 
   sd->b = (uint32_t *) malloc(sizeof(uint32_t) * sdim);
-  if (!sd->b) 
-  { 
-    free(sd->x); 
-    free(sd->mdata); 
-    return 0; 
+  if (!sd->b)
+  {
+    free(sd->x);
+    free(sd->mdata);
+    return 0;
   }
 
   for (i = 0; i < sdim; ++i) {
@@ -197,12 +197,12 @@ static void sobol_destroy(SobolData *sd)
 SobolData* nlopt_sobol_create(uint32_t sdim)
 {
   SobolData* s = (SobolData*) malloc(sizeof(SobolData));
-  if (!s) 
+  if (!s)
     return NULL;
-  if (!sobol_init(s, sdim)) 
+  if (!sobol_init(s, sdim))
   {
-    free(s); 
-    return NULL; 
+    free(s);
+    return NULL;
   }
   return s;
 }
@@ -218,7 +218,7 @@ void nlopt_sobol_destroy(SobolData* s)
 /* next vector x[sdim] in Sobol sequence, with each x[i] in (0,1) */
 int nlopt_sobol_next(SobolData* s, uint32_t *x)
 {
-  // fails (returns 0) if attempt to generate >=2^32 numbers 
+  // fails (returns 0) if attempt to generate >=2^32 numbers
   return sobol_gen(s, x);
 }
 
@@ -228,7 +228,7 @@ int nlopt_sobol_next(SobolData* s, uint32_t *x)
    points equal to the largest power of 2 smaller than n */
 void nlopt_sobol_skip(SobolData* s, uint32_t n, uint32_t *x)
 {
-  if (s) 
+  if (s)
   {
 	  uint32_t k = 1;
 	  while (k*2 < n) k *= 2;

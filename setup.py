@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 import glob
-from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext
+from setuptools import setup
 from pybind11.setup_helpers import Pybind11Extension, ParallelCompile
 
 

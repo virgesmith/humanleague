@@ -88,7 +88,12 @@ install:
         & $python -m pip install --upgrade pip wheel setuptools pybind11 pytest --no-warn-script-location
         & $python -m pip install numpy --no-warn-script-location
       }
-  - sh: if [ "$MINICONDA" == "true" ]; then scripts/create-conda-env.sh; fi
+  - sh: |
+      if [ "$MINICONDA" == "true" ]; then
+      scripts/create-conda-env.sh
+      else
+      python -m pip install pytest
+      fi
 
 cache:
   - C:\RLibrary

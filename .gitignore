@@ -20,3 +20,7 @@ __pycache__/
 */ipch/*
 
 .vscode/
+
+coverage.info
+\#*
+*.gcov

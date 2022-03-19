@@ -85,13 +85,6 @@ py::array_t<T> fromNDArray(const NDArray<T>& a)
   return py::array_t<T>(a.sizes(), a.rawData());
 
 }
-// explicit array_t(ShapeContainer shape, const T *ptr = nullptr, handle base = handle())
-//         : array_t(private_ctor{}, std::move(shape),
-//                 ExtraFlags & f_style
-//                 ? detail::f_strides(*shape, itemsize())
-//                 : detail::c_strides(*shape, itemsize()),
-//                 ptr, base) { }
-
 
 py::list flatten(const py::array_t<int64_t>& a)
 {
@@ -294,7 +287,7 @@ py::dict unittest()
 using py::literals::operator ""_a;
 
 
-PYBIND11_MODULE(humanleague, m) {
+PYBIND11_MODULE(_humanleague, m) {
 
 #include "docstr.inl"
 
@@ -346,7 +339,7 @@ PYBIND11_MODULE(humanleague, m) {
         [](const py::array_t<double>& seed, const py::list& indices, const py::list& marginals) { return hl::qisi(seed, indices, marginals, 0); },
         qisi2_docstr,
         "seed"_a, "indices"_a, "marginals"_a)
-   .def("unittest",
+   .def("_unittest",
         hl::unittest,
         unittest_docstr)
     ;

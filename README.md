@@ -18,8 +18,6 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/430da36db15f46978bfccd1ad3243ae9)](https://www.codacy.com/gh/virgesmith/humanleague/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=virgesmith/humanleague&amp;utm_campaign=Badge_Grade)
 [![codecov](https://codecov.io/gh/virgesmith/humanleague/branch/main/graph/badge.svg)](https://codecov.io/gh/virgesmith/humanleague)
 
-
-
 ## Introduction
 
 *humanleague* is a python *and* an R package for microsynthesising populations from marginal and (optionally) seed data. The package is implemented in C++ for performance.
@@ -72,8 +70,8 @@ conda install -c conda-forge humanleague
 ### Build, install and test (from cloned repo)
 
 ```bash
-python setup.py install --user
-python setup.py test
+pip install -e .
+pytest
 ```
 
 ### R
@@ -109,12 +107,9 @@ Consult the package documentation, e.g.
 
 ### Python
 
-See [here](doc/api.md), or
+The package now contains type annotations and your IDE should automatically display this, e.g.:
 
-```python
->>> import humanleague as hl
->>> help(hl)
-```
+![help](./doc/help.png)
 
 ### Multidimensional integerisation
 
@@ -163,4 +158,3 @@ array([ True,  True,  True,  True])
 >>> sum(r["result"].T) == sum(a.T)
 array([ True,  True,  True,  True])
 ```
-

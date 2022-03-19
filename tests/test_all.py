@@ -2,6 +2,7 @@
 
 import numpy as np
 import humanleague as hl
+from _humanleague import _unittest as hl_unittest
 
 
 def assert_throws(e, f, *args, **kwargs):
@@ -19,7 +20,7 @@ def test_version():
   assert hl.__version__
 
 def test_unittest():
-  res = hl.unittest()
+  res = hl_unittest()
   print("unit test fails/tests: ", res["nFails"], "/", res["nTests"])
   print(res["errors"])
   assert res["nFails"] == 0

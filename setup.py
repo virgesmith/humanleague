@@ -9,6 +9,7 @@ def readme():
   with open('README.md') as f:
     return f.read()
 
+
 def version():
   """ The R file DESCRIPTION in the project root is now the single source of version info """
   with open("DESCRIPTION") as fd:
@@ -17,14 +18,16 @@ def version():
       if line.startswith("Version:"):
         return line.rstrip().split(":")[1].lstrip()
 
+
 def source_files():
   sources = glob.glob("src/*.cpp")
   # can't use compile skips as some files are auto-generated
   skip = ["RcppExports.cpp", "rcpp_api.cpp"]
   for s in skip:
-    sources = [f for f in sources if not s in f]
+    sources = [f for f in sources if s not in f]
 
   return sources
+
 
 def header_files():
   return glob.glob("src/*.h")
@@ -52,16 +55,16 @@ ext_modules = [
 ParallelCompile().install()
 
 setup(
-  name = 'humanleague',
-  version = version(),
-  description = 'Microsynthesis using quasirandom sampling and/or IPF',
-  author = 'Andrew P Smith',
-  author_email = 'a.p.smith@leeds.ac.uk',
-  url = 'http://github.com/virgesmith/humanleague',
-  long_description = readme(),
+  name='humanleague',
+  version=version(),
+  description='Microsynthesis using quasirandom sampling and/or IPF',
+  author='Andrew P Smith',
+  author_email='a.p.smith@leeds.ac.uk',
+  url='http://github.com/virgesmith/humanleague',
+  long_description=readme(),
   long_description_content_type="text/markdown",
   packages=["humanleague"],
-  package_data={"humanleague": ["py.typed", "*.pyi"]},  ext_modules=ext_modules,
+  package_data={"humanleague": ["py.typed", "*.pyi"]}, ext_modules=ext_modules,
   install_requires=['numpy>=1.19.1'],
   setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
   tests_require=['pytest'],

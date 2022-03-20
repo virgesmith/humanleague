@@ -8,7 +8,7 @@
 [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/humanleague)](https://CRAN.R-project.org/package=humanleague)
 [![CRAN Downloads](https://cranlogs.r-pkg.org/badges/grand-total/humanleague?color=black)](https://cran.r-project.org/package=humanleague)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1970941.svg)](https://doi.org/10.5281/zenodo.1970941)
+[![DOI](https://zenodo.org/badge/95961787.svg)](https://zenodo.org/badge/latestdoi/95961787)
 [![status](https://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4/status.svg)](https://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4)
 
 [![python (pip) build](https://github.com/virgesmith/humanleague/actions/workflows/pip-package.yml/badge.svg)](https://github.com/virgesmith/humanleague/actions/workflows/pip-package.yml/badge.svg)

@@ -72,7 +72,7 @@ const char* sobolSequence2_docstr = R"docstr(
 const char* ipf_docstr = R"docstr(
     Uses iterative proportional fitting to construct an n-dimensional array from a seed population that matches the specified marginal sums.
 
-        seed: The seed population as an array.
+        seed: The seed population or distribution.
 
         indices: A list of the indices in the overall array that each marginal represents
 
@@ -112,7 +112,7 @@ const char* qis2_docstr = R"docstr(
 const char* qisi_docstr = R"docstr(
     Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
 
-        seed: The dimension of the sequence (between 1 and 1111).
+        seed: The seed population or distribution.
 
         indices: A list of the indices in the overall array that each marginal represents
 
@@ -128,7 +128,7 @@ const char* qisi_docstr = R"docstr(
 const char* qisi2_docstr = R"docstr(
     Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
 
-        seed: The dimension of the sequence (between 1 and 1111).
+        seed: The seed population or distribution.
 
         indices: A list of the indices in the overall array that each marginal represents
 

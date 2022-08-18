@@ -1,17 +1,8 @@
-#!/usr/bin/env python3
-
 import numpy as np
+import pytest
+
 import humanleague as hl
 from _humanleague import _unittest as hl_unittest
-
-
-def assert_throws(e, f, *args, **kwargs):
-  try:
-    f(*args, **kwargs)
-  except e:
-    pass
-  else:
-    assert False, "expected exception %s not thrown" % e
 
 
 def assert_close(x, y, tol=1e-8): # ~sqrt(epsilon)
@@ -36,9 +27,12 @@ def test_sobolSequence():
   assert np.array_equal(a[0, :], [0.5, 0.5, 0.5])
 
   # invalid args
-  assert_throws(ValueError, hl.sobolSequence, 0, 10)
-  assert_throws(ValueError, hl.sobolSequence, 100000, 10)
-  assert_throws(ValueError, hl.sobolSequence, 1, -10)
+  with pytest.raises(ValueError):
+    hl.sobolSequence(0, 10)
+  with pytest.raises(ValueError):
+    hl.sobolSequence(100000, 10)
+  with pytest.raises(ValueError):
+    hl.sobolSequence(1, -10)
 
 
 def test_integerise():
@@ -48,7 +42,8 @@ def test_integerise():
   # assert r == "probabilities do not sum to unity"
 
   # pop not valid
-  assert_throws(ValueError, hl.prob2IntFreq, np.array([0.4, 0.3, 0.2, 0.1]), -1)
+  with pytest.raises(ValueError):
+    hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), -1)
 
   # zero pop
   r = hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), 0)
@@ -72,10 +67,12 @@ def test_integerise():
   # multidim integerisation
   # invalid population
   s = np.array([[1.1, 1.0], [1.0, 1.0]])
-  assert_throws(RuntimeError, hl.integerise, s)
+  with pytest.raises(RuntimeError):
+    hl.integerise(s)
   # invalid marginals
   s = np.array([[1.1, 1.0], [0.9, 1.0]])
-  assert_throws(RuntimeError, hl.integerise, s)
+  with pytest.raises(RuntimeError):
+    hl.integerise(s)
 
   # use IPF to generate a valid fractional population
   m0 = np.array([111, 112, 113, 114, 110], dtype=float)
@@ -325,11 +322,13 @@ def test_QISI():
   m1 = np.ones([2, 3], dtype=int) * 5 * 7
   m2 = np.ones([3, 5], dtype=int) * 7 * 2
   m3 = np.ones([5, 7], dtype=int) * 2 * 3
-  assert_throws(RuntimeError, hl.qisi, s, [np.array([0, 1]), np.array([1, 2]), np.array([2, 3])], [m1, m2, m3])
-
-  assert_throws(RuntimeError, hl.ipf, s, [np.array([0, 1]), np.array([1, 2]), np.array([2, 3])], [m1.astype(float), m2.astype(float), m3.astype(float)])
+  with pytest.raises(RuntimeError):
+    hl.qisi(s, [np.array([0, 1]), np.array([1, 2]), np.array([2, 3])], [m1, m2, m3])
+  with pytest.raises(RuntimeError):
+    hl.ipf(s, [np.array([0, 1]), np.array([1, 2]), np.array([2, 3])], [m1.astype(float), m2.astype(float), m3.astype(float)])
 
   s = np.ones((2, 3, 5))
-  assert_throws(RuntimeError, hl.qisi, s, [np.array([0, 1]), np.array([1, 2]), np.array([2, 3])], [m1, m2, m3])
-
-  assert_throws(RuntimeError, hl.ipf, s, [np.array([0, 1]), np.array([1, 2]), np.array([2, 3])], [m1.astype(float), m2.astype(float), m3.astype(float)])
+  with pytest.raises(RuntimeError):
+    hl.qisi(s, [np.array([0, 1]), np.array([1, 2]), np.array([2, 3])], [m1, m2, m3])
+  with pytest.raises(RuntimeError):
+    hl.ipf(s, [np.array([0, 1]), np.array([1, 2]), np.array([2, 3])], [m1.astype(float), m2.astype(float), m3.astype(float)])

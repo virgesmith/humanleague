@@ -8,7 +8,7 @@ on:
     branches: [ '**' ]
     tags: '**'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
   schedule:
     # 6:00 every saturday
     - cron:  '0 6 * * SAT'

@@ -11,7 +11,7 @@ extern SEXP _humanleague_ipf(SEXP, SEXP, SEXP);
 extern SEXP _humanleague_qis(SEXP, SEXP, SEXP);
 extern SEXP _humanleague_qisi(SEXP, SEXP, SEXP, SEXP);
 extern SEXP _humanleague_integerise(SEXP);
-extern SEXP _humanleague_unitTest();
+extern SEXP _humanleague_unitTest(void);
 
 
 static const R_CallMethodDef CallEntries[] = {

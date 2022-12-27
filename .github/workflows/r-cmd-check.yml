@@ -47,7 +47,8 @@ jobs:
           error-on: '"error"'
           check-dir: '"check"'
       - name: artifacts
+        if: ${{ matrix.config.r == 'release' && matrix.config.os == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v3
         with:
-          name: humanleague_*.tar.gz
+          name: humanleague_2.1.11.tar.gz
           path: .

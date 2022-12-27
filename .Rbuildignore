@@ -16,6 +16,7 @@ humanleague/
 humanleague.egg-info/
 dev/
 doc/
+.github/
 README.md
 requirements.txt
 setup.py

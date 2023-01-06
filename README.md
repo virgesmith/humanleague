@@ -12,8 +12,8 @@
 [![status](https://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4/status.svg)](https://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4)
 
 [![python (pip) build](https://github.com/virgesmith/humanleague/actions/workflows/pip-package.yml/badge.svg)](https://github.com/virgesmith/humanleague/actions/workflows/pip-package.yml/badge.svg)
-[![python (conda) build](https://github.com/virgesmith/humanleague/actions/workflows/conda-package.yml/badge.svg)](https://github.com/virgesmith/humanleague/actions/workflows/conda-package.yml/badge.svg)
-[![Appveyor Build status](https://ci.appveyor.com/api/projects/status/x9oypgryt21ndc3p?svg=true)](https://ci.appveyor.com/project/virgesmith/humanleague)
+[![python (conda) build](https://github.com/virgesmith/humanleague/actions/workflows/conda.yml/badge.svg)](https://github.com/virgesmith/humanleague/actions/workflows/conda.yml/badge.svg)
+[![r-cmd-check](https://github.com/virgesmith/humanleague/actions/workflows/r-cmd-check.yml/badge.svg)](https://github.com/virgesmith/humanleague/actions/workflows/r-cmd-check/badge.svg)
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/430da36db15f46978bfccd1ad3243ae9)](https://www.codacy.com/gh/virgesmith/humanleague/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=virgesmith/humanleague&amp;utm_campaign=Badge_Grade)
 [![codecov](https://codecov.io/gh/virgesmith/humanleague/branch/main/graph/badge.svg)](https://codecov.io/gh/virgesmith/humanleague)

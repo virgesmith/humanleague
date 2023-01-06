@@ -9,12 +9,14 @@
 ^\.pytest_cache
 ^humanleague.cpython
 setup.cfg
+pyproject.toml
 dist/
 build/
 humanleague/
 humanleague.egg-info/
 dev/
 doc/
+.github/
 README.md
 requirements.txt
 setup.py

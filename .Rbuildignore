@@ -20,7 +20,7 @@ doc/
 README.md
 requirements.txt
 setup.py
-LICENSE
+LICENSE.md
 MANIFEST.in
 scripts/
 src/docstr.inl

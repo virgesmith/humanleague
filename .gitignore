@@ -24,3 +24,5 @@ __pycache__/
 coverage.info
 \#*
 *.gcov
+
+.env

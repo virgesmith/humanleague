@@ -23,8 +23,9 @@ std::string to_string_impl(T v)
 template<typename T>
 std::string to_string_impl(T* p)
 {
-  char buf[20];
-  std::snprintf(buf, sizeof(buf)/sizeof(buf[0]), "0x%016zx", reinterpret_cast<size_t>(p));
+  constexpr const size_t BUF_SIZE = 20;
+  static char buf[BUF_SIZE];
+  std::snprintf(buf, BUF_SIZE, "0x%016zx", reinterpret_cast<size_t>(p));
   return std::string(buf);
 }
 

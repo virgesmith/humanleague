@@ -93,13 +93,11 @@ const std::vector<int64_t>& TransposedIndex::operator++()
 MappedIndex::MappedIndex(const Index& idx, const std::vector<int64_t>& mappedDimensions)
 : m_dim(mappedDimensions.size()), m_sizes(m_dim), m_mappedIndex(m_dim), m_atEnd(idx.end())
 {
-  int64_t n = idx.size();
-  (void)n; // avoid compiler warning about unused variable when assert exands to nothing
   // TODO check mappedDimensions are unique
   for (size_t d = 0; d < m_dim; ++d)
   {
     // check mappedDimensions are within dimension of index
-    assert(mappedDimensions[d] < n);
+    assert(mappedDimensions[d] < idx.size());
     m_sizes[d] = idx.sizes()[mappedDimensions[d]];
     m_mappedIndex[d] = &const_cast<Index&>(idx)[mappedDimensions[d]];
   }

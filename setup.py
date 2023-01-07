@@ -48,7 +48,6 @@ ext_modules = [
     define_macros=defines(),
     depends=["setup.py", "DESCRIPTION", "src/docstr.inl"] + header_files(),
     cxx_std=20,
-    extra_compile_args=["-Wall", "-Werror", "-pedantic"]
   )
 ]
 

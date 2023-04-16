@@ -8,7 +8,8 @@
 
 #include <iostream>
 
-Sobol::Sobol(uint32_t dim, uint32_t nSkip) : m_dim(dim), m_buf(dim), m_pos(dim) // ensures m_buf gets populated on 1st access
+
+Sobol::Sobol(size_t dim, uint32_t nSkip) : m_dim(dim), m_buf(dim), m_pos(dim) // ensures m_buf gets populated on 1st access
 {
   m_s = nlopt_sobol_create(dim);
   if (nSkip > 0)
@@ -42,27 +43,34 @@ uint32_t Sobol::operator()()
 // Skip largest 2^k-1 < n
 void Sobol::skip(uint32_t n)
 {
-  uint32_t k = 1;
-  while (k < n)
-    k *= 2;
-
-  //std::cout << "skips=" << k << std::endl;
-  //uint32_t skipped = 0;
-  while (--k > 0)
+  uint32_t b = 0;
+  while (n > 1)
   {
-    //++skipped;
+    ++b;
+    n >>= 1;
+  }
+
+  uint32_t k = 1 << b;
+  while (k--)
+  {
     buf();
   }
-  //std::cout << "skipped=" << skipped << std::endl;
 }
 
 
 void Sobol::reset(uint32_t nSkip)
 {
+  std::cout << "reset" << std::endl;
+
   nlopt_sobol_destroy(m_s);
   m_s = nlopt_sobol_create(m_dim);
   if (nSkip > 0)
     skip(nSkip);
+}
+
+uint32_t Sobol::dim() const
+{
+  return m_dim;
 }
 
 uint32_t Sobol::min() const

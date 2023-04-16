@@ -59,7 +59,7 @@ setup(
   version=version(),
   description='Microsynthesis using quasirandom sampling and/or IPF',
   author='Andrew P Smith',
-  author_email='a.p.smith@leeds.ac.uk',
+  author_email='andrew@friarswood.net',
   url='http://github.com/virgesmith/humanleague',
   long_description=readme(),
   long_description_content_type="text/markdown",

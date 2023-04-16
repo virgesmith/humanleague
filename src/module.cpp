@@ -143,15 +143,43 @@ extern py::array_t<double> sobol(int dim, int length, int skips = 0)
   py::array_t<double> sequence(sizes);
 
   Sobol sobol(dim, skips);
-  const double scale = 0.5 / (1u << 31);
 
-  for (double* p = begin(sequence); p != end(sequence); ++p)
-  {
-    *p = sobol() * scale;
-  }
+  std::generate(begin(sequence), end(sequence), [&]() { return sobol() * Sobol::SCALE; });
 
   return sequence;
 }
+
+
+class SobolGenerator
+{
+public:
+  SobolGenerator(uint32_t dim, uint32_t nSkip = 0) : m_sobol(dim, nSkip) { }
+
+  py::array_t<double> next()
+  {
+    py::array_t<double> sequence(m_sobol.dim());
+    try
+    {
+      const std::vector<uint32_t>& buf = m_sobol.buf();
+      std::transform(buf.cbegin(), buf.cend(), begin(sequence), [](uint32_t i) { return i * Sobol::SCALE; });
+      return sequence;
+    }
+    catch(const std::runtime_error&)
+    {
+      throw py::stop_iteration();
+    }
+  }
+
+  SobolGenerator& iter()
+  {
+    return *this;
+  }
+
+private:
+    Sobol m_sobol;
+};
+
+
 
 py::dict integerise(const py::array_t<double>& npseed)
 {
@@ -343,6 +371,13 @@ PYBIND11_MODULE(_humanleague, m) {
         hl::unittest,
         unittest_docstr)
     ;
+
+  py::class_<hl::SobolGenerator>(m, "SobolSequence", SobolSequence_docstr)
+      .def(py::init<size_t, uint32_t>())
+      .def(py::init<size_t>())
+      .def("__iter__", &hl::SobolGenerator::iter, "__iter__ dunder")
+      .def("__next__", &hl::SobolGenerator::next, "__next__ dunder")
+      ;
 }
 
 #endif

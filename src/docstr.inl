@@ -69,6 +69,21 @@ const char* sobolSequence2_docstr = R"docstr(
         A 2d array containing Sobol sequence values in (0,1).
 )docstr";
 
+const char* SobolSequence_docstr = R"docstr(
+    Generator that returns the next value in a Sobol' sequence given of supplied dimension, optionally skipping values.
+
+        dim: The dimension of the sequence (between 1 and 1111).
+
+        length: The length of the returned sequence
+
+        skips: The number of values to skip. NB the actual number skipped will be the largest power of 2 smaller than the supplied value.
+
+    Returns:
+
+        A generator object that produces Sobol sequence values in (0,1).
+)docstr";
+
+
 const char* ipf_docstr = R"docstr(
     Uses iterative proportional fitting to construct an n-dimensional array from a seed population that matches the specified marginal sums.
 

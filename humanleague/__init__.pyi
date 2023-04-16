@@ -2,11 +2,13 @@
     Microsynthesis using quasirandom sampling and IPF, plus related functionality
 """
 from __future__ import annotations
-import typing
+from typing import TypeVar, overload
+from typing_extensions import deprecated
 import numpy as np
-_Shape = typing.Tuple[int, ...]
+_Shape =tuple[int, ...]
 
 __all__ = [
+    "__version__",
     "flatten",
     "integerise",
     "ipf",
@@ -17,8 +19,11 @@ __all__ = [
     "unittest"
 ]
 
-T = typing.TypeVar("T")
+T = TypeVar("T")
 nparray = np.ndarray[T, np.dtype[T]]
+
+
+__version__: str
 
 def flatten(pop: nparray[np.int64]) -> list:
     """
@@ -32,7 +37,7 @@ def flatten(pop: nparray[np.int64]) -> list:
 
         A 2-d array of size n by sum(pop).
     """
-@typing.overload
+@overload
 def integerise(frac: nparray[np.float64], pop: int) -> dict:
     """
     Computes the closest integer frequencies given fractional counts and a total population.
@@ -59,7 +64,7 @@ def integerise(frac: nparray[np.float64], pop: int) -> dict:
 
         A dictionary containing The integral population, the RMS error, and a boolean indicating whether the population matches the marginal sums.
     """
-@typing.overload
+@overload
 def integerise(pop: nparray[np.float64]) -> dict:
     pass
 def ipf(seed: nparray[np.float64], indices: list[nparray[np.int64]], marginals: list[nparray[np.float64]]) -> dict:
@@ -90,7 +95,7 @@ def prob2IntFreq(frac: nparray[np.float64], pop: int) -> dict:
 
         A dictionary containing the frequencies and the RMS error
     """
-@typing.overload
+@overload
 def qis(indices: list[nparray[np.int64]], marginals: list[nparray[np.int64]]) -> dict:
     """
     Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
@@ -116,10 +121,10 @@ def qis(indices: list[nparray[np.int64]], marginals: list[nparray[np.int64]]) ->
 
         A dictionary containing the result, a convergence flag, the total population, the iterations and the some statistical measures.
     """
-@typing.overload
+@overload
 def qis(indices: list[nparray[np.int64]], marginals: list[nparray[np.int64]], skips: int) -> dict:
     pass
-@typing.overload
+@overload
 def qisi(seed: nparray[np.float64], indices: list[nparray[np.int64]], marginals: list[nparray[np.int64]]) -> dict:
     """
     Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
@@ -149,10 +154,12 @@ def qisi(seed: nparray[np.float64], indices: list[nparray[np.int64]], marginals:
 
         A dictionary containing the result, a convergence flag, the total population, the iterations and the some statistical measures.
     """
-@typing.overload
+@overload
 def qisi(seed: nparray[np.float64], indices: list[nparray[np.int64]], marginals: list[nparray[np.int64]], skips: int) -> dict:
     pass
-@typing.overload
+
+@overload
+@deprecated("Use the SobolSequence generator instead")
 def sobolSequence(dim: int, length: int) -> nparray[np.float64]:
     """
     Returns a Sobol' sequence given of supplied dimension and length, optionally skipping values.
@@ -178,9 +185,36 @@ def sobolSequence(dim: int, length: int) -> nparray[np.float64]:
 
         A 2d array containing Sobol sequence values in (0,1).
     """
-@typing.overload
+@overload
+@deprecated("Use the SobolSequence generator instead")
 def sobolSequence(dim: int, length: int, skips: int) -> nparray[np.float64]:
     pass
+
+@overload
+class SobolSequence:
+    """
+    Generator that returns the next value in a Sobol' sequence given of supplied dimension, optionally skipping values.
+
+        dim: The dimension of the sequence (between 1 and 1111).
+
+        skips: The number of values to skip. NB the actual number skipped will be the largest power of 2 smaller than the supplied value.
+
+    Returns:
+
+        A generator object that produces Sobol sequence values in (0,1).
+    """
+    def __init__(self, dim: int, skips: int = 0):
+        pass
+
+    def __next__(self) -> nparray[np.float64]:
+        pass
+
+    def __iter__(self) -> SobolSequence:
+        pass
+
+
+
+
 def unittest() -> dict:
     """
     For developers. Runs the C++ unit tests.

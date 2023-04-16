@@ -8,7 +8,7 @@ extern "C"
 }
 
 #include <vector>
-
+#include <limits>
 #include <cstdint>
 
 // This class is roughly compatible with C++11's distribution objects
@@ -17,31 +17,36 @@ class Sobol
 {
 public:
 
-  typedef uint32_t result_type;
+  static constexpr double SCALE = 1.0 / (1ull << std::numeric_limits<uint32_t>::digits);
 
-  // TODO reset (somehow)
-  explicit Sobol(uint32_t dim, result_type nSkip = 0u);
+  explicit Sobol(size_t dim, uint32_t nSkip = 0u);
+
+  Sobol(const Sobol&) = delete;
+  Sobol& operator=(const Sobol&) = delete;
 
   ~Sobol();
 
-  const std::vector<result_type>& buf();
+  const std::vector<uint32_t>& buf();
 
-  // NB use with care in std::distribtion objects, which may be expecting a 64-bit variate
-  result_type operator()();
+  // NB use with care in std::distribution objects, which may be expecting a 64-bit variate
+  uint32_t operator()();
 
   // Skip largest 2^k <= n
-  void skip(result_type n);
+  void skip(uint32_t n);
 
   void reset(uint32_t nSkip = 0u);
 
-  result_type min() const;
+  uint32_t dim() const;
 
-  result_type max() const;
+  uint32_t min() const;
+
+  uint32_t max() const;
 
 private:
 
   SobolData* m_s;
   uint32_t m_dim;
-  std::vector<result_type> m_buf;
+  std::vector<uint32_t> m_buf;
   uint32_t m_pos;
 };
+

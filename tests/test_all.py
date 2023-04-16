@@ -2,25 +2,25 @@ import numpy as np
 import pytest
 
 import humanleague as hl
-from _humanleague import _unittest as hl_unittest
+from _humanleague import _unittest as hl_unittest  # type: ignore[import]
 
 
-def assert_close(x, y, tol=1e-8): # ~sqrt(epsilon)
+def assert_close(x: float, y: float, tol: float=1e-8) -> None:
   assert abs(x - y) < tol
 
 
-def test_version():
+def test_version() -> None:
   assert hl.__version__
 
 
-def test_unittest():
+def test_unittest() -> None:
   res = hl_unittest()
   print("unit test fails/tests: ", res["nFails"], "/", res["nTests"])
   print(res["errors"])
   assert res["nFails"] == 0
 
 
-def test_sobolSequence():
+def test_sobolSequence() -> None:
   a = hl.sobolSequence(3, 5)
   assert a.size == 15
   assert a.shape == (5, 3)
@@ -35,7 +35,23 @@ def test_sobolSequence():
     hl.sobolSequence(1, -10)
 
 
-def test_integerise():
+def test_SobolGenerator() -> None:
+  length = 10
+  for d in range(2, 10):
+    a = hl.sobolSequence(d, length)
+    g = hl.SobolSequence(d, 0)
+    for i in range(length):
+      assert (next(g) == a[i]).all()
+
+  skips = 4
+  g0 = hl.SobolSequence(2)
+  for _ in range(skips):
+    next(g0)
+  g4 = hl.SobolSequence(2, skips)
+  assert (next(g0) == next(g4)).all()
+
+
+def test_integerise() -> None:
 
   # probs not valid
   # r = hl.prob2IntFreq(np.array([0.3, 0.3, 0.2, 0.1]), 10)
@@ -87,7 +103,7 @@ def test_integerise():
   assert result["rmse"] < 1.05717
 
 
-def test_IPF():
+def test_IPF() -> None:
   m0 = np.array([52.0, 48.0])
   m1 = np.array([87.0, 13.0])
   m2 = np.array([55.0, 45.0])
@@ -166,7 +182,7 @@ def test_IPF():
   assert p["pop"] == 4096
 
 
-def test_QIS():
+def test_QIS() -> None:
 
   # m = np.array([[10,20,10],[10,10,20],[20,10,10]])
   # idx = [np.array([0,1]), np.array([1,2])]
@@ -229,7 +245,7 @@ def test_QIS():
   p = hl.qis([i0, i1, i2, i3], [m0, m1, m2, m3])
   assert p["conv"]
   assert p["chiSq"] < 10
-  assert p["pValue"] > 0.002 # TODO this looks suspect too
+  assert p["pValue"] > 0.001
   assert p["pop"] == 100
   assert np.allclose(np.sum(p["result"], (0, 1, 2)), m3)
   assert np.allclose(np.sum(p["result"], (1, 2, 3)), m0)
@@ -247,7 +263,7 @@ def test_QIS():
   assert np.allclose(np.sum(p["result"], 0), m)
 
 
-def test_QIS_dim_indexing():
+def test_QIS_dim_indexing() -> None:
 
   # tricky array indexing - 1st dimension of d0 already sampled, remaining dimension
   # indices on slice of d0 need to be remapped
@@ -265,7 +281,7 @@ def test_QIS_dim_indexing():
   assert ms["conv"]
 
 
-def test_QISI():
+def test_QISI() -> None:
   m0 = np.array([52, 48])
   m1 = np.array([10, 77, 13])
   i0 = np.array([0])

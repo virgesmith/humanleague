@@ -5,10 +5,6 @@ import humanleague as hl
 from _humanleague import _unittest as hl_unittest  # type: ignore[import]
 
 
-def assert_close(x: float, y: float, tol: float=1e-8) -> None:
-  assert abs(x - y) < tol
-
-
 def test_version() -> None:
   assert hl.__version__
 
@@ -128,7 +124,7 @@ def test_IPF() -> None:
   p = hl.ipf(s, i, [m0, m1, m2])
   assert p["conv"]
   # check overall population and marginals correct
-  assert_close(np.sum(p["result"]), p["pop"])
+  assert np.sum(p["result"]) == pytest.approx(p["pop"], 1e-8)
   assert np.allclose(np.sum(p["result"], (0, 1)), m2)
   assert np.allclose(np.sum(p["result"], (1, 2)), m0)
   assert np.allclose(np.sum(p["result"], (2, 0)), m1)
@@ -168,7 +164,7 @@ def test_IPF() -> None:
   p = hl.ipf(s, [np.array([0]), np.array([1]), np.array([2])], [m0, m1, m2])
   assert p["conv"]
   # check overall population and marginals correct
-  assert_close(np.sum(p["result"]), p["pop"])
+  assert np.sum(p["result"]) == pytest.approx(p["pop"], 1e-8)
   assert np.allclose(np.sum(p["result"], (0, 1)), m2)
   assert np.allclose(np.sum(p["result"], (1, 2)), m0)
   assert np.allclose(np.sum(p["result"], (2, 0)), m1)

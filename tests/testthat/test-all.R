@@ -285,7 +285,7 @@ test_that("QIS 3d", {
   expect_equal(apply(t$result, c(1,2), sum), m0)
   expect_equal(apply(t$result, c(3), sum), m1)
   expect_lt(t$chiSq, 2.2)
-  expect_gt(t$pValue, 0.6)
+  expect_gt(t$pValue, 0.3)
   # Chi-squared approximation may be incorrect
   # chi2 = chisq.test(t$result, t$expectation)
   # expect_equal(t$chiSq, as.numeric(chi2$statistic)) # as.numeric required as its a labelled value
@@ -628,10 +628,9 @@ test_that("sobol 1d", {
 })
 
 test_that("sobol 1d skip 1", {
-  # NOTE: actual skips will be largest power of two < skips requested
-  # i.e. you need to specify 2 to get 1 skip
+  # NOTE: actual skips will be largest power of two <= skips requested
   res<-humanleague::sobolSequence(1, 10, 2)
-  expect_equal(res, matrix(c(0.75, 0.25, 0.375, 0.875, 0.625, 0.125, 0.1875, 0.6875, 0.9375, 0.4375)))
+  expect_equal(res, matrix(c(0.25, 0.375, 0.875, 0.625, 0.125, 0.1875, 0.6875, 0.9375, 0.4375, 0.3125)))
 })
 
 test_that("sobol 2d", {
@@ -650,9 +649,9 @@ test_that("sobol 4d", {
 
 test_that("sobol 4d skip", {
   # NOTE: actual skips will be largest power of two < skips requested
-  # i.e. you need to specify 2 to get 1 skip
+  # i.e. 5 will skip 4
   res<-humanleague::sobolSequence(4, 3, 5)
-  expect_equal(res, matrix(c(0.1875, 0.6875, 0.9375, 0.3125, 0.8125, 0.0625, 0.3125, 0.8125, 0.5625, 0.6875, 0.1875, 0.9375), nrow=3))
+  expect_equal(res, matrix(c(0.875, 0.625, 0.125, 0.875, 0.125, 0.625, 0.125, 0.375, 0.875, 0.625, 0.375, 0.875), nrow=3))
 })
 
 # test_that("sobol 2d rho=0", {

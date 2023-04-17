@@ -1,12 +1,8 @@
-//
-
 #include "Sobol.h"
 
 #include <limits>
 #include <stdexcept>
 #include <cstdint>
-
-#include <iostream>
 
 
 Sobol::Sobol(size_t dim, uint32_t nSkip) : m_dim(dim), m_buf(dim), m_pos(dim) // ensures m_buf gets populated on 1st access
@@ -60,8 +56,6 @@ void Sobol::skip(uint32_t n)
 
 void Sobol::reset(uint32_t nSkip)
 {
-  std::cout << "reset" << std::endl;
-
   nlopt_sobol_destroy(m_s);
   m_s = nlopt_sobol_create(m_dim);
   if (nSkip > 0)

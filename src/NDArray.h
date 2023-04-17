@@ -5,7 +5,9 @@
 #include <stdexcept>
 
 #include <vector>
+#if __cplusplus <= 201703l
 #include <cstddef>
+#endif
 #include <cassert>
 
 // The array storage
@@ -45,7 +47,7 @@ public:
       m_storageSize *= sizes[i];
     }
     computeOffsets();
-    
+
     m_data = storage;
     m_owned = false;
   }
@@ -56,7 +58,7 @@ public:
 
   // Copying is strongly discouraged for efficiency reasons, however there will always be times when a copy is unavoidable...
   // By explictly providing a copy function we avoid sloppy/inefficient coding where implicit copies are (inadvertently) taken
-  static void copy(const NDArray<T>& src, NDArray<T>& dest) 
+  static void copy(const NDArray<T>& src, NDArray<T>& dest)
   {
     dest.resize(src.m_sizes);
     std::copy(src.m_data, src.m_data + src.m_storageSize, dest.m_data);
@@ -147,7 +149,7 @@ public:
 #ifdef GLIBCXX_DEBUG
     if (offset[index] >= m_storageSize)
       throw std::runtime_error("NDArray bounds (index, non-const)");
-#endif    
+#endif
     return m_data[offset(index)];
   }
 
@@ -157,7 +159,7 @@ public:
 #ifdef GLIBCXX_DEBUG
     if (offset[index] >= m_storageSize)
       throw std::runtime_error("NDArray bounds (index, const)");
-#endif    
+#endif
     return m_data[offset(index)];
   }
 
@@ -167,7 +169,7 @@ public:
 #ifdef GLIBCXX_DEBUG
     if (offset[index] >= m_storageSize)
       throw std::runtime_error("NDArray bounds (mapped index, non-const)");
-#endif    
+#endif
     return m_data[offset(index)];
   }
 
@@ -177,7 +179,7 @@ public:
 #ifdef GLIBCXX_DEBUG
     if (offset[index] >= m_storageSize)
       throw std::runtime_error("NDArray bounds (mapped index, const)");
-#endif    
+#endif
     return m_data[offset(index)];
   }
 

@@ -4,7 +4,9 @@
 
 #include <vector>
 
+#if __cplusplus <= 201703l
 #include <cstddef>
+#endif
 #include <cstdint>
 
 // Indexer for elements in n-D array - iterates over entire array

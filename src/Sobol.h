@@ -10,6 +10,9 @@ extern "C"
 #include <vector>
 #include <limits>
 #include <cstdint>
+#if __cplusplus <= 201703l
+#include <cstddef>
+#endif
 
 // This class is roughly compatible with C++11's distribution objects
 // NB check for 32 vs 64 bit issues (distribution may expect 64 bit variates, this class returns 32bit)

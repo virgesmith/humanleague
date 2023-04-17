@@ -40,10 +40,10 @@ The algorithms:
 - support arbitrary dimensionality* for both the marginals and the seed.
 - produce statistical data to ascertain the likelihood/degeneracy of the population (where appropriate).
 
-The package also contains the following utility functions:
+The package also contains the following utilities:
 
-- a Sobol sequence generator
-- construct a closest integer population from a discrete univariate probability distribution.
+- a Sobol sequence generator (implemented as a generator class in python)
+- a function to construct a closest integer population from a discrete univariate probability distribution.
 - an algorithm for sampling an integer population from a discrete multivariate probability distribution, constrained to the marginal sums in every dimension (see [below](#multidimensional-integerisation)).
 - 'flatten' a multidimensional population into a table: this converts a multidimensional array containing the population count for each state into a table listing individuals and their characteristics.
 
@@ -53,12 +53,12 @@ Version 1.0.1 reflects the work described in the [Quasirandom Integer Sampling (
 
 ### Python
 
-Requires Python 3.5 or newer.
+Requires Python 3.9 or newer.
 
 #### PyPI
 
 ```bash
-python3 -m pip install humanleague --user
+python -m pip install humanleague --user
 ```
 
 #### Anaconda

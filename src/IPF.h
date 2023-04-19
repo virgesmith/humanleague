@@ -38,11 +38,11 @@ public:
   {
     // check seed dimensions consistent with marginals
     if (seed.dim() != this->m_array.dim())
-      throw std::runtime_error("seed dimensions %% is inconsistent with that implied by marginals (%%)"_s % seed.dim() % this->m_array.dim());
+      throw std::runtime_error("seed dimensions %% is inconsistent with that implied by marginals (%%)"s % seed.dim() % this->m_array.dim());
     for (size_t d = 0; d < this->m_array.dim(); ++d)
     {
       if (seed.sizes()[d] != this->m_array.sizes()[d])
-        throw std::runtime_error("seed dimensions %% are inconsistent with that implied by marginals (%%)"_s % seed.sizes() % this->m_array.sizes());
+        throw std::runtime_error("seed dimensions %% are inconsistent with that implied by marginals (%%)"s % seed.sizes() % this->m_array.sizes());
     }
 
     Index index_main(this->m_array.sizes());

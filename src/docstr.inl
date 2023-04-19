@@ -30,7 +30,7 @@ const char* prob2IntFreq_docstr = R"docstr(
 )docstr";
 
 const char* integerise_docstr = R"docstr(
-    Tries to construct and integer multidimensional array that has identical marginal sums to the fractional input array (which of course must have
+    Tries to construct an integer multidimensional array that has identical marginal sums to the fractional input array (which of course must have
     integer marginal sums). The algorithm may not always find a solution and will return an approximate array in this case.
 
     Args:
@@ -42,39 +42,10 @@ const char* integerise_docstr = R"docstr(
         A dictionary containing The integral population, the RMS error, and a boolean indicating whether the population matches the marginal sums.
 )docstr";
 
-
-const char* sobolSequence_docstr = R"docstr(
-    Returns a Sobol' sequence given of supplied dimension and length, optionally skipping values.
-
-        dim: The dimension of the sequence (between 1 and 1111).
-
-        length: The length of the returned sequence
-
-        skips: The number of values to skip. NB the actual number skipped will be the largest power of 2 smaller than the supplied value.
-
-    Returns:
-
-        A 2d array containing Sobol sequence values in (0,1).
-)docstr";
-
-const char* sobolSequence2_docstr = R"docstr(
-    Returns a Sobol' sequence given of supplied dimension and length, optionally skipping values.
-
-        dim: The dimension of the sequence (between 1 and 1111).
-
-        length: The length of the returned sequence
-
-    Returns:
-
-        A 2d array containing Sobol sequence values in (0,1).
-)docstr";
-
 const char* SobolSequence_docstr = R"docstr(
-    Generator that returns the next value in a Sobol' sequence given of supplied dimension, optionally skipping values.
+    Generator that returns the next point in a Sobol' sequence given of supplied dimension, optionally skipping values.
 
         dim: The dimension of the sequence (between 1 and 1111).
-
-        length: The length of the returned sequence
 
         skips: The number of values to skip. NB the actual number skipped will be the largest power of 2 smaller than the supplied value.
 
@@ -82,7 +53,6 @@ const char* SobolSequence_docstr = R"docstr(
 
         A generator object that produces Sobol sequence values in (0,1).
 )docstr";
-
 
 const char* ipf_docstr = R"docstr(
     Uses iterative proportional fitting to construct an n-dimensional array from a seed population that matches the specified marginal sums.

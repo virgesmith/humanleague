@@ -16,35 +16,31 @@ def test_unittest() -> None:
   assert res["nFails"] == 0
 
 
-def test_sobolSequence() -> None:
-  a = hl.sobolSequence(3, 5)
-  assert a.size == 15
-  assert a.shape == (5, 3)
-  assert np.array_equal(a[0, :], [0.5, 0.5, 0.5])
+def test_SobolSequence() -> None:
+  s = hl.SobolSequence(3)
+  a = next(s)
+  assert a.shape == (3,)
+  assert np.array_equal(a, [0.5, 0.5, 0.5])
+  assert np.array_equal(next(s), [0.75, 0.25, 0.75])
+  assert np.array_equal(next(s), [0.25, 0.75, 0.25])
 
   # invalid args
   with pytest.raises(ValueError):
-    hl.sobolSequence(0, 10)
+    hl.SobolSequence(0)
   with pytest.raises(ValueError):
-    hl.sobolSequence(100000, 10)
-  with pytest.raises(ValueError):
-    hl.sobolSequence(1, -10)
+    hl.SobolSequence(100000)
+  with pytest.raises(TypeError):
+    hl.SobolSequence(1, -10)
 
-
-def test_SobolGenerator() -> None:
-  length = 10
+  length = 10 # -> 8 skips
   for d in range(2, 10):
-    a = hl.sobolSequence(d, length)
-    g = hl.SobolSequence(d, 0)
+    s = hl.SobolSequence(d, length)
+    s0 = hl.SobolSequence(d)
+    # skip s0 forward
+    for _ in range(8):
+      next(s0)
     for i in range(length):
-      assert (next(g) == a[i]).all()
-
-  skips = 4
-  g0 = hl.SobolSequence(2)
-  for _ in range(skips):
-    next(g0)
-  g4 = hl.SobolSequence(2, skips)
-  assert (next(g0) == next(g4)).all()
+      assert (next(s) == next(s0)).all()
 
 
 def test_integerise() -> None:

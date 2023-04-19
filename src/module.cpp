@@ -132,22 +132,22 @@ py::dict prob2IntFreq(py::array_t<double> frac_a, int pop)
   return result;
 }
 
-extern py::array_t<double> sobol(int dim, int length, int skips = 0)
-{
-  if (dim < 1 || dim > 1111)
-  {
-    throw py::value_error("Dim %% is not in valid range [1,1111]"_s % dim);
-  }
+// extern py::array_t<double> sobol(int dim, int length, int skips = 0)
+// {
+//   if (dim < 1 || dim > 1111)
+//   {
+//     throw py::value_error("Dim %% is not in valid range [1,1111]"s % dim);
+//   }
 
-  std::vector<int64_t> sizes{ length, dim };
-  py::array_t<double> sequence(sizes);
+//   std::vector<int64_t> sizes{ length, dim };
+//   py::array_t<double> sequence(sizes);
 
-  Sobol sobol(dim, skips);
+//   Sobol sobol(dim, skips);
 
-  std::generate(begin(sequence), end(sequence), [&]() { return sobol() * Sobol::SCALE; });
+//   std::generate(begin(sequence), end(sequence), [&]() { return sobol() * Sobol::SCALE; });
 
-  return sequence;
-}
+//   return sequence;
+// }
 
 
 class SobolGenerator
@@ -339,14 +339,6 @@ PYBIND11_MODULE(_humanleague, m) {
         hl::integerise,
         integerise_docstr,
         "pop"_a)
-   .def("sobolSequence",
-        hl::sobol,
-        sobolSequence_docstr,
-        "dim"_a, "length"_a, "skips"_a)
-   .def("sobolSequence",
-        [](int dim, int length) { return hl::sobol(dim, length, 0); },
-        sobolSequence2_docstr,
-        "dim"_a, "length"_a)
    .def("ipf",
         hl::ipf,
         ipf_docstr,

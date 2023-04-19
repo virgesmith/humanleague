@@ -34,7 +34,7 @@ public:
   // NB use with care in std::distribution objects, which may be expecting a 64-bit variate
   uint32_t operator()();
 
-  // Skip largest 2^k <= n
+  // Skip largest k where 2^k <= n
   void skip(uint32_t n);
 
   void reset(uint32_t nSkip = 0u);

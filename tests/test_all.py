@@ -45,26 +45,22 @@ def test_SobolSequence() -> None:
 
 def test_integerise() -> None:
 
-  # probs not valid
-  # r = hl.prob2IntFreq(np.array([0.3, 0.3, 0.2, 0.1]), 10)
-  # assert r == "probabilities do not sum to unity"
-
   # pop not valid
   with pytest.raises(ValueError):
-    hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), -1)
+    hl.integerise(np.array([0.4, 0.3, 0.2, 0.1]), -1)
 
   # zero pop
-  r = hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), 0)
+  r = hl.integerise(np.array([0.4, 0.3, 0.2, 0.1]), 0)
   assert r["rmse"] == 0.0
   assert np.array_equal(r["freq"], np.array([0, 0, 0, 0]))
 
   # exact
-  r = hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), 10)
+  r = hl.integerise(np.array([0.4, 0.3, 0.2, 0.1]), 10)
   assert r["rmse"] < 1e-15
   assert np.array_equal(r["freq"], np.array([4, 3, 2, 1]))
 
   # inexact
-  r = hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), 17)
+  r = hl.integerise(np.array([0.4, 0.3, 0.2, 0.1]), 17)
   assert r["rmse"] == 0.273861278752583
   assert np.array_equal(r["freq"], np.array([7, 5, 3, 2]))
 

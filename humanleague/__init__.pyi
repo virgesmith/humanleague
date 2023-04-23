@@ -51,9 +51,12 @@ def integerise(frac: nparray[np.float64], pop: int) -> dict:
     Returns:
 
         A dictionary containing the frequencies and the RMS error
+    """
 
-
-    Tries to construct and integer multidimensional array that has identical marginal sums to the fractional input array (which of course must have
+@overload
+def integerise(pop: nparray[np.float64]) -> dict:
+    """
+    Tries to construct an integer multidimensional array that has identical marginal sums to the fractional input array (which of course must have
     integer marginal sums). The algorithm may not always find a solution and will return an approximate array in this case.
 
     Args:
@@ -64,9 +67,7 @@ def integerise(frac: nparray[np.float64], pop: int) -> dict:
 
         A dictionary containing The integral population, the RMS error, and a boolean indicating whether the population matches the marginal sums.
     """
-@overload
-def integerise(pop: nparray[np.float64]) -> dict:
-    pass
+
 def ipf(seed: nparray[np.float64], indices: list[nparray[np.int64]], marginals: list[nparray[np.float64]]) -> dict:
     """
     Uses iterative proportional fitting to construct an n-dimensional array from a seed population that matches the specified marginal sums.
@@ -81,20 +82,10 @@ def ipf(seed: nparray[np.float64], indices: list[nparray[np.int64]], marginals: 
 
         A dictionary containing the result, a convergence flag, the total population, the iterations and the error
     """
+@deprecated("Renamed to 'integerise'")
 def prob2IntFreq(frac: nparray[np.float64], pop: int) -> dict:
-    """
-    Computes the closest integer frequencies given fractional counts and a total population.
+    pass
 
-    Args:
-
-        frac: The fractional counts (must be a 1-d array).
-
-        pop: The total population
-
-    Returns:
-
-        A dictionary containing the frequencies and the RMS error
-    """
 @overload
 def qis(indices: list[nparray[np.int64]], marginals: list[nparray[np.int64]]) -> dict:
     """
@@ -158,37 +149,6 @@ def qisi(seed: nparray[np.float64], indices: list[nparray[np.int64]], marginals:
 def qisi(seed: nparray[np.float64], indices: list[nparray[np.int64]], marginals: list[nparray[np.int64]], skips: int) -> dict:
     pass
 
-@overload
-@deprecated("Use the SobolSequence generator instead")
-def sobolSequence(dim: int, length: int) -> nparray[np.float64]:
-    """
-    Returns a Sobol' sequence given of supplied dimension and length, optionally skipping values.
-
-        dim: The dimension of the sequence (between 1 and 1111).
-
-        length: The length of the returned sequence
-
-        skips: The number of values to skip. NB the actual number skipped will be the largest power of 2 smaller than the supplied value.
-
-    Returns:
-
-        A 2d array containing Sobol sequence values in (0,1).
-
-
-    Returns a Sobol' sequence given of supplied dimension and length, optionally skipping values.
-
-        dim: The dimension of the sequence (between 1 and 1111).
-
-        length: The length of the returned sequence
-
-    Returns:
-
-        A 2d array containing Sobol sequence values in (0,1).
-    """
-@overload
-@deprecated("Use the SobolSequence generator instead")
-def sobolSequence(dim: int, length: int, skips: int) -> nparray[np.float64]:
-    pass
 
 @overload
 class SobolSequence:

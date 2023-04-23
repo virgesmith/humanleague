@@ -132,23 +132,6 @@ py::dict prob2IntFreq(py::array_t<double> frac_a, int pop)
   return result;
 }
 
-// extern py::array_t<double> sobol(int dim, int length, int skips = 0)
-// {
-//   if (dim < 1 || dim > 1111)
-//   {
-//     throw py::value_error("Dim %% is not in valid range [1,1111]"s % dim);
-//   }
-
-//   std::vector<int64_t> sizes{ length, dim };
-//   py::array_t<double> sequence(sizes);
-
-//   Sobol sobol(dim, skips);
-
-//   std::generate(begin(sequence), end(sequence), [&]() { return sobol() * Sobol::SCALE; });
-
-//   return sequence;
-// }
-
 
 class SobolGenerator
 {
@@ -327,13 +310,9 @@ PYBIND11_MODULE(_humanleague, m) {
         hl::flatten,
         flatten_docstr,
         "pop"_a)
-   .def("prob2IntFreq",
-        hl::prob2IntFreq,
-        prob2IntFreq_docstr,
-        "frac"_a, "pop"_a)
    .def("integerise",
         hl::prob2IntFreq,
-        prob2IntFreq_docstr,
+        integerise1d_docstr,
         "frac"_a, "pop"_a)
    .def("integerise",
         hl::integerise,

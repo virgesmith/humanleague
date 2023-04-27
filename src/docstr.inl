@@ -26,7 +26,7 @@ const char* integerise1d_docstr = R"""(
 
     Returns:
 
-        A dictionary containing the frequencies and the RMS error
+        A tuple containing the result and summary statistics
 )""";
 
 const char* integerise_docstr = R"""(
@@ -39,11 +39,25 @@ const char* integerise_docstr = R"""(
 
     Returns:
 
-        A dictionary containing The integral population, the RMS error, and a boolean indicating whether the population matches the marginal sums.
+        A tuple containing the result and summary statistics
 )""";
 
-const char* SobolSequence_docstr = R"""(
-    Generator that returns the next point in a Sobol' sequence given of supplied dimension, optionally skipping values.
+const char* SobolSequence_init1_docstr = R"""(
+    Construct a `dim` dimensional Sobol sequence generator object.
+
+    Args:
+
+        dim: The dimension of the sequence (between 1 and 1111).
+
+    Returns:
+
+        A generator object that produces Sobol sequence values in (0,1)^dim.
+)""";
+
+const char* SobolSequence_init2_docstr = R"""(
+    Construct a `dim` dimensional Sobol sequence generator object, skipping the start of the sequence.
+
+    Args:
 
         dim: The dimension of the sequence (between 1 and 1111).
 
@@ -51,7 +65,7 @@ const char* SobolSequence_docstr = R"""(
 
     Returns:
 
-        A generator object that produces Sobol sequence values in (0,1).
+        A generator object that produces Sobol sequence values in (0,1)^dim.
 )""";
 
 const char* ipf_docstr = R"""(
@@ -65,7 +79,7 @@ const char* ipf_docstr = R"""(
 
     Returns:
 
-        A dictionary containing the result, a convergence flag, the total population, the iterations and the error
+        A tuple containing the result and summary statistics
 )""";
 
 const char* qis_docstr = R"""(
@@ -79,7 +93,7 @@ const char* qis_docstr = R"""(
 
     Returns:
 
-        A dictionary containing the result, a convergence flag, the total population, the iterations and the some statistical measures.
+        A tuple containing the result and summary statistics
 )""";
 
 const char* qis2_docstr = R"""(
@@ -91,7 +105,7 @@ const char* qis2_docstr = R"""(
 
     Returns:
 
-        A dictionary containing the result, a convergence flag, the total population, the iterations and the some statistical measures.
+        A tuple containing the result and summary statistics
 )""";
 
 const char* qisi_docstr = R"""(
@@ -107,7 +121,7 @@ const char* qisi_docstr = R"""(
 
     Returns:
 
-        A dictionary containing the result, a convergence flag, the total population, the iterations and the some statistical measures.
+        A tuple containing the result and summary statistics
 )""";
 
 const char* qisi2_docstr = R"""(
@@ -121,7 +135,7 @@ const char* qisi2_docstr = R"""(
 
     Returns:
 
-        A dictionary containing the result, a convergence flag, the total population, the iterations and the some statistical measures.
+        A tuple containing the result and summary statistics
 )""";
 
 const char* unittest_docstr = R"""(

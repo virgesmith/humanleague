@@ -4,6 +4,7 @@
 .Ruserdata
 build/
 node_modules/
+stubs/
 *.o
 *.d
 src/*.so

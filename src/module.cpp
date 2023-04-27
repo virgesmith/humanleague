@@ -18,6 +18,8 @@ namespace py = pybind11;
 #define STR2(x) #x
 #define STR(x) STR2(x)
 
+using namespace py::literals;
+
 
 namespace hl {
 
@@ -108,7 +110,7 @@ py::list flatten(const py::array_t<int64_t>& a)
   return outer;
 }
 
-py::dict prob2IntFreq(py::array_t<double> frac_a, int pop)
+py::tuple integerise1d(py::array_t<double> frac_a, int pop)
 {
   if (pop < 0)
   {
@@ -124,12 +126,10 @@ py::dict prob2IntFreq(py::array_t<double> frac_a, int pop)
   double var = 0.0;
   const std::vector<int>& freq = integeriseMarginalDistribution(prob, pop, var);
 
-  // TODO tuple might be better
-  py::dict result;
-  result["freq"] = py::array_t<int>(freq.size(), freq.data());
-  result["rmse"] = var;
+  py::dict stats;
+  stats["rmse"] = var;
 
-  return result;
+  return py::make_tuple(py::array_t<int>(freq.size(), freq.data()), stats);
 }
 
 
@@ -164,19 +164,19 @@ private:
 
 
 
-py::dict integerise(const py::array_t<double>& npseed)
+py::tuple integerise(const py::array_t<double>& npseed)
 {
   const NDArray<double> seed = asNDArray<double>(npseed); // shallow copy
   Integeriser integeriser(seed);
 
-  py::dict retval;
-  retval["result"] = fromNDArray<int64_t>(integeriser.result());
-  retval["conv"] = integeriser.conv();
-  retval["rmse"] = integeriser.rmse();
-  return retval;
+  py::dict stats(
+    "conv"_a = integeriser.conv(),
+    "rmse"_a = integeriser.rmse()
+  );
+  return py::make_tuple(fromNDArray<int64_t>(integeriser.result()), stats);
 }
 
-py::dict ipf(const py::array_t<double>& seed, const py::list& ilist, const py::list& mlist)
+py::tuple ipf(const py::array_t<double>& seed, const py::list& ilist, const py::list& mlist)
 {
   size_t k = ilist.size();
   if (k != mlist.size())
@@ -198,18 +198,17 @@ py::dict ipf(const py::array_t<double>& seed, const py::list& ilist, const py::l
   IPF<double> ipf(indices, marginals);
   const NDArray<double>& result = ipf.solve(asNDArray<double>(seed));
 
-  py::dict retval;
-  retval["result"] = fromNDArray<double>(result);
-  retval["conv"] = ipf.conv();
-  retval["pop"] = ipf.population();
-  retval["iterations"] = ipf.iters();
-  retval["maxError"] = ipf.maxError();
-
-  return retval;
+  py::dict stats(
+    "conv"_a = ipf.conv(),
+    "pop"_a = ipf.population(),
+    "iterations"_a = ipf.iters(),
+    "maxError"_a = ipf.maxError()
+  );
+  return py::make_tuple(fromNDArray<double>(result), stats);
 }
 
 
-py::dict qis(const py::list& ilist, const py::list& mlist, int64_t skips)
+py::tuple qis(const py::list& ilist, const py::list& mlist, int64_t skips)
 {
   size_t k = ilist.size();
   if (k != mlist.size())
@@ -231,20 +230,19 @@ py::dict qis(const py::list& ilist, const py::list& mlist, int64_t skips)
   QIS qis(indices, marginals, skips);
   const NDArray<int64_t>& result = qis.solve();
   const NDArray<double>& expect = qis.expectation();
-  py::dict retval;
 
-  retval["result"] = fromNDArray<int64_t>(result);
-  retval["expectation"] = fromNDArray<double>(expect);
-  retval["conv"] = qis.conv();
-  retval["pop"] = qis.population();
-  retval["chiSq"] = qis.chiSq();
-  retval["pValue"] = qis.pValue();
-  retval["degeneracy"] = qis.degeneracy();
-
-  return retval;
+  py::dict stats(
+    "expectation"_a = fromNDArray<double>(expect),
+    "conv"_a = qis.conv(),
+    "pop"_a = qis.population(),
+    "chiSq"_a = qis.chiSq(),
+    "pValue"_a = qis.pValue(),
+    "degeneracy"_a = qis.degeneracy()
+  );
+  return py::make_tuple(fromNDArray<int64_t>(result), stats);
 }
 
-py::dict qisi(const py::array_t<double> seed, const py::list& ilist, const py::list& mlist, int64_t skips)
+py::tuple qisi(const py::array_t<double> seed, const py::list& ilist, const py::list& mlist, int64_t skips)
 {
   size_t k = ilist.size();
   if (k != mlist.size())
@@ -265,18 +263,16 @@ py::dict qisi(const py::array_t<double> seed, const py::list& ilist, const py::l
 
   QISI qisi(indices, marginals, skips);
   const NDArray<int64_t>& result = qisi.solve(asNDArray<double>(seed));
-  const NDArray<double>& expect = qisi.expectation();
-  py::dict retval;
 
-  retval["result"] = fromNDArray<int64_t>(result);
-  retval["expectation"] = fromNDArray<double>(expect);
-  retval["conv"] = qisi.conv();
-  retval["pop"] = qisi.population();
-  retval["chiSq"] = qisi.chiSq();
-  retval["pValue"] = qisi.pValue();
-  retval["degeneracy"] = qisi.degeneracy();
-
-  return retval;
+  py::dict stats(
+    "expectation"_a = fromNDArray<double>(qisi.expectation()),
+    "conv"_a = qisi.conv(),
+    "pop"_a = qisi.population(),
+    "chiSq"_a = qisi.chiSq(),
+    "pValue"_a = qisi.pValue(),
+    "degeneracy"_a = qisi.degeneracy()
+  );
+  return py::make_tuple(fromNDArray<int64_t>(result), stats);
 }
 
 
@@ -295,8 +291,6 @@ py::dict unittest()
 
 } // namespace hl
 
-using py::literals::operator ""_a;
-
 
 PYBIND11_MODULE(_humanleague, m) {
 
@@ -311,7 +305,7 @@ PYBIND11_MODULE(_humanleague, m) {
         flatten_docstr,
         "pop"_a)
    .def("integerise",
-        hl::prob2IntFreq,
+        hl::integerise1d,
         integerise1d_docstr,
         "frac"_a, "pop"_a)
    .def("integerise",
@@ -343,9 +337,9 @@ PYBIND11_MODULE(_humanleague, m) {
         unittest_docstr)
     ;
 
-  py::class_<hl::SobolGenerator>(m, "SobolSequence", SobolSequence_docstr)
-      .def(py::init<size_t, uint32_t>())
-      .def(py::init<size_t>())
+  py::class_<hl::SobolGenerator>(m, "SobolSequence")
+      .def(py::init<size_t, uint32_t>(), SobolSequence_init2_docstr, "dim"_a, "skips"_a)
+      .def(py::init<size_t>(), SobolSequence_init1_docstr, "dim"_a)
       .def("__iter__", &hl::SobolGenerator::iter, "__iter__ dunder")
       .def("__next__", &hl::SobolGenerator::next, "__next__ dunder")
       ;

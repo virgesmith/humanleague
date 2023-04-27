@@ -111,6 +111,8 @@ The package now contains type annotations and your IDE should automatically disp
 
 ![help](./doc/help.png)
 
+NB type stubs are generated using the `pybind11-stubgen` package, with some [manual corrections](./doc/type-stubs.md).
+
 ### Multidimensional integerisation
 
 Building on the `prob2IntFreq` function - which takes a discrete probability distribution and a count, and returns the closest integer population to the distribution that sums to the count - a multidimensional equivalent `integerise` is introduced.

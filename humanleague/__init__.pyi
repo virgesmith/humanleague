@@ -7,7 +7,7 @@ import numpy as np
 import numpy.typing as npt
 
 FloatArray1d = npt.NDArray[np.float64] | list[float]
-IntArray1d = typing.Sequence[int]  # npt.NDArray[np.int64] | list[int]
+IntArray1d = typing.Sequence[int]
 
 __all__ = [
     "SobolSequence",

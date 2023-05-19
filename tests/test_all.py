@@ -16,65 +16,58 @@ def test_unittest() -> None:
   assert res["nFails"] == 0
 
 
-def test_sobolSequence() -> None:
-  a = hl.sobolSequence(3, 5)
-  assert a.size == 15
-  assert a.shape == (5, 3)
-  assert np.array_equal(a[0, :], [0.5, 0.5, 0.5])
+def test_SobolSequence() -> None:
+  s = hl.SobolSequence(3)
+  a = next(s)
+  assert a.shape == (3,)
+  assert np.array_equal(a, [0.5, 0.5, 0.5])
+  assert np.array_equal(next(s), [0.75, 0.25, 0.75])
+  assert np.array_equal(next(s), [0.25, 0.75, 0.25])
 
   # invalid args
   with pytest.raises(ValueError):
-    hl.sobolSequence(0, 10)
+    hl.SobolSequence(0)
   with pytest.raises(ValueError):
-    hl.sobolSequence(100000, 10)
-  with pytest.raises(ValueError):
-    hl.sobolSequence(1, -10)
+    hl.SobolSequence(100000)
+  with pytest.raises(TypeError):
+    hl.SobolSequence(1, -10)
 
-
-def test_SobolGenerator() -> None:
-  length = 10
+  length = 10 # -> 8 skips
   for d in range(2, 10):
-    a = hl.sobolSequence(d, length)
-    g = hl.SobolSequence(d, 0)
+    s = hl.SobolSequence(d, length)
+    s0 = hl.SobolSequence(d)
+    # skip s0 forward
+    for _ in range(8):
+      next(s0)
     for i in range(length):
-      assert (next(g) == a[i]).all()
-
-  skips = 4
-  g0 = hl.SobolSequence(2)
-  for _ in range(skips):
-    next(g0)
-  g4 = hl.SobolSequence(2, skips)
-  assert (next(g0) == next(g4)).all()
+      assert (next(s) == next(s0)).all()
 
 
 def test_integerise() -> None:
 
-  # probs not valid
-  # r = hl.prob2IntFreq(np.array([0.3, 0.3, 0.2, 0.1]), 10)
-  # assert r == "probabilities do not sum to unity"
-
   # pop not valid
   with pytest.raises(ValueError):
-    hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), -1)
+    hl.integerise(np.array([0.4, 0.3, 0.2, 0.1]), -1)
 
   # zero pop
-  r = hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), 0)
-  assert r["rmse"] == 0.0
-  assert np.array_equal(r["freq"], np.array([0, 0, 0, 0]))
+  r, stats = hl.integerise(np.array([0.4, 0.3, 0.2, 0.1]), 0)
+  assert stats["rmse"] == 0.0
+  assert np.array_equal(r, np.array([0, 0, 0, 0]))
 
   # exact
-  r = hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), 10)
-  assert r["rmse"] < 1e-15
-  assert np.array_equal(r["freq"], np.array([4, 3, 2, 1]))
+  r, stats = hl.integerise(np.array([0.4, 0.3, 0.2, 0.1]), 10)
+  assert stats["rmse"] < 1e-15
+  assert np.array_equal(r, np.array([4, 3, 2, 1]))
 
   # inexact
-  r = hl.prob2IntFreq(np.array([0.4, 0.3, 0.2, 0.1]), 17)
-  assert r["rmse"] == 0.273861278752583
-  assert np.array_equal(r["freq"], np.array([7, 5, 3, 2]))
+  r, stats = hl.integerise(np.array([0.4, 0.3, 0.2, 0.1]), 17)
+  assert stats["rmse"] == 0.273861278752583
+  assert np.array_equal(r, np.array([7, 5, 3, 2]))
 
   # 1-d case
-  r = hl.integerise(np.array([2.0, 1.5, 1.0, 0.5]))
-  assert r["conv"]
+  r, stats = hl.integerise(np.array([2.0, 1.5, 1.0, 0.5]))
+  assert r.sum() == 5.0
+  assert stats["conv"]
 
   # multidim integerisation
   # invalid population
@@ -91,91 +84,89 @@ def test_integerise() -> None:
   m1 = np.array([136, 142, 143, 139], dtype=float)
   s = np.ones([len(m0), len(m1), len(m0)])
 
-  fpop = hl.ipf(s, [np.array([0]), np.array([1]), np.array([2])], [m0, m1, m0])["result"]
+  fpop, _ = hl.ipf(s, [[0], [1], [2]], [m0, m1, m0])
 
-  result = hl.integerise(fpop)
-  assert result["conv"]
-  assert np.sum(result["result"]) == sum(m0)
-  assert result["rmse"] < 1.05717
+  result, stats = hl.integerise(fpop)
+  assert stats["conv"]
+  assert np.sum(result) == sum(m0)
+  assert stats["rmse"] < 1.05717
 
 
 def test_IPF() -> None:
   m0 = np.array([52.0, 48.0])
   m1 = np.array([87.0, 13.0])
   m2 = np.array([55.0, 45.0])
-  i = [np.array([0]), np.array([1])]
+  i = [[0], [1]]
 
   s = np.ones([len(m0), len(m1)])
-  p = hl.ipf(s, i, [m0, m1])
-  assert p["conv"]
-  assert p["pop"] == 100.0
-  assert np.array_equal(p["result"], np.array([[45.24, 6.76], [41.76, 6.24]]))
+  p, stats = hl.ipf(s, i, [m0, m1])
+  assert stats["conv"]
+  assert stats["pop"] == 100.0
+  assert np.array_equal(p, np.array([[45.24, 6.76], [41.76, 6.24]]))
 
   s[0, 0] = 0.7
-  p = hl.ipf(s, i, [m0, m1])
-  assert p["conv"]
+  p, stats = hl.ipf(s, i, [m0, m1])
+  assert stats["conv"]
   # check overall population and marginals correct
-  assert np.sum(p["result"]) == p["pop"]
-  assert np.allclose(np.sum(p["result"], 0), m1)
-  assert np.allclose(np.sum(p["result"], 1), m0)
+  assert np.sum(p) == stats["pop"]
+  assert np.allclose(np.sum(p, 0), m1)
+  assert np.allclose(np.sum(p, 1), m0)
 
-  i = [np.array([0]), np.array([1]), np.array([2])]
+  i = [[0], [1], [2]]
   s = np.array([[[1.0, 1.0], [1.0, 1.0]], [[1.0, 1.0], [1.0, 1.0]]])
-  p = hl.ipf(s, i, [m0, m1, m2])
-  assert p["conv"]
+  p, stats = hl.ipf(s, i, [m0, m1, m2])
+  assert stats["conv"]
   # check overall population and marginals correct
-  assert np.sum(p["result"]) == pytest.approx(p["pop"], 1e-8)
-  assert np.allclose(np.sum(p["result"], (0, 1)), m2)
-  assert np.allclose(np.sum(p["result"], (1, 2)), m0)
-  assert np.allclose(np.sum(p["result"], (2, 0)), m1)
+  assert np.sum(p) == pytest.approx(stats["pop"], 1e-8)
+  assert np.allclose(np.sum(p, (0, 1)), m2)
+  assert np.allclose(np.sum(p, (1, 2)), m0)
+  assert np.allclose(np.sum(p, (2, 0)), m1)
 
   # 12D
   s = np.ones([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
-  i = [np.array([0]), np.array([1]), np.array([2]), np.array([3]), np.array([4]), np.array([5]),
-       np.array([6]), np.array([7]), np.array([8]), np.array([9]), np.array([10]), np.array([11])]
+  i = [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11]]
   m = np.array([2048., 2048.])
-  p = hl.ipf(s, i, [m, m, m, m, m, m, m, m, m, m, m, m])
-  assert p["pop"] == 4096
+  p, stats = hl.ipf(s, i, [m, m, m, m, m, m, m, m, m, m, m, m])
+  assert stats["pop"] == 4096
 
   m0 = np.array([52.0, 48.0])
   m1 = np.array([87.0, 13.0])
   m2 = np.array([55.0, 45.0])
 
   seed = np.ones([len(m0), len(m1)])
-  p = hl.ipf(seed, [np.array([0]), np.array([1])], [m0, m1])
-  assert np.allclose(np.sum(p["result"], (0)), m1)
-  assert np.allclose(np.sum(p["result"], (1)), m0)
-  assert p["conv"]
-  assert p["iterations"] == 1
-  assert p["maxError"] == 0.0
-  assert p["pop"] == 100.0
-  assert np.array_equal(p["result"], np.array([[45.24, 6.76], [41.76, 6.24]]))
+  p, stats = hl.ipf(seed, [[0], [1]], [m0, m1])
+  assert np.allclose(np.sum(p, (0)), m1)
+  assert np.allclose(np.sum(p, (1)), m0)
+  assert stats["conv"]
+  assert stats["iterations"] == 1
+  assert stats["maxError"] == 0.0
+  assert stats["pop"] == 100.0
+  assert np.array_equal(p, np.array([[45.24, 6.76], [41.76, 6.24]]))
 
   seed[0, 1] = 0.7
-  p = hl.ipf(seed, [np.array([0]), np.array([1])], [m0, m1])
-  assert np.allclose(np.sum(p["result"], (0)), m1)
-  assert np.allclose(np.sum(p["result"], (1)), m0)
-  assert p["conv"]
-  assert p["iterations"] < 6
-  assert p["maxError"] < 5e-10
-  assert p["pop"] == 100.0
+  p, stats = hl.ipf(seed, [[0], [1]], [m0, m1])
+  assert np.allclose(np.sum(p, (0)), m1)
+  assert np.allclose(np.sum(p, (1)), m0)
+  assert stats["conv"]
+  assert stats["iterations"] < 6
+  assert stats["maxError"] < 5e-10
+  assert stats["pop"] == 100.0
 
   s = np.array([[[1.0, 1.0], [1.0, 1.0]], [[1.0, 1.0], [1.0, 1.0]]])
-  p = hl.ipf(s, [np.array([0]), np.array([1]), np.array([2])], [m0, m1, m2])
-  assert p["conv"]
+  p, stats = hl.ipf(s, [[0], [1], [2]], [m0, m1, m2])
+  assert stats["conv"]
   # check overall population and marginals correct
-  assert np.sum(p["result"]) == pytest.approx(p["pop"], 1e-8)
-  assert np.allclose(np.sum(p["result"], (0, 1)), m2)
-  assert np.allclose(np.sum(p["result"], (1, 2)), m0)
-  assert np.allclose(np.sum(p["result"], (2, 0)), m1)
+  assert np.sum(p) == pytest.approx(stats["pop"], 1e-8)
+  assert np.allclose(np.sum(p, (0, 1)), m2)
+  assert np.allclose(np.sum(p, (1, 2)), m0)
+  assert np.allclose(np.sum(p, (2, 0)), m1)
 
   # 12D
   s = np.ones([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
   m = np.array([2048., 2048.])
-  p = hl.ipf(s, [np.array([0]), np.array([1]), np.array([2]), np.array([3]), np.array([4]), np.array([5]), np.array([6]),
-                 np.array([7]), np.array([8]), np.array([9]), np.array([10]), np.array([11])], [m, m, m, m, m, m, m, m, m, m, m, m])
-  assert p["conv"]
-  assert p["pop"] == 4096
+  _, stats = hl.ipf(s, i, [m, m, m, m, m, m, m, m, m, m, m, m])
+  assert stats["conv"]
+  assert stats["pop"] == 4096
 
 
 def test_QIS() -> None:
@@ -187,40 +178,40 @@ def test_QIS() -> None:
 
   m0 = np.array([52, 48])
   m1 = np.array([10, 77, 13])
-  i0 = np.array([0])
-  i1 = np.array([1])
+  i0 = [0]
+  i1 = [1]
 
-  p = hl.qis([i0, i1], [m0, m1])
-  assert p["conv"]
-  assert p["chiSq"] < 0.04
-  assert p["pValue"] > 0.9
-  assert p["pop"] == 100.0
-  assert np.allclose(np.sum(p["result"], 0), m1)
-  assert np.allclose(np.sum(p["result"], 1), m0)
+  p, stats = hl.qis([i0, i1], [m0, m1])
+  assert stats["conv"]
+  assert stats["chiSq"] < 0.04
+  assert stats["pValue"] > 0.9
+  assert stats["pop"] == 100.0
+  assert np.allclose(np.sum(p, 0), m1)
+  assert np.allclose(np.sum(p, 1), m0)
 
   m0 = np.array([52, 40, 4, 4])
   m1 = np.array([87, 10, 3])
   m2 = np.array([55, 15, 6, 12, 12])
-  i0 = np.array([0])
-  i1 = np.array([1])
-  i2 = np.array([2])
+  i0 = [0]
+  i1 = [1]
+  i2 = [2]
 
-  p = hl.qis([i0, i1, i2], [m0, m1, m2])
-  assert p["conv"]
-  assert p["chiSq"] < 73.0 # TODO seems a bit high (probably )
-  assert p["pValue"] > 0.0 # TODO this is suspect
-  assert p["pop"] == 100.0
-  assert np.allclose(np.sum(p["result"], (0, 1)), m2)
-  assert np.allclose(np.sum(p["result"], (1, 2)), m0)
-  assert np.allclose(np.sum(p["result"], (2, 0)), m1)
+  p, stats = hl.qis([i0, i1, i2], [m0, m1, m2])
+  assert stats["conv"]
+  assert stats["chiSq"] < 73.0 # TODO seems a bit high (probably )
+  assert stats["pValue"] > 0.0 # TODO this is suspect
+  assert stats["pop"] == 100.0
+  assert np.allclose(np.sum(p, (0, 1)), m2)
+  assert np.allclose(np.sum(p, (1, 2)), m0)
+  assert np.allclose(np.sum(p, (2, 0)), m1)
 
   # Test flatten functionality
-  table = hl.flatten(p["result"])
+  table = hl.flatten(p)
 
   # length is no of dims
   assert len(table) == 3
   # length of element is pop
-  assert len(table[0]) == p["pop"]
+  assert len(table[0]) == stats["pop"]
   # check consistent with marginals
   for i, mi in enumerate(m0):
     assert table[0].count(i) == mi
@@ -233,30 +224,27 @@ def test_QIS() -> None:
   m1 = np.array([87, 13])
   m2 = np.array([67, 33])
   m3 = np.array([55, 45])
-  i0 = np.array([0])
-  i1 = np.array([1])
-  i2 = np.array([2])
-  i3 = np.array([3])
+  idx = [[0], [1], [2], [3]]
 
-  p = hl.qis([i0, i1, i2, i3], [m0, m1, m2, m3])
-  assert p["conv"]
-  assert p["chiSq"] < 10
-  assert p["pValue"] > 0.001
-  assert p["pop"] == 100
-  assert np.allclose(np.sum(p["result"], (0, 1, 2)), m3)
-  assert np.allclose(np.sum(p["result"], (1, 2, 3)), m0)
-  assert np.allclose(np.sum(p["result"], (2, 3, 0)), m1)
-  assert np.allclose(np.sum(p["result"], (3, 0, 1)), m2)
+  p, stats = hl.qis(idx, [m0, m1, m2, m3])
+  assert stats["conv"]
+  assert stats["chiSq"] < 10
+  assert stats["pValue"] > 0.001
+  assert stats["pop"] == 100
+  assert np.allclose(np.sum(p, (0, 1, 2)), m3)
+  assert np.allclose(np.sum(p, (1, 2, 3)), m0)
+  assert np.allclose(np.sum(p, (2, 3, 0)), m1)
+  assert np.allclose(np.sum(p, (3, 0, 1)), m2)
 
   m = np.array([[10, 20, 10], [10, 10, 20], [20, 10, 10]])
-  idx = [np.array([0, 1]), np.array([1, 2])]
-  p = hl.qis(idx, [m, m])
-  assert p["conv"]
-  assert p["chiSq"] < 10
-  assert p["pValue"] > 0.27
-  assert p["pop"] == 120
-  assert np.allclose(np.sum(p["result"], 2), m)
-  assert np.allclose(np.sum(p["result"], 0), m)
+  idx = [[0, 1], [1, 2]]
+  p, stats = hl.qis(idx, [m, m])
+  assert stats["conv"]
+  assert stats["chiSq"] < 10
+  assert stats["pValue"] > 0.27
+  assert stats["pop"] == 120
+  assert np.allclose(np.sum(p, 2), m)
+  assert np.allclose(np.sum(p, 0), m)
 
 
 def test_QIS_dim_indexing() -> None:
@@ -267,67 +255,61 @@ def test_QIS_dim_indexing() -> None:
   m0 = np.ones([4, 6, 4, 4], dtype=int)
   m1 = np.ones([4, 4, 4], dtype=int) * 6
 
-  ms = hl.qis([np.array([0, 1, 2, 3]), np.array([0, 4, 5])], [m0, m1])
+  _, ms = hl.qis([[0, 1, 2, 3], [0, 4, 5]], [m0, m1])
   assert ms["conv"]
 
-  ms = hl.qis([np.array([0, 4, 5]), np.array([0, 1, 2, 3])], [m1, m0])
+  _, ms = hl.qis([[0, 4, 5], [0, 1, 2, 3]], [m1, m0])
   assert ms["conv"]
 
-  ms = hl.qis([np.array([0, 1, 2]), np.array([0, 3, 4, 5])], [m1, m0])
+  _, ms = hl.qis([[0, 1, 2], [0, 3, 4, 5]], [m1, m0])
   assert ms["conv"]
 
 
 def test_QISI() -> None:
   m0 = np.array([52, 48])
   m1 = np.array([10, 77, 13])
-  i0 = np.array([0])
-  i1 = np.array([1])
+  idx = [[0], [1]]
   s = np.ones([len(m0), len(m1)])
 
-  p = hl.qisi(s, [i0, i1], [m0, m1])
-  assert p["conv"]
-  assert p["chiSq"] < 0.04
-  assert p["pValue"] > 0.9
-  assert p["pop"] == 100.0
-  assert np.allclose(np.sum(p["result"], 0), m1)
-  assert np.allclose(np.sum(p["result"], 1), m0)
+  p, stats = hl.qisi(s, idx, [m0, m1])
+  assert stats["conv"]
+  assert stats["chiSq"] < 0.04
+  assert stats["pValue"] > 0.9
+  assert stats["pop"] == 100.0
+  assert np.allclose(np.sum(p, 0), m1)
+  assert np.allclose(np.sum(p, 1), m0)
 
   m0 = np.array([52, 40, 4, 4])
   m1 = np.array([87, 10, 3])
   m2 = np.array([55, 15, 6, 12, 12])
-  i0 = np.array([0])
-  i1 = np.array([1])
-  i2 = np.array([2])
+  idx = [[0], [1], [2]]
   s = np.ones([len(m0), len(m1), len(m2)])
 
-  p = hl.qisi(s, [i0, i1, i2], [m0, m1, m2])
-  assert p["conv"]
-  assert p["chiSq"] < 70 # seems a bit high
-  assert p["pValue"] > 0.0 # seems a bit low
-  assert p["pop"] == 100.0
-  assert np.allclose(np.sum(p["result"], (0, 1)), m2)
-  assert np.allclose(np.sum(p["result"], (1, 2)), m0)
-  assert np.allclose(np.sum(p["result"], (2, 0)), m1)
+  p, stats = hl.qisi(s, idx, [m0, m1, m2])
+  assert stats["conv"]
+  assert stats["chiSq"] < 70 # seems a bit high
+  assert stats["pValue"] > 0.0 # seems a bit low
+  assert stats["pop"] == 100.0
+  assert np.allclose(np.sum(p, (0, 1)), m2)
+  assert np.allclose(np.sum(p, (1, 2)), m0)
+  assert np.allclose(np.sum(p, (2, 0)), m1)
 
   m0 = np.array([52, 48])
   m1 = np.array([87, 13])
   m2 = np.array([67, 33])
   m3 = np.array([55, 45])
-  i0 = np.array([0])
-  i1 = np.array([1])
-  i2 = np.array([2])
-  i3 = np.array([3])
+  idx = [[0], [1], [2], [3]]
   s = np.ones([len(m0), len(m1), len(m2), len(m3)])
 
-  p = hl.qisi(s, [i0, i1, i2, i3], [m0, m1, m2, m3])
-  assert p["conv"]
-  assert p["chiSq"] < 5.5
-  assert p["pValue"] > 0.02
-  assert p["pop"] == 100.0
-  assert np.allclose(np.sum(p["result"], (0, 1, 2)), m3)
-  assert np.allclose(np.sum(p["result"], (1, 2, 3)), m0)
-  assert np.allclose(np.sum(p["result"], (2, 3, 0)), m1)
-  assert np.allclose(np.sum(p["result"], (3, 0, 1)), m2)
+  p, stats = hl.qisi(s, idx, [m0, m1, m2, m3])
+  assert stats["conv"]
+  assert stats["chiSq"] < 5.5
+  assert stats["pValue"] > 0.02
+  assert stats["pop"] == 100.0
+  assert np.allclose(np.sum(p, (0, 1, 2)), m3)
+  assert np.allclose(np.sum(p, (1, 2, 3)), m0)
+  assert np.allclose(np.sum(p, (2, 3, 0)), m1)
+  assert np.allclose(np.sum(p, (3, 0, 1)), m2)
 
   # check dimension consistency check works
   s = np.ones([2, 3, 7, 5])
@@ -335,12 +317,12 @@ def test_QISI() -> None:
   m2 = np.ones([3, 5], dtype=int) * 7 * 2
   m3 = np.ones([5, 7], dtype=int) * 2 * 3
   with pytest.raises(RuntimeError):
-    hl.qisi(s, [np.array([0, 1]), np.array([1, 2]), np.array([2, 3])], [m1, m2, m3])
+    hl.qisi(s, [[0, 1], [1, 2], [2, 3]], [m1, m2, m3])
   with pytest.raises(RuntimeError):
-    hl.ipf(s, [np.array([0, 1]), np.array([1, 2]), np.array([2, 3])], [m1.astype(float), m2.astype(float), m3.astype(float)])
+    hl.ipf(s, [[0, 1], [1, 2], [2, 3]], [m1.astype(float), m2.astype(float), m3.astype(float)])
 
   s = np.ones((2, 3, 5))
   with pytest.raises(RuntimeError):
-    hl.qisi(s, [np.array([0, 1]), np.array([1, 2]), np.array([2, 3])], [m1, m2, m3])
+    hl.qisi(s, [[0, 1], [1, 2], [2, 3]], [m1, m2, m3])
   with pytest.raises(RuntimeError):
-    hl.ipf(s, [np.array([0, 1]), np.array([1, 2]), np.array([2, 3])], [m1.astype(float), m2.astype(float), m3.astype(float)])
+    hl.ipf(s, [[0, 1], [1, 2], [2, 3]], [m1.astype(float), m2.astype(float), m3.astype(float)])

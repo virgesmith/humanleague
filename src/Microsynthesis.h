@@ -32,14 +32,14 @@ public:
   {
     // i and m should be same size and >2
     if (m_indices.size() != m_marginals.size() || m_indices.size() < 2)
-      throw std::runtime_error("index list size %% too small or differs from marginal size %%"_s % m_indices.size() % m_marginals.size());
+      throw std::runtime_error("index list size %% too small or differs from marginal size %%"s % m_indices.size() % m_marginals.size());
 
     // count all unique values in i...
     std::map<int64_t, int64_t> dim_sizes;
     for (size_t k = 0; k < m_indices.size(); ++k)
     {
       if (m_indices[k].size() != m_marginals[k].dim())
-        throw std::runtime_error("index/marginal dimension mismatch %% vs %%"_s % m_indices[k].size() % m_marginals[k].dim());
+        throw std::runtime_error("index/marginal dimension mismatch %% vs %%"s % m_indices[k].size() % m_marginals[k].dim());
       //std::cout << "index " << k << std::endl;
       for (size_t j = 0; j < m_indices[k].size(); ++j)
       {
@@ -50,7 +50,7 @@ public:
         if (posit == dim_sizes.end())
           dim_sizes.insert(std::make_pair(dim, size));
         else if (posit->second != size)
-          throw std::runtime_error("mismatch at index %%: dimension %% size %% redefined to %%"_s % k % dim % posit->second % size);
+          throw std::runtime_error("mismatch at index %%: dimension %% size %% redefined to %%"s % k % dim % posit->second % size);
       }
     }
 
@@ -61,11 +61,11 @@ public:
     for (size_t k = 0; k < m_marginals.size(); ++k)
     {
       if (min(m_marginals[k]) < 0)
-        throw std::runtime_error("negative value in marginal %%: %%"_s % k % min(m_marginals[k]));
+        throw std::runtime_error("negative value in marginal %%: %%"s % k % min(m_marginals[k]));
     }
 
     m_dim = dim_sizes.size();
-    
+
     // check all dims defined
     //std::vector<int64_t> sizes;
     m_sizes.reserve(m_indices.size());
@@ -75,7 +75,7 @@ public:
     {
       auto it = dim_sizes.find(k);
       if (it == dim_sizes.end())
-        throw std::runtime_error("dimension %% size not defined"_s % k);
+        throw std::runtime_error("dimension %% size not defined"s % k);
       m_sizes.push_back(it->second);
     }
 
@@ -168,7 +168,7 @@ public:
   }
 
 protected:
-  
+
   void rScale()
   {
     for (size_t k = 0; k < m_indices.size(); ++k)
@@ -176,7 +176,7 @@ protected:
       const NDArray<double>& r = reduce<double>(m_array, m_indices[k]);
       // std::cout << k << ":";
       // print(r.rawData(), r.storageSize());
-  
+
       Index main_index(m_array.sizes());
       //std::cout << m_array.sizes()[m_indices[1-k][0]] << std::endl;
       for (MappedIndex oindex(main_index, invert(m_array.dim(), m_indices[k])); !oindex.end(); ++oindex)
@@ -196,14 +196,14 @@ protected:
             m_array[main_index] *= m_marginals[k][index] / r[index];
           else
             m_array[main_index] = 0.0;
-#endif  
+#endif
         }
       }
       // reset the main index
       //main_index.reset();
     }
   }
-  
+
   void createMappings(const std::vector<int64_t> sizes, const std::map<int64_t, int64_t>& dim_sizes)
   {
     // create mapping from dimension to marginal(s)
@@ -220,7 +220,7 @@ protected:
     for (size_t i = 1; i < m_marginals.size(); ++i)
     {
       if (static_cast<int64_t>(sum(m_marginals[i])) != m_population)
-        throw std::runtime_error("marginal sum mismatch at index %%: %% vs %%"_s % i % sum(m_marginals[i]) % m_population);
+        throw std::runtime_error("marginal sum mismatch at index %%: %% vs %%"s % i % sum(m_marginals[i]) % m_population);
     }
 
     // check that for each dimension included in more than one marginal, the partial sums in that dimension are equal

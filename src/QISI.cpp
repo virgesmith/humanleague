@@ -20,7 +20,7 @@ size_t pick(const std::vector<double>& dist, double r)
     if (r < runningSum)
       return i;
   }
-  throw std::runtime_error("pick failed: %% from %%"_s % r % dist);
+  throw std::runtime_error("pick failed: %% from %%"s % r % dist);
 }
 
 
@@ -64,9 +64,9 @@ void getIndex(const NDArray<double>& p, const std::vector<uint32_t>& r, Index& i
 
 
 QISI::QISI(const index_list_t& indices, marginal_list_t& marginals, int64_t skips)
-: Microsynthesis(indices, marginals), m_sobolSeq(m_dim), 
-  m_chiSq(std::numeric_limits<double>::quiet_NaN()), 
-  m_pValue(std::numeric_limits<double>::quiet_NaN()), 
+: Microsynthesis(indices, marginals), m_sobolSeq(m_dim),
+  m_chiSq(std::numeric_limits<double>::quiet_NaN()),
+  m_pValue(std::numeric_limits<double>::quiet_NaN()),
   m_degeneracy(std::numeric_limits<double>::quiet_NaN()),
   m_conv(false)
 {
@@ -78,11 +78,11 @@ const NDArray<int64_t>& QISI::solve(const NDArray<double>& seed, bool reset)
 {
   // check seed dimensions consistent with marginals
   if (seed.dim() != m_array.dim())
-    throw std::runtime_error("seed dimensions %% is inconsistent with that implied by marginals (%%)"_s % seed.dim() % m_array.dim());
+    throw std::runtime_error("seed dimensions %% is inconsistent with that implied by marginals (%%)"s % seed.dim() % m_array.dim());
   for (size_t d = 0; d < m_array.dim(); ++d)
   {
     if (seed.sizes()[d] != m_array.sizes()[d])
-      throw std::runtime_error("seed dimensions %% are inconsistent with that implied by marginals (%%)"_s % seed.sizes() % m_array.sizes());
+      throw std::runtime_error("seed dimensions %% are inconsistent with that implied by marginals (%%)"s % seed.sizes() % m_array.sizes());
   }
 
   if (reset)

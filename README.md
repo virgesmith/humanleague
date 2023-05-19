@@ -111,18 +111,20 @@ The package now contains type annotations and your IDE should automatically disp
 
 ![help](./doc/help.png)
 
+NB type stubs are generated using the `pybind11-stubgen` package, with some [manual corrections](./doc/type-stubs.md).
+
 ### Multidimensional integerisation
 
-Building on the `prob2IntFreq` function - which takes a discrete probability distribution and a count, and returns the closest integer population to the distribution that sums to the count - a multidimensional equivalent `integerise` is introduced.
-In one dimension, for example:
+Building on the one-dimensionl `integerise` function - which given a discrete probability distribution and a count, returns the closest integer population to the distribution that sums to the count - a multidimensional equivalent `integerise` is introduced. In one dimension, for example this:
 
 ```python
->>> import numpy as np
 >>> import humanleague
->>> p=np.array([0.1, 0.2, 0.3, 0.4])
->>> humanleague.prob2IntFreq(p, 11)
-{'freq': array([1, 2, 3, 5]), 'rmse': 0.3535533905932736}
-
+>>> p = [0.1, 0.2, 0.3, 0.4]
+>>> result, stats = humanleague.integerise(p, 11)
+>>> result
+array([1, 2, 3, 5], dtype=int32)
+>>> stats
+{'rmse': 0.3535533905932736}
 ```
 
 produces the optimal (i.e. closest possible) integer population to the discrete distribution.
@@ -132,29 +134,28 @@ The `integerise` function generalises this problem and applies it to higher dime
 The QISI algorithm is repurposed to this end. As it is a sampling algorithm it cannot guarantee that a solution is found, and if so, whether the solution is optimal. If it fails this does not prove that a solution does not exist for the given input.
 
 ```python
+>>> import numpy as np
 >>> a = np.array([[ 0.3,  1.2,  2. ,  1.5],
                   [ 0.6,  2.4,  4. ,  3. ],
                   [ 1.5,  6. , 10. ,  7.5],
                   [ 0.6,  2.4,  4. ,  3. ]])
 # marginal sums
->> sum(a)
+>>> a.sum(axis=0)
 array([ 3., 12., 20., 15.])
->>> sum(a.T)
+>>> a.sum(axis=1)
 array([ 5., 10., 25., 10.])
 # perform integerisation
->>> r = humanleague.integerise(a)
->>> r["conv"]
-True
->>> r["result"]
+>>> result, stats = humanleague.integerise(a)
+>>> stats
+{'conv': True, 'rmse': 0.5766281297335398}
+>>> result
 array([[ 0,  2,  2,  1],
        [ 0,  3,  4,  3],
        [ 2,  6, 10,  7],
        [ 1,  1,  4,  4]])
->>> r["rmse"]
-0.5766281297335398
 # check marginals are preserved
->>> sum(r["result"]) == sum(a)
-array([ True,  True,  True,  True])
->>> sum(r["result"].T) == sum(a.T)
-array([ True,  True,  True,  True])
+>>> (result.sum(axis=0) == a.sum(axis=0)).all()
+True
+>>> (result.sum(axis=1) == a.sum(axis=1)).all()
+True
 ```

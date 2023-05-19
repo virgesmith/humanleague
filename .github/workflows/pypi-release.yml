@@ -1,6 +1,3 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
 name: PyPI release
 
 on:
@@ -8,7 +5,7 @@ on:
   workflow_run:
     workflows: [Python test]
     types: [ completed ]
-    # branches: [ main ]
+    branches: [ main ]
 
 jobs:
   package:

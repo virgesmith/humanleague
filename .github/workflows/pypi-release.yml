@@ -7,7 +7,7 @@ on:
   workflow_run:
     workflows: [ Python test ]
     types: [ completed ]
-    branches: [ main ]
+    # branches: [ main ]
 
 jobs:
   package:

@@ -25,6 +25,21 @@ jobs:
         commit_email: andrew@friarswood.net
         login: virgesmith
         token: "${{ secrets.REPO_PAT }}"
+    - name: Create dist
+      run: |
+        pip install pybind11
+        python setup.py sdist
+    # - name: artifacts
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: dt_utils_${{ matrix.python-version }}
+    #     path: |
+    #       dist
+    - name: Publish
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository-url: https://test.pypi.org/legacy/
 
 # on:
 #   workflow_dispatch:

@@ -5,7 +5,7 @@ name: PyPI release
 
 on:
   workflow_run:
-    workflows: [ Python test ]
+    workflows: [Python test]
     types: [ completed ]
     # branches: [ main ]
 

@@ -32,6 +32,14 @@ def test_SobolSequence() -> None:
   with pytest.raises(TypeError):
     hl.SobolSequence(1, -10)
 
+  # skips
+  s = hl.SobolSequence(1)
+  s0 = hl.SobolSequence(1, 0)
+  assert all(next(s0) == next(s) for _ in range(10))
+
+  s = hl.SobolSequence(1, 1)
+  assert all(next(s)[0] == x for x in [0.75, 0.25, 0.375, 0.875, 0.625, 0.125, 0.1875, 0.6875, 0.9375, 0.4375])
+
   length = 10 # -> 8 skips
   for d in range(2, 10):
     s = hl.SobolSequence(d, length)

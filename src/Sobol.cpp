@@ -44,18 +44,7 @@ uint32_t Sobol::operator()()
 // Skip largest 2^k-1 < n
 void Sobol::skip(uint32_t n)
 {
-  uint32_t b = 0;
-  while (n > 1)
-  {
-    ++b;
-    n >>= 1;
-  }
-
-  uint32_t k = 1 << b;
-  while (k--)
-  {
-    buf();
-  }
+  nlopt_sobol_skip(m_s, n, m_buf.data());
 }
 
 

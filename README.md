@@ -3,8 +3,6 @@
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
 [![PyPI version](https://badge.fury.io/py/humanleague.svg)](https://badge.fury.io/py/humanleague)
-[![Anaconda-Server Version Badge](https://anaconda.org/conda-forge/humanleague/badges/version.svg)](https://anaconda.org/conda-forge/humanleague)
-[![Anaconda-Server Downloads Badge](https://anaconda.org/conda-forge/humanleague/badges/downloads.svg)](https://anaconda.org/conda-forge/humanleague)
 [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/humanleague)](https://CRAN.R-project.org/package=humanleague)
 [![CRAN Downloads](https://cranlogs.r-pkg.org/badges/grand-total/humanleague?color=black)](https://cran.r-project.org/package=humanleague)
 
@@ -52,18 +50,11 @@ Version 1.0.1 reflects the work described in the [Quasirandom Integer Sampling (
 
 ### Python
 
-Requires Python 3.9 or newer.
+Requires Python 3.9 or newer. The package can be installed using `pip`, e.g.
 
-#### PyPI
 
 ```bash
 python -m pip install humanleague --user
-```
-
-#### Anaconda
-
-```bash
-conda install -c conda-forge humanleague
 ```
 
 ### Build, install and test (from cloned repo)

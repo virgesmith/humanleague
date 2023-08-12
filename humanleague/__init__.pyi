@@ -176,4 +176,4 @@ def qisi(seed: npt.NDArray[np.float64], indices: list[IntArray1d], marginals: li
 
         A tuple containing the result and summary statistics
     """
-__version__ = '2.3.0'
+__version__: str

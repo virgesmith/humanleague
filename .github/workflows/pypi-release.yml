@@ -16,8 +16,8 @@ jobs:
         persist-credentials: false
     - name: current_version
       run: echo "current_version=$(grep 'Version' DESCRIPTION | cut -d ' ' -f2)" >> $GITHUB_ENV
-    - name: FragileTech/bump-version
-      uses: FragileTech/bump-version@main
+    - name: bump2version-action
+      uses: FragileTech/bump-version@v1.0.4
       with:
         current_version: "${{ env.current_version }}"
         files: DESCRIPTION
@@ -25,54 +25,14 @@ jobs:
         commit_email: andrew@friarswood.net
         login: virgesmith
         token: "${{ secrets.REPO_PAT }}"
+        # part defaults to patch
+        part: minor
     - name: Create dist
       run: |
         pip install pybind11
         python setup.py sdist
-    # - name: artifacts
-    #   uses: actions/upload-artifact@v3
-    #   with:
-    #     name: dt_utils_${{ matrix.python-version }}
-    #     path: |
-    #       dist
     - name: Publish
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        repository-url: https://test.pypi.org/legacy/
-
-# on:
-#   workflow_dispatch:
-#   workflow_run:
-#     workflows: [Python test]
-#     types: [ completed ]
-#     branches: [ main ]
-
-# jobs:
-#   package:
-#     runs-on: ubuntu-latest
-#     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-#     steps:
-#     - uses: actions/checkout@v3
-#     - name: "pip: Python 3.11 / ubuntu-latest"
-#       uses: actions/setup-python@v4
-#       with:
-#         python-version: "3.11"
-#     - name: Bump version
-#       run: |
-#         python -m pip install bump2version pybind11
-#         bump2version patch
-#     - name: Create dist
-#       run: |
-#         python setup.py sdist
-#     - name: artifacts
-#       uses: actions/upload-artifact@v3
-#       with:
-#         name: dt_utils_${{ matrix.python-version }}
-#         path: |
-#           dist
-#     - name: Publish
-#       uses: pypa/gh-action-pypi-publish@release/v1
-#       with:
-#         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-#         repository-url: https://test.pypi.org/legacy/
+        password: ${{ secrets.PYPI_API_TOKEN }}
+        repository-url: https://upload.pypi.org/legacy/

@@ -12,10 +12,6 @@
 #include <cmath>
 
 
-int32_t maxAbsElement(const std::vector<int32_t>& r);
-
-std::vector<int32_t> diff(const std::vector<uint32_t>& x, const std::vector<uint32_t>& y);
-
 template<typename T, typename U>
 void diff(const NDArray<T>& x, const NDArray<U>& y, NDArray<double>& d)
 {

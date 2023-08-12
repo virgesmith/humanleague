@@ -3,8 +3,6 @@
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
 [![PyPI version](https://badge.fury.io/py/humanleague.svg)](https://badge.fury.io/py/humanleague)
-[![Anaconda-Server Version Badge](https://anaconda.org/conda-forge/humanleague/badges/version.svg)](https://anaconda.org/conda-forge/humanleague)
-[![Anaconda-Server Downloads Badge](https://anaconda.org/conda-forge/humanleague/badges/downloads.svg)](https://anaconda.org/conda-forge/humanleague)
 [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/humanleague)](https://CRAN.R-project.org/package=humanleague)
 [![CRAN Downloads](https://cranlogs.r-pkg.org/badges/grand-total/humanleague?color=black)](https://cran.r-project.org/package=humanleague)
 
@@ -12,7 +10,6 @@
 [![status](https://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4/status.svg)](https://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4)
 
 [![python (pip) build](https://github.com/virgesmith/humanleague/actions/workflows/pip-package.yml/badge.svg)](https://github.com/virgesmith/humanleague/actions/workflows/pip-package.yml/badge.svg)
-[![python (conda) build](https://github.com/virgesmith/humanleague/actions/workflows/conda.yml/badge.svg)](https://github.com/virgesmith/humanleague/actions/workflows/conda.yml/badge.svg)
 [![r-cmd-check](https://github.com/virgesmith/humanleague/actions/workflows/r-cmd-check.yml/badge.svg)](https://github.com/virgesmith/humanleague/actions/workflows/r-cmd-check/badge.svg)
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/430da36db15f46978bfccd1ad3243ae9)](https://www.codacy.com/gh/virgesmith/humanleague/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=virgesmith/humanleague&amp;utm_campaign=Badge_Grade)
@@ -53,18 +50,11 @@ Version 1.0.1 reflects the work described in the [Quasirandom Integer Sampling (
 
 ### Python
 
-Requires Python 3.9 or newer.
+Requires Python 3.9 or newer. The package can be installed using `pip`, e.g.
 
-#### PyPI
 
 ```bash
 python -m pip install humanleague --user
-```
-
-#### Anaconda
-
-```bash
-conda install -c conda-forge humanleague
 ```
 
 ### Build, install and test (from cloned repo)

@@ -54,7 +54,7 @@
 #'
 #' @docType package
 #' @name humanleague
-NULL
+"_PACKAGE"
 
 #' @useDynLib humanleague
 #' @importFrom Rcpp sourceCpp

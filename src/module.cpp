@@ -15,9 +15,6 @@
 
 namespace py = pybind11;
 
-#define STR2(x) #x
-#define STR(x) STR2(x)
-
 using namespace py::literals;
 
 
@@ -297,8 +294,6 @@ PYBIND11_MODULE(_humanleague, m) {
 #include "docstr.inl"
 
   m.doc() = module_docstr;
-
-  m.attr("__version__") = STR(HUMANLEAGUE_VERSION);
 
   m.def("flatten",
         hl::flatten,

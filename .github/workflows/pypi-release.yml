@@ -20,7 +20,6 @@ jobs:
       uses: FragileTech/bump-version@v1.0.4
       with:
         current_version: "${{ env.current_version }}"
-        files: DESCRIPTION
         commit_name: Version autobump
         commit_email: devops@friarswood.net
         login: "${{ secrets.REPO_LOGIN }}"

@@ -48,6 +48,6 @@ jobs:
           check-dir: '"check"'
       - name: artifacts
         if: ${{ matrix.config.r == 'release' && matrix.config.os == 'ubuntu-latest' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: check

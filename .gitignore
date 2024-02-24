@@ -3,12 +3,11 @@
 .RData
 .Ruserdata
 build/
-node_modules/
 stubs/
 *.o
 *.d
-src/*.so
-src/*.dll
+*.so
+*.dll
 *.log
 
 dist/

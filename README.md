@@ -2,14 +2,14 @@
 
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/humanleague)](https://pypi.org/project/humanleague/)
 [![PyPI version](https://badge.fury.io/py/humanleague.svg)](https://badge.fury.io/py/humanleague)
 [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/humanleague)](https://CRAN.R-project.org/package=humanleague)
-[![CRAN Downloads](https://cranlogs.r-pkg.org/badges/grand-total/humanleague?color=black)](https://cran.r-project.org/package=humanleague)
 
 [![DOI](https://zenodo.org/badge/95961787.svg)](https://zenodo.org/badge/latestdoi/95961787)
 [![status](https://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4/status.svg)](https://joss.theoj.org/papers/d5aaf6e1c2efed431c506762622473b4)
 
-[![python (pip) build](https://github.com/virgesmith/humanleague/actions/workflows/pip-package.yml/badge.svg)](https://github.com/virgesmith/humanleague/actions/workflows/pip-package.yml/badge.svg)
+[![python (pip) build](https://github.com/virgesmith/humanleague/actions/workflows/python-test.yml/badge.svg)](https://github.com/virgesmith/humanleague/actions/workflows/python-test.yml/badge.svg)
 [![r-cmd-check](https://github.com/virgesmith/humanleague/actions/workflows/r-cmd-check.yml/badge.svg)](https://github.com/virgesmith/humanleague/actions/workflows/r-cmd-check/badge.svg)
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/430da36db15f46978bfccd1ad3243ae9)](https://www.codacy.com/gh/virgesmith/humanleague/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=virgesmith/humanleague&amp;utm_campaign=Badge_Grade)
@@ -57,10 +57,12 @@ Requires Python 3.9 or newer. The package can be installed using `pip`, e.g.
 python -m pip install humanleague --user
 ```
 
-### Build, install and test (from cloned repo)
+#### Development
+
+Fork or clone the repo, then
 
 ```bash
-pip install -e .
+pip install -e .[dev]
 pytest
 ```
 

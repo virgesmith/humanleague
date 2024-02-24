@@ -8,6 +8,7 @@
 #if __cplusplus <= 201703l
 #include <cstddef>
 #endif
+#include <cstdint>
 #include <cassert>
 
 // The array storage

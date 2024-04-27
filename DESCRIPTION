@@ -1,7 +1,7 @@
 Package: humanleague
 Type: Package
 Title: Synthetic Population Generator
-Version: 2.3.1
+Version: 2.3.2
 Description: Generates high-entropy integer synthetic populations from marginal and (optionally) seed data using quasirandom sampling,
   in arbitrary dimensionality (Smith, Lovelace and Birkin (2017) <doi:10.18564/jasss.3550>).
   The package also provides an implementation of the Iterative Proportional Fitting (IPF) algorithm (Zaloznik (2011) <doi:10.13140/2.1.2480.9923>).

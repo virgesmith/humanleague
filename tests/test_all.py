@@ -69,7 +69,8 @@ def test_integerise() -> None:
 
   # inexact
   r, stats = hl.integerise(np.array([0.4, 0.3, 0.2, 0.1]), 17)
-  assert stats["rmse"] == 0.273861278752583
+  assert stats["rmse"] == pytest.approx(0.273861278752583, abs=1e-6)
+
   assert np.array_equal(r, np.array([7, 5, 3, 2]))
 
   # 1-d case

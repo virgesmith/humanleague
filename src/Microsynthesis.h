@@ -215,12 +215,13 @@ protected:
 
     // more validation
 
-    // check marginal sums all the same
-    m_population = static_cast<int64_t>(sum(m_marginals[0]));
+    // check marginal sums all the same (round to nearest)
+    m_population = static_cast<int64_t>(sum(m_marginals[0]) + 0.5);
     for (size_t i = 1; i < m_marginals.size(); ++i)
     {
-      if (static_cast<int64_t>(sum(m_marginals[i])) != m_population)
-        throw std::runtime_error("marginal sum mismatch at index %%: %% vs %%"s % i % sum(m_marginals[i]) % m_population);
+      auto marginal_sum = static_cast<int64_t>(sum(m_marginals[i]) + 0.5);
+      if (marginal_sum != m_population)
+        throw std::runtime_error("marginal sum mismatch at index %%: %% vs %%"s % i % marginal_sum % m_population);
     }
 
     // check that for each dimension included in more than one marginal, the partial sums in that dimension are equal
@@ -231,11 +232,12 @@ protected:
       if (mi.size() < 2)
         continue;
       //                                marginal index            marginal dimension
-      const std::vector<M>& ms = reduce(m_marginals[mi[0].first], mi[0].second);
+      const std::vector<M>& ms0 = reduce(m_marginals[mi[0].first], mi[0].second);
       for (size_t i = 1; i < mi.size(); ++i)
       {
-        if (reduce(m_marginals[mi[i].first], mi[i].second) != ms)
-          throw std::runtime_error("marginal partial sum mismatch");
+        const auto& msi = reduce(m_marginals[mi[i].first], mi[i].second);
+        if (!allclose(msi, ms0))
+          throw std::runtime_error("marginal partial sum mismatch in dimension %% index %%: %% vs %%"s % d % i % msi % ms0);
       }
     }
   }

@@ -1,4 +1,5 @@
-name: Python coverage
+
+name: Code coverage
 
 on:
   push:
@@ -13,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.12" ]
+        python-version: [ "3.11" ]
     steps:
     - uses: actions/checkout@v4
       with:
@@ -28,12 +29,12 @@ jobs:
         python -m pip install pybind11 pytest
     - name: Build
       run: |
-        CXXFLAGS=-coverage python -m pip install .
+        CFLAGS=-coverage python -m pip install .
     - name: Test
       run: |
         python -m pytest
     - name: Upload
       env:
-        CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: |
         bash <(curl -s https://codecov.io/bash) -Z

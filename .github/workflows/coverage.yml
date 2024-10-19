@@ -37,7 +37,7 @@ jobs:
       #   CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
       # run: |
       #   bash <(curl -s https://codecov.io/bash) -Z
-    - uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v4
       with:
         directory: ./coverage/reports/
         fail_ci_if_error: true

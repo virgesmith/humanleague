@@ -33,16 +33,7 @@ jobs:
       run: |
         python -m pytest
     - name: Upload
-      # env:
-      #   CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
-      # run: |
-      #   bash <(curl -s https://codecov.io/bash) -Z
-      uses: codecov/codecov-action@v4
-      with:
-        directory: ./coverage/reports/
-        fail_ci_if_error: true
-        # files: ./coverage1.xml,./coverage2.xml # optional
-        # flags: unittests # optional
-        # name: codecov-umbrella # optional
-        token: ${{ secrets.CODECOV_TOKEN }} # required
-        verbose: true # optional (default = false)
+      env:
+        CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
+      run: |
+        bash <(curl -s https://codecov.io/bash) -Z

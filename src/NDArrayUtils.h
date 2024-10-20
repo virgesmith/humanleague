@@ -226,3 +226,22 @@ std::vector<std::vector<int>> listify(const size_t pop, const NDArray<T>& t, int
   return list;
 }
 
+template<typename T1, typename T2>
+bool allclose(const std::vector<T1>& a, const std::vector<T2>& b, double abstol = 1e-8)
+{
+  return a == b;
+}
+
+template<>
+inline bool allclose(const std::vector<double>& a, const std::vector<double>& b, double abstol)
+{
+  if (a.size() != b.size()) {
+    return false;
+  }
+  for (size_t i = 0; i < a.size() ; ++i) {
+    if (abs(a[i] - b[i]) > abstol) {
+      return false;
+    }
+  }
+  return true;
+}

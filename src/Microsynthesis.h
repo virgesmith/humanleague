@@ -40,7 +40,6 @@ public:
     {
       if (m_indices[k].size() != m_marginals[k].dim())
         throw std::runtime_error("index/marginal dimension mismatch %% vs %%"s % m_indices[k].size() % m_marginals[k].dim());
-      //std::cout << "index " << k << std::endl;
       for (size_t j = 0; j < m_indices[k].size(); ++j)
       {
         int64_t dim = m_indices[k][j];
@@ -136,7 +135,6 @@ public:
   // TODO move to a more appropriate place
   std::vector<int64_t> invert(size_t max, const std::vector<int64_t>& excluded)
   {
-    //std::cout << "invert " << max << std::endl;
     //print(excluded);
     std::vector<int64_t> included;
     included.reserve(max - excluded.size());
@@ -174,16 +172,13 @@ protected:
     for (size_t k = 0; k < m_indices.size(); ++k)
     {
       const NDArray<double>& r = reduce<double>(m_array, m_indices[k]);
-      // std::cout << k << ":";
       // print(r.rawData(), r.storageSize());
 
       Index main_index(m_array.sizes());
-      //std::cout << m_array.sizes()[m_indices[1-k][0]] << std::endl;
       for (MappedIndex oindex(main_index, invert(m_array.dim(), m_indices[k])); !oindex.end(); ++oindex)
       {
         for (MappedIndex index(main_index, m_indices[k]); !index.end(); ++index)
         {
-          //print((std::vector<int64_t>)main_index);
 #ifndef NDEBUG
           if (r[index] == 0.0 && m_marginals[k][index] != 0.0)
             throw std::runtime_error("div0 in rScale with m>0");

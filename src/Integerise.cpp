@@ -81,7 +81,6 @@ Integeriser::Integeriser(const NDArray<double>& seed) : m_seed(seed)
     // TODO check (close to) integers
     m_indices[d] = {(int64_t)d};
     m_marginals[d].resize({(int64_t)mf.size()});
-    //std::cout << "%%: %% %% %%" % m_indices[d] % m_marginals[d].dim() % m_marginals[d].sizes() % mf << std::endl;
     for (size_t i = 0; i < mf.size(); ++i)
     {
       *(m_marginals[d].begin() + i) = checked_round(mf[i]);

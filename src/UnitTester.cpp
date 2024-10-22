@@ -18,8 +18,6 @@ bool unittest::withinTolerance(double x, double y, double tol)
 
   double mean = 0.5 * fabs(x + y);
 
-  //std::cout << x << ", " << y << ", " << mean << ", " << fabs(x-y) << ", " << tol << ", " << thresh << std::endl;
-
   if (mean < thresh)
   {
     return fabs(x - y)  < tol * mean;

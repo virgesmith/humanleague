@@ -41,7 +41,6 @@ void unittest::testCumNorm()
   CHECK(cumNorm(+1e100) == 1.0);
 
   //CHECK(std::isinf(invCumNorm(0.0)));
-  //std::cout << invCumNorm(0.0) << std::endl;
   CHECK(invCumNorm(0.5) == 0.0);
   //CHECK(std::isinf(invCumNorm(1.0)));
 

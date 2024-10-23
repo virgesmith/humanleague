@@ -1,6 +1,7 @@
 """
-    Microsynthesis using quasirandom sampling and IPF, plus related functionality
+Microsynthesis using quasirandom sampling and IPF, plus related functionality
 """
+
 from __future__ import annotations
 import typing
 import numpy as np
@@ -9,17 +10,9 @@ import numpy.typing as npt
 FloatArray1d = npt.NDArray[np.float64] | list[float]
 IntArray1d = typing.Sequence[int]
 
-__all__ = [
-    "SobolSequence",
-    "flatten",
-    "integerise",
-    "ipf",
-    "qis",
-    "qisi"
-]
+__all__ = ["SobolSequence", "flatten", "integerise", "ipf", "qis", "qisi"]
 
-
-class SobolSequence():
+class SobolSequence:
     @typing.overload
     def __init__(self, dim: int) -> None:
         """
@@ -57,10 +50,12 @@ class SobolSequence():
         __next__ dunder
         """
     pass
+
 def _unittest() -> dict:
     """
     For developers. Runs the C++ unit tests.
     """
+
 def flatten(pop: npt.NDArray[np.int64]) -> list:
     """
     Converts an n-dimensional array of counts into an n-column table with a row for each unit
@@ -73,8 +68,11 @@ def flatten(pop: npt.NDArray[np.int64]) -> list:
 
         A 2-d array of size n by sum(pop).
     """
+
 @typing.overload
-def integerise(frac: FloatArray1d, pop: int) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
+def integerise(
+    frac: FloatArray1d, pop: int
+) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
     """
     Computes the closest integer frequencies given fractional counts and a total population.
 
@@ -88,8 +86,11 @@ def integerise(frac: FloatArray1d, pop: int) -> tuple[npt.NDArray[np.int64], dic
 
         A tuple containing the result and summary statistics
     """
+
 @typing.overload
-def integerise(pop: npt.NDArray[np.float64]) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
+def integerise(
+    pop: npt.NDArray[np.float64],
+) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
     """
     Tries to construct an integer multidimensional array that has identical marginal sums to the fractional input array (which of course must have
     integer marginal sums). The algorithm may not always find a solution and will return an approximate array in this case.
@@ -102,7 +103,12 @@ def integerise(pop: npt.NDArray[np.float64]) -> tuple[npt.NDArray[np.int64], dic
 
         A tuple containing the result and summary statistics
     """
-def ipf(seed: npt.NDArray[np.float64], indices: typing.Sequence[IntArray1d], marginals: typing.Sequence[npt.NDArray[np.float64]]) -> tuple[npt.NDArray[np.float64], dict[str, typing.Any]]:
+
+def ipf(
+    seed: npt.NDArray[np.float64],
+    indices: typing.Sequence[IntArray1d],
+    marginals: typing.Sequence[npt.NDArray[np.float64]],
+) -> tuple[npt.NDArray[np.float64], dict[str, typing.Any]]:
     """
     Uses iterative proportional fitting to construct an n-dimensional array from a seed population that matches the specified marginal sums.
 
@@ -116,8 +122,12 @@ def ipf(seed: npt.NDArray[np.float64], indices: typing.Sequence[IntArray1d], mar
 
         A tuple containing the result and summary statistics
     """
+
 @typing.overload
-def qis(indices: typing.Sequence[IntArray1d], marginals: typing.Sequence[npt.NDArray[np.int64]]) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
+def qis(
+    indices: typing.Sequence[IntArray1d],
+    marginals: typing.Sequence[npt.NDArray[np.int64]],
+) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
     """
     Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
 
@@ -129,8 +139,13 @@ def qis(indices: typing.Sequence[IntArray1d], marginals: typing.Sequence[npt.NDA
 
         A tuple containing the result and summary statistics
     """
+
 @typing.overload
-def qis(indices: typing.Sequence[IntArray1d], marginals: typing.Sequence[npt.NDArray[np.int64]], skips: int) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
+def qis(
+    indices: typing.Sequence[IntArray1d],
+    marginals: typing.Sequence[npt.NDArray[np.int64]],
+    skips: int,
+) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
     """
     Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
 
@@ -144,8 +159,13 @@ def qis(indices: typing.Sequence[IntArray1d], marginals: typing.Sequence[npt.NDA
 
         A tuple containing the result and summary statistics
     """
+
 @typing.overload
-def qisi(seed: npt.NDArray[np.float64], indices: typing.Sequence[IntArray1d], marginals: typing.Sequence[npt.NDArray[np.int64]]) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
+def qisi(
+    seed: npt.NDArray[np.float64],
+    indices: typing.Sequence[IntArray1d],
+    marginals: typing.Sequence[npt.NDArray[np.int64]],
+) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
     """
     Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
 
@@ -159,8 +179,14 @@ def qisi(seed: npt.NDArray[np.float64], indices: typing.Sequence[IntArray1d], ma
 
         A tuple containing the result and summary statistics
     """
+
 @typing.overload
-def qisi(seed: npt.NDArray[np.float64], indices: list[IntArray1d], marginals: list[npt.NDArray[np.int64]], skips: int) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
+def qisi(
+    seed: npt.NDArray[np.float64],
+    indices: list[IntArray1d],
+    marginals: list[npt.NDArray[np.int64]],
+    skips: int,
+) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
     """
     Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
 
@@ -176,4 +202,5 @@ def qisi(seed: npt.NDArray[np.float64], indices: list[IntArray1d], marginals: li
 
         A tuple containing the result and summary statistics
     """
+
 __version__: str

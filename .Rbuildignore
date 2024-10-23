@@ -9,7 +9,7 @@
 ^\.pytest_cache
 ^humanleague.cpython
 setup.cfg
-codacy.yml
+codecov.yml
 pyproject.toml
 dist/
 build/

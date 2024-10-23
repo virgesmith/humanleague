@@ -239,7 +239,7 @@ inline bool allclose(const std::vector<double>& a, const std::vector<double>& b,
     return false;
   }
   for (size_t i = 0; i < a.size() ; ++i) {
-    if (abs(a[i] - b[i]) > abstol) {
+    if (fabs(a[i] - b[i]) > abstol) {
       return false;
     }
   }

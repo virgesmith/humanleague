@@ -56,7 +56,7 @@ Requires Python 3.11 or newer. The package can be installed using `pip`, e.g.
 
 
 ```bash
-python -m pip install humanleague --user
+pip install humanleague
 ```
 
 #### Development

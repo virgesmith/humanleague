@@ -10,14 +10,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "humanleague"
-version = "2.3.2"
+version = "2.4.0"
 authors = [
   { name="Andrew Smith", email="andrew@friarswood.net" },
 ]
 license = {file = "LICENSE.md"}
 description = "Microsynthesis using quasirandom sampling and/or IPF"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",

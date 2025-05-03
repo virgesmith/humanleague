@@ -50,7 +50,7 @@ Version 1.0.1 reflects the work described in the [Quasirandom Integer Sampling (
 
 ### Python
 
-Requires Python 3.9 or newer. The package can be installed using `pip`, e.g.
+Requires Python 3.11 or newer. The package can be installed using `pip`, e.g.
 
 
 ```bash

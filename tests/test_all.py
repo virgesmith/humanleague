@@ -134,9 +134,10 @@ def test_IPF() -> None:
     assert np.allclose(np.sum(p, 0), m1)
     assert np.allclose(np.sum(p, 1), m0)
 
-    i = [[0], [1], [2]]
+    # mix list and tuple
+    im = ((0,), (1,), [2])
     s = np.array([[[1.0, 1.0], [1.0, 1.0]], [[1.0, 1.0], [1.0, 1.0]]])
-    p, stats = hl.ipf(s, i, [m0, m1, m2])
+    p, stats = hl.ipf(s, im, (m0, m1, m2))
     assert stats["conv"]
     # check overall population and marginals correct
     assert np.sum(p) == pytest.approx(stats["pop"], 1e-8)
@@ -213,11 +214,12 @@ def test_QIS() -> None:
     m0 = np.array([52, 40, 4, 4])
     m1 = np.array([87, 10, 3])
     m2 = np.array([55, 15, 6, 12, 12])
-    i0 = [0]
-    i1 = [1]
-    i2 = [2]
+    i0t = (0,)
+    i1t = (1,)
+    i2t = (2,)
 
-    p, stats = hl.qis([i0, i1, i2], [m0, m1, m2])
+    # tuples
+    p, stats = hl.qis((i0t, i1t, i2t), (m0, m1, m2))
     assert stats["conv"]
     assert stats["chiSq"] < 73.0  # TODO seems a bit high (probably )
     assert stats["pValue"] > 0.0  # TODO this is suspect
@@ -302,10 +304,10 @@ def test_QISI() -> None:
     m0 = np.array([52, 40, 4, 4])
     m1 = np.array([87, 10, 3])
     m2 = np.array([55, 15, 6, 12, 12])
-    idx = [[0], [1], [2]]
-    s = np.ones([len(m0), len(m1), len(m2)])
+    idx_m = ((0,), [1], (2,))
+    s = np.ones((len(m0), len(m1), len(m2)))
 
-    p, stats = hl.qisi(s, idx, [m0, m1, m2])
+    p, stats = hl.qisi(s, idx_m, (m0, m1, m2))
     assert stats["conv"]
     assert stats["chiSq"] < 70  # seems a bit high
     assert stats["pValue"] > 0.0  # seems a bit low

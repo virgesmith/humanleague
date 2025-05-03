@@ -106,8 +106,8 @@ def integerise(
 
 def ipf(
     seed: npt.NDArray[np.float64],
-    indices: typing.Sequence[IntArray1d],
-    marginals: typing.Sequence[npt.NDArray[np.float64]],
+    indices: typing.Iterable[IntArray1d],
+    marginals: typing.Iterable[npt.NDArray[np.float64]],
 ) -> tuple[npt.NDArray[np.float64], dict[str, typing.Any]]:
     """
     Uses iterative proportional fitting to construct an n-dimensional array from a seed population that matches the specified marginal sums.
@@ -125,8 +125,8 @@ def ipf(
 
 @typing.overload
 def qis(
-    indices: typing.Sequence[IntArray1d],
-    marginals: typing.Sequence[npt.NDArray[np.int64]],
+    indices: typing.Iterable[IntArray1d],
+    marginals: typing.Iterable[npt.NDArray[np.int64]],
 ) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
     """
     Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.
@@ -142,8 +142,8 @@ def qis(
 
 @typing.overload
 def qis(
-    indices: typing.Sequence[IntArray1d],
-    marginals: typing.Sequence[npt.NDArray[np.int64]],
+    indices: typing.Iterable[IntArray1d],
+    marginals: typing.Iterable[npt.NDArray[np.int64]],
     skips: int,
 ) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
     """
@@ -163,8 +163,8 @@ def qis(
 @typing.overload
 def qisi(
     seed: npt.NDArray[np.float64],
-    indices: typing.Sequence[IntArray1d],
-    marginals: typing.Sequence[npt.NDArray[np.int64]],
+    indices: typing.Iterable[IntArray1d],
+    marginals: typing.Iterable[npt.NDArray[np.int64]],
 ) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
     """
     Uses quasirandom integer sampling to construct an n-dimensional population array that matches the specified marginal sums.

@@ -6,11 +6,28 @@ from __future__ import annotations
 import typing
 import numpy as np
 import numpy.typing as npt
+import pandas as pd
 
 FloatArray1d = npt.NDArray[np.float64] | list[float]
 IntArray1d = typing.Sequence[int]
 
-__all__ = ["SobolSequence", "flatten", "integerise", "ipf", "qis", "qisi"]
+__all__ = [
+    "SobolSequence",
+    "flatten",
+    "integerise",
+    "ipf",
+    "qis",
+    "qisi",
+    "tabulate_counts",
+    "tabulate_individuals",
+]
+
+def tabulate_counts(
+    population: npt.NDArray, names: list[str] | tuple[str, ...] | None = None
+) -> pd.Series: ...
+def tabulate_individuals(
+    population: npt.NDArray, names: list[str] | tuple[str, ...] | None = None
+) -> pd.DataFrame: ...
 
 class SobolSequence:
     @typing.overload

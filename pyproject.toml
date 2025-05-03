@@ -26,7 +26,9 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "numpy>=1.19.1"
+    "numpy>=1.19.1",
+    "pandas>=2.2.3",
+    "pandas-stubs>=2.2.3.250308",
 ]
 
 [project.optional-dependencies]

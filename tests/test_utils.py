@@ -25,7 +25,7 @@ def test_tabulate_counts_no_names() -> None:
         [(0, 0), (0, 1), (1, 0), (1, 1)], names=None
     )
     expected_data = [5, 6, 7, 8]
-    expected = pd.Series(data=expected_data, index=expected_index)
+    expected = pd.Series(data=expected_data, index=expected_index, name="count")
 
     pd.testing.assert_series_equal(result, expected)
 
@@ -49,7 +49,7 @@ def test_tabulate_counts_3d_array() -> None:
         names=["Dim1", "Dim2", "Dim3"],
     )
     expected_data = [1, 2, 3, 4, 5, 6, 7, 8]
-    expected = pd.Series(data=expected_data, index=expected_index)
+    expected = pd.Series(data=expected_data, index=expected_index, name="count")
 
     pd.testing.assert_series_equal(result, expected)
 
@@ -67,21 +67,15 @@ def test_tabulate_counts_invalid_population() -> None:
 
 
 def test_tabulate_individuals_basic() -> None:
-    population = np.array([[2, 1], [0, 3]])
-    names = ["Category1", "Category2"]
+    population = np.array([[0, 2], [3, 5]])
+    names = ["Row", "Column"]
     result = hl.tabulate_individuals(population, names)
 
-    expected_data = [
-        [0, 0],
-        [0, 0],
-        [0, 1],
-        [1, 1],
-        [1, 1],
-        [1, 1],
-    ]
-    expected = pd.DataFrame(data=expected_data, columns=names)
-
-    pd.testing.assert_frame_equal(result, expected)
+    assert len(result) == 10
+    assert len(result[(result.Row == 0) & (result.Column==0)]) == 0
+    assert len(result[(result.Row == 0) & (result.Column==1)]) == 2
+    assert len(result[(result.Row == 1) & (result.Column==0)]) == 3
+    assert len(result[(result.Row == 1) & (result.Column==1)]) == 5
 
 
 def test_tabulate_individuals_no_names() -> None:

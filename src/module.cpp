@@ -87,6 +87,11 @@ template <typename T> std::vector<NDArray<T>> collect_marginals(const py::iterab
 }
 
 py::list flatten(const py::array_t<int64_t>& a) {
+
+  auto warnings = pybind11::module::import("warnings");
+  warnings.attr("warn")(
+      "humanleague.flatten is deprecated, consider using humanleague.tabulate_individuals instead.");
+
   const NDArray<int64_t> array = asNDArray<int64_t>(a);
 
   size_t pop = 0;

@@ -20,7 +20,9 @@ def tabulate_counts(
         and the data corresponds to the flattened values of the input array.
     """
     index = pd.MultiIndex.from_tuples(list(np.ndindex(population.shape)), names=names)
-    return pd.Series(index=index, data=list(np.nditer(population)), dtype=int, name="count")
+    return pd.Series(
+        index=index, data=list(np.nditer(population)), dtype=int, name="count"
+    )
 
 
 def tabulate_individuals(

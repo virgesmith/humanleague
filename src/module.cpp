@@ -40,8 +40,11 @@ template <typename T> const T* cend(const py::array_t<T>& a) {
 }
 
 template <typename T> std::vector<T> toVector(const py::array_t<T>& a) {
+  if (a.ndim() == 0) {
+    return std::vector<T>(1, *cbegin(a));
+  }
   if (a.ndim() != 1) {
-    throw py::value_error("cannot convert multidimensional array to vector");
+    throw py::value_error("cannot convert %%-dimensional array to vector"s % a.ndim());
   }
   return std::vector<T>(cbegin(a), cend(a));
 }

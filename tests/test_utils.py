@@ -72,10 +72,10 @@ def test_tabulate_individuals_basic() -> None:
     result = hl.tabulate_individuals(population, names)
 
     assert len(result) == 10
-    assert len(result[(result.Row == 0) & (result.Column==0)]) == 0
-    assert len(result[(result.Row == 0) & (result.Column==1)]) == 2
-    assert len(result[(result.Row == 1) & (result.Column==0)]) == 3
-    assert len(result[(result.Row == 1) & (result.Column==1)]) == 5
+    assert len(result[(result.Row == 0) & (result.Column == 0)]) == 0
+    assert len(result[(result.Row == 0) & (result.Column == 1)]) == 2
+    assert len(result[(result.Row == 1) & (result.Column == 0)]) == 3
+    assert len(result[(result.Row == 1) & (result.Column == 1)]) == 5
 
 
 def test_tabulate_individuals_no_names() -> None:
@@ -91,6 +91,15 @@ def test_tabulate_individuals_no_names() -> None:
     expected = pd.DataFrame(data=expected_data, columns=[0, 1])
 
     pd.testing.assert_frame_equal(result, expected)
+
+
+@pytest.mark.filterwarnings("ignore:humanleague.flatten is deprecated:UserWarning")
+def test_match_flatten() -> None:
+    population = np.array([[[1, 0], [0, 2]], [[0, 1], [1, 0]]])
+
+    result = hl.tabulate_individuals(population)
+
+    assert result.to_numpy().T.tolist() == hl.flatten(population)
 
 
 def test_tabulate_individuals_3d_array() -> None:

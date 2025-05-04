@@ -26,3 +26,4 @@ coverage.info
 *.gcov
 
 .env
+uv.lock

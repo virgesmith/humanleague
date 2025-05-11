@@ -10,8 +10,8 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    # 6:00 every saturday
-    - cron:  '0 6 * * SAT'
+    # 6:00 every 7th of month
+    - cron:  '0 6 7 * *'
 
 jobs:
   build:

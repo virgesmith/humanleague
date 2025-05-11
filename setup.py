@@ -5,7 +5,7 @@ from setuptools import setup  # type: ignore
 from pybind11.setup_helpers import Pybind11Extension, ParallelCompile
 
 
-def source_files():
+def source_files() -> list[str]:
     sources = glob.glob("src/*.cpp")
     # can't use compile skips as some files are auto-generated
     skip = ["RcppExports.cpp", "rcpp_api.cpp"]
@@ -15,11 +15,11 @@ def source_files():
     return sources
 
 
-def header_files():
+def header_files() -> list[str]:
     return glob.glob("src/*.h")
 
 
-def defines():
+def defines() -> list[tuple[str, str | None]]:
     return [("PYTHON_MODULE", None)]
 
 

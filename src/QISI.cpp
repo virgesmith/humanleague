@@ -2,49 +2,44 @@
 #include "QISI.h"
 #include "IPF.h"
 #include "Index.h"
-#include "StatFuncs.h"
 #include "Log.h"
+#include "StatFuncs.h"
 
 namespace {
 
 // TODO move somewhere appropriate (doesnt need to be member) (copy&paste from QSIPF)
-size_t pick(const std::vector<double>& dist, double r)
-{
+size_t pick(const std::vector<double>& dist, double r) {
   // sum of dist should be 1, but we relax this
   // r is in (0,1) so scale up r by sum of dist
   r *= std::accumulate(dist.begin(), dist.end(), 0.0);
   double runningSum = 0.0;
-  for (size_t i = 0; i < dist.size(); ++i)
-  {
+  for (size_t i = 0; i < dist.size(); ++i) {
     runningSum += dist[i];
     if (r < runningSum)
       return i;
   }
-  throw std::runtime_error("pick failed: %% from %%"s % r % dist);
+  throw std::runtime_error(
+      "pick failed from %%. Check that the seed and marginal values are consistent "
+      "(cannot have zero seed and nonzero marginal sum)"s % dist);
 }
 
-
-void getIndex(const NDArray<double>& p, const std::vector<uint32_t>& r, Index& index)
-{
-  static const double scale = 0.5 / (1u<<31);
+void getIndex(const NDArray<double>& p, const std::vector<uint32_t>& r, Index& index) {
+  static const double scale = 0.5 / (1u << 31);
 
   size_t dim = p.dim();
 
-  if (dim > 2)
-  {
+  if (dim > 2) {
     // reduce dim D-1
     const std::vector<double>& m = reduce<double>(p, dim - 1);
     // pick an index
-    index[dim-1] = pick(m, r[dim-1] * scale);
+    index[dim - 1] = pick(m, r[dim - 1] * scale);
 
     // take slice of Dim D-1 at index
-    const NDArray<double>& sliced = slice<double>(p, {dim-1, index[dim-1]});
+    const NDArray<double>& sliced = slice<double>(p, {dim - 1, index[dim - 1]});
 
     // recurse
     getIndex(sliced, r, index);
-  }
-  else
-  {
+  } else {
     // reduce dim 1 (now 0)
     const std::vector<double>& r1 = reduce<double>(p, 1);
     // pick an index
@@ -60,33 +55,28 @@ void getIndex(const NDArray<double>& p, const std::vector<uint32_t>& r, Index& i
   }
 }
 
-}
-
+} // namespace
 
 QISI::QISI(const index_list_t& indices, marginal_list_t& marginals, int64_t skips)
-: Microsynthesis(indices, marginals), m_sobolSeq(m_dim),
-  m_chiSq(std::numeric_limits<double>::quiet_NaN()),
-  m_pValue(std::numeric_limits<double>::quiet_NaN()),
-  m_degeneracy(std::numeric_limits<double>::quiet_NaN()),
-  m_conv(false)
-{
+    : Microsynthesis(indices, marginals), m_sobolSeq(m_dim), m_chiSq(std::numeric_limits<double>::quiet_NaN()),
+      m_pValue(std::numeric_limits<double>::quiet_NaN()), m_degeneracy(std::numeric_limits<double>::quiet_NaN()),
+      m_conv(false) {
   m_sobolSeq.skip(skips);
 }
 
 // control state of Sobol via arg?
-const NDArray<int64_t>& QISI::solve(const NDArray<double>& seed, bool reset)
-{
+const NDArray<int64_t>& QISI::solve(const NDArray<double>& seed, bool reset) {
   // check seed dimensions consistent with marginals
   if (seed.dim() != m_array.dim())
-    throw std::runtime_error("seed dimensions %% is inconsistent with that implied by marginals (%%)"s % seed.dim() % m_array.dim());
-  for (size_t d = 0; d < m_array.dim(); ++d)
-  {
+    throw std::runtime_error("seed dimensions %% is inconsistent with that implied by marginals (%%)"s % seed.dim() %
+                             m_array.dim());
+  for (size_t d = 0; d < m_array.dim(); ++d) {
     if (seed.sizes()[d] != m_array.sizes()[d])
-      throw std::runtime_error("seed dimensions %% are inconsistent with that implied by marginals (%%)"s % seed.sizes() % m_array.sizes());
+      throw std::runtime_error("seed dimensions %% are inconsistent with that implied by marginals (%%)"s %
+                               seed.sizes() % m_array.sizes());
   }
 
-  if (reset)
-  {
+  if (reset) {
     m_sobolSeq.reset();
   }
 
@@ -102,21 +92,19 @@ const NDArray<int64_t>& QISI::solve(const NDArray<double>& seed, bool reset)
   m_array.assign(0ll);
 
   Sobol sobol_seq(m_dim);
-  for (int64_t i = 0; i < m_population; ++i)
-  {
+  for (int64_t i = 0; i < m_population; ++i) {
     // map sobol to a point in state space, store in index
     const std::vector<uint32_t>& seq = sobol_seq.buf();
     // ...
     getIndex(m_ipfSolution, seq, main_index);
 
-    //print((std::vector<int64_t>)main_index);
-    //print(m_ipfSolution.rawData(), m_ipfSolution.storageSize());
-    // increment population
+    // print((std::vector<int64_t>)main_index);
+    // print(m_ipfSolution.rawData(), m_ipfSolution.storageSize());
+    //  increment population
     ++m_array[main_index];
 
     // decrement marginals, checking none have gone -ve
-    for (size_t j = 0; j < mappedIndices.size(); ++j)
-    {
+    for (size_t j = 0; j < mappedIndices.size(); ++j) {
       --m_marginals[j][mappedIndices[j]];
       if (m_marginals[j][mappedIndices[j]] < 0)
         m_conv = false;
@@ -140,38 +128,20 @@ const NDArray<int64_t>& QISI::solve(const NDArray<double>& seed, bool reset)
 }
 
 // Expected state occupancy
-const NDArray<double>& QISI::expectation()
-{
-  return m_expectedStateOccupancy;
-}
-
+const NDArray<double>& QISI::expectation() { return m_expectedStateOccupancy; }
 
 //
-void QISI::recomputeIPF(const NDArray<double>& seed)
-{
+void QISI::recomputeIPF(const NDArray<double>& seed) {
   // TODO make more efficient
   // is this moving the marginals???
   IPF<int64_t> ipf(m_indices, m_marginals);
   NDArray<double>::copy(ipf.solve(seed), m_ipfSolution);
 }
 
-double QISI::chiSq() const
-{
-  return m_chiSq;
-}
+double QISI::chiSq() const { return m_chiSq; }
 
-double QISI::pValue() const
-{
-  return m_pValue;
-}
+double QISI::pValue() const { return m_pValue; }
 
-double QISI::degeneracy() const
-{
-  return m_degeneracy;
-}
+double QISI::degeneracy() const { return m_degeneracy; }
 
-bool QISI::conv() const
-{
-  return m_conv;
-}
-
+bool QISI::conv() const { return m_conv; }

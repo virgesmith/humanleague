@@ -83,7 +83,7 @@ template <typename T> std::vector<NDArray<T>> collect_marginals(const py::iterab
   std::vector<NDArray<T>> marginals;
 
   for (const auto& elem : iterable) {
-    const py::array_t<T> ma = elem.cast<py::array_t<int64_t>>();
+    const py::array_t<T> ma = elem.cast<py::array_t<T>>();
     marginals.emplace_back(toNDArray<T>(ma));
   }
   return marginals;

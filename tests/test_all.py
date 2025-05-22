@@ -191,6 +191,19 @@ def test_IPF() -> None:
     assert stats["conv"]
     assert stats["pop"] == 4096
 
+    # IPF with fractional values (e.g. probabilities)
+    seed = np.full((2,2,2), 1/8)
+    indices = [(0, 1), (0, 2), (1, 2)]
+    marginals = [
+        np.array([[0.92625, 0.02375], [0.02375, 0.02625]]),
+        np.array([[0.92625, 0.02375], [0.02375, 0.02625]]),
+        np.array([[0.92625, 0.02375], [0.02375, 0.02625]])
+    ]
+
+    pop, stats = hl.ipf(seed, indices, marginals)
+    assert pop.sum() == 1.0
+    assert stats["conv"]
+
 
 @pytest.mark.filterwarnings("ignore:humanleague.flatten is deprecated:UserWarning")
 def test_QIS() -> None:

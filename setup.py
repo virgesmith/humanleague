@@ -9,8 +9,8 @@ from setuptools import setup  # type: ignore
 def source_files() -> list[str]:
     sources = glob.glob("src/*.cpp")
     # can't use compile skips as some files are auto-generated
-    skip = ["src/RcppExports.cpp", "src/rcpp_api.cpp"]
-    return [f for f in sources if f not in skip]
+    skip = ["RcppExports.cpp", "rcpp_api.cpp"]
+    return [file for file in sources if not any(s in file for s in skip)]
 
 
 def header_files() -> list[str]:

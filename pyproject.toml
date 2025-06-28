@@ -31,7 +31,7 @@ dependencies = [
     "pandas-stubs>=2.2.3.250308",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
   "pybind11>=2.10.3",
   "pytest>=8.1.4",
@@ -42,13 +42,15 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-minversion = "6.0"
 testpaths = [
   "tests"
 ]
 
+[tool.ruff]
+line-length = 120
+
 [tool.ruff.lint]
-select = ["E", "F"]
+select = ["B", "E", "F", "I"]
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]

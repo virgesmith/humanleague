@@ -3,7 +3,9 @@ Microsynthesis using quasirandom sampling and IPF, plus related functionality
 """
 
 from __future__ import annotations
+
 import typing
+
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
@@ -22,12 +24,8 @@ __all__ = [
     "tabulate_individuals",
 ]
 
-def tabulate_counts(
-    population: npt.NDArray, names: list[str] | tuple[str, ...] | None = None
-) -> pd.Series: ...
-def tabulate_individuals(
-    population: npt.NDArray, names: list[str] | tuple[str, ...] | None = None
-) -> pd.DataFrame: ...
+def tabulate_counts(population: npt.NDArray, names: list[str] | tuple[str, ...] | None = None) -> pd.Series: ...
+def tabulate_individuals(population: npt.NDArray, names: list[str] | tuple[str, ...] | None = None) -> pd.DataFrame: ...
 
 class SobolSequence:
     @typing.overload
@@ -87,9 +85,7 @@ def flatten(pop: npt.NDArray[np.int64]) -> list:
     """
 
 @typing.overload
-def integerise(
-    frac: FloatArray1d, pop: int
-) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
+def integerise(frac: FloatArray1d, pop: int) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
     """
     Computes the closest integer frequencies given fractional counts and a total population.
 
@@ -123,7 +119,7 @@ def integerise(
 
 def ipf(
     seed: npt.NDArray[np.float64],
-    indices: typing.Iterable[IntArray1d],
+    indices: typing.Iterable[IntArray1d | int],
     marginals: typing.Iterable[npt.NDArray[np.float64]],
 ) -> tuple[npt.NDArray[np.float64], dict[str, typing.Any]]:
     """
@@ -142,7 +138,7 @@ def ipf(
 
 @typing.overload
 def qis(
-    indices: typing.Iterable[IntArray1d],
+    indices: typing.Iterable[IntArray1d | int],
     marginals: typing.Iterable[npt.NDArray[np.int64]],
 ) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
     """
@@ -159,7 +155,7 @@ def qis(
 
 @typing.overload
 def qis(
-    indices: typing.Iterable[IntArray1d],
+    indices: typing.Iterable[IntArray1d | int],
     marginals: typing.Iterable[npt.NDArray[np.int64]],
     skips: int,
 ) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
@@ -180,7 +176,7 @@ def qis(
 @typing.overload
 def qisi(
     seed: npt.NDArray[np.float64],
-    indices: typing.Iterable[IntArray1d],
+    indices: typing.Iterable[IntArray1d | int],
     marginals: typing.Iterable[npt.NDArray[np.int64]],
 ) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
     """
@@ -200,8 +196,8 @@ def qisi(
 @typing.overload
 def qisi(
     seed: npt.NDArray[np.float64],
-    indices: list[IntArray1d],
-    marginals: list[npt.NDArray[np.int64]],
+    indices: typing.Iterable[IntArray1d | int],
+    marginals: typing.Iterable[npt.NDArray[np.int64]],
     skips: int,
 ) -> tuple[npt.NDArray[np.int64], dict[str, typing.Any]]:
     """

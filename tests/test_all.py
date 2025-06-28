@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
+from _humanleague import _unittest as hl_unittest  # type: ignore[import]
 
 import humanleague as hl
-from _humanleague import _unittest as hl_unittest  # type: ignore[import]
 
 
 def test_version() -> None:
@@ -61,7 +61,7 @@ def test_SobolSequence() -> None:
         # skip s0 forward
         for _ in range(8):
             next(s0)
-        for i in range(length):
+        for _ in range(length):
             assert (next(s) == next(s0)).all()
 
 
@@ -147,9 +147,9 @@ def test_IPF() -> None:
 
     # 12D
     s = np.ones([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
-    i = [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11]]
+    i12 = [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11]]
     m = np.array([2048.0, 2048.0])
-    p, stats = hl.ipf(s, i, [m, m, m, m, m, m, m, m, m, m, m, m])
+    p, stats = hl.ipf(s, i12, [m, m, m, m, m, m, m, m, m, m, m, m])
     assert stats["pop"] == 4096
 
     m0 = np.array([52.0, 48.0])
@@ -187,17 +187,17 @@ def test_IPF() -> None:
     # 12D
     s = np.ones([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
     m = np.array([2048.0, 2048.0])
-    _, stats = hl.ipf(s, i, [m, m, m, m, m, m, m, m, m, m, m, m])
+    _, stats = hl.ipf(s, range(12), [m, m, m, m, m, m, m, m, m, m, m, m])
     assert stats["conv"]
     assert stats["pop"] == 4096
 
     # IPF with fractional values (e.g. probabilities)
-    seed = np.full((2,2,2), 1/8)
+    seed = np.full((2, 2, 2), 1 / 8)
     indices = [(0, 1), (0, 2), (1, 2)]
     marginals = [
         np.array([[0.92625, 0.02375], [0.02375, 0.02625]]),
         np.array([[0.92625, 0.02375], [0.02375, 0.02625]]),
-        np.array([[0.92625, 0.02375], [0.02375, 0.02625]])
+        np.array([[0.92625, 0.02375], [0.02375, 0.02625]]),
     ]
 
     pop, stats = hl.ipf(seed, indices, marginals)
@@ -324,10 +324,10 @@ def test_QISI() -> None:
     m1 = np.array([87, 13])
     m2 = np.array([67, 33])
     m3 = np.array([55, 45])
-    idx = [[0], [1], [2], [3]]
+    idx2 = [[0], [1], [2], [3]]
     s = np.ones([len(m0), len(m1), len(m2), len(m3)])
 
-    p, stats = hl.qisi(s, idx, [m0, m1, m2, m3])
+    p, stats = hl.qisi(s, idx2, [m0, m1, m2, m3])
     assert stats["conv"]
     assert stats["chiSq"] < 5.5
     assert stats["pValue"] > 0.02

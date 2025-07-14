@@ -17,22 +17,16 @@ jobs:
         python-version: [ "3.12" ]
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: "pip: Python ${{ matrix.python-version }} coverage"
-      uses: actions/setup-python@v5
+    - name: "Setup uv ${{ matrix.python-version }} / ${{ matrix.os }}"
+      uses: astral-sh/setup-uv@v5
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install pybind11 pytest
     - name: Build
       run: |
-        CXXFLAGS=-coverage python -m pip install .
+        CXXFLAGS=-coverage uv sync --dev
     - name: Test
       run: |
-        python -m pytest
+        uv run pytest
     - name: Upload
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

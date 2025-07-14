@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+
 import humanleague as hl
 
 
@@ -21,9 +22,7 @@ def test_tabulate_counts_no_names() -> None:
     population = np.array([[5, 6], [7, 8]])
     result = hl.tabulate_counts(population)
 
-    expected_index = pd.MultiIndex.from_tuples(
-        [(0, 0), (0, 1), (1, 0), (1, 1)], names=None
-    )
+    expected_index = pd.MultiIndex.from_tuples([(0, 0), (0, 1), (1, 0), (1, 1)], names=None)
     expected_data = [5, 6, 7, 8]
     expected = pd.Series(data=expected_data, index=expected_index, name="count")
 

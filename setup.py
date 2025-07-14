@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 
 import glob
+
+from pybind11.setup_helpers import ParallelCompile, Pybind11Extension
 from setuptools import setup  # type: ignore
-from pybind11.setup_helpers import Pybind11Extension, ParallelCompile
 
 
 def source_files() -> list[str]:
     sources = glob.glob("src/*.cpp")
     # can't use compile skips as some files are auto-generated
     skip = ["RcppExports.cpp", "rcpp_api.cpp"]
-    for s in skip:
-        sources = [f for f in sources if s not in f]
-
-    return sources
+    return [file for file in sources if not any(s in file for s in skip)]
 
 
 def header_files() -> list[str]:

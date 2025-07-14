@@ -1,12 +1,11 @@
 from itertools import chain
+
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
 
-def tabulate_counts(
-    population: npt.NDArray, names: list[str] | tuple[str, ...] | None = None
-) -> pd.Series:
+def tabulate_counts(population: npt.NDArray, names: list[str] | tuple[str, ...] | None = None) -> pd.Series:
     """
     Converts a multidimensional state population array into a pandas Series of counts of indexed by state.
 
@@ -20,14 +19,10 @@ def tabulate_counts(
         and the data corresponds to the flattened values of the input array.
     """
     index = pd.MultiIndex.from_tuples(list(np.ndindex(population.shape)), names=names)
-    return pd.Series(
-        index=index, data=list(np.nditer(population)), dtype=int, name="count"
-    )
+    return pd.Series(index=index, data=list(np.nditer(population)), dtype=int, name="count")
 
 
-def tabulate_individuals(
-    population: npt.NDArray, names: list[str] | tuple[str, ...] | None = None
-) -> pd.DataFrame:
+def tabulate_individuals(population: npt.NDArray, names: list[str] | tuple[str, ...] | None = None) -> pd.DataFrame:
     """
     Converts a multidimensional population array into a tabular DataFrame format.
 
@@ -67,7 +62,7 @@ def tabulate_individuals(
 
     exploded = chain.from_iterable(
         (idx,) * int(count)  # type: ignore[call-overload]
-        for idx, count in zip(np.ndindex(population.shape), np.nditer(population))
+        for idx, count in zip(np.ndindex(population.shape), np.nditer(population), strict=True)
     )
 
     return pd.DataFrame(data=exploded, columns=names)

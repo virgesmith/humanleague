@@ -2,7 +2,7 @@
 
 . .env
 
-version=$(grep "Version:" DESCRIPTION |cut -f2 -d " ")
+version=$(grep "^version =" pyproject.toml | awk -F'"' '{print $2}')
 echo $version
 
 # package

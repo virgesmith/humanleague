@@ -11,10 +11,13 @@
 
 namespace {
 
-int64_t checked_round(double x, double tol=1e-4) // loose tolerance ~1/4 mantissa precision
+ // loose tolerance ~1/4 mantissa precision
+constexpr double TOL = 1e-4;
+
+int64_t checked_round(double x)
 {
-  if (fabs(x - round(x)) > tol)
-    throw std::runtime_error("Marginal or total value %% is not an integer (within tolerance %%)"s % x % tol);
+  if (fabs(x - round(x)) > TOL)
+    throw std::runtime_error("Marginal or total value %% is not an integer (within tolerance %%)"s % x % TOL);
   return (int64_t)round(x);
 }
 
@@ -62,7 +65,8 @@ Integeriser::Integeriser(const NDArray<double>& seed) : m_seed(seed)
   {
     // convert to vector (reduce 1-d special case)
     std::vector<double> p = reduce(seed, 0);
-    int pop = sum(seed);
+    // casting rounds down so for better consistency (with checked_round) add TOL
+    int pop = sum(seed) + TOL;
     // convert to probabilities
     for (auto& x: p) x /= pop;
     std::vector<int> tmp = integeriseMarginalDistribution(p, pop, m_rmse);

@@ -113,6 +113,25 @@ def test_integerise() -> None:
     assert np.sum(result) == sum(m0)
     assert stats["rmse"] < 1.05717
 
+    # 1d integerise without providing total - check total rounds up if appropriate
+    a = np.array([1.1, 2.9, 0.9999])
+    result, stats = hl.integerise(a)
+    assert (result == np.array([1, 3, 1])).all()
+    assert stats["conv"]
+
+    # 1d integerise without providing total - check total doesnt round up if inappropriate
+    a[2] = 1.0001
+    result, stats = hl.integerise(a)
+    assert (result == np.array([1, 3, 1])).all()
+    assert stats["conv"]
+
+    # outside tolerance
+    a[2] = 1.0002
+    with pytest.raises(RuntimeError):
+        hl.integerise(a)
+    a[2] = 0.9998
+    with pytest.raises(RuntimeError):
+        hl.integerise(a)
 
 def test_IPF() -> None:
     m0 = np.array([52.0, 48.0])

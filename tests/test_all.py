@@ -78,12 +78,14 @@ def test_integerise() -> None:
     # exact
     r, stats = hl.integerise(np.array([0.4, 0.3, 0.2, 0.1]), 10)
     assert stats["rmse"] < 1e-15
+    assert stats["conv"]  # 1d case with specified total will always converge, but return for consistency
     assert np.array_equal(r, np.array([4, 3, 2, 1]))
 
     # inexact
     r, stats = hl.integerise(np.array([0.4, 0.3, 0.2, 0.1]), 17)
     assert stats["rmse"] == pytest.approx(0.273861278752583, abs=1e-6)
-
+    # without total we still get the same stats keys (not values)
+    assert stats.keys() == hl.integerise(np.array([0.4, 0.3, 0.2, 0.1]))[1].keys()
     assert np.array_equal(r, np.array([7, 5, 3, 2]))
 
     # 1-d case
@@ -112,6 +114,26 @@ def test_integerise() -> None:
     assert stats["conv"]
     assert np.sum(result) == sum(m0)
     assert stats["rmse"] < 1.05717
+
+    # 1d integerise without providing total - check total rounds up if appropriate
+    a = np.array([1.1, 2.9, 0.9999])
+    result, stats = hl.integerise(a)
+    assert (result == np.array([1, 3, 1])).all()
+    assert stats["conv"]
+
+    # 1d integerise without providing total - check total doesnt round up if inappropriate
+    a[2] = 1.0001
+    result, stats = hl.integerise(a)
+    assert (result == np.array([1, 3, 1])).all()
+    assert stats["conv"]
+
+    # outside tolerance
+    a[2] = 1.0002
+    with pytest.raises(RuntimeError):
+        hl.integerise(a)
+    a[2] = 0.9998
+    with pytest.raises(RuntimeError):
+        hl.integerise(a)
 
 
 def test_IPF() -> None:

@@ -130,6 +130,7 @@ py::tuple integerise1d(py::array_t<double> frac_a, int pop) {
   const std::vector<int>& freq = integeriseMarginalDistribution(prob, pop, var);
 
   py::dict stats;
+  stats["conv"] = true; // always converges, but including for consistency
   stats["rmse"] = var;
 
   return py::make_tuple(py::array_t<int>(freq.size(), freq.data()), stats);

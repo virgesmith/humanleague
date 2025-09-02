@@ -18,7 +18,7 @@ def tabulate_counts(population: npt.NDArray, names: list[str] | tuple[str, ...] 
         pd.Series: A pandas Series where the index is a MultiIndex created from the shape of the input array,
         and the data corresponds to the flattened values of the input array.
     """
-    index = pd.MultiIndex.from_tuples(list(np.ndindex(population.shape)), names=names)
+    index = pd.MultiIndex.from_tuples(list(np.ndindex(population.shape)), names=names)  # type: ignore[arg-type]
     return pd.Series(index=index, data=list(np.nditer(population)), dtype=int, name="count")
 
 

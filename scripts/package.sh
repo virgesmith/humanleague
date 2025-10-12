@@ -5,12 +5,11 @@
 version=$(grep "^version =" pyproject.toml | awk -F'"' '{print $2}')
 echo $version
 
-# package
-# no binary dist as C++
-python -m build . --sdist
-# upload
-# twine upload -u __token__ -p $TEST_PYPI_API_TOKEN  --repository testpypi dist/humanleague-$version.tar.gz
-twine upload -u __token__ -p $PYPI_API_TOKEN dist/humanleague-$version.tar.gz
+uv build --sdist
 
-# NB on testPyPI, deps need to been installed from main repo. Use this:
-# pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple humanleague
+
+# TEST
+uv publish -t $TEST_PYPI_API_TOKEN --publish-url https://test.pypi.org/legacy/ dist/humanleague-$version.tar.gz
+
+# PROD
+# uv publish -t $PYPI_API_TOKEN dist/humanleague-$version.tar.gz

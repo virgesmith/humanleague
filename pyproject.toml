@@ -10,7 +10,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "humanleague"
-version = "2.4.2"
+version = "2.4.3"
 authors = [
   { name="Andrew Smith", email="andrew@friarswood.net" },
 ]
@@ -19,9 +19,9 @@ description = "Microsynthesis using quasirandom sampling and/or IPF"
 readme = "README.md"
 requires-python = ">=3.11"
 classifiers = [
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Operating System :: OS Independent",
 ]
 dependencies = [
@@ -50,7 +50,7 @@ testpaths = [
 line-length = 120
 
 [tool.ruff.lint]
-select = ["B", "E", "F", "I"]
+select = ["B", "C", "E", "F", "I"]
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]

@@ -52,7 +52,7 @@ Version 1.0.1 reflects the work described in the [Quasirandom Integer Sampling (
 
 ### Python
 
-Requires Python 3.11 or newer. The package can be installed using `pip`, e.g.
+Requires Python 3.12 or newer. The package can be installed using `pip`, e.g.
 
 
 ```bash
@@ -61,11 +61,11 @@ pip install humanleague
 
 #### Development
 
-Fork or clone the repo, then
+[uv](https://docs.astral.sh/uv/) is highly recommended for managing environments.
 
 ```bash
-pip install -e .[dev]
-pytest
+uv sync --dev
+uv run pytest
 ```
 
 ### R

@@ -1,8 +1,9 @@
 import numpy as np
 import pytest
-from _humanleague import _unittest as hl_unittest  # ty: ignore[unresolved-import]
 
 import humanleague as hl
+
+from .humanleague_ext import _unittest as hl_unittest  # type: ignore[import]
 
 
 def test_version() -> None:

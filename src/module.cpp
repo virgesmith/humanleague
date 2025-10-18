@@ -9,47 +9,46 @@
 
 #include "UnitTester.h"
 
-#include <pybind11/numpy.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/ndarray.h>
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-using namespace py::literals;
+using namespace nb::literals;
 
 namespace hl {
 
-template <typename T> T* begin(py::array_t<T>& a) {
+template <typename T> T* begin(nb::ndarray<T>& a) {
   // assert(a.itemsize() == sizeof(T));
   return (T*)a.request().ptr;
 }
 
-template <typename T> T* end(py::array_t<T>& a) {
+template <typename T> T* end(nb::ndarray<T>& a) {
   // assert(a.itemsize() == sizeof(T));
   return (T*)a.request().ptr + a.size();
 }
 
-template <typename T> const T* cbegin(const py::array_t<T>& a) {
+template <typename T> const T* cbegin(const nb::ndarray<T>& a) {
   // assert(a.itemsize() == sizeof(T));
   return (const T*)a.request().ptr;
 }
 
-template <typename T> const T* cend(const py::array_t<T>& a) {
+template <typename T> const T* cend(const nb::ndarray<T>& a) {
   // assert(a.itemsize() == sizeof(T));
   return (const T*)a.request().ptr + a.size();
 }
 
-template <typename T> std::vector<T> toVector(const py::array_t<T>& a) {
+template <typename T> std::vector<T> toVector(const nb::ndarray<T>& a) {
   if (a.ndim() == 0) {
     return std::vector<T>(1, *cbegin(a));
   }
   if (a.ndim() != 1) {
-    throw py::value_error("cannot convert %%-dimensional array to vector"s % a.ndim());
+    throw nb::value_error(("cannot convert %%-dimensional array to vector"s % a.ndim()).c_str());
   }
   return std::vector<T>(cbegin(a), cend(a));
 }
 
-template <typename T> NDArray<T> toNDArray(const py::array_t<T>& np) {
+template <typename T> NDArray<T> toNDArray(const nb::ndarray<T>& np) {
   const size_t dim = np.ndim();
   std::vector<int64_t> sizes(dim);
   for (size_t i = 0; i < dim; ++i)
@@ -59,9 +58,9 @@ template <typename T> NDArray<T> toNDArray(const py::array_t<T>& np) {
   return tmp;
 }
 
-template <typename T> NDArray<T> asNDArray(const py::array_t<T>& np) {
+template <typename T> NDArray<T> asNDArray(const nb::ndarray<T>& np) {
   // this is a bit iffy re: constness
-  return NDArray<T>(std::vector<int64_t>(np.shape(), np.shape() + np.ndim()), const_cast<T*>(cbegin(np)));
+  return NDArray<T>(std::vector<int64_t>(np.shape_ptr(), np.shape_ptr() + np.ndim()), const_cast<T*>(cbegin(np)));
 }
 
 template <typename T> py::array_t<T> fromNDArray(const NDArray<T>& a) {
@@ -70,30 +69,31 @@ template <typename T> py::array_t<T> fromNDArray(const NDArray<T>& a) {
   return result;
 }
 
-std::vector<std::vector<int64_t>> collect_indices(const py::iterable& iterable) {
+std::vector<std::vector<int64_t>> collect_indices(const nb::iterable& iterable) {
   std::vector<std::vector<int64_t>> indices;
 
   for (const auto& elem : iterable) {
-    const py::array_t<int64_t> ia = elem.cast<py::array_t<int64_t>>();
+    const nb::ndarray<int64_t> ia = nb::cast<nb::ndarray<int64_t>>(elem);
     indices.push_back(toVector<int64_t>(ia));
   }
   return indices;
 }
 
-template <typename T> std::vector<NDArray<T>> collect_marginals(const py::iterable& iterable) {
+template <typename T> std::vector<NDArray<T>> collect_marginals(const nb::iterable& iterable) {
   std::vector<NDArray<T>> marginals;
 
   for (const auto& elem : iterable) {
-    const py::array_t<T> ma = elem.cast<py::array_t<T>>();
+    const nb::ndarray<T> ma = nb::cast<nb::ndarray<T>>(elem);
     marginals.emplace_back(toNDArray<T>(ma));
   }
   return marginals;
 }
 
-py::list flatten(const py::array_t<int64_t>& a) {
+nb::list flatten(const nb::ndarray<int64_t>& a) {
 
-  auto warnings = pybind11::module::import("warnings");
-  warnings.attr("warn")("humanleague.flatten is deprecated, consider using humanleague.tabulate_individuals instead.");
+  auto warnings = nb::module_::import_("warnings");
+  warnings.attr("warn")(
+      "humanleague.flatten is deprecated, consider using humanleague.tabulate_individuals instead.");
 
   const NDArray<int64_t> array = asNDArray<int64_t>(a);
 
@@ -103,11 +103,11 @@ py::list flatten(const py::array_t<int64_t>& a) {
   }
 
   const std::vector<std::vector<int>>& list = listify(pop, array);
-  py::list outer; // array.dim());
+  nb::list outer; // array.dim());
   for (size_t i = 0; i < array.dim(); ++i) {
-    py::list l(list[i].size());
+    nb::list l;
     for (size_t j = 0; j < list[i].size(); ++j) {
-      l[j] = list[i][j];
+      l.append(list[i][j]);
     }
     outer.insert(i, l);
   }
@@ -115,12 +115,12 @@ py::list flatten(const py::array_t<int64_t>& a) {
   return outer;
 }
 
-py::tuple integerise1d(py::array_t<double> frac_a, int pop) {
+nb::tuple integerise1d(nb::ndarray<double> frac_a, int pop) {
   if (pop < 0) {
-    throw py::value_error("population cannot be negative");
+    throw nb::value_error("population cannot be negative");
   }
 
-  // convert py::array_t to vector and normalise it to get probabilities
+  // convert nb::ndarray to vector and normalise it to get probabilities
   std::vector<double> prob = toVector(frac_a);
 
   // ensure all values are finite (negative values are permitted)
@@ -137,25 +137,25 @@ py::tuple integerise1d(py::array_t<double> frac_a, int pop) {
   double var = 0.0;
   const std::vector<int>& freq = integeriseMarginalDistribution(prob, pop, var);
 
-  py::dict stats;
+  nb::dict stats;
   stats["conv"] = true; // always converges, but including for consistency
   stats["rmse"] = var;
 
-  return py::make_tuple(py::array_t<int>(freq.size(), freq.data()), stats);
+  return nb::make_tuple(nb::ndarray<int, nb::ro>(freq.data(), {freq.size()}), stats);
 }
 
 class SobolGenerator {
 public:
   SobolGenerator(uint32_t dim, uint32_t nSkip = 0) : m_sobol(dim, nSkip) {}
 
-  py::array_t<double> next() {
-    py::array_t<double> sequence(m_sobol.dim());
+  nb::ndarray<double> next() {
+    std::vector<double> sequence(m_sobol.dim());
     try {
       const std::vector<uint32_t>& buf = m_sobol.buf();
       std::transform(buf.cbegin(), buf.cend(), begin(sequence), [](uint32_t i) { return i * Sobol::SCALE; });
-      return sequence;
+      return nb::ndarray<double>(sequence.data(), {sequence.size()});
     } catch (const std::runtime_error&) {
-      throw py::stop_iteration();
+      throw nb::stop_iteration();
     }
   }
 
@@ -165,63 +165,78 @@ private:
   Sobol m_sobol;
 };
 
-py::tuple integerise(const py::array_t<double>& npseed) {
+nb::tuple integerise(const nb::ndarray<double>& npseed) {
   const NDArray<double> seed = asNDArray<double>(npseed); // shallow copy
   Integeriser integeriser(seed);
 
-  py::dict stats("conv"_a = integeriser.conv(), "rmse"_a = integeriser.rmse());
-  return py::make_tuple(fromNDArray<int64_t>(integeriser.result()), stats);
+  nb::dict stats;
+  stats["conv"] = integeriser.conv(),
+  stats["rmse"] = integeriser.rmse();
+  return nb::make_tuple(fromNDArray<int64_t>(integeriser.result()), stats);
 }
 
-py::tuple ipf(const py::array_t<double>& seed, const py::iterable& index_iter, const py::iterable& marginal_iter) {
+nb::tuple ipf(const nb::ndarray<double>& seed, const nb::iterable& index_iter, const nb::iterable& marginal_iter) {
   std::vector<std::vector<int64_t>> indices = collect_indices(index_iter);
   std::vector<NDArray<double>> marginals = collect_marginals<double>(marginal_iter);
   if (indices.size() != marginals.size())
-    throw py::value_error("index and marginals lists differ in size");
+    throw nb::value_error("index and marginals lists differ in size");
 
   IPF<double> ipf(indices, marginals);
   const NDArray<double>& result = ipf.solve(asNDArray<double>(seed));
 
-  py::dict stats("conv"_a = ipf.conv(), "pop"_a = ipf.population(), "iterations"_a = ipf.iters(),
-                 "maxError"_a = ipf.maxError());
-  return py::make_tuple(fromNDArray<double>(result), stats);
+  nb::dict stats;
+  stats["conv"] = ipf.conv();
+  stats["pop"] = ipf.population();
+  stats["iterations"] = ipf.iters();
+  stats["maxError"] = ipf.maxError();
+  return nb::make_tuple(fromNDArray<double>(result), stats);
 }
 
-py::tuple qis(const py::iterable& index_iter, const py::iterable& marginal_iter, int64_t skips) {
+nb::tuple qis(const nb::iterable& index_iter, const nb::iterable& marginal_iter, int64_t skips) {
   std::vector<std::vector<int64_t>> indices = collect_indices(index_iter);
   std::vector<NDArray<int64_t>> marginals = collect_marginals<int64_t>(marginal_iter);
   if (indices.size() != marginals.size())
-    throw py::value_error("index and marginals lists differ in size");
+    throw nb::value_error("index and marginals lists differ in size");
 
   QIS qis(indices, marginals, skips);
   const NDArray<int64_t>& result = qis.solve();
   const NDArray<double>& expect = qis.expectation();
 
-  py::dict stats("expectation"_a = fromNDArray<double>(expect), "conv"_a = qis.conv(), "pop"_a = qis.population(),
-                 "chiSq"_a = qis.chiSq(), "pValue"_a = qis.pValue(), "degeneracy"_a = qis.degeneracy());
-  return py::make_tuple(fromNDArray<int64_t>(result), stats);
+  nb::dict stats;
+  stats["expectation"] = fromNDArray<double>(expect);
+  stats["conv"] = qis.conv();
+  stats["pop"] = qis.population();
+  stats["chiSq"] = qis.chiSq(),
+  stats["pValue"] = qis.pValue();
+  stats["degeneracy"] = qis.degeneracy();
+  return nb::make_tuple(fromNDArray<int64_t>(result), stats);
 }
 
-py::tuple qisi(const py::array_t<double> seed, const py::iterable& index_iter, const py::iterable& marginal_iter,
+nb::tuple qisi(const nb::ndarray<double> seed, const nb::iterable& index_iter, const nb::iterable& marginal_iter,
                int64_t skips) {
   std::vector<std::vector<int64_t>> indices = collect_indices(index_iter);
   std::vector<NDArray<int64_t>> marginals = collect_marginals<int64_t>(marginal_iter);
   if (indices.size() != marginals.size())
-    throw py::value_error("index and marginals lists differ in size");
+    throw nb::value_error("index and marginals lists differ in size");
 
   QISI qisi(indices, marginals, skips);
   const NDArray<int64_t>& result = qisi.solve(asNDArray<double>(seed));
 
-  py::dict stats("expectation"_a = fromNDArray<double>(qisi.expectation()), "conv"_a = qisi.conv(),
-                 "pop"_a = qisi.population(), "chiSq"_a = qisi.chiSq(), "pValue"_a = qisi.pValue(),
-                 "degeneracy"_a = qisi.degeneracy());
-  return py::make_tuple(fromNDArray<int64_t>(result), stats);
+  nb::dict stats;
+  stats["expectation"] = fromNDArray<double>(qisi.expectation());
+  stats["conv"] = qisi.conv();
+  stats["pop"] = qisi.population();
+  stats["chiSq"] = qisi.chiSq(),
+  stats["pValue"] = qisi.pValue();
+  stats["degeneracy"] = qisi.degeneracy();
+
+  return nb::make_tuple(fromNDArray<int64_t>(result), stats);
 }
 
-py::dict unittest() {
+nb::dict unittest() {
   const unittest::Logger& log = unittest::run();
 
-  py::dict result;
+  nb::dict result;
   result["nTests"] = log.testsRun;
   result["nFails"] = log.testsFailed;
   result["errors"] = log.errors;
@@ -231,7 +246,7 @@ py::dict unittest() {
 
 } // namespace hl
 
-PYBIND11_MODULE(_humanleague, m) {
+NB_MODULE(humanleague_ext, m) {
 
 #include "docstr.inl"
 
@@ -244,22 +259,26 @@ PYBIND11_MODULE(_humanleague, m) {
       .def("qis", hl::qis, qis_docstr, "indices"_a, "marginals"_a, "skips"_a)
       .def(
           "qis",
-          [](const py::iterable& indices, const py::iterable& marginals) { return hl::qis(indices, marginals, 0); },
+          [](const nb::iterable& indices, const nb::iterable& marginals) { return hl::qis(indices, marginals, 0); },
           qis2_docstr, "indices"_a, "marginals"_a)
       .def("qisi", hl::qisi, qisi_docstr, "seed"_a, "indices"_a, "marginals"_a, "skips"_a)
       .def(
           "qisi",
-          [](const py::array_t<double>& seed, const py::iterable& indices, const py::iterable& marginals) {
+          [](const nb::ndarray<double>& seed, const nb::iterable& indices, const nb::iterable& marginals) {
             return hl::qisi(seed, indices, marginals, 0);
           },
           qisi2_docstr, "seed"_a, "indices"_a, "marginals"_a)
       .def("_unittest", hl::unittest, unittest_docstr);
 
-  py::class_<hl::SobolGenerator>(m, "SobolSequence")
-      .def(py::init<size_t, uint32_t>(), SobolSequence_init2_docstr, "dim"_a, "skips"_a)
-      .def(py::init<size_t>(), SobolSequence_init1_docstr, "dim"_a)
+  nb::class_<hl::SobolGenerator>(m, "SobolSequence")
+      .def(nb::init<size_t, uint32_t>(), SobolSequence_init2_docstr, "dim"_a, "skips"_a)
+      .def(nb::init<size_t>(), SobolSequence_init1_docstr, "dim"_a)
       .def("__iter__", &hl::SobolGenerator::iter, "__iter__ dunder")
       .def("__next__", &hl::SobolGenerator::next, "__next__ dunder");
 }
 
+#else
+#error You are attempting to compile module.cpp but have not set PYTHON_MODULE \
+       python builds: include module.cpp and set -DPYTHON_MODULE \
+       R builds: do not include module.cpp and ensure -DPYTHON_MODULE is not set
 #endif

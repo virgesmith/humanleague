@@ -178,7 +178,7 @@ def test_IPF() -> None:
     # mixed type indices
     im = ((0,), np.array([1]), 2)
     s = np.array([[[1.0, 1.0], [1.0, 1.0]], [[1.0, 1.0], [1.0, 1.0]]])
-    p, stats = hl.ipf(s, im, (m0, m1, m2))
+    p, stats = hl.ipf(s, im, (m0, m1, m2))  # type: ignore[arg-type]
     assert stats["conv"]
     # check overall population and marginals correct
     assert np.sum(p) == pytest.approx(stats["pop"], 1e-8)

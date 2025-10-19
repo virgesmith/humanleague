@@ -158,7 +158,7 @@ nb::tuple integerise1d(np_array<double, nb::ro> frac_a, int pop) {
 
 class SobolGenerator {
 public:
-  SobolGenerator(uint32_t dim, uint32_t nSkip = 0) : m_sobol(dim, nSkip) {}
+  SobolGenerator(size_t dim, size_t nSkip = 0) : m_sobol(dim, nSkip) {}
 
   np_array<nb::numpy, double> next() {
     double* data = new double[m_sobol.dim()];
@@ -167,7 +167,7 @@ public:
 
     try {
       const std::vector<uint32_t>& buf = m_sobol.buf();
-      std::transform(buf.cbegin(), buf.cend(), data, [](uint32_t i) { return i * Sobol::SCALE; });
+      std::transform(buf.cbegin(), buf.cend(), data, [](uint64_t i) { return i * Sobol::SCALE; });
       return np_array<nb::numpy, double>(data, {m_sobol.dim()}, owner);
     } catch (const std::runtime_error&) {
       throw nb::stop_iteration();
@@ -283,7 +283,7 @@ NB_MODULE(humanleague_ext, m) {
       .def("_unittest", hl::unittest, unittest_docstr);
 
   nb::class_<hl::SobolGenerator>(m, "SobolSequence")
-      .def(nb::init<size_t, uint32_t>(), SobolSequence_init2_docstr, "dim"_a, "skips"_a)
+      .def(nb::init<size_t, size_t>(), SobolSequence_init2_docstr, "dim"_a, "skips"_a)
       .def(nb::init<size_t>(), SobolSequence_init1_docstr, "dim"_a)
       .def("__iter__", &hl::SobolGenerator::iter, "__iter__ dunder")
       .def("__next__", &hl::SobolGenerator::next, "__next__ dunder");

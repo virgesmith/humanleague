@@ -2,8 +2,7 @@ import numpy as np
 import pytest
 
 import humanleague as hl
-
-from .humanleague_ext import _unittest as hl_unittest  # type: ignore[import]
+from humanleague.humanleague_ext import _unittest as hl_unittest  # type: ignore[import]
 
 
 def test_version() -> None:
@@ -176,8 +175,8 @@ def test_IPF() -> None:
     assert np.allclose(np.sum(p, 0), m1)
     assert np.allclose(np.sum(p, 1), m0)
 
-    # mix list and tuple
-    im = ((0,), (1,), [2])
+    # mixed type indices
+    im = ((0,), np.array([1]), 2)
     s = np.array([[[1.0, 1.0], [1.0, 1.0]], [[1.0, 1.0], [1.0, 1.0]]])
     p, stats = hl.ipf(s, im, (m0, m1, m2))
     assert stats["conv"]

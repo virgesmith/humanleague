@@ -71,6 +71,6 @@ nanobind_add_module(
 
 target_compile_definitions(humanleague_ext PUBLIC PYTHON_MODULE)
 
-
 # Install directive for scikit-build-core
 install(TARGETS humanleague_ext LIBRARY DESTINATION humanleague)
+

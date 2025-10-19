@@ -108,7 +108,13 @@ The package now contains type annotations and your IDE should automatically disp
 
 ![help](./doc/help.png)
 
-NB type stubs are generated using the `pybind11-stubgen` package, with some [manual corrections](./doc/type-stubs.md).
+~~NB type stubs are generated using the `pybind11-stubgen` package, with some [manual corrections](./doc/type-stubs.md).~~
+
+`nanobind` now has stubgen functionality (but appears limited as of 2.9.2)
+
+```sh
+uv run python -m nanobind.stubgen -P -m humanleague.humanleague_ext -o humanleague/__init__.pyi -M humanleague/py.typed
+```
 
 ### Multidimensional integerisation
 

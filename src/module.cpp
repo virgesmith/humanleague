@@ -11,34 +11,37 @@
 
 #include <nanobind/nanobind.h>
 #include <nanobind/ndarray.h>
+#include <nanobind/stl/vector.h>
 
 namespace nb = nanobind;
 
 using namespace nb::literals;
 
+template <typename... Args> using np_array = nb::ndarray<nb::numpy, Args...>;
+
 namespace hl {
 
-template <typename T> T* begin(nb::ndarray<T>& a) {
+template <typename T> T* begin(np_array<T>& a) {
   // assert(a.itemsize() == sizeof(T));
-  return (T*)a.request().ptr;
+  return (T*)a.data();
 }
 
-template <typename T> T* end(nb::ndarray<T>& a) {
+template <typename T> T* end(np_array<T>& a) {
   // assert(a.itemsize() == sizeof(T));
-  return (T*)a.request().ptr + a.size();
+  return (T*)a.data() + a.size();
 }
 
-template <typename T> const T* cbegin(const nb::ndarray<T>& a) {
+template <typename T, typename ...Args> const T* cbegin(const np_array<T, Args...>& a) {
   // assert(a.itemsize() == sizeof(T));
-  return (const T*)a.request().ptr;
+  return (const T*)a.data();
 }
 
-template <typename T> const T* cend(const nb::ndarray<T>& a) {
+template <typename T, typename ...Args> const T* cend(const np_array<T, Args...>& a) {
   // assert(a.itemsize() == sizeof(T));
-  return (const T*)a.request().ptr + a.size();
+  return (const T*)a.data() + a.size();
 }
 
-template <typename T> std::vector<T> toVector(const nb::ndarray<T>& a) {
+template <typename T, typename ...Args> std::vector<T> toVector(const np_array<T, Args...>& a) {
   if (a.ndim() == 0) {
     return std::vector<T>(1, *cbegin(a));
   }
@@ -48,7 +51,7 @@ template <typename T> std::vector<T> toVector(const nb::ndarray<T>& a) {
   return std::vector<T>(cbegin(a), cend(a));
 }
 
-template <typename T> NDArray<T> toNDArray(const nb::ndarray<T>& np) {
+template <typename T, typename ...Args> NDArray<T> toNDArray(const np_array<T, Args...>& np) {
   const size_t dim = np.ndim();
   std::vector<int64_t> sizes(dim);
   for (size_t i = 0; i < dim; ++i)
@@ -58,7 +61,7 @@ template <typename T> NDArray<T> toNDArray(const nb::ndarray<T>& np) {
   return tmp;
 }
 
-template <typename T> NDArray<T> asNDArray(const nb::ndarray<T>& np) {
+template <typename T, typename ...Args> NDArray<T> asNDArray(const np_array<T, Args...>& np) {
   // this is a bit iffy re: constness
   return NDArray<T>(std::vector<int64_t>(np.shape_ptr(), np.shape_ptr() + np.ndim()), const_cast<T*>(cbegin(np)));
 }
@@ -73,8 +76,18 @@ std::vector<std::vector<int64_t>> collect_indices(const nb::iterable& iterable) 
   std::vector<std::vector<int64_t>> indices;
 
   for (const auto& elem : iterable) {
-    const nb::ndarray<int64_t> ia = nb::cast<nb::ndarray<int64_t>>(elem);
-    indices.push_back(toVector<int64_t>(ia));
+    if (nb::isinstance<nb::int_>(elem)) {
+      indices.push_back(std::vector<int64_t>(1, nb::cast<int64_t>(elem)));
+    } else if (nb::isinstance<nb::iterable>(elem)) {
+      // TODO must be an easier way???
+      std::vector<int64_t> index;
+      for (const auto& item: elem) {
+        index.push_back(nb::cast<int64_t>(item));
+      }
+      indices.push_back(index);
+    } else {
+      throw nb::value_error("unexpected type for index");
+    }
   }
   return indices;
 }
@@ -83,17 +96,16 @@ template <typename T> std::vector<NDArray<T>> collect_marginals(const nb::iterab
   std::vector<NDArray<T>> marginals;
 
   for (const auto& elem : iterable) {
-    const nb::ndarray<T> ma = nb::cast<nb::ndarray<T>>(elem);
+    const np_array<T> ma = nb::cast<np_array<T>>(elem);
     marginals.emplace_back(toNDArray<T>(ma));
   }
   return marginals;
 }
 
-nb::list flatten(const nb::ndarray<int64_t>& a) {
+nb::list flatten(const np_array<int64_t>& a) {
 
   auto warnings = nb::module_::import_("warnings");
-  warnings.attr("warn")(
-      "humanleague.flatten is deprecated, consider using humanleague.tabulate_individuals instead.");
+  warnings.attr("warn")("humanleague.flatten is deprecated, consider using humanleague.tabulate_individuals instead.");
 
   const NDArray<int64_t> array = asNDArray<int64_t>(a);
 
@@ -115,12 +127,12 @@ nb::list flatten(const nb::ndarray<int64_t>& a) {
   return outer;
 }
 
-nb::tuple integerise1d(nb::ndarray<double> frac_a, int pop) {
+nb::tuple integerise1d(np_array<double, nb::ro> frac_a, int pop) {
   if (pop < 0) {
     throw nb::value_error("population cannot be negative");
   }
 
-  // convert nb::ndarray to vector and normalise it to get probabilities
+  // convert np_array to vector and normalise it to get probabilities
   std::vector<double> prob = toVector(frac_a);
 
   // ensure all values are finite (negative values are permitted)
@@ -141,19 +153,22 @@ nb::tuple integerise1d(nb::ndarray<double> frac_a, int pop) {
   stats["conv"] = true; // always converges, but including for consistency
   stats["rmse"] = var;
 
-  return nb::make_tuple(nb::ndarray<int, nb::ro>(freq.data(), {freq.size()}), stats);
+  return nb::make_tuple(np_array<int, nb::ro>(freq.data(), {freq.size()}), stats);
 }
 
 class SobolGenerator {
 public:
   SobolGenerator(uint32_t dim, uint32_t nSkip = 0) : m_sobol(dim, nSkip) {}
 
-  nb::ndarray<double> next() {
-    std::vector<double> sequence(m_sobol.dim());
+  np_array<nb::numpy, double> next() {
+    double* data = new double[m_sobol.dim()];
+    // Delete 'data' when the 'owner' capsule expires
+    nb::capsule owner(data, [](void* p) noexcept { delete[] (float*)p; });
+
     try {
       const std::vector<uint32_t>& buf = m_sobol.buf();
-      std::transform(buf.cbegin(), buf.cend(), begin(sequence), [](uint32_t i) { return i * Sobol::SCALE; });
-      return nb::ndarray<double>(sequence.data(), {sequence.size()});
+      std::transform(buf.cbegin(), buf.cend(), data, [](uint32_t i) { return i * Sobol::SCALE; });
+      return np_array<nb::numpy, double>(data, {m_sobol.dim()}, owner);
     } catch (const std::runtime_error&) {
       throw nb::stop_iteration();
     }
@@ -165,17 +180,16 @@ private:
   Sobol m_sobol;
 };
 
-nb::tuple integerise(const nb::ndarray<double>& npseed) {
+nb::tuple integerise(const np_array<double>& npseed) {
   const NDArray<double> seed = asNDArray<double>(npseed); // shallow copy
   Integeriser integeriser(seed);
 
   nb::dict stats;
-  stats["conv"] = integeriser.conv(),
-  stats["rmse"] = integeriser.rmse();
+  stats["conv"] = integeriser.conv(), stats["rmse"] = integeriser.rmse();
   return nb::make_tuple(fromNDArray<int64_t>(integeriser.result()), stats);
 }
 
-nb::tuple ipf(const nb::ndarray<double>& seed, const nb::iterable& index_iter, const nb::iterable& marginal_iter) {
+nb::tuple ipf(const np_array<double>& seed, const nb::iterable& index_iter, const nb::iterable& marginal_iter) {
   std::vector<std::vector<int64_t>> indices = collect_indices(index_iter);
   std::vector<NDArray<double>> marginals = collect_marginals<double>(marginal_iter);
   if (indices.size() != marginals.size())
@@ -206,13 +220,12 @@ nb::tuple qis(const nb::iterable& index_iter, const nb::iterable& marginal_iter,
   stats["expectation"] = fromNDArray<double>(expect);
   stats["conv"] = qis.conv();
   stats["pop"] = qis.population();
-  stats["chiSq"] = qis.chiSq(),
-  stats["pValue"] = qis.pValue();
+  stats["chiSq"] = qis.chiSq(), stats["pValue"] = qis.pValue();
   stats["degeneracy"] = qis.degeneracy();
   return nb::make_tuple(fromNDArray<int64_t>(result), stats);
 }
 
-nb::tuple qisi(const nb::ndarray<double> seed, const nb::iterable& index_iter, const nb::iterable& marginal_iter,
+nb::tuple qisi(const np_array<double> seed, const nb::iterable& index_iter, const nb::iterable& marginal_iter,
                int64_t skips) {
   std::vector<std::vector<int64_t>> indices = collect_indices(index_iter);
   std::vector<NDArray<int64_t>> marginals = collect_marginals<int64_t>(marginal_iter);
@@ -226,8 +239,7 @@ nb::tuple qisi(const nb::ndarray<double> seed, const nb::iterable& index_iter, c
   stats["expectation"] = fromNDArray<double>(qisi.expectation());
   stats["conv"] = qisi.conv();
   stats["pop"] = qisi.population();
-  stats["chiSq"] = qisi.chiSq(),
-  stats["pValue"] = qisi.pValue();
+  stats["chiSq"] = qisi.chiSq(), stats["pValue"] = qisi.pValue();
   stats["degeneracy"] = qisi.degeneracy();
 
   return nb::make_tuple(fromNDArray<int64_t>(result), stats);
@@ -264,7 +276,7 @@ NB_MODULE(humanleague_ext, m) {
       .def("qisi", hl::qisi, qisi_docstr, "seed"_a, "indices"_a, "marginals"_a, "skips"_a)
       .def(
           "qisi",
-          [](const nb::ndarray<double>& seed, const nb::iterable& indices, const nb::iterable& marginals) {
+          [](const np_array<double>& seed, const nb::iterable& indices, const nb::iterable& marginals) {
             return hl::qisi(seed, indices, marginals, 0);
           },
           qisi2_docstr, "seed"_a, "indices"_a, "marginals"_a)

@@ -289,8 +289,4 @@ NB_MODULE(humanleague_ext, m) {
       .def("__next__", &hl::SobolGenerator::next, "__next__ dunder");
 }
 
-#else
-#error You are attempting to compile module.cpp but have not set PYTHON_MODULE \
-       python builds: include module.cpp and set -DPYTHON_MODULE \
-       R builds: do not include module.cpp and ensure -DPYTHON_MODULE is not set
 #endif

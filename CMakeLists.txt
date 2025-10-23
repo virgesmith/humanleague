@@ -35,7 +35,6 @@ find_package(nanobind CONFIG REQUIRED)
 
 # We are now ready to compile the actual extension module
 nanobind_add_module(
-  # Name of the extension
   humanleague_ext
 
   # Target the stable ABI for Python 3.12+, which reduces
@@ -43,13 +42,9 @@ nanobind_add_module(
   # does nothing on older Python versions
   STABLE_ABI
 
-  # Build libnanobind statically and merge it into the
-  # extension (which itself remains a shared library)
-  #
-  # If your project builds multiple extensions, you can
-  # replace this flag by NB_SHARED to conserve space by
-  # reusing a shared libnanobind across libraries
+  # Build libnanobind statically
   NB_STATIC
+  # NB_SHARED creates path issues
 
   # Source code goes here
   src/Index.cpp

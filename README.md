@@ -63,13 +63,25 @@ pip install humanleague
 
 [uv](https://docs.astral.sh/uv/) is highly recommended for managing environments.
 
+
 ```bash
 uv sync --dev
 uv build
 uv run pytest
 ```
 
-Install the pre-commit hooks using `uv run pre-commit install`.
+Nanobind docs suggest a dev workflow where the build happens directly in the dev env - first manually install
+the build deps (required after every `uv sync`)
+
+```sh
+uv pip install nanobind scikit-build-core[pyproject]
+```
+
+Then build with
+
+```sh
+uv pip install --no-build-isolation -ve .
+```
 
 ### R
 

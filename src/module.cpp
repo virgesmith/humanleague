@@ -21,29 +21,17 @@ template <typename... Args> using np_array = nb::ndarray<nb::numpy, Args...>;
 
 namespace hl {
 
-template <typename T> T* begin(np_array<T>& a) {
-  // assert(a.itemsize() == sizeof(T));
-  return (T*)a.data();
-}
+template <typename T, typename... Args> T* begin(np_array<T, Args...>& a) { return a.data(); }
 
-template <typename T> T* end(np_array<T>& a) {
-  // assert(a.itemsize() == sizeof(T));
-  return (T*)a.data() + a.size();
-}
+template <typename T, typename... Args> T* end(np_array<T, Args...>& a) { return a.data() + a.size(); }
 
-template <typename T, typename ...Args> const T* cbegin(const np_array<T, Args...>& a) {
-  // assert(a.itemsize() == sizeof(T));
-  return (const T*)a.data();
-}
+template <typename T, typename... Args> const T* cbegin(const np_array<T, Args...>& a) { return a.data(); }
 
-template <typename T, typename ...Args> const T* cend(const np_array<T, Args...>& a) {
-  // assert(a.itemsize() == sizeof(T));
-  return (const T*)a.data() + a.size();
-}
+template <typename T, typename... Args> const T* cend(const np_array<T, Args...>& a) { return a.data() + a.size(); }
 
-template <typename T, typename ...Args> std::vector<T> toVector(const np_array<T, Args...>& a) {
+template <typename T, typename... Args> std::vector<T> toVector(const np_array<T, Args...>& a) {
   if (a.ndim() == 0) {
-    return std::vector<T>(1, *cbegin(a));
+    return std::vector<T>(1, *a.data());
   }
   if (a.ndim() != 1) {
     throw nb::value_error(("cannot convert %%-dimensional array to vector"s % a.ndim()).c_str());
@@ -51,7 +39,7 @@ template <typename T, typename ...Args> std::vector<T> toVector(const np_array<T
   return std::vector<T>(cbegin(a), cend(a));
 }
 
-template <typename T, typename ...Args> NDArray<T> toNDArray(const np_array<T, Args...>& np) {
+template <typename T, typename... Args> NDArray<T> toNDArray(const np_array<T, Args...>& np) {
   const size_t dim = np.ndim();
   std::vector<int64_t> sizes(dim);
   for (size_t i = 0; i < dim; ++i)
@@ -61,9 +49,9 @@ template <typename T, typename ...Args> NDArray<T> toNDArray(const np_array<T, A
   return tmp;
 }
 
-template <typename T, typename ...Args> NDArray<T> asNDArray(const np_array<T, Args...>& np) {
+template <typename T, typename... Args> NDArray<T> asNDArray(const np_array<T, Args...>& np) {
   // this is a bit iffy re: constness
-  return NDArray<T>(std::vector<int64_t>(np.shape_ptr(), np.shape_ptr() + np.ndim()), const_cast<T*>(cbegin(np)));
+  return NDArray<T>(std::vector<int64_t>(np.shape_ptr(), np.shape_ptr() + np.ndim()), np.data());
 }
 
 template <typename T> py::array_t<T> fromNDArray(const NDArray<T>& a) {
@@ -81,7 +69,7 @@ std::vector<std::vector<int64_t>> collect_indices(const nb::iterable& iterable) 
     } else if (nb::isinstance<nb::iterable>(elem)) {
       // TODO must be an easier way???
       std::vector<int64_t> index;
-      for (const auto& item: elem) {
+      for (const auto& item : elem) {
         index.push_back(nb::cast<int64_t>(item));
       }
       indices.push_back(index);
@@ -115,15 +103,14 @@ nb::list flatten(const np_array<int64_t>& a) {
   }
 
   const std::vector<std::vector<int>>& list = listify(pop, array);
-  nb::list outer; // array.dim());
+  nb::list outer;
   for (size_t i = 0; i < array.dim(); ++i) {
-    nb::list l;
+    nb::list inner;
     for (size_t j = 0; j < list[i].size(); ++j) {
-      l.append(list[i][j]);
+      inner.append(list[i][j]);
     }
-    outer.insert(i, l);
+    outer.append(inner);
   }
-
   return outer;
 }
 
@@ -163,7 +150,7 @@ public:
   np_array<nb::numpy, double> next() {
     double* data = new double[m_sobol.dim()];
     // Delete 'data' when the 'owner' capsule expires
-    nb::capsule owner(data, [](void* p) noexcept { delete[] (float*)p; });
+    nb::capsule owner(data, [](void* p) noexcept { delete[] (double*)p; });
 
     try {
       const std::vector<uint32_t>& buf = m_sobol.buf();
@@ -183,9 +170,9 @@ private:
 nb::tuple integerise(const np_array<double>& npseed) {
   const NDArray<double> seed = asNDArray<double>(npseed); // shallow copy
   Integeriser integeriser(seed);
-
   nb::dict stats;
-  stats["conv"] = integeriser.conv(), stats["rmse"] = integeriser.rmse();
+  stats["conv"] = integeriser.conv();
+  stats["rmse"] = integeriser.rmse();
   return nb::make_tuple(fromNDArray<int64_t>(integeriser.result()), stats);
 }
 
@@ -220,8 +207,10 @@ nb::tuple qis(const nb::iterable& index_iter, const nb::iterable& marginal_iter,
   stats["expectation"] = fromNDArray<double>(expect);
   stats["conv"] = qis.conv();
   stats["pop"] = qis.population();
-  stats["chiSq"] = qis.chiSq(), stats["pValue"] = qis.pValue();
+  stats["chiSq"] = qis.chiSq();
+  stats["pValue"] = qis.pValue();
   stats["degeneracy"] = qis.degeneracy();
+  return nb::make_tuple(fromNDArray<int64_t>(result), stats);
   return nb::make_tuple(fromNDArray<int64_t>(result), stats);
 }
 
@@ -239,7 +228,9 @@ nb::tuple qisi(const np_array<double> seed, const nb::iterable& index_iter, cons
   stats["expectation"] = fromNDArray<double>(qisi.expectation());
   stats["conv"] = qisi.conv();
   stats["pop"] = qisi.population();
-  stats["chiSq"] = qisi.chiSq(), stats["pValue"] = qisi.pValue();
+  stats["chiSq"] = qisi.chiSq();
+  stats["pValue"] = qisi.pValue();
+  stats["degeneracy"] = qisi.degeneracy();
   stats["degeneracy"] = qisi.degeneracy();
 
   return nb::make_tuple(fromNDArray<int64_t>(result), stats);

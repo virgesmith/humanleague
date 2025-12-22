@@ -1,33 +1,40 @@
 from math import prod
-from typing import Any, Iterable
+from typing import Any, Sequence
 
 import numpy as np
 import numpy.typing as npt
 from itrx import Itr
 from scipy.optimize import LinearConstraint, milp
 
-import humanleague as hl
-
 # 1. ILP as a replacement for QIS (no seed) - inputs are marginals.
 # 1a. can choice of seed
 # 2. ILP as a replacement for multidim integerisation - input is fractional population matrix
+
 
 def _strides(m: npt.NDArray) -> tuple[int, ...]:
     return (1, *m.shape[:-1])
 
 
-def ilp(indices: Iterable[Iterable[int]], marginals: list[npt.NDArray]) -> tuple[npt.NDArray[np.int64], dict[str, Any]]:
+def ilp(
+    indices: Sequence[Sequence[int] | int],
+    marginals: Sequence[npt.NDArray[np.int64]],
+    *,
+    seed: npt.NDArray[np.float64] | None = None,
+) -> tuple[npt.NDArray[np.int64], dict[str, Any]]:
     indices = Itr(indices).map(lambda idx: (idx,) if isinstance(idx, int) else idx).collect()
     n_dim = len(Itr(indices).flatten().collect(set))
 
     # determine shape of output
-    shape = [0] * n_dim
+    shapelist = [0] * n_dim
     for index, marginal in zip(indices, marginals, strict=True):
         for i, idx in enumerate(index):
-            if shape[idx] > 0 and shape[idx] != marginal.shape[i]:
+            if shapelist[idx] > 0 and shapelist[idx] != marginal.shape[i]:
                 raise ValueError("Inconsistent marginal dimensions")
-            shape[idx] = marginal.shape[i]
-    shape = tuple(shape)
+            shapelist[idx] = marginal.shape[i]
+    shape = tuple(shapelist)
+
+    if seed is not None and seed.shape != shape:
+        raise ValueError("seed dimensions are inconsistent with marginals", seed.shape, shape)
 
     # determine total population
     pop = marginals[0].sum()
@@ -51,12 +58,12 @@ def ilp(indices: Iterable[Iterable[int]], marginals: list[npt.NDArray]) -> tuple
     # TODO perhaps a transpose is needed before flattening? yes
     constraints = [LinearConstraint(Ai, mi.T.flatten()) for Ai, mi in zip(A, marginals, strict=True)]
     integrality = np.ones(n_states, dtype=int)
-    # TODO seed?
-    x0 = np.full(n_states, marginals[0].sum() / n_states)
+    # TODO seed? check flatten is consistent/works! no
+    x0 = np.full(n_states, marginals[0].sum() / n_states) if seed is None else seed.T.flatten()
 
     res = milp(x0, constraints=constraints, integrality=integrality)
 
-    # assert res.success
+    if res.x is None:
+        raise ValueError("milp did not result a result")
 
     return res.x.reshape(shape).astype(int), {"conv": res.success, "pop": int(res.x.sum())}
-

@@ -1,5 +1,4 @@
-"""Microsynthesis using quasirandom sampling and IPF, plus related functionality
-"""
+"""Microsynthesis using quasirandom sampling and IPF, plus related functionality"""
 
 from __future__ import annotations
 
@@ -7,7 +6,9 @@ import typing
 
 import numpy as np
 import numpy.typing as npt
-import pandas as pd
+
+from .ilp import ilp
+from .utils import tabulate_counts, tabulate_individuals
 
 FloatArray1d = npt.NDArray[np.float64] | list[float]
 IntArray1d = typing.Sequence[int]
@@ -16,6 +17,7 @@ __all__ = [
     "SobolSequence",
     "flatten",
     "integerise",
+    "ilp",
     "ipf",
     "qis",
     "qisi",
@@ -23,8 +25,8 @@ __all__ = [
     "tabulate_individuals",
 ]
 
-def tabulate_counts(population: npt.NDArray, names: list[str] | tuple[str, ...] | None = None) -> pd.Series: ...
-def tabulate_individuals(population: npt.NDArray, names: list[str] | tuple[str, ...] | None = None) -> pd.DataFrame: ...
+# def tabulate_counts(population: npt.NDArray, names: list[str] | tuple[str, ...] | None = None) -> pd.Series: ...
+# def tabulate_individuals(population: npt.NDArray, names: list[str] | tuple[str, ...] | None = None) -> pd.DataFrame: ...
 
 class SobolSequence:
     @typing.overload
@@ -52,16 +54,13 @@ class SobolSequence:
 
         """
     def __iter__(self) -> SobolSequence:
-        """__iter__ dunder
-        """
+        """__iter__ dunder"""
     def __next__(self) -> npt.NDArray[np.float64]:
-        """__next__ dunder
-        """
+        """__next__ dunder"""
     pass
 
 def _unittest() -> dict:
-    """For developers. Runs the C++ unit tests.
-    """
+    """For developers. Runs the C++ unit tests."""
 
 def flatten(pop: npt.NDArray[np.int64]) -> list:
     """Converts an n-dimensional array of counts into an n-column table with a row for each unit

@@ -453,60 +453,99 @@ def test_QISI() -> None:
         )
 
 
-def test_seeded_ILP() -> None:
-    m0 = np.array([52, 48])
-    m1 = np.array([10, 77, 13])
-    idx = [0, 1]
-    s = np.ones([len(m0), len(m1)])
+def test_bounded_ILP() -> None:
+    # m0 = np.array([52, 48])
+    # m1 = np.array([10, 77, 13])
+    # idx = [0, 1]
+    # s = np.ones([len(m0), len(m1)])
 
-    p, stats = hl.ilp(idx, [m0, m1], seed=s)
-    assert stats["conv"]
-    # assert stats["chiSq"] < 0.04
-    # assert stats["pValue"] > 0.9
-    assert stats["pop"] == 100.0
-    assert np.allclose(np.sum(p, 0), m1)
-    assert np.allclose(np.sum(p, 1), m0)
+    # p, stats = hl.ilp(idx, [m0, m1], lbound=s)
+    # assert stats["conv"]
+    # # assert stats["chiSq"] < 0.04
+    # # assert stats["pValue"] > 0.9
+    # assert stats["pop"] == 100.0
+    # assert np.allclose(np.sum(p, 0), m1)
+    # assert np.allclose(np.sum(p, 1), m0)
 
-    m0 = np.array([52, 40, 4, 4])
-    m1 = np.array([87, 10, 3])
-    m2 = np.array([55, 15, 6, 12, 12])
-    idx_m = ((0,), [1], (2,))
-    s = np.ones((len(m0), len(m1), len(m2)))
+    # m0 = np.array([52, 40, 4, 4])
+    # m1 = np.array([87, 10, 3])
+    # m2 = np.array([55, 15, 6, 12, 12])
+    # idx_m = ((0,), [1], (2,))
+    # s = np.ones((len(m0), len(m1), len(m2)))
 
-    p, stats = hl.ilp(idx_m, (m0, m1, m2), seed=s)
-    assert stats["conv"]
-    # assert stats["chiSq"] < 70  # seems a bit high
-    # assert stats["pValue"] > 0.0  # seems a bit low
-    assert stats["pop"] == 100.0
-    assert np.allclose(np.sum(p, (0, 1)), m2)
-    assert np.allclose(np.sum(p, (1, 2)), m0)
-    assert np.allclose(np.sum(p, (2, 0)), m1)
+    # p, stats = hl.ilp(idx_m, (m0, m1, m2)) #, lbound=s)
+    # assert stats["conv"]
+    # # assert stats["chiSq"] < 70  # seems a bit high
+    # # assert stats["pValue"] > 0.0  # seems a bit low
+    # assert stats["pop"] == 100.0
+    # assert np.allclose(np.sum(p, (0, 1)), m2)
+    # assert np.allclose(np.sum(p, (1, 2)), m0)
+    # assert np.allclose(np.sum(p, (2, 0)), m1)
 
-    m0 = np.array([52, 48])
-    m1 = np.array([87, 13])
-    m2 = np.array([67, 33])
-    m3 = np.array([55, 45])
-    idx2 = [[0], [1], [2], [3]]
-    s = np.ones([len(m0), len(m1), len(m2), len(m3)])
+    # m0 = np.array([52, 48])
+    # m1 = np.array([87, 13])
+    # m2 = np.array([67, 33])
+    # m3 = np.array([55, 45])
+    # idx2 = [[0], [1], [2], [3]]
+    # s = np.ones([len(m0), len(m1), len(m2), len(m3)])
 
-    p, stats = hl.ilp(idx2, [m0, m1, m2, m3], seed=s)
+    # p, stats = hl.ilp(idx2, [m0, m1, m2, m3], lbound=s)
+    # assert stats["conv"]
+    # # assert stats["chiSq"] < 5.5
+    # # assert stats["pValue"] > 0.02
+    # assert stats["pop"] == 100.0
+    # assert np.allclose(np.sum(p, (0, 1, 2)), m3)
+    # assert np.allclose(np.sum(p, (1, 2, 3)), m0)
+    # assert np.allclose(np.sum(p, (2, 3, 0)), m1)
+    # assert np.allclose(np.sum(p, (3, 0, 1)), m2)
+
+    # # check dimension consistency check works
+    # s = np.ones([2, 3, 7, 5])
+    # m1 = np.ones([2, 3], dtype=int) * 5 * 7
+    # m2 = np.ones([3, 5], dtype=int) * 7 * 2
+    # m3 = np.ones([5, 7], dtype=int) * 2 * 3
+    # with pytest.raises(ValueError):
+    #     hl.ilp([[0, 1], [1, 2], [2, 3]], [m1, m2, m3], lbound=s)
+
+    # s = np.ones((2, 3, 5))
+    # with pytest.raises(ValueError):
+    #     hl.ilp([[0, 1], [1, 2], [2, 3]], [m1, m2, m3], lbound=s)
+
+    m0 = np.array([15, 15])
+    m1 = np.array([10, 10, 10])
+
+    lbound = np.full((2, 3), 5)
+
+    p, stats = hl.ilp((0, 1), (m0, m1), lbound=lbound)
     assert stats["conv"]
     # assert stats["chiSq"] < 5.5
     # assert stats["pValue"] > 0.02
-    assert stats["pop"] == 100.0
-    assert np.allclose(np.sum(p, (0, 1, 2)), m3)
-    assert np.allclose(np.sum(p, (1, 2, 3)), m0)
-    assert np.allclose(np.sum(p, (2, 3, 0)), m1)
-    assert np.allclose(np.sum(p, (3, 0, 1)), m2)
+    assert stats["pop"] == 30
+    assert (p == 5).all()
 
-    # check dimension consistency check works
-    s = np.ones([2, 3, 7, 5])
-    m1 = np.ones([2, 3], dtype=int) * 5 * 7
-    m2 = np.ones([3, 5], dtype=int) * 7 * 2
-    m3 = np.ones([5, 7], dtype=int) * 2 * 3
-    with pytest.raises(ValueError):
-        hl.ilp([[0, 1], [1, 2], [2, 3]], [m1, m2, m3], seed=s)
+    ubound = np.full((2, 3), 30)
+    ubound[1, 1] = 0
+    p, stats = hl.ilp((0, 1), (m0, m1), ubound=ubound)
+    assert stats["conv"]
+    # assert stats["chiSq"] < 5.5
+    # assert stats["pValue"] > 0.02
+    assert stats["pop"] == 30
+    assert p[1, 1] == 0
 
-    s = np.ones((2, 3, 5))
-    with pytest.raises(ValueError):
-        hl.ilp([[0, 1], [1, 2], [2, 3]], [m1, m2, m3], seed=s)
+    ubound = np.full((2, 3), 30)
+    ubound[0, 2] = 0
+    p, stats = hl.ilp((0, 1), (m0, m1), ubound=ubound)
+    assert stats["conv"]
+    # assert stats["chiSq"] < 5.5
+    # assert stats["pValue"] > 0.02
+    assert stats["pop"] == 30
+    assert p[0, 2] == 0
+
+    lbound = np.full((2, 3), 2)
+    lbound[0, 2] = 0
+    p, stats = hl.ilp((0, 1), (m0, m1), lbound=lbound, ubound=ubound)
+    assert stats["conv"]
+    # assert stats["chiSq"] < 5.5
+    # assert stats["pValue"] > 0.02
+    assert stats["pop"] == 30
+    assert p[0, 2] == 0

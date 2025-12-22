@@ -4,7 +4,7 @@ from typing import Any, Sequence
 import numpy as np
 import numpy.typing as npt
 from itrx import Itr
-from scipy.optimize import LinearConstraint, milp
+from scipy.optimize import Bounds, LinearConstraint, milp
 
 # 1. ILP as a replacement for QIS (no seed) - inputs are marginals.
 # 1a. can choice of seed
@@ -15,11 +15,19 @@ def _strides(m: npt.NDArray) -> tuple[int, ...]:
     return (1, *m.shape[:-1])
 
 
+def _sum_over(result: npt.NDArray[np.int64], indices: Sequence[int]) -> npt.NDArray[np.int64]:
+    sum_dims = tuple(d for d in range(result.ndim) if d not in indices)
+    print(sum_dims)
+    # empty tuple
+    return result.sum(axis=sum_dims)
+
+
 def ilp(
     indices: Sequence[Sequence[int] | int],
     marginals: Sequence[npt.NDArray[np.int64]],
     *,
-    seed: npt.NDArray[np.float64] | None = None,
+    lbound: npt.NDArray[np.float64] | None = None,
+    ubound: npt.NDArray[np.float64] | None = None,
 ) -> tuple[npt.NDArray[np.int64], dict[str, Any]]:
     indices = Itr(indices).map(lambda idx: (idx,) if isinstance(idx, int) else idx).collect()
     n_dim = len(Itr(indices).flatten().collect(set))
@@ -33,14 +41,27 @@ def ilp(
             shapelist[idx] = marginal.shape[i]
     shape = tuple(shapelist)
 
-    if seed is not None and seed.shape != shape:
-        raise ValueError("seed dimensions are inconsistent with marginals", seed.shape, shape)
+    if lbound is not None and lbound.shape != shape:
+        raise ValueError("lbound dimensions are inconsistent with marginals", lbound.shape, shape)
+    if ubound is not None and ubound.shape != shape:
+        raise ValueError("ubound dimensions are inconsistent with marginals", ubound.shape, shape)
 
     # determine total population
     pop = marginals[0].sum()
     for m in marginals[1:]:
         if m.sum() != pop:
             raise ValueError("Inconsistent marginal sums")
+
+    # check bounds
+    if lbound is not None and lbound.sum() > pop:
+        raise ValueError("Lower bound is too large")
+
+    if ubound is not None and ubound.sum() < pop:
+        raise ValueError("Upper bound is too small")
+
+    if lbound is not None and ubound is not None:
+        if (ubound - lbound < 0).any():
+            raise ValueError("Bounds are inconsistent (upper<lower)")
 
     n_states = prod(shape)
 
@@ -58,12 +79,22 @@ def ilp(
     # TODO perhaps a transpose is needed before flattening? yes
     constraints = [LinearConstraint(Ai, mi.T.flatten()) for Ai, mi in zip(A, marginals, strict=True)]
     integrality = np.ones(n_states, dtype=int)
-    # TODO seed? check flatten is consistent/works! no
-    x0 = np.full(n_states, marginals[0].sum() / n_states) if seed is None else seed.T.flatten()
 
-    res = milp(x0, constraints=constraints, integrality=integrality)
+    lbound = np.full(n_states, 0) if lbound is None else lbound.reshape(n_states)
+    ubound = np.full(n_states, pop) if ubound is None else ubound.reshape(n_states)
+    bounds = Bounds(lb=lbound, ub=ubound)
+
+    x0 = np.ones(n_states)
+
+    res = milp(x0, bounds=bounds, constraints=constraints, integrality=integrality)
 
     if res.x is None:
-        raise ValueError("milp did not result a result")
+        raise ValueError("milp did not return a result")
 
-    return res.x.reshape(shape).astype(int), {"conv": res.success, "pop": int(res.x.sum())}
+    solution = res.x.reshape(shape).astype(int)
+
+    conv = res.success
+    for idx, marginal in zip(indices, marginals, strict=True):
+        conv &= (_sum_over(solution, idx) == marginal).all()
+
+    return solution, {"conv": conv, "pop": int(res.x.sum())}

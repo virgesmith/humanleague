@@ -295,6 +295,75 @@ def test_QIS() -> None:
     assert np.allclose(np.sum(p, 2), m)
     assert np.allclose(np.sum(p, 0), m)
 
+@pytest.mark.filterwarnings("ignore:humanleague.flatten is deprecated:UserWarning")
+def test_ILP() -> None:
+    m0 = np.array([52, 48])
+    m1 = np.array([10, 77, 13])
+
+    p, stats = hl.ilp([0, 1], [m0, m1])
+    assert stats["conv"]
+    # assert stats["chiSq"] < 0.04
+    # assert stats["pValue"] > 0.9
+    assert stats["pop"] == 100.0
+    assert np.allclose(np.sum(p, 0), m1)
+    assert np.allclose(np.sum(p, 1), m0)
+
+    m0 = np.array([52, 40, 4, 4])
+    m1 = np.array([87, 10, 3])
+    m2 = np.array([55, 15, 6, 12, 12])
+
+    # tuples, scalar indices
+    p, stats = hl.qis((0, 1, 2), (m0, m1, m2))
+    assert stats["conv"]
+    # assert stats["chiSq"] < 73.0  # TODO seems a bit high (probably )
+    # assert stats["pValue"] > 0.0  # TODO this is suspect
+    assert stats["pop"] == 100.0
+    assert np.allclose(np.sum(p, (0, 1)), m2)
+    assert np.allclose(np.sum(p, (1, 2)), m0)
+    assert np.allclose(np.sum(p, (2, 0)), m1)
+
+    # # Test flatten functionality
+    # table = hl.flatten(p)
+
+    # # length is no of dims
+    # assert len(table) == 3
+    # # length of element is pop
+    # assert len(table[0]) == stats["pop"]
+    # # check consistent with marginals
+    # for i, mi in enumerate(m0):
+    #     assert table[0].count(i) == mi
+    # for i, mi in enumerate(m1):
+    #     assert table[1].count(i) == mi
+    # for i, mi in enumerate(m2):
+    #     assert table[2].count(i) == mi
+
+    m0 = np.array([52, 48])
+    m1 = np.array([87, 13])
+    m2 = np.array([67, 33])
+    m3 = np.array([55, 45])
+    idx = [[0], [1], [2], [3]]
+
+    p, stats = hl.ilp(idx, [m0, m1, m2, m3])
+    assert stats["conv"]
+    # assert stats["chiSq"] < 10
+    # assert stats["pValue"] > 0.001
+    assert stats["pop"] == 100
+    assert np.allclose(np.sum(p, (0, 1, 2)), m3)
+    assert np.allclose(np.sum(p, (1, 2, 3)), m0)
+    assert np.allclose(np.sum(p, (2, 3, 0)), m1)
+    assert np.allclose(np.sum(p, (3, 0, 1)), m2)
+
+    m = np.array([[10, 20, 10], [10, 10, 20], [20, 10, 10]])
+    idx = [[0, 1], [1, 2]]
+    p, stats = hl.ilp(idx, [m, m])
+    assert stats["conv"]
+    # assert stats["chiSq"] < 10
+    # assert stats["pValue"] > 0.27
+    assert stats["pop"] == 120
+    assert np.allclose(np.sum(p, 2), m)
+    assert np.allclose(np.sum(p, 0), m)
+
+
 
 def test_QIS_dim_indexing() -> None:
     # tricky array indexing - 1st dimension of d0 already sampled, remaining dimension

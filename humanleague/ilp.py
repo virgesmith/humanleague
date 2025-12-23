@@ -17,9 +17,24 @@ def _strides(m: npt.NDArray) -> tuple[int, ...]:
 
 def _sum_over(result: npt.NDArray[np.int64], indices: Sequence[int]) -> npt.NDArray[np.int64]:
     sum_dims = tuple(d for d in range(result.ndim) if d not in indices)
-    print(sum_dims)
-    # empty tuple
     return result.sum(axis=sum_dims)
+
+
+def _check_bounds(lbound: npt.NDArray[np.float64] | None, ubound: npt.NDArray[np.float64] | None, shape: tuple[int, ...], pop: int) -> None:
+    if lbound is not None and lbound.shape != shape:
+        raise ValueError("lbound dimensions are inconsistent with marginals", lbound.shape, shape)
+    if ubound is not None and ubound.shape != shape:
+        raise ValueError("ubound dimensions are inconsistent with marginals", ubound.shape, shape)
+
+    if lbound is not None and lbound.sum() > pop:
+        raise ValueError("Lower bound is too large")
+
+    if ubound is not None and ubound.sum() < pop:
+        raise ValueError("Upper bound is too small")
+
+    if lbound is not None and ubound is not None:
+        if (ubound - lbound < 0).any():
+            raise ValueError("Bounds are inconsistent (upper<lower)")
 
 
 def ilp(
@@ -41,27 +56,13 @@ def ilp(
             shapelist[idx] = marginal.shape[i]
     shape = tuple(shapelist)
 
-    if lbound is not None and lbound.shape != shape:
-        raise ValueError("lbound dimensions are inconsistent with marginals", lbound.shape, shape)
-    if ubound is not None and ubound.shape != shape:
-        raise ValueError("ubound dimensions are inconsistent with marginals", ubound.shape, shape)
-
     # determine total population
     pop = marginals[0].sum()
     for m in marginals[1:]:
         if m.sum() != pop:
             raise ValueError("Inconsistent marginal sums")
 
-    # check bounds
-    if lbound is not None and lbound.sum() > pop:
-        raise ValueError("Lower bound is too large")
-
-    if ubound is not None and ubound.sum() < pop:
-        raise ValueError("Upper bound is too small")
-
-    if lbound is not None and ubound is not None:
-        if (ubound - lbound < 0).any():
-            raise ValueError("Bounds are inconsistent (upper<lower)")
+    _check_bounds(lbound, ubound, shape, pop)
 
     n_states = prod(shape)
 
@@ -94,7 +95,7 @@ def ilp(
     solution = res.x.reshape(shape).astype(int)
 
     conv = res.success
-    for idx, marginal in zip(indices, marginals, strict=True):
-        conv &= (_sum_over(solution, idx) == marginal).all()
+    for ix, marginal in zip(indices, marginals, strict=True):  # type: ignore[assignment]
+        conv &= (_sum_over(solution, ix) == marginal).all()
 
     return solution, {"conv": conv, "pop": int(res.x.sum())}

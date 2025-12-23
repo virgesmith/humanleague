@@ -296,7 +296,6 @@ def test_QIS() -> None:
     assert np.allclose(np.sum(p, 0), m)
 
 
-@pytest.mark.filterwarnings("ignore:humanleague.flatten is deprecated:UserWarning")
 def test_ILP() -> None:
     m0 = np.array([52, 48])
     m1 = np.array([10, 77, 13])
@@ -323,21 +322,6 @@ def test_ILP() -> None:
     assert np.allclose(np.sum(p, (1, 2)), m0)
     assert np.allclose(np.sum(p, (2, 0)), m1)
 
-    # # Test flatten functionality
-    # table = hl.flatten(p)
-
-    # # length is no of dims
-    # assert len(table) == 3
-    # # length of element is pop
-    # assert len(table[0]) == stats["pop"]
-    # # check consistent with marginals
-    # for i, mi in enumerate(m0):
-    #     assert table[0].count(i) == mi
-    # for i, mi in enumerate(m1):
-    #     assert table[1].count(i) == mi
-    # for i, mi in enumerate(m2):
-    #     assert table[2].count(i) == mi
-
     m0 = np.array([52, 48])
     m1 = np.array([87, 13])
     m2 = np.array([67, 33])
@@ -363,6 +347,16 @@ def test_ILP() -> None:
     assert stats["pop"] == 120
     assert np.allclose(np.sum(p, 2), m)
     assert np.allclose(np.sum(p, 0), m)
+
+
+    # large problem - ILP struggles to get exact solution
+    dim = 5
+    indices = tuple(range(dim))
+
+    marginals = [np.arange(10000, 40001, 10000)] * dim
+
+    result, stats = hl.ilp(indices, marginals)
+    assert stats["conv"]
 
 
 def test_QIS_dim_indexing() -> None:
@@ -454,68 +448,40 @@ def test_QISI() -> None:
 
 
 def test_bounded_ILP() -> None:
-    # m0 = np.array([52, 48])
-    # m1 = np.array([10, 77, 13])
-    # idx = [0, 1]
-    # s = np.ones([len(m0), len(m1)])
+    m0 = np.array([52, 48])
+    m1 = np.array([30, 37, 33])
+    idx = [0, 1]
+    lower = np.full([len(m0), len(m1)], 15)
+    upper = np.full([len(m0), len(m1)], 25)
 
-    # p, stats = hl.ilp(idx, [m0, m1], lbound=s)
-    # assert stats["conv"]
-    # # assert stats["chiSq"] < 0.04
-    # # assert stats["pValue"] > 0.9
-    # assert stats["pop"] == 100.0
-    # assert np.allclose(np.sum(p, 0), m1)
-    # assert np.allclose(np.sum(p, 1), m0)
+    p, stats = hl.ilp(idx, [m0, m1], lbound=lower, ubound=upper)
+    assert stats["conv"]
+    # assert stats["chiSq"] < 0.04
+    # assert stats["pValue"] > 0.9
+    assert stats["pop"] == 100.0
+    assert np.allclose(np.sum(p, 0), m1)
+    assert np.allclose(np.sum(p, 1), m0)
 
-    # m0 = np.array([52, 40, 4, 4])
-    # m1 = np.array([87, 10, 3])
-    # m2 = np.array([55, 15, 6, 12, 12])
-    # idx_m = ((0,), [1], (2,))
-    # s = np.ones((len(m0), len(m1), len(m2)))
+    # tight bounds
+    m0 = np.array([25, 25, 25, 25])
+    m1 = np.array([50, 50])
+    m2 = np.array([20, 20, 20, 20, 20])
+    idx_m = ((0,), [1], (2,))
+    lower = np.full((len(m0), len(m1), len(m2)), 2)
+    upper = np.full((len(m0), len(m1), len(m2)), 3)
 
-    # p, stats = hl.ilp(idx_m, (m0, m1, m2)) #, lbound=s)
-    # assert stats["conv"]
-    # # assert stats["chiSq"] < 70  # seems a bit high
-    # # assert stats["pValue"] > 0.0  # seems a bit low
-    # assert stats["pop"] == 100.0
-    # assert np.allclose(np.sum(p, (0, 1)), m2)
-    # assert np.allclose(np.sum(p, (1, 2)), m0)
-    # assert np.allclose(np.sum(p, (2, 0)), m1)
-
-    # m0 = np.array([52, 48])
-    # m1 = np.array([87, 13])
-    # m2 = np.array([67, 33])
-    # m3 = np.array([55, 45])
-    # idx2 = [[0], [1], [2], [3]]
-    # s = np.ones([len(m0), len(m1), len(m2), len(m3)])
-
-    # p, stats = hl.ilp(idx2, [m0, m1, m2, m3], lbound=s)
-    # assert stats["conv"]
-    # # assert stats["chiSq"] < 5.5
-    # # assert stats["pValue"] > 0.02
-    # assert stats["pop"] == 100.0
-    # assert np.allclose(np.sum(p, (0, 1, 2)), m3)
-    # assert np.allclose(np.sum(p, (1, 2, 3)), m0)
-    # assert np.allclose(np.sum(p, (2, 3, 0)), m1)
-    # assert np.allclose(np.sum(p, (3, 0, 1)), m2)
-
-    # # check dimension consistency check works
-    # s = np.ones([2, 3, 7, 5])
-    # m1 = np.ones([2, 3], dtype=int) * 5 * 7
-    # m2 = np.ones([3, 5], dtype=int) * 7 * 2
-    # m3 = np.ones([5, 7], dtype=int) * 2 * 3
-    # with pytest.raises(ValueError):
-    #     hl.ilp([[0, 1], [1, 2], [2, 3]], [m1, m2, m3], lbound=s)
-
-    # s = np.ones((2, 3, 5))
-    # with pytest.raises(ValueError):
-    #     hl.ilp([[0, 1], [1, 2], [2, 3]], [m1, m2, m3], lbound=s)
+    p, stats = hl.ilp(idx_m, (m0, m1, m2), lbound=lower, ubound=upper)
+    assert stats["conv"]
+    # assert stats["chiSq"] < 70  # seems a bit high
+    # assert stats["pValue"] > 0.0  # seems a bit low
+    assert stats["pop"] == 100.0
+    assert np.allclose(np.sum(p, (0, 1)), m2)
+    assert np.allclose(np.sum(p, (1, 2)), m0)
+    assert np.allclose(np.sum(p, (2, 0)), m1)
 
     m0 = np.array([15, 15])
     m1 = np.array([10, 10, 10])
-
     lbound = np.full((2, 3), 5)
-
     p, stats = hl.ilp((0, 1), (m0, m1), lbound=lbound)
     assert stats["conv"]
     # assert stats["chiSq"] < 5.5
@@ -549,3 +515,15 @@ def test_bounded_ILP() -> None:
     # assert stats["pValue"] > 0.02
     assert stats["pop"] == 30
     assert p[0, 2] == 0
+
+    # large problem - ILP struggles to get exact solution
+    dim = 5
+    indices = tuple(range(dim))
+
+    marginals = [np.arange(10000, 40001, 10000)] * dim
+
+    lbound = np.ones((4,)* 5)
+    ubound = np.full((4,)* 5, 1000)
+
+    result, stats = hl.ilp(indices, marginals, lbound=lbound, ubound=ubound)
+    assert stats["conv"]

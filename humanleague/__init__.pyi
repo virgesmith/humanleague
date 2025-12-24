@@ -7,7 +7,7 @@ import typing
 import numpy as np
 import numpy.typing as npt
 
-from .ilp import ilp
+from .ilp import ilp, ilp_ipf
 from .utils import tabulate_counts, tabulate_individuals
 
 FloatArray1d = npt.NDArray[np.float64] | list[float]
@@ -18,15 +18,13 @@ __all__ = [
     "flatten",
     "integerise",
     "ilp",
+    "ilp_ipf",
     "ipf",
     "qis",
     "qisi",
     "tabulate_counts",
     "tabulate_individuals",
 ]
-
-# def tabulate_counts(population: npt.NDArray, names: list[str] | tuple[str, ...] | None = None) -> pd.Series: ...
-# def tabulate_individuals(population: npt.NDArray, names: list[str] | tuple[str, ...] | None = None) -> pd.DataFrame: ...
 
 class SobolSequence:
     @typing.overload

@@ -348,7 +348,6 @@ def test_ILP() -> None:
     assert np.allclose(np.sum(p, 2), m)
     assert np.allclose(np.sum(p, 0), m)
 
-
     # large problem - ILP struggles to get exact solution
     dim = 5
     indices = tuple(range(dim))
@@ -522,8 +521,79 @@ def test_bounded_ILP() -> None:
 
     marginals = [np.arange(10000, 40001, 10000)] * dim
 
-    lbound = np.ones((4,)* 5)
-    ubound = np.full((4,)* 5, 1000)
+    lbound = np.ones((4,) * 5)
+    ubound = np.full((4,) * 5, 1000)
 
     result, stats = hl.ilp(indices, marginals, lbound=lbound, ubound=ubound)
     assert stats["conv"]
+
+
+def test_ILP2() -> None:
+    m0 = np.array([52, 48])
+    m1 = np.array([10, 77, 13])
+    idx = [0, 1]
+    s = np.ones([len(m0), len(m1)])
+
+    p, stats = hl.ilp_ipf(s, idx, [m0, m1])
+    assert stats["conv"]
+    # assert stats["chiSq"] < 0.04
+    # assert stats["pValue"] > 0.9
+    assert stats["pop"] == 100.0
+    assert np.allclose(np.sum(p, 0), m1)
+    assert np.allclose(np.sum(p, 1), m0)
+
+    m0 = np.array([52, 40, 4, 4])
+    m1 = np.array([87, 10, 3])
+    m2 = np.array([55, 15, 6, 12, 12])
+    idx_m = ((0,), [1], (2,))
+    s = np.ones((len(m0), len(m1), len(m2)))
+
+    p, stats = hl.ilp_ipf(s, idx_m, (m0, m1, m2))
+    assert stats["conv"]
+    # assert stats["chiSq"] < 70  # seems a bit high
+    # assert stats["pValue"] > 0.0  # seems a bit low
+    assert stats["pop"] == 100.0
+    assert np.allclose(np.sum(p, (0, 1)), m2)
+    assert np.allclose(np.sum(p, (1, 2)), m0)
+    assert np.allclose(np.sum(p, (2, 0)), m1)
+
+    m0 = np.array([52, 48])
+    m1 = np.array([87, 13])
+    m2 = np.array([67, 33])
+    m3 = np.array([55, 45])
+    idx2 = [[0], [1], [2], [3]]
+    s = np.ones([len(m0), len(m1), len(m2), len(m3)])
+
+    p, stats = hl.ilp_ipf(s, idx2, [m0, m1, m2, m3])
+    assert stats["conv"]
+    # assert stats["chiSq"] < 5.5
+    # assert stats["pValue"] > 0.02
+    assert stats["pop"] == 100.0
+    assert np.allclose(np.sum(p, (0, 1, 2)), m3)
+    assert np.allclose(np.sum(p, (1, 2, 3)), m0)
+    assert np.allclose(np.sum(p, (2, 3, 0)), m1)
+    assert np.allclose(np.sum(p, (3, 0, 1)), m2)
+
+    # check dimension consistency check works
+    s = np.ones([2, 3, 7, 5])
+    m1 = np.ones([2, 3], dtype=int) * 5 * 7
+    m2 = np.ones([3, 5], dtype=int) * 7 * 2
+    m3 = np.ones([5, 7], dtype=int) * 2 * 3
+    with pytest.raises(RuntimeError):
+        hl.ilp_ipf(s, [[0, 1], [1, 2], [2, 3]], [m1, m2, m3])
+    with pytest.raises(RuntimeError):
+        hl.ipf(
+            s,
+            [[0, 1], [1, 2], [2, 3]],
+            [m1.astype(float), m2.astype(float), m3.astype(float)],
+        )
+
+    s = np.ones((2, 3, 5))
+    with pytest.raises(RuntimeError):
+        hl.ilp_ipf(s, [[0, 1], [1, 2], [2, 3]], [m1, m2, m3])
+    with pytest.raises(RuntimeError):
+        hl.ipf(
+            s,
+            [[0, 1], [1, 2], [2, 3]],
+            [m1.astype(float), m2.astype(float), m3.astype(float)],
+        )

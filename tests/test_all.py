@@ -135,6 +135,25 @@ def test_integerise() -> None:
     with pytest.raises(RuntimeError):
         hl.integerise(a)
 
+    # check both variants handle invalid inputs
+    rng = np.random.default_rng(19937)
+    invalid_inf_1d = rng.uniform(2, 10, size=5)
+    invalid_inf_1d[1] = np.inf
+    invalid_nan_1d = rng.uniform(2, 10, size=5)
+    invalid_nan_1d[1] = np.nan
+
+    invalid_inf_3d = np.ones((2, 3, 5))
+    invalid_inf_3d[1, 1, 1] = np.inf
+    invalid_nan_3d = np.ones((2, 3, 5))
+    invalid_nan_3d[1, 1, 1] = np.inf
+
+    for a in [invalid_inf_1d, invalid_nan_1d, invalid_inf_3d, invalid_nan_3d]:
+        # restricted to std::runtime_error in code shared with R
+        with pytest.raises(RuntimeError):
+            hl.integerise(a)
+        with pytest.raises(ValueError):
+            hl.integerise(a, 10)
+
 
 def test_IPF() -> None:
     m0 = np.array([52.0, 48.0])

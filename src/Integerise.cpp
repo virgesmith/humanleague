@@ -55,6 +55,13 @@ std::vector<int> integeriseMarginalDistribution(const std::vector<double>& p, in
 
 Integeriser::Integeriser(const NDArray<double>& seed) : m_seed(seed)
 {
+  // check seed values
+  for (double* p = seed.begin(); p != seed.end(); ++p) {
+    if (!std::isfinite(*p)) {
+      throw std::runtime_error("Invalid value in seed: %%"s % *p);
+    }
+  }
+
   // construct 1-d integer marginals in each dim
   size_t dim = m_seed.dim();
   // check total population is integral (or close)

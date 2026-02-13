@@ -92,8 +92,7 @@ template <typename T> std::vector<NDArray<T>> collect_marginals(const py::iterab
 py::list flatten(const py::array_t<int64_t>& a) {
 
   auto warnings = pybind11::module::import("warnings");
-  warnings.attr("warn")(
-      "humanleague.flatten is deprecated, consider using humanleague.tabulate_individuals instead.");
+  warnings.attr("warn")("humanleague.flatten is deprecated, consider using humanleague.tabulate_individuals instead.");
 
   const NDArray<int64_t> array = asNDArray<int64_t>(a);
 
@@ -122,6 +121,14 @@ py::tuple integerise1d(py::array_t<double> frac_a, int pop) {
 
   // convert py::array_t to vector and normalise it to get probabilities
   std::vector<double> prob = toVector(frac_a);
+
+  // ensure all values are finite (negative values are permitted)
+  for (auto x : prob) {
+    if (!std::isfinite(x)) {
+      throw py::value_error("Invalid value in input: %%"s % x);
+    }
+  }
+
   double sum = std::accumulate(prob.begin(), prob.end(), 0.0);
   for (double& p : prob) {
     p /= sum;

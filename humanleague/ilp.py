@@ -53,13 +53,12 @@ def _get_shape(indices, marginals) -> tuple[int, ...]:
     return tuple(shapelist)
 
 
-# determine total population and check marginals consistent
-def _get_population(marginals) -> int:
-    pop = marginals[0].sum()
-    for m in marginals[1:]:
-        if m.sum() != pop:
-            raise ValueError("Inconsistent marginal sums")
-    return pop
+# determine total population and check marginals are consistent
+def _get_population(marginals: Sequence[npt.NDArray[np.int64]]) -> int:
+    pop = Itr(marginals).map(np.ndarray.sum).collect(set)
+    if len(pop) > 1:
+        raise ValueError("Inconsistent marginal sums")
+    return pop.pop()
 
 
 def ilp(
@@ -144,13 +143,14 @@ def ilp_ipf(
     constraints = [LinearConstraint(Ai, mi.T.flatten()) for Ai, mi in zip(A, marginals, strict=True)]
     integrality = np.ones(n_states, dtype=int)
 
-    ipf_solution, ipf_stats = ipf(seed, indices, marginals)
+    ipf_solution, ipf_stats = ipf(seed, indices, marginals)  # type: ignore[arg-type]
 
     if not ipf_stats["conv"]:
         raise ValueError("IPF failed")
 
     x0 = np.ones(n_states)
 
+    # widen bounds until a solution is found
     width = 0
     while width < 4:
         lbound = np.clip(np.rint(ipf_solution - width), 0, None).reshape(n_states)

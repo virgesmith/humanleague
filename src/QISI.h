@@ -3,8 +3,7 @@
 #include "Microsynthesis.h"
 #include "Sobol.h"
 
-class QISI : public Microsynthesis<int64_t>
-{
+class QISI : public Microsynthesis<int64_t> {
 public:
   QISI(const index_list_t& indices, marginal_list_t& marginals, int64_t skips = 0);
 
@@ -24,7 +23,6 @@ public:
   double pValue() const;
 
 private:
-
   void recomputeIPF(const NDArray<double>& seed);
 
   Sobol m_sobolSeq;
@@ -36,4 +34,3 @@ private:
   double m_degeneracy;
   bool m_conv;
 };
-

@@ -1,23 +1,23 @@
 
-#include "NDArrayUtils.h"
-#include "Index.h"
 #include "IPF.h"
+#include "Index.h"
+#include "Integerise.h"
+#include "NDArrayUtils.h"
 #include "QIS.h"
 #include "QISI.h"
-#include "Integerise.h"
-#include "StatFuncs.h"
 #include "Sobol.h"
+#include "StatFuncs.h"
 
 #include "UnitTester.h"
 
 #include <Rcpp.h>
 
-#include <vector>
 #include <cstdint>
+#include <vector>
 
 using namespace Rcpp;
 
-//#include <csignal>
+// #include <csignal>
 
 // // Handler for ctrl-C
 // extern "C" void sigint_handler(int)
@@ -28,22 +28,18 @@ using namespace Rcpp;
 // }
 // Enable ctrl-C to interrupt the code
 // TODO this doesnt seem to work, perhaps another approach (like a separate thread?)
-//void (*oldhandler)(int) = signal(SIGINT, sigint_handler);
+// void (*oldhandler)(int) = signal(SIGINT, sigint_handler);
 
 namespace Rhelpers {
 
-template<typename T, typename R>
-NDArray<T> convertArray(R rArray)
-{
+template <typename T, typename R> NDArray<T> convertArray(R rArray) {
   // workaround for 1-d arrays (which don't have "dim" attribute)
-  //Dimension colMajorSizes(rArray.hasAttribute("dim") ? Dimension(rArray.attr("dim")) : Dimension((size_t)rArray.size()));
+  // Dimension colMajorSizes(rArray.hasAttribute("dim") ? Dimension(rArray.attr("dim")) :
+  // Dimension((size_t)rArray.size()));
   std::vector<int64_t> colMajorSizes;
-  if (rArray.hasAttribute("dim"))
-  {
+  if (rArray.hasAttribute("dim")) {
     colMajorSizes = as<std::vector<int64_t>>(rArray.attr("dim"));
-  }
-  else
-  {
+  } else {
     colMajorSizes.push_back(rArray.size());
   }
   // This is column major data - reverse the dimensions but copy the data as-is for efficiency
@@ -51,8 +47,7 @@ NDArray<T> convertArray(R rArray)
 
   // This makes IPF work correctly
   size_t i = 0;
-  for (TransposedIndex idx(colMajorSizes); !idx.end(); ++idx, ++i)
-  {
+  for (TransposedIndex idx(colMajorSizes); !idx.end(); ++idx, ++i) {
     array[idx] = rArray[i];
   }
 
@@ -60,80 +55,60 @@ NDArray<T> convertArray(R rArray)
 }
 
 // Helper to get overall dimension and sizes before constructing QIS
-std::vector<int64_t> getDimension(List indices, List marginals)
-{
-  std::map<int64_t,int64_t> lookup;
+std::vector<int64_t> getDimension(List indices, List marginals) {
+  std::map<int64_t, int64_t> lookup;
   // dont worry about inconsistencies here, QIS will detect and report them
-  for (R_xlen_t i = 0; i < indices.size(); ++i)
-  {
+  for (R_xlen_t i = 0; i < indices.size(); ++i) {
     const IntegerVector& iv = indices[i];
     const IntegerVector& mv = marginals[i];
     std::vector<int64_t> colMajorSizes;
-    if (mv.hasAttribute("dim"))
-    {
+    if (mv.hasAttribute("dim")) {
       colMajorSizes = as<std::vector<int64_t>>(mv.attr("dim"));
-    }
-    else
-    {
+    } else {
       colMajorSizes.push_back(mv.size());
     }
-    for (size_t j = 0; j < colMajorSizes.size(); ++j)
-    {
+    for (size_t j = 0; j < colMajorSizes.size(); ++j) {
       lookup[iv[j]] = colMajorSizes[j];
     }
   }
   std::vector<int64_t> ret;
   ret.reserve(lookup.size());
-  for (const auto& kv: lookup)
+  for (const auto& kv : lookup)
     ret.push_back(kv.second);
   return ret;
 }
 
-void checkSeed(NumericVector seed, const std::vector<int64_t>& impliedDim)
-{
+void checkSeed(NumericVector seed, const std::vector<int64_t>& impliedDim) {
   const Dimension& seedDim = seed.attr("dim");
-  for (size_t i = 0; i < static_cast<size_t>(seedDim.size()); ++i)
-  {
+  for (size_t i = 0; i < static_cast<size_t>(seedDim.size()); ++i) {
     if (seedDim[i] != impliedDim[i])
-      throw std::runtime_error("mismatch between seed dimension " + std::to_string(i+1) + " and marginal");
+      throw std::runtime_error("mismatch between seed dimension " + std::to_string(i + 1) + " and marginal");
   }
 
   // -ve seed values are not permitted
-  for (R_xlen_t i = 0; i < seed.size(); ++i)
-  {
+  for (R_xlen_t i = 0; i < seed.size(); ++i) {
     if (seed[i] < 0)
       throw std::runtime_error("negative value in seed");
   }
 }
 
-}
-
+} // namespace Rhelpers
 
 //' Multidimensional IPF
 //'
 //' C++ multidimensional IPF implementation
 //' @param seed an n-dimensional array of seed values
-//' @param indices a List of 1-d arrays specifying the dimension indices of each marginal as they apply to the seed values
-//' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be identical
-//' @return an object containing:
-//' \itemize{
-//'   \item{a flag indicating if the solution converged}
-//'   \item{the population matrix}
-//'   \item{the total population}
-//'   \item{the number of iterations required}
-//'   \item{the maximum error between the generated population and the marginals}
-//' }
-//' @examples
-//' ageByGender = array(c(1,2,5,3,4,3,4,5,1,2), dim=c(5,2))
-//' ethnicityByGender = array(c(4,6,5,6,4,5), dim=c(3,2))
-//' seed = array(rep(1,30), dim=c(5,2,3))
-//' result = ipf(seed, list(c(1,2), c(3,2)), list(ageByGender, ethnicityByGender))
-//' @export
+//' @param indices a List of 1-d arrays specifying the dimension indices of each marginal as they apply to the seed
+//values ' @param marginals a List of arrays containing marginal data. The sum of elements in each array must be
+//identical ' @return an object containing: ' \itemize{ '   \item{a flag indicating if the solution converged} '
+//\item{the population matrix} '   \item{the total population} '   \item{the number of iterations required} ' \item{the
+//maximum error between the generated population and the marginals} ' } ' @examples ' ageByGender =
+//array(c(1,2,5,3,4,3,4,5,1,2), dim=c(5,2)) ' ethnicityByGender = array(c(4,6,5,6,4,5), dim=c(3,2)) ' seed =
+//array(rep(1,30), dim=c(5,2,3)) ' result = ipf(seed, list(c(1,2), c(3,2)), list(ageByGender, ethnicityByGender)) '
+//@export
 // [[Rcpp::export]]
-List ipf(NumericVector seed, List indices, List marginals)
-{
-  if (indices.size() != marginals.size())
-  {
+List ipf(NumericVector seed, List indices, List marginals) {
+  if (indices.size() != marginals.size()) {
     throw std::runtime_error("index and marginal lists are different lengths");
   }
 
@@ -156,20 +131,19 @@ List ipf(NumericVector seed, List indices, List marginals)
     throw std::runtime_error("no. of marginals not equal to no. of indices");
 
   // assemble dimensions (row major) for seed
-  for (int64_t i = dim-1; i >= 0; --i)
+  for (int64_t i = dim - 1; i >= 0; --i)
     s.push_back(rSizes[(size_t)i]);
 
   // insert indices and marginals in reverse order (R being column-major)
-  for (int64_t i = k-1; i >= 0; --i)
-  {
+  for (int64_t i = k - 1; i >= 0; --i) {
     const IntegerVector& iv = indices[i];
     const NumericVector& nv = marginals[i];
     idx.push_back(std::vector<int64_t>(iv.size()));
     // also need to reverse dimension indices
     for (R_xlen_t j = 0; j < iv.size(); ++j)
       idx.back()[j] = dim - iv[j];
-    //std::copy(iv.begin(), iv.end(), idx.back().begin());
-    // convert to NDArray
+    // std::copy(iv.begin(), iv.end(), idx.back().begin());
+    //  convert to NDArray
     m.push_back(std::move(Rhelpers::convertArray<double, NumericVector>(nv)));
   }
 
@@ -192,7 +166,6 @@ List ipf(NumericVector seed, List indices, List marginals)
   return result;
 }
 
-
 //' Multidimensional QIS
 //'
 //' C++ multidimensional Quasirandom Integer Sampling implementation
@@ -213,10 +186,8 @@ List ipf(NumericVector seed, List indices, List marginals)
 //' result = qis(list(c(1,2), c(3,2)), list(ageByGender, ethnicityByGender))
 //' @export
 // [[Rcpp::export]]
-List qis(List indices, List marginals, int skips = 0)
-{
-  if (indices.size() != marginals.size())
-  {
+List qis(List indices, List marginals, int skips = 0) {
+  if (indices.size() != marginals.size()) {
     throw std::runtime_error("index and marginal lists are different lengths");
   }
 
@@ -236,8 +207,7 @@ List qis(List indices, List marginals, int skips = 0)
     throw std::runtime_error("no. of marginals not equal to no. of indices");
 
   // insert indices and marginals in reverse order (R being column-major)
-  for (int64_t i = k-1; i >= 0; --i)
-  {
+  for (int64_t i = k - 1; i >= 0; --i) {
     const IntegerVector& iv = indices[i];
     const IntegerVector& nv = marginals[i];
     idx.push_back(std::vector<int64_t>(iv.size()));
@@ -298,10 +268,8 @@ List qis(List indices, List marginals, int skips = 0)
 //' result = qisi(seed, list(c(1,2), c(3,2)), list(ageByGender, ethnicityByGender))
 //' @export
 // [[Rcpp::export]]
-List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
-{
-  if (indices.size() != marginals.size())
-  {
+List qisi(NumericVector seed, List indices, List marginals, int skips = 0) {
+  if (indices.size() != marginals.size()) {
     throw std::runtime_error("index and marginal lists are different lengths");
   }
 
@@ -324,12 +292,11 @@ List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
     throw std::runtime_error("no. of marginals not equal to no. of indices");
 
   // assemble dimensions (row major) for seed
-  for (int64_t i = dim-1; i >= 0; --i)
+  for (int64_t i = dim - 1; i >= 0; --i)
     s.push_back(rSizes[(size_t)i]);
 
-    // insert indices and marginals in reverse order (R being column-major)
-  for (int64_t i = k-1; i >= 0; --i)
-  {
+  // insert indices and marginals in reverse order (R being column-major)
+  for (int64_t i = k - 1; i >= 0; --i) {
     const IntegerVector& iv = indices[i];
     const IntegerVector& mv = marginals[i];
     idx.push_back(std::vector<int64_t>(iv.size()));
@@ -370,15 +337,12 @@ List qisi(NumericVector seed, List indices, List marginals, int skips = 0)
 
 //' Generate integer population from a fractional one where the 1-d partial sums along each axis have an integral total
 //'
-//' This function will generate the closest integer array to the fractional population provided, preserving the sums in every dimension.
-//' @param population a numeric vector of state occupation probabilities. Must sum to unity (to within double precision epsilon)
-//' @return an integer vector of frequencies that sums to pop.
-//' @examples
-//' prob2IntFreq(c(0.1,0.2,0.3,0.4), 11)
-//' @export
+//' This function will generate the closest integer array to the fractional population provided, preserving the sums in
+//every dimension. ' @param population a numeric vector of state occupation probabilities. Must sum to unity (to within
+//double precision epsilon) ' @return an integer vector of frequencies that sums to pop. ' @examples '
+//prob2IntFreq(c(0.1,0.2,0.3,0.4), 11) ' @export
 // [[Rcpp::export]]
-List integerise(NumericVector population)
-{
+List integerise(NumericVector population) {
   Dimension rSizes = population.attr("dim");
   const int64_t dim = rSizes.size();
 
@@ -386,7 +350,7 @@ List integerise(NumericVector population)
   s.reserve(dim);
 
   // assemble dimensions (row major) for seed
-  for (int64_t i = dim-1; i >= 0; --i)
+  for (int64_t i = dim - 1; i >= 0; --i)
     s.push_back(rSizes[(size_t)i]);
 
   // Read-only shallow copy of seed
@@ -406,29 +370,22 @@ List integerise(NumericVector population)
   return result;
 }
 
-
 //' Generate integer frequencies from discrete probabilities and an overall population.
 //'
 //' This function will generate the closest integer vector to the probabilities scaled to the population.
-//' @param pIn a numeric vector of state occupation probabilities. Must sum to unity (to within double precision epsilon)
-//' @param pop the total population
-//' @return an integer vector of frequencies that sum to pop, and the RMS difference from the original values.
-//' @examples
-//' prob2IntFreq(c(0.1,0.2,0.3,0.4), 11)
-//' @export
+//' @param pIn a numeric vector of state occupation probabilities. Must sum to unity (to within double precision
+//epsilon) ' @param pop the total population ' @return an integer vector of frequencies that sum to pop, and the RMS
+//difference from the original values. ' @examples ' prob2IntFreq(c(0.1,0.2,0.3,0.4), 11) ' @export
 // [[Rcpp::export]]
-List prob2IntFreq(NumericVector pIn, int pop)
-{
+List prob2IntFreq(NumericVector pIn, int pop) {
   double rmse;
   const std::vector<double>& p = as<std::vector<double>>(pIn);
 
-  if (pop < 0)
-  {
+  if (pop < 0) {
     throw std::runtime_error("population cannot be negative");
   }
 
-  if (fabs(std::accumulate(p.begin(), p.end(), -1.0)) > 1000*std::numeric_limits<double>::epsilon())
-  {
+  if (fabs(std::accumulate(p.begin(), p.end(), -1.0)) > 1000 * std::numeric_limits<double>::epsilon()) {
     throw std::runtime_error("probabilities do not sum to unity");
   }
   std::vector<int> f = integeriseMarginalDistribution(p, pop, rmse);
@@ -450,22 +407,22 @@ List prob2IntFreq(NumericVector pIn, int pop)
 //' sobolSequence(2, 1000, 1000) # will skip 512 numbers!
 //' @export
 // [[Rcpp::export]]
-NumericMatrix sobolSequence(int dim, int n, int skip = 0)
-{
-  static const double scale = 0.5 / (1ull<<31);
+NumericMatrix sobolSequence(int dim, int n, int skip = 0) {
+  static const double scale = 0.5 / (1ull << 31);
 
   NumericMatrix m(n, dim);
 
   Sobol s(dim, skip);
 
-  for (int j = 0; j <n ; ++j)
+  for (int j = 0; j < n; ++j)
     for (int i = 0; i < dim; ++i)
-      m(j,i) = s() * scale;
+      m(j, i) = s() * scale;
 
   return m;
 }
 
-//' Convert multidimensional array of counts per state into table form. Each row in the table corresponds to one individual
+//' Convert multidimensional array of counts per state into table form. Each row in the table corresponds to one
+//individual
 //'
 //' This function
 //' @param stateOccupancies an arbitrary-dimension array of (integer) state occupation counts.
@@ -479,19 +436,18 @@ NumericMatrix sobolSequence(int dim, int n, int skip = 0)
 //' print(nrow(table[table$Gender==1,])) # 51
 //' print(nrow(table[table$Age==2,])) # 27
 // [[Rcpp::export]]
-DataFrame flatten(IntegerVector stateOccupancies, StringVector categoryNames)
-{
-  //m.push_back(std::move(convertRArray<int64_t, IntegerVector>(nv)));
+DataFrame flatten(IntegerVector stateOccupancies, StringVector categoryNames) {
+  // m.push_back(std::move(convertRArray<int64_t, IntegerVector>(nv)));
   const NDArray<int64_t>& a = Rhelpers::convertArray<int64_t, IntegerVector>(stateOccupancies);
   int64_t pop = sum(a);
 
   // for R indices start at 1
   const std::vector<std::vector<int>>& list = listify(pop, a, 1);
 
-  // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to DataFrame at end
+  // DataFrame interface is poor and appears buggy. Best approach seems to insert columns in List then assign to
+  // DataFrame at end
   List proxyDf;
-  for (size_t i = 0; i < a.dim(); ++i)
-  {
+  for (size_t i = 0; i < a.dim(); ++i) {
     proxyDf[as<std::string>(categoryNames[i])] = list[i];
   }
 
@@ -505,8 +461,7 @@ DataFrame flatten(IntegerVector stateOccupancies, StringVector categoryNames)
 //' unitTest()
 //' @export
 // [[Rcpp::export]]
-List unitTest()
-{
+List unitTest() {
   const unittest::Logger& log = unittest::run();
 
   List result;

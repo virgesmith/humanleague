@@ -10,14 +10,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "humanleague"
-version = "2.4.3"
+version = "2.4.4"
 authors = [
   { name="Andrew Smith", email="andrew@friarswood.net" },
 ]
 license-files = ["LICENCE", "LICENSE.md"]
 description = "Microsynthesis using quasirandom sampling and/or IPF"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -25,8 +25,8 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "numpy>=2.2.2",
-    "pandas>=2.2.3",
+    "numpy>=2.4.1",
+    "pandas>=2.3.3",
     "pandas-stubs>=2.2.3.250308",
 ]
 
@@ -34,11 +34,10 @@ dependencies = [
 dev = [
   "pybind11>=3.0.0",
   "pytest>=8.1.4",
-  "mypy>=1.5.0",
-  "mypy-extensions>=1.0.0",
   "ruff>=0.12.9",
   "build>=1.2.2.post1",
-  "typing-extensions>=4.15.0",
+  "ty>=0.0.31",
+  "pre-commit>=4.5.1",
 ]
 
 [tool.pytest.ini_options]
@@ -50,8 +49,9 @@ testpaths = [
 line-length = 120
 
 [tool.ruff.lint]
-select = ["B", "C", "E", "F", "I"]
+select = ["ARG", "B", "C", "D103", "E", "F", "I", "N", "PERF", "PTH", "RET", "RUF", "SIM", "UP", "W"]
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
 "**/__init__.py" = ["F401", "F403"]
+"tests/*.py" = ["D103", "N802"]

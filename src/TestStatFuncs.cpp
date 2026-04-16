@@ -5,9 +5,9 @@
 
 #include <cmath>
 
-#include <limits>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <limits>
 
 // TODO add unit tests for cholesky and (inv) cum norm
 
@@ -30,32 +30,27 @@ DF=3, x = 5, r = 0.171797
 DF=255, x = 290.285, r = 0.0636423
 */
 
-
 // tests cumulative normal and its inverse
-void unittest::testCumNorm()
-{
+void unittest::testCumNorm() {
   CHECK(cumNorm(-1e100) == 0.0);
   CHECK(cumNorm(-8.2) < std::numeric_limits<double>::epsilon());
   CHECK(cumNorm(0.0) == 0.5);
-  CHECK(cumNorm(+8.2) >  1.0 - std::numeric_limits<double>::epsilon());
+  CHECK(cumNorm(+8.2) > 1.0 - std::numeric_limits<double>::epsilon());
   CHECK(cumNorm(+1e100) == 1.0);
 
-  //CHECK(std::isinf(invCumNorm(0.0)));
+  // CHECK(std::isinf(invCumNorm(0.0)));
   CHECK(invCumNorm(0.5) == 0.0);
-  //CHECK(std::isinf(invCumNorm(1.0)));
+  // CHECK(std::isinf(invCumNorm(1.0)));
 
-  for (double x = -6.05; x <= 6.0; x += 0.1)
-  {
+  for (double x = -6.05; x <= 6.0; x += 0.1) {
     CHECK(withinTolerance(x, invCumNorm(cumNorm(x)), 0.001));
   }
-  for (double x = 0.01; x <= 0.99; x += 0.01)
-  {
+  for (double x = 0.01; x <= 0.99; x += 0.01) {
     CHECK(withinTolerance(x, cumNorm(invCumNorm(x)), std::numeric_limits<double>::epsilon() * 32));
   }
 }
 
-void unittest::testCholesky()
-{
+void unittest::testCholesky() {
   std::vector<uint32_t> u(2);
   u[0] = 1234567;
   u[1] = 8901234;
@@ -81,12 +76,11 @@ void unittest::testCholesky()
   CHECK_THROWS(Cholesky(2.0), std::exception);
 }
 
-void unittest::testPValue()
-{
-  //CHECK(chiSqDensity(1, 0.0) == 0.0);
-  //CHECK(chiSqDensity(2, 1.0) == 0.0);
+void unittest::testPValue() {
+  // CHECK(chiSqDensity(1, 0.0) == 0.0);
+  // CHECK(chiSqDensity(2, 1.0) == 0.0);
 
-  //LOG_INFO(format("pValue(1, 1.0) = %%", pValue(1, 1.0)));
+  // LOG_INFO(format("pValue(1, 1.0) = %%", pValue(1, 1.0)));
 
   CHECK(withinTolerance(pValue(1, 1.0).first, 0.317311, 2e-6));
   CHECK(withinTolerance(pValue(1, 2.0).first, 0.157299, 2e-6));

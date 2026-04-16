@@ -8,98 +8,98 @@ using namespace Rcpp;
 // ipf
 List ipf(NumericVector seed, List indices, List marginals);
 RcppExport SEXP _humanleague_ipf(SEXP seedSEXP, SEXP indicesSEXP, SEXP marginalsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type seed(seedSEXP);
-    Rcpp::traits::input_parameter< List >::type indices(indicesSEXP);
-    Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
-    rcpp_result_gen = Rcpp::wrap(ipf(seed, indices, marginals));
-    return rcpp_result_gen;
-END_RCPP
+  BEGIN_RCPP
+  Rcpp::RObject rcpp_result_gen;
+  Rcpp::RNGScope rcpp_rngScope_gen;
+  Rcpp::traits::input_parameter<NumericVector>::type seed(seedSEXP);
+  Rcpp::traits::input_parameter<List>::type indices(indicesSEXP);
+  Rcpp::traits::input_parameter<List>::type marginals(marginalsSEXP);
+  rcpp_result_gen = Rcpp::wrap(ipf(seed, indices, marginals));
+  return rcpp_result_gen;
+  END_RCPP
 }
 // qis
 List qis(List indices, List marginals, int skips);
 RcppExport SEXP _humanleague_qis(SEXP indicesSEXP, SEXP marginalsSEXP, SEXP skipsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type indices(indicesSEXP);
-    Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
-    Rcpp::traits::input_parameter< int >::type skips(skipsSEXP);
-    rcpp_result_gen = Rcpp::wrap(qis(indices, marginals, skips));
-    return rcpp_result_gen;
-END_RCPP
+  BEGIN_RCPP
+  Rcpp::RObject rcpp_result_gen;
+  Rcpp::RNGScope rcpp_rngScope_gen;
+  Rcpp::traits::input_parameter<List>::type indices(indicesSEXP);
+  Rcpp::traits::input_parameter<List>::type marginals(marginalsSEXP);
+  Rcpp::traits::input_parameter<int>::type skips(skipsSEXP);
+  rcpp_result_gen = Rcpp::wrap(qis(indices, marginals, skips));
+  return rcpp_result_gen;
+  END_RCPP
 }
 // qisi
 List qisi(NumericVector seed, List indices, List marginals, int skips);
 RcppExport SEXP _humanleague_qisi(SEXP seedSEXP, SEXP indicesSEXP, SEXP marginalsSEXP, SEXP skipsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type seed(seedSEXP);
-    Rcpp::traits::input_parameter< List >::type indices(indicesSEXP);
-    Rcpp::traits::input_parameter< List >::type marginals(marginalsSEXP);
-    Rcpp::traits::input_parameter< int >::type skips(skipsSEXP);
-    rcpp_result_gen = Rcpp::wrap(qisi(seed, indices, marginals, skips));
-    return rcpp_result_gen;
-END_RCPP
+  BEGIN_RCPP
+  Rcpp::RObject rcpp_result_gen;
+  Rcpp::RNGScope rcpp_rngScope_gen;
+  Rcpp::traits::input_parameter<NumericVector>::type seed(seedSEXP);
+  Rcpp::traits::input_parameter<List>::type indices(indicesSEXP);
+  Rcpp::traits::input_parameter<List>::type marginals(marginalsSEXP);
+  Rcpp::traits::input_parameter<int>::type skips(skipsSEXP);
+  rcpp_result_gen = Rcpp::wrap(qisi(seed, indices, marginals, skips));
+  return rcpp_result_gen;
+  END_RCPP
 }
 // integerise
 List integerise(NumericVector population);
 RcppExport SEXP _humanleague_integerise(SEXP populationSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type population(populationSEXP);
-    rcpp_result_gen = Rcpp::wrap(integerise(population));
-    return rcpp_result_gen;
-END_RCPP
+  BEGIN_RCPP
+  Rcpp::RObject rcpp_result_gen;
+  Rcpp::RNGScope rcpp_rngScope_gen;
+  Rcpp::traits::input_parameter<NumericVector>::type population(populationSEXP);
+  rcpp_result_gen = Rcpp::wrap(integerise(population));
+  return rcpp_result_gen;
+  END_RCPP
 }
 // prob2IntFreq
 List prob2IntFreq(NumericVector pIn, int pop);
 RcppExport SEXP _humanleague_prob2IntFreq(SEXP pInSEXP, SEXP popSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type pIn(pInSEXP);
-    Rcpp::traits::input_parameter< int >::type pop(popSEXP);
-    rcpp_result_gen = Rcpp::wrap(prob2IntFreq(pIn, pop));
-    return rcpp_result_gen;
-END_RCPP
+  BEGIN_RCPP
+  Rcpp::RObject rcpp_result_gen;
+  Rcpp::RNGScope rcpp_rngScope_gen;
+  Rcpp::traits::input_parameter<NumericVector>::type pIn(pInSEXP);
+  Rcpp::traits::input_parameter<int>::type pop(popSEXP);
+  rcpp_result_gen = Rcpp::wrap(prob2IntFreq(pIn, pop));
+  return rcpp_result_gen;
+  END_RCPP
 }
 // sobolSequence
 NumericMatrix sobolSequence(int dim, int n, int skip);
 RcppExport SEXP _humanleague_sobolSequence(SEXP dimSEXP, SEXP nSEXP, SEXP skipSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type dim(dimSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< int >::type skip(skipSEXP);
-    rcpp_result_gen = Rcpp::wrap(sobolSequence(dim, n, skip));
-    return rcpp_result_gen;
-END_RCPP
+  BEGIN_RCPP
+  Rcpp::RObject rcpp_result_gen;
+  Rcpp::RNGScope rcpp_rngScope_gen;
+  Rcpp::traits::input_parameter<int>::type dim(dimSEXP);
+  Rcpp::traits::input_parameter<int>::type n(nSEXP);
+  Rcpp::traits::input_parameter<int>::type skip(skipSEXP);
+  rcpp_result_gen = Rcpp::wrap(sobolSequence(dim, n, skip));
+  return rcpp_result_gen;
+  END_RCPP
 }
 // flatten
 DataFrame flatten(IntegerVector stateOccupancies, StringVector categoryNames);
 RcppExport SEXP _humanleague_flatten(SEXP stateOccupanciesSEXP, SEXP categoryNamesSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerVector >::type stateOccupancies(stateOccupanciesSEXP);
-    Rcpp::traits::input_parameter< StringVector >::type categoryNames(categoryNamesSEXP);
-    rcpp_result_gen = Rcpp::wrap(flatten(stateOccupancies, categoryNames));
-    return rcpp_result_gen;
-END_RCPP
+  BEGIN_RCPP
+  Rcpp::RObject rcpp_result_gen;
+  Rcpp::RNGScope rcpp_rngScope_gen;
+  Rcpp::traits::input_parameter<IntegerVector>::type stateOccupancies(stateOccupanciesSEXP);
+  Rcpp::traits::input_parameter<StringVector>::type categoryNames(categoryNamesSEXP);
+  rcpp_result_gen = Rcpp::wrap(flatten(stateOccupancies, categoryNames));
+  return rcpp_result_gen;
+  END_RCPP
 }
 // unitTest
 List unitTest();
 RcppExport SEXP _humanleague_unitTest() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(unitTest());
-    return rcpp_result_gen;
-END_RCPP
+  BEGIN_RCPP
+  Rcpp::RObject rcpp_result_gen;
+  Rcpp::RNGScope rcpp_rngScope_gen;
+  rcpp_result_gen = Rcpp::wrap(unitTest());
+  return rcpp_result_gen;
+  END_RCPP
 }

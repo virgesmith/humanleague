@@ -1,33 +1,33 @@
 #!/usr/bin/env python3
 
-import glob
+from pathlib import Path
 
 from pybind11.setup_helpers import ParallelCompile, Pybind11Extension
 from setuptools import setup  # type: ignore
 
 
-def source_files() -> list[str]:
-    sources = glob.glob("src/*.cpp")
+def _source_files() -> list[Path]:
+    sources = Path("src").glob("*.cpp")
     # can't use compile skips as some files are auto-generated
     skip = ["RcppExports.cpp", "rcpp_api.cpp"]
-    return [file for file in sources if not any(s in file for s in skip)]
+    return [file for file in sources if not any(s in str(file) for s in skip)]
 
 
-def header_files() -> list[str]:
-    return glob.glob("src/*.h")
+def _header_files() -> list[Path]:
+    return list(Path("src").glob("*.h"))
 
 
-def defines() -> list[tuple[str, str | None]]:
+def _defines() -> list[tuple[str, str | None]]:
     return [("PYTHON_MODULE", None)]
 
 
 ext_modules = [
     Pybind11Extension(
         "_humanleague",
-        sources=source_files(),
+        sources=_source_files(),
         include_dirs=["src"],
-        define_macros=defines(),
-        depends=["setup.py", "src/docstr.inl"] + header_files(),
+        define_macros=_defines(),
+        depends=["setup.py", "src/docstr.inl", *_header_files()],
         cxx_std=20,
     )
 ]

@@ -3,14 +3,13 @@
 #include "Microsynthesis.h"
 #include "Sobol.h"
 
-class QIS : public Microsynthesis<int64_t>
-{
+class QIS : public Microsynthesis<int64_t> {
 public:
   QIS(const index_list_t& indices, marginal_list_t& marginals, int64_t skips = 0);
 
   // TODO need a mechanism to invalidate result after it's been moved (or just copy it)
   const NDArray<int64_t>& solve(bool reset = false);
-  
+
   // Expected state occupancy
   const NDArray<double>& expectation();
 
@@ -25,10 +24,9 @@ public:
   double pValue() const;
 
 private:
-
   const NDArray<int64_t>& solve_p(bool reset);
   const NDArray<int64_t>& solve_m(bool reset);
-  
+
   // state values are proportional to state occupancy probabilities
   void updateStateValues(const Index& position, const std::vector<MappedIndex>& mappings);
   void computeStateValues();
@@ -44,4 +42,3 @@ private:
   double m_degeneracy;
   bool m_conv;
 };
-

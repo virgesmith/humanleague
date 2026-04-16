@@ -3,21 +3,19 @@
 #include "Index.h"
 #include "StatFuncs.h"
 
-// uncomment to sample from a (dynamic) state array rather than directly from marginals (can be slower for high dimensionality)
-//#define USE_STATE_SAMPLING
+// uncomment to sample from a (dynamic) state array rather than directly from marginals (can be slower for high
+// dimensionality)
+// #define USE_STATE_SAMPLING
 
 namespace {
 
 // TODO move somewhere appropriate (doesnt need to be member) (copy&paste from QSIPF)
-template<typename T>
-int64_t pick(const T* dist, size_t len, double r)
-{
+template <typename T> int64_t pick(const T* dist, size_t len, double r) {
   // sum of dist should be 1, but we relax this
   // r is in (0,1) so scale up r by sum of dist
   r *= std::accumulate(dist, dist + len, 0.0);
   T runningSum = 0.0;
-  for (size_t i = 0; i < len; ++i)
-  {
+  for (size_t i = 0; i < len; ++i) {
     runningSum += dist[i];
     if (r < runningSum)
       return i;
@@ -26,41 +24,35 @@ int64_t pick(const T* dist, size_t len, double r)
 }
 
 #ifdef USE_STATE_SAMPLING
-void recursive_pick(const NDArray<double>& p, const std::vector<uint32_t>& seq, Index& index, size_t dim)
-{
-  static const double scale = 0.5 / (1u<<31);
+void recursive_pick(const NDArray<double>& p, const std::vector<uint32_t>& seq, Index& index, size_t dim) {
+  static const double scale = 0.5 / (1u << 31);
 
   const std::vector<double> r = reduce<double>(p, dim);
   index[dim] = pick<double>(r.data(), r.size(), seq[dim] * scale);
 
   const NDArray<double>& s = slice(p, {dim, index[dim]});
 
-  if (dim == 1)
-  {
+  if (dim == 1) {
     index[0] = pick<double>(s.rawData(), s.storageSize(), seq[0] * scale);
     return;
-  }
-  else
-  {
-    recursive_pick(s, seq, index, dim-1);
+  } else {
+    recursive_pick(s, seq, index, dim - 1);
   }
 }
 
 #endif
-//#ifdef USE_STATE_SAMPLING
+// #ifdef USE_STATE_SAMPLING
 
 void recursive_sample(std::vector<std::pair<int64_t, uint32_t>>& dims, const NDArray<int64_t>& marginal,
-                      MappedIndex& index, std::map<int64_t, int64_t> slice_map)
-{
-  static const double scale = 0.5 / (1u<<31);
+                      MappedIndex& index, std::map<int64_t, int64_t> slice_map) {
+  static const double scale = 0.5 / (1u << 31);
 
 #ifdef VERBOSE
   std::cout << "recursive_sample: " << dims.size() << " of " << marginal.dim() << std::endl;
 #endif
 
   // end recursion at 1 (cannot have a zero-D marginal)
-  if (dims.size() == 1)
-  {
+  if (dims.size() == 1) {
     index[dims.back().first] = pick(marginal.rawData(), marginal.storageSize(), dims.back().second * scale);
 #ifdef VERBOSE
     std::cout << "marginal (1d):";
@@ -69,16 +61,15 @@ void recursive_sample(std::vector<std::pair<int64_t, uint32_t>>& dims, const NDA
 #endif
     dims.pop_back();
     return;
-  }
-  else
-  {
+  } else {
     const std::vector<int64_t>& r = reduce<int64_t>(marginal, slice_map[dims.back().first]);
     index[dims.back().first] = pick(r.data(), r.size(), dims.back().second * scale);
-    const NDArray<int64_t>& sliced = slice(marginal, { slice_map[dims.back().first], index[dims.back().first] });
+    const NDArray<int64_t>& sliced = slice(marginal, {slice_map[dims.back().first], index[dims.back().first]});
 #ifdef VERBOSE
     std::cout << "marginal (>1d):";
     print(marginal.rawData(), marginal.storageSize());
-    std::cout << "recursive_sample picked: D" << dims.back().first << "[" << slice_map[dims.back().first]<< "]" << ":" << index[dims.back().first] << std::endl;
+    std::cout << "recursive_sample picked: D" << dims.back().first << "[" << slice_map[dims.back().first] << "]" << ":"
+              << index[dims.back().first] << std::endl;
     std::cout << "sliced marginal:";
     print(sliced.rawData(), sliced.storageSize());
 #endif
@@ -87,9 +78,8 @@ void recursive_sample(std::vector<std::pair<int64_t, uint32_t>>& dims, const NDA
   }
 }
 
-
-void sample(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, const NDArray<int64_t>& marginal, MappedIndex& index)
-{
+void sample(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, const NDArray<int64_t>& marginal,
+            MappedIndex& index) {
 #ifdef VERBOSE
   std::cout << "dims:";
   print(dims);
@@ -101,15 +91,11 @@ void sample(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, const 
   // this tracks dimensions as the array is sliced
   std::map<int64_t, int64_t> slice_map;
   int64_t slice_index = 0;
-  for (size_t d = 0; d < dims.size(); ++d)
-  {
+  for (size_t d = 0; d < dims.size(); ++d) {
     // d can be wrong here, perhaps because index is the wrong way round?
-    if (index[d] > -1)
-    {
+    if (index[d] > -1) {
       dims_to_slice.push_back(std::make_pair(d, index[d]));
-    }
-    else
-    {
+    } else {
       dims_to_sample.push_back(std::make_pair(d, seq[dims[d]]));
       slice_map[d] = slice_index;
       ++slice_index;
@@ -117,18 +103,15 @@ void sample(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, const 
   }
 #ifdef VERBOSE
   std::cout << "slice:";
-  for (size_t i = 0; i < dims_to_slice.size(); ++i)
-  {
+  for (size_t i = 0; i < dims_to_slice.size(); ++i) {
     std::cout << dims_to_slice[i].first << ":" << dims_to_slice[i].second << std::endl;
   }
   std::cout << "sample:";
-  for (size_t i = 0; i < dims_to_sample.size(); ++i)
-  {
+  for (size_t i = 0; i < dims_to_sample.size(); ++i) {
     std::cout << dims_to_sample[i].first << ":" << dims_to_sample[i].second << std::endl;
   }
   std::cout << "remapped dims for sampling:";
-  for (auto it = slice_map.begin(); it != slice_map.end(); ++it)
-  {
+  for (auto it = slice_map.begin(); it != slice_map.end(); ++it) {
     std::cout << it->first << "->" << it->second << std::endl;
   }
 #endif
@@ -144,8 +127,7 @@ void sample(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, const 
   std::cout << "sliced [" << free.dim() << "] ";
   print(free.rawData(), free.storageSize());
   std::cout << "remapped dims to sample:";
-  for (size_t i = 0; i < dims_to_sample.size(); ++i)
-  {
+  for (size_t i = 0; i < dims_to_sample.size(); ++i) {
     std::cout << dims_to_sample[i].first << ":" << dims_to_sample[i].second << std::endl;
   }
 #endif
@@ -154,11 +136,10 @@ void sample(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, const 
   recursive_sample(dims_to_sample, free, index, slice_map);
 }
 
-}
+} // namespace
 
 QIS::QIS(const index_list_t& indices, marginal_list_t& marginals, int64_t skips)
-: Microsynthesis(indices, marginals), m_sobolSeq(m_dim), m_conv(false)
-{
+    : Microsynthesis(indices, marginals), m_sobolSeq(m_dim), m_conv(false) {
   m_sobolSeq.skip(skips);
   m_stateValues.resize(m_array.sizes());
   // compute initial state probabilities and keep a copy
@@ -170,14 +151,13 @@ QIS::QIS(const index_list_t& indices, marginal_list_t& marginals, int64_t skips)
     m_expectedStateOccupancy[index] *= scale;
 #ifdef VERBOSE
   // if (sum(m_expectedStateOccupancy) != m_population)
-  //   throw std::logic_error("mismatch in expected state occupancy" + std::to_string(sum(m_expectedStateOccupancy)) + " vs " + std::to_string(m_population));
+  //   throw std::logic_error("mismatch in expected state occupancy" + std::to_string(sum(m_expectedStateOccupancy)) + "
+  //   vs " + std::to_string(m_population));
   std::cout << "scaling factor = " << 1.0 / scale << std::endl;
 #endif
 }
 
-
-const NDArray<int64_t>& QIS::solve(bool reset)
-{
+const NDArray<int64_t>& QIS::solve(bool reset) {
   // sample from (updated) expected values, can be slow for hi
 #ifdef USE_STATE_SAMPLING
   return solve_p(reset);
@@ -188,10 +168,8 @@ const NDArray<int64_t>& QIS::solve(bool reset)
 }
 
 #ifdef USE_STATE_SAMPLING
-const NDArray<int64_t>& QIS::solve_p(bool reset)
-{
-  if (reset)
-  {
+const NDArray<int64_t>& QIS::solve_p(bool reset) {
+  if (reset) {
     m_sobolSeq.reset();
   }
 
@@ -202,25 +180,22 @@ const NDArray<int64_t>& QIS::solve_p(bool reset)
 
   std::vector<MappedIndex> mapped_indices;
   mapped_indices.reserve(m_marginals.size());
-  for (size_t m = 0; m < m_marginals.size(); ++m)
-  {
+  for (size_t m = 0; m < m_marginals.size(); ++m) {
     mapped_indices.push_back(MappedIndex(main_index, m_indices[m]));
   }
 
   // loop over population
-  for (int64_t i = 0; i < m_population; ++i)
-  {
+  for (int64_t i = 0; i < m_population; ++i) {
     const std::vector<uint32_t>& seq = m_sobolSeq.buf();
 
-    recursive_pick(m_stateValues, seq, main_index, m_dim-1);
+    recursive_pick(m_stateValues, seq, main_index, m_dim - 1);
 
 #ifdef VERBOSE
-    print(main_index.operator const std::vector<int64_t> &());
+    print(main_index.operator const std::vector<int64_t>&());
 #endif
     ++m_array[main_index];
 
-    for (size_t m = 0; m < m_marginals.size(); ++m)
-    {
+    for (size_t m = 0; m < m_marginals.size(); ++m) {
       --m_marginals[m][mapped_indices[m]];
       if (m_marginals[m][mapped_indices[m]] < 0)
         m_conv = false;
@@ -246,10 +221,8 @@ const NDArray<int64_t>& QIS::solve_p(bool reset)
 
 // control state of Sobol via arg?
 // better solution? construct set of 1-d marginals and sample from these
-const NDArray<int64_t>& QIS::solve_m(bool reset)
-{
-  if (reset)
-  {
+const NDArray<int64_t>& QIS::solve_m(bool reset) {
+  if (reset) {
     m_sobolSeq.reset();
   }
 
@@ -261,14 +234,12 @@ const NDArray<int64_t>& QIS::solve_m(bool reset)
 
   std::vector<MappedIndex> mapped_indices = makeMarginalMappings(main_index);
 
-  for (int64_t i = 0; i < m_population; ++i)
-  {
+  for (int64_t i = 0; i < m_population; ++i) {
 #ifdef VERBOSE
     std::cout << "pop: " << i << std::endl;
 #endif
     // mark main index as unassigned
-    for (size_t d = 0; d < m_dim; ++d)
-    {
+    for (size_t d = 0; d < m_dim; ++d) {
       main_index[d] = -1;
     }
 
@@ -276,11 +247,10 @@ const NDArray<int64_t>& QIS::solve_m(bool reset)
     const std::vector<uint32_t>& seq = m_sobolSeq.buf();
 
     // loop over marginals (re)sampling until main_index is populated
-    for (size_t m = 0; m < mapped_indices.size(); ++m)
-    {
+    for (size_t m = 0; m < mapped_indices.size(); ++m) {
       sample(m_indices[m], seq, m_marginals[m], mapped_indices[m]);
 #ifdef VERBOSE
-      print(main_index.operator const std::vector<int64_t, std::allocator<int64_t>> &());
+      print(main_index.operator const std::vector<int64_t, std::allocator<int64_t>>&());
 #endif
     }
     // check we have sampled in every dim
@@ -288,8 +258,7 @@ const NDArray<int64_t>& QIS::solve_m(bool reset)
       if (main_index[d] < 0)
         throw std::runtime_error("sampling error, not all dims have been set");
 
-    for (size_t m = 0; m < mapped_indices.size(); ++m)
-    {
+    for (size_t m = 0; m < mapped_indices.size(); ++m) {
       --m_marginals[m][mapped_indices[m]];
       if (m_marginals[m][mapped_indices[m]] < 0)
         m_conv = false;
@@ -303,10 +272,8 @@ const NDArray<int64_t>& QIS::solve_m(bool reset)
   }
 
 #ifdef VERBOSE
-  for (size_t m = 0; m < mapped_indices.size(); ++m)
-  {
-    print(m_marginals[m].rawData(),
-          m_marginals[m].storageSize());
+  for (size_t m = 0; m < mapped_indices.size(); ++m) {
+    print(m_marginals[m].rawData(), m_marginals[m].storageSize());
   }
 #endif
 
@@ -319,79 +286,55 @@ const NDArray<int64_t>& QIS::solve_m(bool reset)
   return m_array;
 }
 
-
 // Expected state occupancy
-const NDArray<double>& QIS::expectation()
-{
-  return m_expectedStateOccupancy;
-}
+const NDArray<double>& QIS::expectation() { return m_expectedStateOccupancy; }
 
-void QIS::computeStateValues()
-{
+void QIS::computeStateValues() {
   Index index_main(m_array.sizes());
 
   std::vector<MappedIndex> mappings = makeMarginalMappings(index_main);
 
   m_stateValues.assign(1.0);
-  for (; !index_main.end(); ++index_main)
-  {
-    for (size_t k = 0; k < m_marginals.size(); ++k)
-    {
+  for (; !index_main.end(); ++index_main) {
+    for (size_t k = 0; k < m_marginals.size(); ++k) {
       m_stateValues[index_main] *= m_marginals[k][mappings[k]];
     }
   }
 }
 
 #ifdef USE_STATE_SAMPLING
-std::vector<std::pair<int64_t, int64_t>> getFixed(const Index& position, const std::vector<int64_t>& dim_indices)
-{
+std::vector<std::pair<int64_t, int64_t>> getFixed(const Index& position, const std::vector<int64_t>& dim_indices) {
   std::vector<std::pair<int64_t, int64_t>> fixed;
   fixed.reserve(dim_indices.size());
 
-  for (size_t i = 0; i < dim_indices.size(); ++i)
-  {
+  for (size_t i = 0; i < dim_indices.size(); ++i) {
     fixed.push_back({dim_indices[i], position[dim_indices[i]]});
   }
   return fixed;
 }
 
-void QIS::updateStateValues(const Index& position, const std::vector<MappedIndex>& mappings)
-{
+void QIS::updateStateValues(const Index& position, const std::vector<MappedIndex>& mappings) {
   // need to know each marginal before or after value - multiplier is after/(after+1) = (before-1)/before
   // loop over marginals
-  for (size_t m = 0; m < m_marginals.size(); ++m)
-  {
-    //adjustment (assumes marginal has been decremented)
+  for (size_t m = 0; m < m_marginals.size(); ++m) {
+    // adjustment (assumes marginal has been decremented)
     double scaling = (double)m_marginals[m][mappings[m]] / (1 + m_marginals[m][mappings[m]]);
 #ifdef VERBOSE
-    std::cout << "marginal " << m << " scaling: " << m_marginals[m][mappings[m]] << "/" << (1 + m_marginals[m][mappings[m]]) << std::endl;
+    std::cout << "marginal " << m << " scaling: " << m_marginals[m][mappings[m]] << "/"
+              << (1 + m_marginals[m][mappings[m]]) << std::endl;
 #endif
     // now apply this adjustment to all dims in state array not in marginal...
-    for (FixedIndex index(m_array.sizes(), getFixed(position, m_indices[m])); !index.end(); ++index)
-    {
-      m_stateValues[index.operator const Index &()] *= scaling;
+    for (FixedIndex index(m_array.sizes(), getFixed(position, m_indices[m])); !index.end(); ++index) {
+      m_stateValues[index.operator const Index&()] *= scaling;
     }
   }
 }
 #endif
 
-double QIS::chiSq() const
-{
-  return m_chiSq;
-}
+double QIS::chiSq() const { return m_chiSq; }
 
-double QIS::pValue() const
-{
-  return m_pValue;
-}
+double QIS::pValue() const { return m_pValue; }
 
-double QIS::degeneracy() const
-{
-  return m_degeneracy;
-}
+double QIS::degeneracy() const { return m_degeneracy; }
 
-bool QIS::conv() const
-{
-  return m_conv;
-}
-
+bool QIS::conv() const { return m_conv; }

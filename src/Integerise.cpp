@@ -1,42 +1,38 @@
 
 #include "Integerise.h"
-#include "QISI.h"
-#include "NDArrayUtils.h"
 #include "Log.h"
+#include "NDArrayUtils.h"
+#include "QISI.h"
 
 #include <algorithm>
-#include <numeric>
 #include <cmath>
-//#include <iostream>
+#include <numeric>
+// #include <iostream>
 
 namespace {
 
- // loose tolerance ~1/4 mantissa precision
+// loose tolerance ~1/4 mantissa precision
 constexpr double TOL = 1e-4;
 
-int64_t checked_round(double x)
-{
+int64_t checked_round(double x) {
   if (fabs(x - round(x)) > TOL)
     throw std::runtime_error("Marginal or total value %% is not an integer (within tolerance %%)"s % x % TOL);
   return (int64_t)round(x);
 }
 
-}
+} // namespace
 
-std::vector<int> integeriseMarginalDistribution(const std::vector<double>& p, int pop, double& rmse)
-{
+std::vector<int> integeriseMarginalDistribution(const std::vector<double>& p, int pop, double& rmse) {
   const size_t n = p.size();
   std::vector<int> f(n);
   std::vector<double> r(n);
 
-  for(size_t i = 0; i < n; ++i)
-  {
+  for (size_t i = 0; i < n; ++i) {
     f[i] = p[i] * pop; // rounded down
     r[i] = p[i] * pop - f[i];
   }
 
-  while(std::accumulate(f.begin(), f.end(), 0) < pop)
-  {
+  while (std::accumulate(f.begin(), f.end(), 0) < pop) {
     // find max
     auto it = max_element(r.begin(), r.end());
     ++*(f.begin() + std::distance(r.begin(), it));
@@ -44,8 +40,7 @@ std::vector<int> integeriseMarginalDistribution(const std::vector<double>& p, in
   }
 
   rmse = 0.0;
-  for (size_t i = 0; i < n; ++i)
-  {
+  for (size_t i = 0; i < n; ++i) {
     rmse += r[i] * r[i];
   }
   rmse = sqrt(rmse / n);
@@ -53,22 +48,28 @@ std::vector<int> integeriseMarginalDistribution(const std::vector<double>& p, in
   return f;
 }
 
-Integeriser::Integeriser(const NDArray<double>& seed) : m_seed(seed)
-{
+Integeriser::Integeriser(const NDArray<double>& seed) : m_seed(seed) {
+  // check seed values
+  for (double* p = seed.begin(); p != seed.end(); ++p) {
+    if (!std::isfinite(*p)) {
+      throw std::runtime_error("Invalid value in seed: %%"s % *p);
+    }
+  }
+
   // construct 1-d integer marginals in each dim
   size_t dim = m_seed.dim();
   // check total population is integral (or close)
   checked_round(sum(m_seed));
 
   // 1-d special case: use prob2IntFreq
-  if (dim == 1)
-  {
+  if (dim == 1) {
     // convert to vector (reduce 1-d special case)
     std::vector<double> p = reduce(seed, 0);
     // casting rounds down so for better consistency (with checked_round) add TOL
     int pop = sum(seed) + TOL;
     // convert to probabilities
-    for (auto& x: p) x /= pop;
+    for (auto& x : p)
+      x /= pop;
     std::vector<int> tmp = integeriseMarginalDistribution(p, pop, m_rmse);
     m_result.resize({(int64_t)tmp.size()});
     std::copy(tmp.begin(), tmp.end(), m_result.begin());
@@ -79,14 +80,12 @@ Integeriser::Integeriser(const NDArray<double>& seed) : m_seed(seed)
   m_indices.resize(dim); // 0..n-1
   m_marginals.resize(dim);
 
-  for (size_t d = 0; d < dim; ++d)
-  {
+  for (size_t d = 0; d < dim; ++d) {
     const std::vector<double>& mf = reduce(seed, d);
     // TODO check (close to) integers
     m_indices[d] = {(int64_t)d};
     m_marginals[d].resize({(int64_t)mf.size()});
-    for (size_t i = 0; i < mf.size(); ++i)
-    {
+    for (size_t i = 0; i < mf.size(); ++i) {
       *(m_marginals[d].begin() + i) = checked_round(mf[i]);
     }
   }
@@ -97,27 +96,14 @@ Integeriser::Integeriser(const NDArray<double>& seed) : m_seed(seed)
   m_conv = qisi.conv();
 
   m_rmse = 0.0;
-  for (Index index(m_result.sizes()); !index.end(); ++index)
-  {
+  for (Index index(m_result.sizes()); !index.end(); ++index) {
     m_rmse += (m_result[index] - m_seed[index]) * (m_result[index] - m_seed[index]);
   }
   m_rmse = sqrt(m_rmse / m_result.storageSize());
 }
 
-const NDArray<int64_t>& Integeriser::result() const
-{
-  return m_result;
-}
+const NDArray<int64_t>& Integeriser::result() const { return m_result; }
 
-bool Integeriser::conv() const
-{
-  return m_conv;
-}
+bool Integeriser::conv() const { return m_conv; }
 
-double Integeriser::rmse() const
-{
-  return m_rmse;
-}
-
-
-
+double Integeriser::rmse() const { return m_rmse; }

@@ -8,10 +8,8 @@
 #include <cstdint>
 
 // Indexer for elements in n-D array - iterates over entire array
-class Index
-{
+class Index {
 public:
-
   explicit Index(const std::vector<int64_t>& sizes);
 
   // Disable copy (purely because its not used, could re-enable if necessary)
@@ -48,23 +46,18 @@ protected:
   bool m_atEnd;
 };
 
-
 // Indexer for elements in n-D array, treating storage as column-major
-class TransposedIndex : public Index
-{
+class TransposedIndex : public Index {
 public:
   // Construct from array size
   explicit TransposedIndex(const std::vector<int64_t>& sizes);
 
   // overload increment operator
   const std::vector<int64_t>& operator++();
-
 };
 
-
 // Contains a mapping from a higher dimensionality to a lower one
-class MappedIndex
-{
+class MappedIndex {
 public:
   MappedIndex(const Index& idx, const std::vector<int64_t>& mappedDimensions);
 
@@ -88,8 +81,7 @@ private:
   bool m_atEnd;
 };
 
-class FixedIndex
-{
+class FixedIndex {
 public:
   // Loop over elements with some dimensions fixed
   FixedIndex(const std::vector<int64_t>& sizes, const std::vector<std::pair<int64_t, int64_t>>& fixed);
@@ -118,5 +110,4 @@ private:
   std::vector<int64_t*> m_freeIndex;
   std::vector<int64_t> m_freeSizes;
   bool m_atEnd;
-
 };

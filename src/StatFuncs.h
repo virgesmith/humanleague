@@ -1,14 +1,13 @@
 
 #pragma once
 
-
-#include "NDArray.h"
 #include "Index.h"
+#include "NDArray.h"
 
-#include <vector>
-#include <utility>
-#include <cstdint>
 #include <cmath>
+#include <cstdint>
+#include <utility>
+#include <vector>
 
 // Cumulative standard normal distribution function
 double cumNorm(double x);
@@ -17,8 +16,7 @@ double cumNorm(double x);
 double invCumNorm(double x);
 
 // Cholesky factorisation for single correlation (2x2)
-class Cholesky
-{
+class Cholesky {
 public:
   explicit Cholesky(double rho);
 
@@ -27,33 +25,27 @@ public:
   std::pair<uint32_t, uint32_t> operator()(const std::vector<uint32_t>& uncorrelated) const;
 
 private:
-  // m_data[0] and m_data[1] are elements of Cholesky factorisation corresponding to rho and sqrt(1-rho*rho) respectively
+  // m_data[0] and m_data[1] are elements of Cholesky factorisation corresponding to rho and sqrt(1-rho*rho)
+  // respectively
   double m_data[2];
 };
 
 // chi-squared stat: sample vs reference (max entropy)
-template<typename T, typename U>
-double chiSq(const NDArray<T>& sample, const NDArray<U>& reference)
-{
+template <typename T, typename U> double chiSq(const NDArray<T>& sample, const NDArray<U>& reference) {
   double chisq = 0.0;
-  for (Index index(sample.sizes()); !index.end(); ++index)
-  {
+  for (Index index(sample.sizes()); !index.end(); ++index) {
     // m is the mean population of this state
     chisq += (sample[index] - reference[index]) * (sample[index] - reference[index]) / reference[index];
   }
   return chisq;
 }
 
-template<typename T>
-inline double factorial(T x)
-{
-  return std::tgamma(x+1);
-}
+template <typename T> inline double factorial(T x) { return std::tgamma(x + 1); }
 
-int64_t dof(std::vector<int64_t> sizes);
+int64_t dof(const std::vector<int64_t>& sizes);
 
 // Chi-squared p-value calculation using incomplete gamma function
-std::pair<double,bool> pValue(uint32_t df, double x);
+std::pair<double, bool> pValue(uint32_t df, double x);
 
 // S!/(prod_k(a_k!))
 double degeneracy(const NDArray<int64_t>& a);

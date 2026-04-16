@@ -1,9 +1,9 @@
 
 #include "StatFuncs.h"
+#include <cmath>
 #include <limits>
 #include <stdexcept>
 #include <string>
-#include <cmath>
 
 namespace {
 
@@ -60,8 +60,7 @@ namespace {
 //    Output, double GAMAIN, the value of the incomplete gamma ratio.
 //
 
-double gamain ( double x, double p, int *ifault )
-{
+double gamain(double x, double p, int* ifault) {
   const int maxIters = 10000;
   int iter;
   double a;
@@ -84,53 +83,46 @@ double gamain ( double x, double p, int *ifault )
   //
   //  Check the input.
   //
-  if ( p <= 0.0 )
-  {
+  if (p <= 0.0) {
     *ifault = 1;
     return value;
   }
 
-  if ( x < 0.0 )
-  {
+  if (x < 0.0) {
     *ifault = 2;
     return value;
   }
 
-  if ( x == 0.0 )
-  {
+  if (x == 0.0) {
     *ifault = 0;
     return value;
   }
 
-  g = lgamma ( p );
+  g = lgamma(p);
 
-  arg = p * log ( x ) - x - g;
+  arg = p * log(x) - x - g;
 
-  if ( arg < loguflo )
-  {
+  if (arg < loguflo) {
     *ifault = 3;
     return value;
   }
 
   *ifault = 0;
-  factor = exp ( arg );
+  factor = exp(arg);
   //
   //  Calculation by series expansion.
   //
-  if ( x <= 1.0 || x < p )
-  {
+  if (x <= 1.0 || x < p) {
     gin = 1.0;
     term = 1.0;
     rn = p;
 
-    for (iter = 0 ; iter < maxIters; ++iter)
-    {
+    for (iter = 0; iter < maxIters; ++iter) {
       rn = rn + 1.0;
       term = term * x / rn;
       gin = gin + term;
 
-      if ( term <= acu )
-      {
+      if (term <= acu) {
         break;
       }
     }
@@ -155,31 +147,26 @@ double gamain ( double x, double p, int *ifault )
 
   gin = pn[2] / pn[3];
 
-  for (iter = 0 ; iter < maxIters; ++iter)
-  {
+  for (iter = 0; iter < maxIters; ++iter) {
     a = a + 1.0;
     b = b + 2.0;
     term = term + 1.0;
     double an = a * term;
-    for ( i = 0; i <= 1; i++ )
-    {
-      pn[i+4] = b * pn[i+2] - an * pn[i];
+    for (i = 0; i <= 1; i++) {
+      pn[i + 4] = b * pn[i + 2] - an * pn[i];
     }
 
-    if ( pn[5] != 0.0 )
-    {
+    if (pn[5] != 0.0) {
       rn = pn[4] / pn[5];
-      dif = fabs ( gin - rn );
+      dif = fabs(gin - rn);
       //
       //  Absolute error tolerance satisfied?
       //
-      if ( dif <= acu )
-      {
+      if (dif <= acu) {
         //
         //  Relative error tolerance satisfied?
         //
-        if ( dif <= acu * rn )
-        {
+        if (dif <= acu * rn) {
           value = 1.0 - factor * gin;
           break;
         }
@@ -187,15 +174,12 @@ double gamain ( double x, double p, int *ifault )
       gin = rn;
     }
 
-    for ( i = 0; i < 4; i++ )
-    {
-      pn[i] = pn[i+2];
+    for (i = 0; i < 4; i++) {
+      pn[i] = pn[i + 2];
     }
 
-    if ( oflo <= fabs ( pn[4] ) )
-    {
-      for ( i = 0; i < 4; i++ )
-      {
+    if (oflo <= fabs(pn[4])) {
+      for (i = 0; i < 4; i++) {
         pn[i] = pn[i] / oflo;
       }
     }
@@ -208,96 +192,80 @@ double gamain ( double x, double p, int *ifault )
 
 const double sqrt_2 = sqrt(2.0);
 const double rsqrt_2 = 1.0 / sqrt(2.0);
-const double sqrt_pi = sqrt(atan(1.0)*4);
+const double sqrt_pi = sqrt(atan(1.0) * 4);
 
 // constants for Inverse Cumulative Normal approximation
 const double a1_ = -3.969683028665376e+01;
-const double a2_ =  2.209460984245205e+02;
+const double a2_ = 2.209460984245205e+02;
 const double a3_ = -2.759285104469687e+02;
-const double a4_ =  1.383577518672690e+02;
+const double a4_ = 1.383577518672690e+02;
 const double a5_ = -3.066479806614716e+01;
-const double a6_ =  2.506628277459239e+00;
+const double a6_ = 2.506628277459239e+00;
 
 const double b1_ = -5.447609879822406e+01;
-const double b2_ =  1.615858368580409e+02;
+const double b2_ = 1.615858368580409e+02;
 const double b3_ = -1.556989798598866e+02;
-const double b4_ =  6.680131188771972e+01;
+const double b4_ = 6.680131188771972e+01;
 const double b5_ = -1.328068155288572e+01;
 
 const double c1_ = -7.784894002430293e-03;
 const double c2_ = -3.223964580411365e-01;
 const double c3_ = -2.400758277161838e+00;
 const double c4_ = -2.549732539343734e+00;
-const double c5_ =  4.374664141464968e+00;
-const double c6_ =  2.938163982698783e+00;
+const double c5_ = 4.374664141464968e+00;
+const double c6_ = 2.938163982698783e+00;
 
-const double d1_ =  7.784695709041462e-03;
-const double d2_ =  3.224671290700398e-01;
-const double d3_ =  2.445134137142996e+00;
-const double d4_ =  3.754408661907416e+00;
+const double d1_ = 7.784695709041462e-03;
+const double d2_ = 3.224671290700398e-01;
+const double d3_ = 2.445134137142996e+00;
+const double d4_ = 3.754408661907416e+00;
 
 // Limits of the approximation regions
 const double x_low_ = 0.02425;
-const double x_high_= 1.0 - x_low_;
+const double x_high_ = 1.0 - x_low_;
 
 // tail approximation
-double tail_value(double x)
-{
-  if (x <= 0.0 || x >= 1.0)
-  {
+double tail_value(double x) {
+  if (x <= 0.0 || x >= 1.0) {
     // try to recover if due to numerical error
-    if (std::fabs(x - 1.0) <  4 * std::numeric_limits<double>::epsilon())
-    {
+    if (std::fabs(x - 1.0) < 4 * std::numeric_limits<double>::epsilon()) {
       return std::numeric_limits<double>::max(); // largest value available
-    }
-    else if (std::fabs(x) < std::numeric_limits<double>::epsilon())
-    {
+    } else if (std::fabs(x) < std::numeric_limits<double>::epsilon()) {
       return -std::numeric_limits<double>::max(); // largest negative value available
-    }
-    else
-    {
+    } else {
       throw std::runtime_error("Inverse cumulative normal: x must be in [0,1]");
     }
   }
 
   double z;
-  if (x < x_low_)
-  {
+  if (x < x_low_) {
     // Rational approximation for the lower region 0<x<u_low
-    z = std::sqrt(-2.0*std::log(x));
-    z = (((((c1_*z+c2_)*z+c3_)*z+c4_)*z+c5_)*z+c6_) /
-      ((((d1_*z+d2_)*z+d3_)*z+d4_)*z+1.0);
-  }
-  else
-  {
+    z = std::sqrt(-2.0 * std::log(x));
+    z = (((((c1_ * z + c2_) * z + c3_) * z + c4_) * z + c5_) * z + c6_) /
+        ((((d1_ * z + d2_) * z + d3_) * z + d4_) * z + 1.0);
+  } else {
     // Rational approximation for the upper region u_high<x<1
-    z = std::sqrt(-2.0*std::log(1.0-x));
-    z = -(((((c1_*z+c2_)*z+c3_)*z+c4_)*z+c5_)*z+c6_) /
-      ((((d1_*z+d2_)*z+d3_)*z+d4_)*z+1.0);
+    z = std::sqrt(-2.0 * std::log(1.0 - x));
+    z = -(((((c1_ * z + c2_) * z + c3_) * z + c4_) * z + c5_) * z + c6_) /
+        ((((d1_ * z + d2_) * z + d3_) * z + d4_) * z + 1.0);
   }
 
   return z;
 }
 
-}
+} // namespace
 
+double cumNorm(double x) { return 0.5 * (erf(x * rsqrt_2) + 1.0); }
 
-double cumNorm(double x)
-{
-  return 0.5*(erf(x * rsqrt_2) + 1.0);
-}
-
-
-double invCumNorm(const double x)
-{
+double invCumNorm(const double x) {
   double z;
   if (x < x_low_ || x_high_ < x) {
     z = tail_value(x);
   } else {
     z = x - 0.5;
-    double r = z*z;
-    z = (((((a1_*r+a2_)*r+a3_)*r+a4_)*r+a5_)*r+a6_)*z /
-      (((((b1_*r+b2_)*r+b3_)*r+b4_)*r+b5_)*r+1.0);
+    double r = z * z;
+    z = (((((a1_ * r + a2_) * r + a3_) * r + a4_) * r + a5_) * r + a6_) * z /
+        (((((b1_ * r + b2_) * r + b3_) * r + b4_) * r + b5_) * r + 1.0);
   }
 
   // The relative error of the approximation has absolute value less
@@ -305,61 +273,52 @@ double invCumNorm(const double x)
   // order) gives full machine precision.
 
   // error (cumNorm(z) - x) divided by the cumulative's derivative
-  const double r = (cumNorm(z) - x) * sqrt_2 * sqrt_pi * exp(0.5 * z*z);
+  const double r = (cumNorm(z) - x) * sqrt_2 * sqrt_pi * exp(0.5 * z * z);
   //  Halley's method
-  z -= r/(1+0.5*z*r);
+  z -= r / (1 + 0.5 * z * r);
 
   return z;
 }
 
-Cholesky::Cholesky(double rho)
-{
+Cholesky::Cholesky(double rho) {
   if (std::fabs(rho) > 1.0)
     throw std::runtime_error("correlation is not in [-1,1]");
   m_data[0] = rho;
   m_data[1] = sqrt(1.0 - rho * rho);
 }
 
-std::pair<uint32_t, uint32_t> Cholesky::operator()(const std::vector<uint32_t>& uncorrelated) const
-{
+std::pair<uint32_t, uint32_t> Cholesky::operator()(const std::vector<uint32_t>& uncorrelated) const {
   static const double scale = 0.5 / (1u << 31);
   // convert to normal
   double n0 = invCumNorm(uncorrelated[0] * scale);
   double n1 = invCumNorm(uncorrelated[1] * scale);
   // correlate and convert back to uniform
-  return std::make_pair(cumNorm(n0) / scale,
-                        cumNorm(n0 * m_data[0] + n1 * m_data[1]) / scale);
+  return std::make_pair(cumNorm(n0) / scale, cumNorm(n0 * m_data[0] + n1 * m_data[1]) / scale);
 }
 
-std::pair<double, bool> pValue(uint32_t dof, double x)
-{
+std::pair<double, bool> pValue(uint32_t dof, double x) {
   double k = dof * 0.5;
   int e = 0;
-  double p = 1.0 - gamain(x/2.0, k, &e);
-  // we drop detail of the error here and just return true/false, plus the value (false meaning p is potentially inaccurate)
+  double p = 1.0 - gamain(x / 2.0, k, &e);
+  // we drop detail of the error here and just return true/false, plus the value (false meaning p is potentially
+  // inaccurate)
   return std::make_pair(p, e == 0);
 }
 
-int64_t dof(std::vector<int64_t> sizes)
-{
+int64_t dof(const std::vector<int64_t>& sizes) {
   int64_t result = 1ll;
-  for (size_t i = 0; i < sizes.size(); ++i)
-  {
+  for (size_t i = 0; i < sizes.size(); ++i) {
     result *= sizes[i] - 1;
   }
   return result;
 }
 
 // S!/(prod_k(a_k!)) not convinced that this is correct
-double degeneracy(const NDArray<int64_t>& a)
-{
+double degeneracy(const NDArray<int64_t>& a) {
   double s = a.storageSize();
   double result = 1.0;
-  for (Index i(a.sizes()); !i.end(); ++i, --s)
-  {
-    result *= s / factorial(a[i]+1);
+  for (Index i(a.sizes()); !i.end(); ++i, --s) {
+    result *= s / factorial(a[i] + 1);
   }
   return result;
 }
-
-

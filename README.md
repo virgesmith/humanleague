@@ -65,8 +65,11 @@ pip install humanleague
 
 ```bash
 uv sync --dev
+uv build
 uv run pytest
 ```
+
+Install the pre-commit hooks using `uv run pre-commit install`.
 
 ### R
 

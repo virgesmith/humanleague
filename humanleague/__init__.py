@@ -2,17 +2,17 @@ import importlib.metadata
 
 __version__ = importlib.metadata.version("humanleague")
 
-from _humanleague import SobolSequence, flatten, integerise, ipf, qis, qisi
+from _humanleague import SobolSequence, flatten, integerise, ipf, qis, qisi  # ty: ignore[unresolved-import]
 
 from .utils import tabulate_counts, tabulate_individuals
 
 __all__ = [
+    "SobolSequence",
     "flatten",
     "integerise",
     "ipf",
     "qis",
     "qisi",
-    "SobolSequence",
     "tabulate_counts",
     "tabulate_individuals",
 ]

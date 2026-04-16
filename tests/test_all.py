@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from _humanleague import _unittest as hl_unittest  # type: ignore[import]
+from _humanleague import _unittest as hl_unittest  # ty: ignore[unresolved-import]
 
 import humanleague as hl
 

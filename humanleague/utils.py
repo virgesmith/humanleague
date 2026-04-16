@@ -62,7 +62,7 @@ def tabulate_individuals(population: npt.NDArray, names: list[str] | tuple[str, 
 
     """
     exploded = chain.from_iterable(
-        (idx,) * int(count)  # type: ignore[call-overload]
+        (idx,) * int(count)  # ty: ignore[invalid-argument-type]
         for idx, count in zip(np.ndindex(population.shape), np.nditer(population), strict=True)
     )
 

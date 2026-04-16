@@ -305,7 +305,7 @@ std::pair<double, bool> pValue(uint32_t dof, double x) {
   return std::make_pair(p, e == 0);
 }
 
-int64_t dof(std::vector<int64_t> sizes) {
+int64_t dof(const std::vector<int64_t>& sizes) {
   int64_t result = 1ll;
   for (size_t i = 0; i < sizes.size(); ++i) {
     result *= sizes[i] - 1;

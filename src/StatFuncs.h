@@ -42,7 +42,7 @@ template <typename T, typename U> double chiSq(const NDArray<T>& sample, const N
 
 template <typename T> inline double factorial(T x) { return std::tgamma(x + 1); }
 
-int64_t dof(std::vector<int64_t> sizes);
+int64_t dof(const std::vector<int64_t>& sizes);
 
 // Chi-squared p-value calculation using incomplete gamma function
 std::pair<double, bool> pValue(uint32_t df, double x);

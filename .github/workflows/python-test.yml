@@ -24,7 +24,7 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - name: "Setup uv ${{ matrix.python-version }} / ${{ matrix.os }}"
-      uses: astral-sh/setup-uv@v8
+      uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57
       with:
         python-version: ${{ matrix.python-version }}
     - name: Build

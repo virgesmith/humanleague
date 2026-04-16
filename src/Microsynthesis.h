@@ -3,21 +3,19 @@
 
 #pragma once
 
-#include "NDArray.h"
-#include "NDArrayUtils.h"
 #include "Index.h"
 #include "Log.h"
+#include "NDArray.h"
+#include "NDArrayUtils.h"
 
-#include <vector>
 #include <map>
+#include <vector>
 
-#include <string>
 #include <stdexcept>
+#include <string>
 
 // T = population, M = marginals (defaults to same type)
-template<typename T, typename M = T>
-class Microsynthesis
-{
+template <typename T, typename M = T> class Microsynthesis {
 public:
   typedef std::vector<int64_t> index_t;
   typedef std::vector<index_t> index_list_t;
@@ -27,21 +25,19 @@ public:
   typedef std::vector<std::pair<int64_t, int64_t>> marginal_indices_t;
   typedef std::vector<marginal_indices_t> marginal_indices_list_t;
 
-  Microsynthesis(const index_list_t& indices, marginal_list_t& marginals):
-    m_indices(indices), m_marginals(marginals)
-  {
+  Microsynthesis(const index_list_t& indices, marginal_list_t& marginals) : m_indices(indices), m_marginals(marginals) {
     // i and m should be same size and >2
     if (m_indices.size() != m_marginals.size() || m_indices.size() < 2)
-      throw std::runtime_error("index list size %% too small or differs from marginal size %%"s % m_indices.size() % m_marginals.size());
+      throw std::runtime_error("index list size %% too small or differs from marginal size %%"s % m_indices.size() %
+                               m_marginals.size());
 
     // count all unique values in i...
     std::map<int64_t, int64_t> dim_sizes;
-    for (size_t k = 0; k < m_indices.size(); ++k)
-    {
+    for (size_t k = 0; k < m_indices.size(); ++k) {
       if (m_indices[k].size() != m_marginals[k].dim())
-        throw std::runtime_error("index/marginal dimension mismatch %% vs %%"s % m_indices[k].size() % m_marginals[k].dim());
-      for (size_t j = 0; j < m_indices[k].size(); ++j)
-      {
+        throw std::runtime_error("index/marginal dimension mismatch %% vs %%"s % m_indices[k].size() %
+                                 m_marginals[k].dim());
+      for (size_t j = 0; j < m_indices[k].size(); ++j) {
         int64_t dim = m_indices[k][j];
         int64_t size = m_marginals[k].size(j);
         // check if already entered that size is same
@@ -49,7 +45,8 @@ public:
         if (posit == dim_sizes.end())
           dim_sizes.insert(std::make_pair(dim, size));
         else if (posit->second != size)
-          throw std::runtime_error("mismatch at index %%: dimension %% size %% redefined to %%"s % k % dim % posit->second % size);
+          throw std::runtime_error("mismatch at index %%: dimension %% size %% redefined to %%"s % k % dim %
+                                   posit->second % size);
       }
     }
 
@@ -57,8 +54,7 @@ public:
       throw std::runtime_error("problem needs to have more than 1 dimension!");
 
     // validate marginals
-    for (size_t k = 0; k < m_marginals.size(); ++k)
-    {
+    for (size_t k = 0; k < m_marginals.size(); ++k) {
       if (min(m_marginals[k]) < 0)
         throw std::runtime_error("negative value in marginal %%: %%"s % k % min(m_marginals[k]));
     }
@@ -66,12 +62,11 @@ public:
     m_dim = dim_sizes.size();
 
     // check all dims defined
-    //std::vector<int64_t> sizes;
+    // std::vector<int64_t> sizes;
     m_sizes.reserve(m_indices.size());
 
     // we should expect that the dim_sizes map contains keys for all values in [ 0, dim_sizes.size() ). if not throw
-    for (size_t k = 0; k < dim_sizes.size(); ++k)
-    {
+    for (size_t k = 0; k < dim_sizes.size(); ++k) {
       auto it = dim_sizes.find(k);
       if (it == dim_sizes.end())
         throw std::runtime_error("dimension %% size not defined"s % k);
@@ -85,27 +80,23 @@ public:
 #ifdef VERBOSE
     // print summary data
     std::cout << "Dim Size" << std::endl;
-    for (size_t d = 0; d < m_sizes.size(); ++d)
-    {
-        std::cout << d << ": " << m_sizes[d] << std::endl;
+    for (size_t d = 0; d < m_sizes.size(); ++d) {
+      std::cout << d << ": " << m_sizes[d] << std::endl;
     }
 
     std::cout << "Mrg Dims" << std::endl;
-    for (size_t k = 0; k < m_indices.size(); ++k)
-    {
-        std::cout << k << ": ";
-        print(m_indices[k]);
+    for (size_t k = 0; k < m_indices.size(); ++k) {
+      std::cout << k << ": ";
+      print(m_indices[k]);
     }
 
     std::cout << "Dim Mrg,Dim" << std::endl;
-    for (size_t d = 0; d < m_dim_lookup.size(); ++d)
-    {
-        std::cout << d << ":";
-        for (size_t i = 0; i < m_dim_lookup[d].size(); ++i)
-        {
+    for (size_t d = 0; d < m_dim_lookup.size(); ++d) {
+      std::cout << d << ":";
+      for (size_t i = 0; i < m_dim_lookup[d].size(); ++i) {
         std::cout << m_dim_lookup[d][i].first << "," << m_dim_lookup[d][i].second << " ";
-        }
-        std::cout << std::endl;
+      }
+      std::cout << std::endl;
     }
 #endif
   }
@@ -116,69 +107,51 @@ public:
   Microsynthesis& operator=(const Microsynthesis&) = delete;
   Microsynthesis& operator=(Microsynthesis&&) = delete;
 
+  virtual ~Microsynthesis() {}
 
-  virtual ~Microsynthesis() { }
-
-  std::vector<MappedIndex> makeMarginalMappings(const Index& index_main) const
-  {
+  std::vector<MappedIndex> makeMarginalMappings(const Index& index_main) const {
     std::vector<MappedIndex> mappings;
     mappings.reserve(m_marginals.size());
-    for (size_t k = 0; k < m_marginals.size(); ++k)
-    {
+    for (size_t k = 0; k < m_marginals.size(); ++k) {
       mappings.push_back(MappedIndex(index_main, m_indices[k]));
     }
     return mappings;
   }
 
-
   // Selects indices in [0,max) that arent in excluded
   // TODO move to a more appropriate place
-  std::vector<int64_t> invert(size_t max, const std::vector<int64_t>& excluded)
-  {
-    //print(excluded);
+  std::vector<int64_t> invert(size_t max, const std::vector<int64_t>& excluded) {
+    // print(excluded);
     std::vector<int64_t> included;
     included.reserve(max - excluded.size());
-    for (size_t i = 0; i < max; ++i)
-    {
+    for (size_t i = 0; i < max; ++i) {
       if (std::find(excluded.begin(), excluded.end(), i) == excluded.end())
         included.push_back(i);
     }
-    //print(included);
+    // print(included);
     return included;
   }
 
-  std::vector<int64_t> sizes() const
-  {
-    return m_sizes;
-  }
+  std::vector<int64_t> sizes() const { return m_sizes; }
 
-  int64_t population() const
-  {
-    return m_population;
-  }
+  int64_t population() const { return m_population; }
 
   // Diffs always represented in floating point
-  void rDiff(std::vector<NDArray<double>>& diffs)
-  {
+  void rDiff(std::vector<NDArray<double>>& diffs) {
     int64_t n = m_indices.size();
     for (int64_t k = 0; k < n; ++k)
       diff(reduce<double>(m_array, m_indices[k]), m_marginals[k], diffs[k]);
   }
 
 protected:
-
-  void rScale()
-  {
-    for (size_t k = 0; k < m_indices.size(); ++k)
-    {
+  void rScale() {
+    for (size_t k = 0; k < m_indices.size(); ++k) {
       const NDArray<double>& r = reduce<double>(m_array, m_indices[k]);
       // print(r.rawData(), r.storageSize());
 
       Index main_index(m_array.sizes());
-      for (MappedIndex oindex(main_index, invert(m_array.dim(), m_indices[k])); !oindex.end(); ++oindex)
-      {
-        for (MappedIndex index(main_index, m_indices[k]); !index.end(); ++index)
-        {
+      for (MappedIndex oindex(main_index, invert(m_array.dim(), m_indices[k])); !oindex.end(); ++oindex) {
+        for (MappedIndex index(main_index, m_indices[k]); !index.end(); ++index) {
 #ifndef NDEBUG
           if (r[index] == 0.0 && m_marginals[k][index] != 0.0)
             throw std::runtime_error("div0 in rScale with m>0");
@@ -195,44 +168,41 @@ protected:
         }
       }
       // reset the main index
-      //main_index.reset();
+      // main_index.reset();
     }
   }
 
-  void createMappings(const std::vector<int64_t> sizes, const std::map<int64_t, int64_t>& dim_sizes)
-  {
+  void createMappings(const std::vector<int64_t> sizes, const std::map<int64_t, int64_t>& dim_sizes) {
     // create mapping from dimension to marginal(s)
     m_dim_lookup.resize(m_dim);
 
     for (size_t k = 0; k < m_indices.size(); ++k)
       for (size_t i = 0; i < m_indices[k].size(); ++i)
-        m_dim_lookup[m_indices[k][i]].push_back(std::make_pair(k,i));
+        m_dim_lookup[m_indices[k][i]].push_back(std::make_pair(k, i));
 
     // more validation
 
     // check marginal sums all the same (round to nearest)
     m_population = static_cast<int64_t>(sum(m_marginals[0]) + 0.5);
-    for (size_t i = 1; i < m_marginals.size(); ++i)
-    {
+    for (size_t i = 1; i < m_marginals.size(); ++i) {
       auto marginal_sum = static_cast<int64_t>(sum(m_marginals[i]) + 0.5);
       if (marginal_sum != m_population)
         throw std::runtime_error("marginal sum mismatch at index %%: %% vs %%"s % i % marginal_sum % m_population);
     }
 
     // check that for each dimension included in more than one marginal, the partial sums in that dimension are equal
-    for (size_t d = 0; d < m_dim; ++d)
-    {
+    for (size_t d = 0; d < m_dim; ++d) {
       // loop over the relevant marginals
       const marginal_indices_t& mi = m_dim_lookup[d];
       if (mi.size() < 2)
         continue;
       //                                marginal index            marginal dimension
       const std::vector<M>& ms0 = reduce(m_marginals[mi[0].first], mi[0].second);
-      for (size_t i = 1; i < mi.size(); ++i)
-      {
+      for (size_t i = 1; i < mi.size(); ++i) {
         const auto& msi = reduce(m_marginals[mi[i].first], mi[i].second);
         if (!allclose(msi, ms0))
-          throw std::runtime_error("marginal partial sum mismatch in dimension %% index %%: %% vs %%"s % d % i % msi % ms0);
+          throw std::runtime_error("marginal partial sum mismatch in dimension %% index %%: %% vs %%"s % d % i % msi %
+                                   ms0);
       }
     }
   }

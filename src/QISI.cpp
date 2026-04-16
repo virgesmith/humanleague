@@ -18,9 +18,9 @@ size_t pick(const std::vector<double>& dist, double r) {
     if (r < runningSum)
       return i;
   }
-  throw std::runtime_error(
-      "pick failed from %%. Check that the seed and marginal values are consistent "
-      "(cannot have zero seed and nonzero marginal sum)"s % dist);
+  throw std::runtime_error("pick failed from %%. Check that the seed and marginal values are consistent "
+                           "(cannot have zero seed and nonzero marginal sum)"s %
+                           dist);
 }
 
 void getIndex(const NDArray<double>& p, const std::vector<uint32_t>& r, Index& index) {

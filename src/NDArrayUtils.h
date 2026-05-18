@@ -39,11 +39,11 @@ template <typename T> T min(const NDArray<T>& a) {
 }
 
 template <typename T> T max(const NDArray<T>& a) {
-  T minVal = std::numeric_limits<T>::max();
+  T maxVal = std::numeric_limits<T>::lowest();
   for (Index i(a.sizes()); !i.end(); ++i) {
-    minVal = std::min(minVal, a[i]);
+    maxVal = std::max(maxVal, a[i]);
   }
-  return minVal;
+  return maxVal;
 }
 
 // TODO move printing somehwere else

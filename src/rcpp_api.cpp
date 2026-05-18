@@ -127,9 +127,6 @@ List ipf(NumericVector seed, List indices, List marginals) {
   std::vector<int64_t> s;
   s.reserve(dim);
 
-  if (indices.size() != marginals.size())
-    throw std::runtime_error("no. of marginals not equal to no. of indices");
-
   // assemble dimensions (row major) for seed
   for (int64_t i = dim - 1; i >= 0; --i)
     s.push_back(rSizes[(size_t)i]);
@@ -202,9 +199,6 @@ List qis(List indices, List marginals, int skips = 0) {
   m.reserve(k);
   std::vector<std::vector<int64_t>> idx;
   idx.reserve(k);
-
-  if (indices.size() != marginals.size())
-    throw std::runtime_error("no. of marginals not equal to no. of indices");
 
   // insert indices and marginals in reverse order (R being column-major)
   for (int64_t i = k - 1; i >= 0; --i) {
@@ -287,9 +281,6 @@ List qisi(NumericVector seed, List indices, List marginals, int skips = 0) {
   idx.reserve(k);
   std::vector<int64_t> s;
   s.reserve(dim);
-
-  if (indices.size() != marginals.size())
-    throw std::runtime_error("no. of marginals not equal to no. of indices");
 
   // assemble dimensions (row major) for seed
   for (int64_t i = dim - 1; i >= 0; --i)

@@ -27,7 +27,6 @@ classifiers = [
 dependencies = [
     "numpy>=2.4.1",
     "pandas>=2.3.3",
-    "pandas-stubs>=2.2.3.250308",
 ]
 
 [dependency-groups]
@@ -38,6 +37,7 @@ dev = [
   "build>=1.2.2.post1",
   "ty>=0.0.31",
   "pre-commit>=4.5.1",
+  "pandas-stubs>=2.2.3.250308",
 ]
 
 [tool.pytest.ini_options]

@@ -9,7 +9,7 @@
 #' \itemize{
 #'  \item{Iterative Proportional Fitting (IPF), \emph{a la} \pkg{mipfp} package}
 #'  \item{\href{http://jasss.soc.surrey.ac.uk/20/4/14.html}{Quasirandom Integer Sampling (QIS)} (no seed population)}
-#'- \item{Quasirandom Integer Sampling of IPF (QISI): A combination of the two techniques whereby IPF solutions are used to sample an integer population.}
+#'  \item{Quasirandom Integer Sampling of IPF (QISI): A combination of the two techniques whereby IPF solutions are used to sample an integer population.}
 #'}
 #'
 #' The latter provides a bridge between deterministic reweighting and combinatorial optimisation, offering advantages of both techniques:
@@ -30,7 +30,7 @@
 #' The package also contains the following utility functions:
 #' \itemize{
 #'   \item{a Sobol sequence generator}
-#' - \item{functionality to convert fractional to nearest-integer marginals (in 1D). This can also be achieved in multiple dimensions by using the QISI algorithm.}
+#'   \item{functionality to convert fractional to nearest-integer marginals (in 1D). This can also be achieved in multiple dimensions by using the QISI algorithm.}
 #'   \item{functionality to 'flatten' a population into a table: this converts a multidimensional array containing the population count for each state into a table listing individuals and their characteristics.}
 #'}
 

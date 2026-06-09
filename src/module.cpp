@@ -125,7 +125,7 @@ nb::tuple integerise1d(np_array<double, nb::ro> frac_a, int pop) {
   // ensure all values are finite (negative values are permitted)
   for (auto x : prob) {
     if (!std::isfinite(x)) {
-      throw py::value_error("Invalid value in input: %%"s % x);
+      throw nb::value_error(("Invalid value in input: %%"s % x).c_str());
     }
   }
 

@@ -54,10 +54,12 @@ template <typename T, typename... Args> NDArray<T> asNDArray(const np_array<T, A
   return NDArray<T>(std::vector<int64_t>(np.shape_ptr(), np.shape_ptr() + np.ndim()), np.data());
 }
 
-template <typename T> py::array_t<T> fromNDArray(const NDArray<T>& a) {
-  py::array_t<T> result(a.sizes());
-  std::copy(a.rawData(), a.rawData() + a.storageSize(), result.mutable_data());
-  return result;
+template <typename T, typename... Args> np_array<T, Args...> fromNDArray(const NDArray<T>& a) {
+  T* data = new T[a.storageSize()];
+  std::copy(a.rawData(), a.rawData() + a.storageSize(), data);
+  nb::capsule owner(data, [](void* p) noexcept { delete[] static_cast<T*>(p); });
+  std::vector<size_t> shape(a.sizes().begin(), a.sizes().end());
+  return np_array<T, Args...>(data, shape.size(), shape.data(), owner);
 }
 
 std::vector<std::vector<int64_t>> collect_indices(const nb::iterable& iterable) {

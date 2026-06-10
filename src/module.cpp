@@ -65,8 +65,9 @@ template <typename T> NDArray<T> asNDArray(const py::array_t<T>& np) {
 }
 
 template <typename T> py::array_t<T> fromNDArray(const NDArray<T>& a) {
-  // TODO ensure this is safe. may need to explicitly copy data
-  return py::array_t<T>(a.sizes(), a.rawData());
+  py::array_t<T> result(a.sizes());
+  std::copy(a.rawData(), a.rawData() + a.storageSize(), result.mutable_data());
+  return result;
 }
 
 std::vector<std::vector<int64_t>> collect_indices(const py::iterable& iterable) {

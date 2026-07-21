@@ -66,8 +66,10 @@ std::vector<std::vector<int64_t>> collect_indices(const nb::iterable& iterable) 
   std::vector<std::vector<int64_t>> indices;
 
   for (const auto& elem : iterable) {
-    if (nb::isinstance<nb::int_>(elem)) {
-      indices.push_back(std::vector<int64_t>(1, nb::cast<int64_t>(elem)));
+    int64_t scalar;
+    if (nb::try_cast<int64_t>(elem, scalar)) {
+      // covers python ints as well as numpy integer scalars (e.g. np.int64)
+      indices.push_back(std::vector<int64_t>(1, scalar));
     } else if (nb::isinstance<nb::iterable>(elem)) {
       // TODO must be an easier way???
       std::vector<int64_t> index;
@@ -213,7 +215,6 @@ nb::tuple qis(const nb::iterable& index_iter, const nb::iterable& marginal_iter,
   stats["pValue"] = qis.pValue();
   stats["degeneracy"] = qis.degeneracy();
   return nb::make_tuple(fromNDArray<int64_t>(result), stats);
-  return nb::make_tuple(fromNDArray<int64_t>(result), stats);
 }
 
 nb::tuple qisi(const np_array<double> seed, const nb::iterable& index_iter, const nb::iterable& marginal_iter,
@@ -232,7 +233,6 @@ nb::tuple qisi(const np_array<double> seed, const nb::iterable& index_iter, cons
   stats["pop"] = qisi.population();
   stats["chiSq"] = qisi.chiSq();
   stats["pValue"] = qisi.pValue();
-  stats["degeneracy"] = qisi.degeneracy();
   stats["degeneracy"] = qisi.degeneracy();
 
   return nb::make_tuple(fromNDArray<int64_t>(result), stats);

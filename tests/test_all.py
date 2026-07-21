@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from _humanleague import _unittest as hl_unittest  # ty: ignore[unresolved-import]
+from humanleague.humanleague_ext import _unittest as hl_unittest  # ty:ignore[unresolved-import]
 
 import humanleague as hl
 
@@ -175,10 +175,10 @@ def test_IPF() -> None:
     assert np.allclose(np.sum(p, 0), m1)
     assert np.allclose(np.sum(p, 1), m0)
 
-    # mix list and tuple
-    im = ((0,), (1,), [2])
+    # mixed type indices, including a numpy integer scalar
+    im = ((0,), np.array([1]), np.int64(2))
     s = np.array([[[1.0, 1.0], [1.0, 1.0]], [[1.0, 1.0], [1.0, 1.0]]])
-    p, stats = hl.ipf(s, im, (m0, m1, m2))
+    p, stats = hl.ipf(s, im, (m0, m1, m2))  # ty:ignore[invalid-argument-type]
     assert stats["conv"]
     # check overall population and marginals correct
     assert np.sum(p) == pytest.approx(stats["pop"], 1e-8)

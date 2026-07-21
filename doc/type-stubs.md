@@ -1,10 +1,13 @@
 # updating type stubs
 
-1. install `pybind11-stubgen`
-1. run `pybind11-stubgen _humanleague`
-1. copy `stubs/_humanleague/__init__.pyi` to `humanleague`
+1. run
+
+    ```sh
+    uv run python -m nanobind.stubgen -P -m humanleague.humanleague_ext -o humanleague/__init__.pyi -M humanleague/py.typed
+    ```
+
 1. edit the file:
-    1. delete the line `import _humanleague`
+    1. delete the line `import humanleague.humanleague_ext`
     1. import numpy.typing and edit numpy types as necessary. The following definitions are also useful:
 
         ```py

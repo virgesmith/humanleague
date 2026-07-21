@@ -9,47 +9,37 @@
 
 #include "UnitTester.h"
 
-#include <pybind11/numpy.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/ndarray.h>
+#include <nanobind/stl/vector.h>
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-using namespace py::literals;
+using namespace nb::literals;
+
+template <typename... Args> using np_array = nb::ndarray<nb::numpy, Args...>;
 
 namespace hl {
 
-template <typename T> T* begin(py::array_t<T>& a) {
-  // assert(a.itemsize() == sizeof(T));
-  return (T*)a.request().ptr;
-}
+template <typename T, typename... Args> T* begin(np_array<T, Args...>& a) { return a.data(); }
 
-template <typename T> T* end(py::array_t<T>& a) {
-  // assert(a.itemsize() == sizeof(T));
-  return (T*)a.request().ptr + a.size();
-}
+template <typename T, typename... Args> T* end(np_array<T, Args...>& a) { return a.data() + a.size(); }
 
-template <typename T> const T* cbegin(const py::array_t<T>& a) {
-  // assert(a.itemsize() == sizeof(T));
-  return (const T*)a.request().ptr;
-}
+template <typename T, typename... Args> const T* cbegin(const np_array<T, Args...>& a) { return a.data(); }
 
-template <typename T> const T* cend(const py::array_t<T>& a) {
-  // assert(a.itemsize() == sizeof(T));
-  return (const T*)a.request().ptr + a.size();
-}
+template <typename T, typename... Args> const T* cend(const np_array<T, Args...>& a) { return a.data() + a.size(); }
 
-template <typename T> std::vector<T> toVector(const py::array_t<T>& a) {
+template <typename T, typename... Args> std::vector<T> toVector(const np_array<T, Args...>& a) {
   if (a.ndim() == 0) {
-    return std::vector<T>(1, *cbegin(a));
+    return std::vector<T>(1, *a.data());
   }
   if (a.ndim() != 1) {
-    throw py::value_error("cannot convert %%-dimensional array to vector"s % a.ndim());
+    throw nb::value_error(("cannot convert %%-dimensional array to vector"s % a.ndim()).c_str());
   }
   return std::vector<T>(cbegin(a), cend(a));
 }
 
-template <typename T> NDArray<T> toNDArray(const py::array_t<T>& np) {
+template <typename T, typename... Args> NDArray<T> toNDArray(const np_array<T, Args...>& np) {
   const size_t dim = np.ndim();
   std::vector<int64_t> sizes(dim);
   for (size_t i = 0; i < dim; ++i)
@@ -59,40 +49,54 @@ template <typename T> NDArray<T> toNDArray(const py::array_t<T>& np) {
   return tmp;
 }
 
-template <typename T> NDArray<T> asNDArray(const py::array_t<T>& np) {
+template <typename T, typename... Args> NDArray<T> asNDArray(const np_array<T, Args...>& np) {
   // this is a bit iffy re: constness
-  return NDArray<T>(std::vector<int64_t>(np.shape(), np.shape() + np.ndim()), const_cast<T*>(cbegin(np)));
+  return NDArray<T>(std::vector<int64_t>(np.shape_ptr(), np.shape_ptr() + np.ndim()), np.data());
 }
 
-template <typename T> py::array_t<T> fromNDArray(const NDArray<T>& a) {
-  py::array_t<T> result(a.sizes());
-  std::copy(a.rawData(), a.rawData() + a.storageSize(), result.mutable_data());
-  return result;
+template <typename T, typename... Args> np_array<T, Args...> fromNDArray(const NDArray<T>& a) {
+  T* data = new T[a.storageSize()];
+  std::copy(a.rawData(), a.rawData() + a.storageSize(), data);
+  nb::capsule owner(data, [](void* p) noexcept { delete[] static_cast<T*>(p); });
+  std::vector<size_t> shape(a.sizes().begin(), a.sizes().end());
+  return np_array<T, Args...>(data, shape.size(), shape.data(), owner);
 }
 
-std::vector<std::vector<int64_t>> collect_indices(const py::iterable& iterable) {
+std::vector<std::vector<int64_t>> collect_indices(const nb::iterable& iterable) {
   std::vector<std::vector<int64_t>> indices;
 
   for (const auto& elem : iterable) {
-    const py::array_t<int64_t> ia = elem.cast<py::array_t<int64_t>>();
-    indices.push_back(toVector<int64_t>(ia));
+    int64_t scalar;
+    if (nb::try_cast<int64_t>(elem, scalar)) {
+      // covers python ints as well as numpy integer scalars (e.g. np.int64)
+      indices.push_back(std::vector<int64_t>(1, scalar));
+    } else if (nb::isinstance<nb::iterable>(elem)) {
+      // TODO must be an easier way???
+      std::vector<int64_t> index;
+      for (const auto& item : elem) {
+        index.push_back(nb::cast<int64_t>(item));
+      }
+      indices.push_back(index);
+    } else {
+      throw nb::value_error("unexpected type for index");
+    }
   }
   return indices;
 }
 
-template <typename T> std::vector<NDArray<T>> collect_marginals(const py::iterable& iterable) {
+template <typename T> std::vector<NDArray<T>> collect_marginals(const nb::iterable& iterable) {
   std::vector<NDArray<T>> marginals;
 
   for (const auto& elem : iterable) {
-    const py::array_t<T> ma = elem.cast<py::array_t<T>>();
+    const np_array<T> ma = nb::cast<np_array<T>>(elem);
     marginals.emplace_back(toNDArray<T>(ma));
   }
   return marginals;
 }
 
-py::list flatten(const py::array_t<int64_t>& a) {
+nb::list flatten(const np_array<int64_t>& a) {
 
-  auto warnings = pybind11::module::import("warnings");
+  auto warnings = nb::module_::import_("warnings");
   warnings.attr("warn")("humanleague.flatten is deprecated, consider using humanleague.tabulate_individuals instead.");
 
   const NDArray<int64_t> array = asNDArray<int64_t>(a);
@@ -103,30 +107,29 @@ py::list flatten(const py::array_t<int64_t>& a) {
   }
 
   const std::vector<std::vector<int>>& list = listify(pop, array);
-  py::list outer; // array.dim());
+  nb::list outer;
   for (size_t i = 0; i < array.dim(); ++i) {
-    py::list l(list[i].size());
+    nb::list inner;
     for (size_t j = 0; j < list[i].size(); ++j) {
-      l[j] = list[i][j];
+      inner.append(list[i][j]);
     }
-    outer.insert(i, l);
+    outer.append(inner);
   }
-
   return outer;
 }
 
-py::tuple integerise1d(py::array_t<double> frac_a, int pop) {
+nb::tuple integerise1d(np_array<double, nb::ro> frac_a, int pop) {
   if (pop < 0) {
-    throw py::value_error("population cannot be negative");
+    throw nb::value_error("population cannot be negative");
   }
 
-  // convert py::array_t to vector and normalise it to get probabilities
+  // convert np_array to vector and normalise it to get probabilities
   std::vector<double> prob = toVector(frac_a);
 
   // ensure all values are finite (negative values are permitted)
   for (auto x : prob) {
     if (!std::isfinite(x)) {
-      throw py::value_error("Invalid value in input: %%"s % x);
+      throw nb::value_error(("Invalid value in input: %%"s % x).c_str());
     }
   }
 
@@ -137,25 +140,28 @@ py::tuple integerise1d(py::array_t<double> frac_a, int pop) {
   double var = 0.0;
   const std::vector<int>& freq = integeriseMarginalDistribution(prob, pop, var);
 
-  py::dict stats;
+  nb::dict stats;
   stats["conv"] = true; // always converges, but including for consistency
   stats["rmse"] = var;
 
-  return py::make_tuple(py::array_t<int>(freq.size(), freq.data()), stats);
+  return nb::make_tuple(np_array<int, nb::ro>(freq.data(), {freq.size()}), stats);
 }
 
 class SobolGenerator {
 public:
-  SobolGenerator(uint32_t dim, uint32_t nSkip = 0) : m_sobol(dim, nSkip) {}
+  SobolGenerator(size_t dim, size_t nSkip = 0) : m_sobol(dim, nSkip) {}
 
-  py::array_t<double> next() {
-    py::array_t<double> sequence(m_sobol.dim());
+  np_array<nb::numpy, double> next() {
+    double* data = new double[m_sobol.dim()];
+    // Delete 'data' when the 'owner' capsule expires
+    nb::capsule owner(data, [](void* p) noexcept { delete[] (double*)p; });
+
     try {
       const std::vector<uint32_t>& buf = m_sobol.buf();
-      std::transform(buf.cbegin(), buf.cend(), begin(sequence), [](uint32_t i) { return i * Sobol::SCALE; });
-      return sequence;
+      std::transform(buf.cbegin(), buf.cend(), data, [](uint64_t i) { return i * Sobol::SCALE; });
+      return np_array<nb::numpy, double>(data, {m_sobol.dim()}, owner);
     } catch (const std::runtime_error&) {
-      throw py::stop_iteration();
+      throw nb::stop_iteration();
     }
   }
 
@@ -165,63 +171,77 @@ private:
   Sobol m_sobol;
 };
 
-py::tuple integerise(const py::array_t<double>& npseed) {
+nb::tuple integerise(const np_array<double>& npseed) {
   const NDArray<double> seed = asNDArray<double>(npseed); // shallow copy
   Integeriser integeriser(seed);
-
-  py::dict stats("conv"_a = integeriser.conv(), "rmse"_a = integeriser.rmse());
-  return py::make_tuple(fromNDArray<int64_t>(integeriser.result()), stats);
+  nb::dict stats;
+  stats["conv"] = integeriser.conv();
+  stats["rmse"] = integeriser.rmse();
+  return nb::make_tuple(fromNDArray<int64_t>(integeriser.result()), stats);
 }
 
-py::tuple ipf(const py::array_t<double>& seed, const py::iterable& index_iter, const py::iterable& marginal_iter) {
+nb::tuple ipf(const np_array<double>& seed, const nb::iterable& index_iter, const nb::iterable& marginal_iter) {
   std::vector<std::vector<int64_t>> indices = collect_indices(index_iter);
   std::vector<NDArray<double>> marginals = collect_marginals<double>(marginal_iter);
   if (indices.size() != marginals.size())
-    throw py::value_error("index and marginals lists differ in size");
+    throw nb::value_error("index and marginals lists differ in size");
 
   IPF<double> ipf(indices, marginals);
   const NDArray<double>& result = ipf.solve(asNDArray<double>(seed));
 
-  py::dict stats("conv"_a = ipf.conv(), "pop"_a = ipf.population(), "iterations"_a = ipf.iters(),
-                 "maxError"_a = ipf.maxError());
-  return py::make_tuple(fromNDArray<double>(result), stats);
+  nb::dict stats;
+  stats["conv"] = ipf.conv();
+  stats["pop"] = ipf.population();
+  stats["iterations"] = ipf.iters();
+  stats["maxError"] = ipf.maxError();
+  return nb::make_tuple(fromNDArray<double>(result), stats);
 }
 
-py::tuple qis(const py::iterable& index_iter, const py::iterable& marginal_iter, int64_t skips) {
+nb::tuple qis(const nb::iterable& index_iter, const nb::iterable& marginal_iter, int64_t skips) {
   std::vector<std::vector<int64_t>> indices = collect_indices(index_iter);
   std::vector<NDArray<int64_t>> marginals = collect_marginals<int64_t>(marginal_iter);
   if (indices.size() != marginals.size())
-    throw py::value_error("index and marginals lists differ in size");
+    throw nb::value_error("index and marginals lists differ in size");
 
   QIS qis(indices, marginals, skips);
   const NDArray<int64_t>& result = qis.solve();
   const NDArray<double>& expect = qis.expectation();
 
-  py::dict stats("expectation"_a = fromNDArray<double>(expect), "conv"_a = qis.conv(), "pop"_a = qis.population(),
-                 "chiSq"_a = qis.chiSq(), "pValue"_a = qis.pValue(), "degeneracy"_a = qis.degeneracy());
-  return py::make_tuple(fromNDArray<int64_t>(result), stats);
+  nb::dict stats;
+  stats["expectation"] = fromNDArray<double>(expect);
+  stats["conv"] = qis.conv();
+  stats["pop"] = qis.population();
+  stats["chiSq"] = qis.chiSq();
+  stats["pValue"] = qis.pValue();
+  stats["degeneracy"] = qis.degeneracy();
+  return nb::make_tuple(fromNDArray<int64_t>(result), stats);
 }
 
-py::tuple qisi(const py::array_t<double> seed, const py::iterable& index_iter, const py::iterable& marginal_iter,
+nb::tuple qisi(const np_array<double> seed, const nb::iterable& index_iter, const nb::iterable& marginal_iter,
                int64_t skips) {
   std::vector<std::vector<int64_t>> indices = collect_indices(index_iter);
   std::vector<NDArray<int64_t>> marginals = collect_marginals<int64_t>(marginal_iter);
   if (indices.size() != marginals.size())
-    throw py::value_error("index and marginals lists differ in size");
+    throw nb::value_error("index and marginals lists differ in size");
 
   QISI qisi(indices, marginals, skips);
   const NDArray<int64_t>& result = qisi.solve(asNDArray<double>(seed));
 
-  py::dict stats("expectation"_a = fromNDArray<double>(qisi.expectation()), "conv"_a = qisi.conv(),
-                 "pop"_a = qisi.population(), "chiSq"_a = qisi.chiSq(), "pValue"_a = qisi.pValue(),
-                 "degeneracy"_a = qisi.degeneracy());
-  return py::make_tuple(fromNDArray<int64_t>(result), stats);
+  nb::dict stats;
+  stats["expectation"] = fromNDArray<double>(qisi.expectation());
+  stats["conv"] = qisi.conv();
+  stats["pop"] = qisi.population();
+  stats["chiSq"] = qisi.chiSq();
+  stats["pValue"] = qisi.pValue();
+  stats["degeneracy"] = qisi.degeneracy();
+
+  return nb::make_tuple(fromNDArray<int64_t>(result), stats);
 }
 
-py::dict unittest() {
+nb::dict unittest() {
   const unittest::Logger& log = unittest::run();
 
-  py::dict result;
+  nb::dict result;
   result["nTests"] = log.testsRun;
   result["nFails"] = log.testsFailed;
   result["errors"] = log.errors;
@@ -231,7 +251,7 @@ py::dict unittest() {
 
 } // namespace hl
 
-PYBIND11_MODULE(_humanleague, m) {
+NB_MODULE(humanleague_ext, m) {
 
 #include "docstr.inl"
 
@@ -244,20 +264,20 @@ PYBIND11_MODULE(_humanleague, m) {
       .def("qis", hl::qis, qis_docstr, "indices"_a, "marginals"_a, "skips"_a)
       .def(
           "qis",
-          [](const py::iterable& indices, const py::iterable& marginals) { return hl::qis(indices, marginals, 0); },
+          [](const nb::iterable& indices, const nb::iterable& marginals) { return hl::qis(indices, marginals, 0); },
           qis2_docstr, "indices"_a, "marginals"_a)
       .def("qisi", hl::qisi, qisi_docstr, "seed"_a, "indices"_a, "marginals"_a, "skips"_a)
       .def(
           "qisi",
-          [](const py::array_t<double>& seed, const py::iterable& indices, const py::iterable& marginals) {
+          [](const np_array<double>& seed, const nb::iterable& indices, const nb::iterable& marginals) {
             return hl::qisi(seed, indices, marginals, 0);
           },
           qisi2_docstr, "seed"_a, "indices"_a, "marginals"_a)
       .def("_unittest", hl::unittest, unittest_docstr);
 
-  py::class_<hl::SobolGenerator>(m, "SobolSequence")
-      .def(py::init<size_t, uint32_t>(), SobolSequence_init2_docstr, "dim"_a, "skips"_a)
-      .def(py::init<size_t>(), SobolSequence_init1_docstr, "dim"_a)
+  nb::class_<hl::SobolGenerator>(m, "SobolSequence")
+      .def(nb::init<size_t, size_t>(), SobolSequence_init2_docstr, "dim"_a, "skips"_a)
+      .def(nb::init<size_t>(), SobolSequence_init1_docstr, "dim"_a)
       .def("__iter__", &hl::SobolGenerator::iter, "__iter__ dunder")
       .def("__next__", &hl::SobolGenerator::next, "__next__ dunder");
 }

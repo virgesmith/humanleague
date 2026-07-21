@@ -63,13 +63,25 @@ pip install humanleague
 
 [uv](https://docs.astral.sh/uv/) is highly recommended for managing environments.
 
+
 ```bash
 uv sync --dev
 uv build
 uv run pytest
 ```
 
-Install the pre-commit hooks using `uv run pre-commit install`.
+Nanobind docs suggest a dev workflow where the build happens directly in the dev env - first manually install
+the build deps (required after every `uv sync`)
+
+```sh
+uv pip install nanobind scikit-build-core[pyproject]
+```
+
+Then build with
+
+```sh
+uv pip install --no-build-isolation -ve .
+```
 
 ### R
 
@@ -108,7 +120,13 @@ The package now contains type annotations and your IDE should automatically disp
 
 ![help](./doc/help.png)
 
-NB type stubs are generated using the `pybind11-stubgen` package, with some [manual corrections](./doc/type-stubs.md).
+~~NB type stubs are generated using the `pybind11-stubgen` package, with some [manual corrections](./doc/type-stubs.md).~~
+
+`nanobind` now has stubgen functionality (but appears limited as of 2.9.2)
+
+```sh
+uv run python -m nanobind.stubgen -P -m humanleague.humanleague_ext -o humanleague/__init__.pyi -M humanleague/py.typed
+```
 
 ### Multidimensional integerisation
 

@@ -27,3 +27,5 @@ coverage.info
 
 .env
 uv.lock
+
+release_notes.md

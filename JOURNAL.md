@@ -22,6 +22,58 @@ Entry template:
 
 ---
 
+## 2026-08-28 — Optimise QIS sampling; compute degeneracy in log space (#66)
+
+**Why** — `QIS::sample` is the hot path: it runs once per person per marginal, and it was
+paying for a `std::map` construction and a by-value copy on every call, plus a redundant
+`accumulate` over the distribution at every level of the sampling recursion. Separately,
+`degeneracy` could silently return `0` for a value that is astronomically large, because
+`tgamma` overflows to `inf` for any cell count above ~170 and one `inf` in the denominator
+collapses the whole running product.
+
+**What** — Four changes. In `QIS::sample`, the `std::map<int64_t, int64_t> slice_map` becomes
+a `std::vector<int64_t>` indexed by the original dimension and is passed by const ref;
+the two `dims_to_*` vectors are reserved; and the array copy is skipped when there are no
+fixed dimensions to slice. `pick` gains a precomputed-sum parameter threaded down the
+recursion. `degeneracy` evaluates the same expression via `lgamma`, exponentiating once.
+`chiSq` walks the underlying storage instead of incrementing an `Index`. Measured on
+`solve_m`: 16% faster at pop=100k over 8^4, 7% at pop=200k over 16^4, 21% at pop=50k over
+4^4, with byte-identical output in every case.
+
+**Design decisions**
+- *Vector instead of map for `slice_map`* — the keys are a dense range of dimension indices
+  known up front, so the map bought nothing but an allocation per call. A `std::vector`
+  sized to `dims.size()` with `-1` marking "not sliced" preserves the sparse-lookup
+  semantics the `VERBOSE` printout relied on. Rejected keeping the map and merely passing
+  it by const ref: that removes the copy but not the per-call construction.
+- *Thread the sum through `pick` for QIS but not QISI* — the sum of a slice is exactly the
+  reduced value the parent picked from, so recomputing it is redundant. QIS's marginals are
+  `int64_t`, so the sums are exact in `double` and output is unchanged. QISI's are `double`,
+  where the reused sum differs from a re-accumulation in the last bits; that flipped picks at
+  boundaries (chiSq 400.11 → 394.57 at pop=51200 over 8^4, different population for the same
+  seed) and measured no faster, so it was rejected there. It also introduces a failure mode
+  that cannot occur today: an externally supplied sum a ULP larger than the true sum lets
+  `r * sum` exceed the final running total and throw `pick failed`.
+- *`lgamma` rather than a guarded `tgamma`* — clamping or special-casing the overflow still
+  loses precision across the product. Working in log space and exponentiating once is both
+  shorter and correct over the whole representable range; results that were representable
+  before are bit-identical.
+- *Raw-pointer loop in `chiSq`* — only correct because sample and reference are always the
+  same shape with the same storage order. It is called once per solve, so this is tidying,
+  not a speedup; kept because it reads more plainly than the `Index` form.
+
+**Follow-ups**
+- `QIS::sample` recomputes the sum of the sliced marginal per call; the population is known
+  to the caller, so it could in principle be threaded in from `solve_m` instead.
+- `Sobol::reset()` defaults to `nSkip = 0` and so discards the constructor's `skips`. Not
+  reachable from either binding (both construct a fresh object per call and never pass
+  `reset`), but `QIS`/`QISI` should store `m_skips` and pass it through.
+- `QIS`'s constructor still calls `m_sobolSeq.skip(skips)` unguarded, so `qis(..., 0)`
+  consumes a Sobol point where `qisi(..., 0)` no longer does (see #64). Deliberate —
+  guarding it would change every existing `qis` result — but the asymmetry is undocumented.
+
+---
+
 ## 2026-07-21 — Switch Python bindings from pybind11 to nanobind (#60)
 
 **Why** — The pybind11 + hand-rolled `setup.py`/`setuptools` build was slow to iterate on

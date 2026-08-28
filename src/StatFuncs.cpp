@@ -313,12 +313,12 @@ int64_t dof(const std::vector<int64_t>& sizes) {
   return result;
 }
 
-// S!/(prod_k(a_k!)) not convinced that this is correct
+// Computes n! / prod_k((a_k+1)!) where n = storageSize, in log-space to avoid overflow
 double degeneracy(const NDArray<int64_t>& a) {
-  double s = a.storageSize();
-  double result = 1.0;
-  for (Index i(a.sizes()); !i.end(); ++i, --s) {
-    result *= s / factorial(a[i] + 1);
-  }
-  return result;
+  const size_t n = a.storageSize();
+  const int64_t* data = a.rawData();
+  double logResult = std::lgamma(static_cast<double>(n + 1));
+  for (size_t i = 0; i < n; ++i)
+    logResult -= std::lgamma(static_cast<double>(data[i] + 2));
+  return std::exp(logResult);
 }

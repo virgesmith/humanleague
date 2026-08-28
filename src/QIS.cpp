@@ -10,10 +10,12 @@
 namespace {
 
 // TODO move somewhere appropriate (doesnt need to be member) (copy&paste from QSIPF)
-template <typename T> int64_t pick(const T* dist, size_t len, double r) {
+template <typename T> int64_t pick(const T* dist, size_t len, double r, double sum = -1.0) {
   // sum of dist should be 1, but we relax this
   // r is in (0,1) so scale up r by sum of dist
-  r *= std::accumulate(dist, dist + len, 0.0);
+  if (sum < 0.0)
+    sum = std::accumulate(dist, dist + len, 0.0);
+  r *= sum;
   T runningSum = 0.0;
   for (size_t i = 0; i < len; ++i) {
     runningSum += dist[i];
@@ -44,7 +46,7 @@ void recursive_pick(const NDArray<double>& p, const std::vector<uint32_t>& seq, 
 // #ifdef USE_STATE_SAMPLING
 
 void recursive_sample(std::vector<std::pair<int64_t, uint32_t>>& dims, const NDArray<int64_t>& marginal,
-                      MappedIndex& index, std::map<int64_t, int64_t> slice_map) {
+                      MappedIndex& index, const std::vector<int64_t>& slice_map, double marginal_sum) {
   static const double scale = 0.5 / (1u << 31);
 
 #ifdef VERBOSE
@@ -53,7 +55,7 @@ void recursive_sample(std::vector<std::pair<int64_t, uint32_t>>& dims, const NDA
 
   // end recursion at 1 (cannot have a zero-D marginal)
   if (dims.size() == 1) {
-    index[dims.back().first] = pick(marginal.rawData(), marginal.storageSize(), dims.back().second * scale);
+    index[dims.back().first] = pick(marginal.rawData(), marginal.storageSize(), dims.back().second * scale, marginal_sum);
 #ifdef VERBOSE
     std::cout << "marginal (1d):";
     print(marginal.rawData(), marginal.storageSize());
@@ -62,19 +64,20 @@ void recursive_sample(std::vector<std::pair<int64_t, uint32_t>>& dims, const NDA
     dims.pop_back();
     return;
   } else {
-    const std::vector<int64_t>& r = reduce<int64_t>(marginal, slice_map[dims.back().first]);
-    index[dims.back().first] = pick(r.data(), r.size(), dims.back().second * scale);
-    const NDArray<int64_t>& sliced = slice(marginal, {slice_map[dims.back().first], index[dims.back().first]});
+    const int64_t d = dims.back().first;
+    const std::vector<int64_t>& r = reduce<int64_t>(marginal, slice_map[d]);
+    index[d] = pick(r.data(), r.size(), dims.back().second * scale, marginal_sum);
+    const NDArray<int64_t>& sliced = slice(marginal, {slice_map[d], index[d]});
+    double sliced_sum = static_cast<double>(r[index[d]]);
 #ifdef VERBOSE
     std::cout << "marginal (>1d):";
     print(marginal.rawData(), marginal.storageSize());
-    std::cout << "recursive_sample picked: D" << dims.back().first << "[" << slice_map[dims.back().first] << "]" << ":"
-              << index[dims.back().first] << std::endl;
+    std::cout << "recursive_sample picked: D" << d << "[" << slice_map[d] << "]" << ":" << index[d] << std::endl;
     std::cout << "sliced marginal:";
     print(sliced.rawData(), sliced.storageSize());
 #endif
     dims.pop_back();
-    recursive_sample(dims, sliced, index, slice_map);
+    recursive_sample(dims, sliced, index, slice_map, sliced_sum);
   }
 }
 
@@ -88,8 +91,10 @@ void sample(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, const 
 #endif
   std::vector<std::pair<int64_t, int64_t>> dims_to_slice;
   std::vector<std::pair<int64_t, uint32_t>> dims_to_sample;
-  // this tracks dimensions as the array is sliced
-  std::map<int64_t, int64_t> slice_map;
+  dims_to_slice.reserve(dims.size());
+  dims_to_sample.reserve(dims.size());
+  // maps original dim index -> compressed index after slicing
+  std::vector<int64_t> slice_map(dims.size(), -1);
   int64_t slice_index = 0;
   for (size_t d = 0; d < dims.size(); ++d) {
     // d can be wrong here, perhaps because index is the wrong way round?
@@ -111,8 +116,9 @@ void sample(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, const 
     std::cout << dims_to_sample[i].first << ":" << dims_to_sample[i].second << std::endl;
   }
   std::cout << "remapped dims for sampling:";
-  for (auto it = slice_map.begin(); it != slice_map.end(); ++it) {
-    std::cout << it->first << "->" << it->second << std::endl;
+  for (size_t d = 0; d < slice_map.size(); ++d) {
+    if (slice_map[d] >= 0)
+      std::cout << d << "->" << slice_map[d] << std::endl;
   }
 #endif
 
@@ -120,8 +126,11 @@ void sample(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, const 
   if (dims_to_sample.empty())
     return;
 
-  // first get slice in the free dimensions only
-  const NDArray<int64_t>& free = slice(marginal, dims_to_slice);
+  // get slice in the free dimensions only (empty when nothing is fixed, in which case use the marginal directly
+  // rather than taking a copy of it). NB NDArray is not copyable, hence the slightly awkward construction
+  NDArray<int64_t> sliced_free = dims_to_slice.empty() ? NDArray<int64_t>() : slice(marginal, dims_to_slice);
+  const NDArray<int64_t>& free = dims_to_slice.empty() ? marginal : sliced_free;
+  double marginal_sum = static_cast<double>(std::accumulate(free.rawData(), free.rawData() + free.storageSize(), 0ll));
 
 #ifdef VERBOSE
   std::cout << "sliced [" << free.dim() << "] ";
@@ -133,7 +142,7 @@ void sample(std::vector<int64_t>& dims, const std::vector<uint32_t>& seq, const 
 #endif
 
   // should now have an array with dim = dims_to_sample.size()
-  recursive_sample(dims_to_sample, free, index, slice_map);
+  recursive_sample(dims_to_sample, free, index, slice_map, marginal_sum);
 }
 
 } // namespace

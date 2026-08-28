@@ -33,9 +33,12 @@ private:
 // chi-squared stat: sample vs reference (max entropy)
 template <typename T, typename U> double chiSq(const NDArray<T>& sample, const NDArray<U>& reference) {
   double chisq = 0.0;
-  for (Index index(sample.sizes()); !index.end(); ++index) {
-    // m is the mean population of this state
-    chisq += (sample[index] - reference[index]) * (sample[index] - reference[index]) / reference[index];
+  const T* s = sample.rawData();
+  const U* r = reference.rawData();
+  const size_t n = sample.storageSize();
+  for (size_t i = 0; i < n; ++i) {
+    const double d = s[i] - r[i];
+    chisq += d * d / r[i];
   }
   return chisq;
 }

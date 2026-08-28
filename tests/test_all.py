@@ -332,6 +332,30 @@ def test_QIS_dim_indexing() -> None:
     assert ms["conv"]
 
 
+def test_QISI_skips() -> None:
+    # skips must advance the Sobol sequence, so that different values give different
+    # (but still marginal-consistent) populations of the same problem
+    m0 = np.array([52, 48])
+    m1 = np.array([10, 77, 13])
+    idx = [0, 1]
+    s = np.ones([len(m0), len(m1)])
+
+    results = []
+    for skips in (0, 7, 100, 1000):
+        p, stats = hl.qisi(s, idx, [m0, m1], skips)
+        assert stats["conv"]
+        assert stats["pop"] == 100.0
+        assert np.allclose(np.sum(p, 0), m1)
+        assert np.allclose(np.sum(p, 1), m0)
+        results.append(p)
+
+    # the sampled populations must not all be identical
+    assert any(not np.array_equal(results[0], r) for r in results[1:])
+
+    # ...and a given skips value must be reproducible
+    assert np.array_equal(hl.qisi(s, idx, [m0, m1], 100)[0], results[2])
+
+
 def test_QISI() -> None:
     m0 = np.array([52, 48])
     m1 = np.array([10, 77, 13])

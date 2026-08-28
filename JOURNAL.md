@@ -48,12 +48,14 @@ without publishing.
   unreachable outside a tag.
 - *`fail-fast: false` on the wheel matrix* — a failure on one platform should still show
   which of the others would have succeeded.
+- *Dropped the `zip examples` / artifact-upload steps* — they packaged an `examples/`
+  directory that does not exist in the repo and never has, so `zip -r examples.zip
+  examples/` would exit non-zero. They sat in `deploy` after `uv publish`, so a tagged
+  release would have published to PyPI and then gone red. Removed rather than fixed:
+  attaching example material to a release is a separate concern from publishing the
+  package, and there is no material to attach.
 
-**Follow-ups** — two known gaps, deliberately left for the maintainer to resolve:
-- The `zip examples` steps reference an `examples/` directory that does not exist in the
-  repo and never has. They sit in `deploy` after `uv publish`, so a tagged release would
-  publish and then fail. Needs the directory adding, the paths correcting, or the steps
-  removing.
+**Follow-ups**
 - There is no `[tool.cibuildwheel]` section in `pyproject.toml`, so the `build-frontend =
   "build[uv]"` that the added comment assumes is not in effect and cibuildwheel will use its
   default pip frontend — making the `setup-uv` step on that job redundant. Either add the

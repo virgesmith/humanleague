@@ -61,7 +61,9 @@ QISI::QISI(const index_list_t& indices, marginal_list_t& marginals, int64_t skip
     : Microsynthesis(indices, marginals), m_sobolSeq(m_dim), m_chiSq(std::numeric_limits<double>::quiet_NaN()),
       m_pValue(std::numeric_limits<double>::quiet_NaN()), m_degeneracy(std::numeric_limits<double>::quiet_NaN()),
       m_conv(false) {
-  m_sobolSeq.skip(skips);
+  // NB Sobol::skip(0) is not a no-op - it consumes a point - so guard it
+  if (skips > 0)
+    m_sobolSeq.skip(skips);
 }
 
 // control state of Sobol via arg?
@@ -91,10 +93,9 @@ const NDArray<int64_t>& QISI::solve(const NDArray<double>& seed, bool reset) {
   const std::vector<MappedIndex>& mappedIndices = makeMarginalMappings(main_index);
   m_array.assign(0ll);
 
-  Sobol sobol_seq(m_dim);
   for (int64_t i = 0; i < m_population; ++i) {
     // map sobol to a point in state space, store in index
-    const std::vector<uint32_t>& seq = sobol_seq.buf();
+    const std::vector<uint32_t>& seq = m_sobolSeq.buf();
     // ...
     getIndex(m_ipfSolution, seq, main_index);
 

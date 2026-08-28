@@ -8,19 +8,19 @@
 namespace {
 
 // TODO move somewhere appropriate (doesnt need to be member) (copy&paste from QSIPF)
-size_t pick(const std::vector<double>& dist, double r) {
+size_t pick(const double* dist, size_t len, double r) {
   // sum of dist should be 1, but we relax this
   // r is in (0,1) so scale up r by sum of dist
-  r *= std::accumulate(dist.begin(), dist.end(), 0.0);
+  r *= std::accumulate(dist, dist + len, 0.0);
   double runningSum = 0.0;
-  for (size_t i = 0; i < dist.size(); ++i) {
+  for (size_t i = 0; i < len; ++i) {
     runningSum += dist[i];
     if (r < runningSum)
       return i;
   }
   throw std::runtime_error("pick failed from %%. Check that the seed and marginal values are consistent "
                            "(cannot have zero seed and nonzero marginal sum)"s %
-                           dist);
+                           std::vector<double>(dist, dist + len));
 }
 
 void getIndex(const NDArray<double>& p, const std::vector<uint32_t>& r, Index& index) {
@@ -32,7 +32,7 @@ void getIndex(const NDArray<double>& p, const std::vector<uint32_t>& r, Index& i
     // reduce dim D-1
     const std::vector<double>& m = reduce<double>(p, dim - 1);
     // pick an index
-    index[dim - 1] = pick(m, r[dim - 1] * scale);
+    index[dim - 1] = pick(m.data(), m.size(), r[dim - 1] * scale);
 
     // take slice of Dim D-1 at index
     const NDArray<double>& sliced = slice<double>(p, {dim - 1, index[dim - 1]});
@@ -43,15 +43,12 @@ void getIndex(const NDArray<double>& p, const std::vector<uint32_t>& r, Index& i
     // reduce dim 1 (now 0)
     const std::vector<double>& r1 = reduce<double>(p, 1);
     // pick an index
-    index[1] = pick(r1, r[1] * scale);
+    index[1] = pick(r1.data(), r1.size(), r[1] * scale);
 
-    // slice dim 2 (now 0)
+    // slice dim 1 at picked index, no further reduction required for 1-D
     const NDArray<double>& sliced = slice<double>(p, {1, index[1]});
     assert(sliced.dim() == 1);
-    std::vector<double> r0(sliced.rawData(), sliced.rawData() + sliced.storageSize());
-    // no reduction required
-    // pick an index
-    index[0] = pick(r0, r[0] * scale);
+    index[0] = pick(sliced.rawData(), sliced.storageSize(), r[0] * scale);
   }
 }
 

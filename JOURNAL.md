@@ -22,6 +22,49 @@ Entry template:
 
 ---
 
+## 2026-08-28 — Build binary wheels for PyPI releases (#67)
+
+**Why** — The release workflow published only an sdist, so every `pip install humanleague`
+compiled the nanobind extension from source and therefore required a C++20 toolchain, CMake
+and nanobind on the user's machine. The move to nanobind's stable ABI (#60) made per-platform
+binary wheels cheap — one wheel per OS covers 3.12+ — so there is no longer a reason not to
+ship them.
+
+**What** — Split the workflow into three jobs: `wheels` (cibuildwheel across
+`ubuntu-latest`/`windows-latest`/`macos-latest`, one artifact per platform), `sdist`
+(`uv build --sdist`), and `deploy`, which now `needs` both and downloads their artifacts
+rather than building anything itself. Added a `workflow_dispatch` trigger so the wheel build
+can be exercised on demand, with `deploy` guarded on `refs/tags/v*` so a manual run builds
+without publishing.
+
+**Design decisions**
+- *cibuildwheel rather than a hand-rolled matrix* — it already knows the manylinux
+  containers, the repair/audit step and the ABI tags, none of which are worth reimplementing.
+- *Separate `wheels` and `sdist` jobs feeding `deploy` via artifacts* — keeps a single
+  publish step (so a partial upload can't happen), lets the platform builds run in parallel,
+  and makes `deploy` a pure publish with nothing to rebuild.
+- *`workflow_dispatch` plus a tag guard on `deploy` instead of a separate CI workflow* —
+  one definition, exercised the same way it will run for real, with the publish step
+  unreachable outside a tag.
+- *`fail-fast: false` on the wheel matrix* — a failure on one platform should still show
+  which of the others would have succeeded.
+- *Dropped the `zip examples` / artifact-upload steps* — they packaged an `examples/`
+  directory that does not exist in the repo and never has, so `zip -r examples.zip
+  examples/` would exit non-zero. They sat in `deploy` after `uv publish`, so a tagged
+  release would have published to PyPI and then gone red. Removed rather than fixed:
+  attaching example material to a release is a separate concern from publishing the
+  package, and there is no material to attach.
+
+**Follow-ups**
+- There is no `[tool.cibuildwheel]` section in `pyproject.toml`, so the `build-frontend =
+  "build[uv]"` that the added comment assumes is not in effect and cibuildwheel will use its
+  default pip frontend — making the `setup-uv` step on that job redundant. Either add the
+  config or drop the comment and the step.
+- Not yet exercised: a `workflow_dispatch` run on the branch would validate `wheels` and
+  `sdist` end to end before merge.
+
+---
+
 ## 2026-08-28 — Optimise QIS sampling; compute degeneracy in log space (#66)
 
 **Why** — `QIS::sample` is the hot path: it runs once per person per marginal, and it was

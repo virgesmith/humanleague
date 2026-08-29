@@ -31,7 +31,7 @@ dev = [
   "build>=1.5.0",
   "ty>=0.0.49",
   "pre-commit>=4.6.0",
-  "pandas-stubs>=3.0.3.260530",
+  "pandas-stubs>=3.0.5.260730",
 ]
 
 [tool.pytest.ini_options]
@@ -59,3 +59,22 @@ ignore = ["E501"]
 [tool.ruff.lint.per-file-ignores]
 "**/__init__.py" = ["F401", "F403"]
 "tests/*.py" = ["D103", "N802"]
+
+[tool.cibuildwheel]
+build = ["cp312-*", "cp313-*", "cp314-*"]
+# manylinux only - alpine/musl builds aren't tested anywhere
+skip = ["*-musllinux_*"]
+build-frontend = "build[uv]"
+# copy the tests next to the temporary test venv so the installed wheel, not ./humanleague, is imported
+test-sources = ["tests", "pyproject.toml"]
+test-requires = "pytest"
+test-command = "pytest"
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64"]
+
+[tool.cibuildwheel.windows]
+archs = ["AMD64"]
+
+[tool.cibuildwheel.macos]
+archs = ["arm64"]

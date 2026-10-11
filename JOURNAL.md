@@ -22,7 +22,7 @@ Entry template:
 
 ---
 
-## 2026-10-11 — Python 3.13–3.15; update build requirements and CI actions
+## 2026-10-11 — Python 3.13–3.15; update build requirements and CI actions (#68)
 
 **Why** — The policy is to support the three most recent CPython releases. With 3.15.0
 final released, the window moves from 3.12–3.14 to 3.13–3.15, and 3.12 is dropped.

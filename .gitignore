@@ -26,6 +26,5 @@ coverage.info
 *.gcov
 
 .env
-uv.lock
 
 release_notes.md

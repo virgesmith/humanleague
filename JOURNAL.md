@@ -36,7 +36,9 @@ pre-1.0 defaults.
 - Supported Python: `requires-python` `>=3.12` → `>=3.13`; classifiers drop 3.12 and add
   3.15; stable-ABI target `wheel.py-api` `cp312` → `cp313`; cibuildwheel `build` list
   `cp312–cp314` → `cp313–cp315`; CMake `find_package(Python 3.12` → `3.13`. CI test matrix,
-  README and AGENTS.md updated to match; the coverage job moves from 3.13 to 3.14.
+  README and AGENTS.md updated to match; the coverage job moves from 3.13 to 3.14. The
+  three-version policy, and the checklist of places a version change touches, are now a
+  Developer Rule in AGENTS.md.
 - Build requirements: `scikit-build-core >=1.1`, `nanobind >=3.1`. Dropped the
   `[pyproject]` extra from the manual dev-install instructions (README, CMakeLists.txt
   comment, AGENTS.md): scikit-build-core 1.0 removed it and installers now warn about it.
@@ -44,6 +46,12 @@ pre-1.0 defaults.
   of v8.0.0 (test/coverage) → `@v10.2.0` everywhere; `pypa/cibuildwheel` v4.2.0 → v4.3.1.
   `upload-artifact@v7`, `download-artifact@v8` and `r-lib/actions@v2` were already on the
   latest major and are unchanged.
+- `uv.lock` is now committed (removed from `.gitignore`).
+- Type stubs: regenerated with nanobind 3.1 stubgen to check for drift (none). Tidied
+  `humanleague/__init__.pyi`: `collections.abc`/`typing` imports by name instead of
+  `typing.X`; dropped the no-op `from __future__ import annotations` (stubs are never
+  executed) and a stray `pass`. Rewrote `doc/type-stubs.md` as a generate-to-temp-and-diff
+  process; the README now points to it instead of the overwrite command.
 - Required checks: each of `python-test.yml`, `coverage.yml` and `r-cmd-check.yml` gains an
   `all-passed` summary job (`Python tests passed`, `Coverage passed`, `R CMD check passed`).
   Branch protection on `main` now requires just those three, instead of 15 per-matrix-leg
@@ -86,6 +94,22 @@ pre-1.0 defaults.
   change moves CPython 3.15 from rc3 to the final 3.15.0, which the new `cp315-*` builds
   need. Its releases are *not* immutable, so this tag pin is weaker than setup-uv's. Other
   actions stay on floating major tags (`@v7` etc.), as before.
+- *Commit `uv.lock`.* CI (`uv sync --dev`) and local dev environments now install the same
+  pinned versions, so a CI failure can be reproduced exactly, and dependency changes arrive
+  as reviewable lockfile diffs instead of silently on the next run. The trade-off: CI no
+  longer tests against the latest numpy/pandas, which is what users get, because the lock
+  only constrains our environments, not the published package's requirements. A new
+  upstream release can therefore break users before CI notices, until the lock is
+  refreshed (Dependabot's `uv` ecosystem, planned next). The lock does not cover
+  `build-system.requires`: isolated builds still fetch the latest scikit-build-core and
+  nanobind.
+- *Stubs stay hand-maintained, with stubgen used only as a drift detector.* nanobind 3's
+  stubgen fixed two things the old process corrected by hand: it no longer emits a stray
+  `import humanleague.humanleague_ext`, and each overload now gets its own docstring. Its
+  types are still too loose to ship (bare `tuple`/`Iterable`) and it can't see the
+  Python-defined functions. The old documented command wrote straight over
+  `__init__.pyi`, so the hand corrections had to be redone on every run. Generating to a
+  temp file and diffing makes the corrections permanent and shows real changes directly.
 - *Summary jobs instead of requiring every matrix leg.* Required checks are matched by job
   name, and matrix job names embed the Python/R version (`build (3.12, ubuntu-latest)`).
   So every version bump left branch protection waiting forever for jobs that no longer
@@ -102,8 +126,6 @@ pre-1.0 defaults.
     part, or a dependency, for what three five-line jobs already do.
 
 **Follow-ups**
-- Type stubs not regenerated: no bound signatures changed. nanobind 3's stubgen output
-  differs in formatting from the hand-corrected stubs, as before.
 - No Dependabot config for `github-actions`, so action bumps stay manual. Adding
   `.github/dependabot.yml` would automate them; its `cooldown` option could encode the
   "don't adopt brand-new releases" policy.

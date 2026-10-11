@@ -116,7 +116,7 @@ Python:
 
 **A C++20 compiler and CMake are required.** `uv sync` / `uv build` compiles `src/*.cpp` via
 CMake + nanobind. For fast local iteration on the C++ side, use the manual dev workflow in
-[README.md](README.md): `uv pip install nanobind scikit-build-core[pyproject]`, then
+[README.md](README.md): `uv pip install nanobind scikit-build-core`, then
 `uv pip install --no-build-isolation -ve .` (optionally with `-Ceditable.rebuild=true` to
 rebuild automatically on import).
 
@@ -203,7 +203,7 @@ When reviewing a PR or diff, check:
 
 - Run the full gate suite (`ruff check`, `ty check`, `pytest`) before declaring any Python-side
   task done.
-- CI runs [python-test.yml](.github/workflows/python-test.yml) on Python 3.12/3.13/3.14 ×
+- CI runs [python-test.yml](.github/workflows/python-test.yml) on Python 3.13/3.14/3.15 ×
   ubuntu/windows/macos, plus [r-cmd-check.yml](.github/workflows/r-cmd-check.yml) across
   several R versions/OSes, and [coverage.yml](.github/workflows/coverage.yml). Flag anything
   that might be platform- or compiler-specific — this project has already hit a compiler error

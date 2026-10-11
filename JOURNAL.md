@@ -22,6 +22,76 @@ Entry template:
 
 ---
 
+## 2026-10-11 — Python 3.13–3.15; update build requirements and CI actions
+
+**Why** — The policy is to support the three most recent CPython releases. With 3.15.0
+final released, the window moves from 3.12–3.14 to 3.13–3.15, and 3.12 is dropped.
+Separately, the build requirements and CI actions were a major version or more behind.
+Isolated builds already fetch the latest scikit-build-core and nanobind, so the old floors
+(`>=0.12`, `>=2.12.0`) only described versions nobody tests against. Through
+`minimum-version = "build-system.requires"`, they also kept scikit-build-core emulating its
+pre-1.0 defaults.
+
+**What**
+- Supported Python: `requires-python` `>=3.12` → `>=3.13`; classifiers drop 3.12 and add
+  3.15; stable-ABI target `wheel.py-api` `cp312` → `cp313`; cibuildwheel `build` list
+  `cp312–cp314` → `cp313–cp315`; CMake `find_package(Python 3.12` → `3.13`. CI test matrix,
+  README and AGENTS.md updated to match.
+- Build requirements: `scikit-build-core >=1.1`, `nanobind >=3.1`. Dropped the
+  `[pyproject]` extra from the manual dev-install instructions (README, CMakeLists.txt
+  comment, AGENTS.md): scikit-build-core 1.0 removed it and installers now warn about it.
+- CI actions: `actions/checkout` v6 → v7; `astral-sh/setup-uv` `@v7` (release) and a SHA pin
+  of v8.0.0 (test/coverage) → `@v10.2.0` everywhere; `pypa/cibuildwheel` v4.2.0 → v4.3.1.
+  `upload-artifact@v7`, `download-artifact@v8` and `r-lib/actions@v2` were already on the
+  latest major and are unchanged.
+
+**Design decisions**
+- *Stable-ABI floor follows `requires-python`.* There is no point tagging the wheel `cp312`
+  when pip won't install the package on 3.12. One `cp313-abi3` wheel per platform still
+  covers every supported version.
+- *Build-requirement floors are the versions actually built and tested* (scikit-build-core
+  1.1.1, nanobind 3.1.0), not the oldest that might work. Nothing exercises an older
+  combination, so a lower floor would be an untested claim. The cost falls only on
+  `--no-build-isolation` dev builds, which now need current versions installed.
+- *Raising the scikit-build-core floor deliberately opts into its 1.x defaults*, because
+  `minimum-version` tracks it. Reviewed: SDists now resolve symlinks (the repo tracks none);
+  `project.version` is kept as written (ours is already normalised); renamed config fields
+  now error (we use none of them).
+- *No source changes for nanobind 3.* Its API breaks were reviewed against
+  `src/module.cpp`: no runtime-computed return value policies or `noconvert` annotations,
+  no `nb::none()` in a conditional, no `gil_scoped_acquire`, no trampolines, no
+  `ndarray_traits`. 3.0.0 was yanked; a 3.1 floor also skips it.
+- *nanobind 3's split mode not adopted.* It puts the frontend on the 3.10 stable ABI plus a
+  per-version `nanobind-backend` wheel from PyPI. That would add a runtime dependency (see
+  the runtime-deps rule in AGENTS.md), and the stable-ABI wheel already covers our range.
+- *setup-uv pinned to an exact version tag, replacing the SHA pins.* From v8 setup-uv no
+  longer publishes floating major/minor tags, so `@v10` does not resolve. The choice is
+  between an exact tag and a SHA. SHA pinning normally wins because tags are mutable (cf.
+  the 2025 `tj-actions/changed-files` compromise, where existing tags were repointed to
+  malicious code). But setup-uv publishes GitHub *immutable releases*, so its tags cannot
+  be moved or deleted, and the readable tag gives the same guarantee. Residual risk:
+  immutability is a repo setting upstream controls, not something our workflow enforces.
+  Accepted for this project.
+- *setup-uv v10.2.0 rather than the latest v10.3.0.* v10.3.0 was two days old, and a
+  cooldown before adopting a fresh release lowers exposure to a bad or compromised one.
+  Nothing in v10.3.0 is needed. setup-uv's v8–v10 breaking changes don't apply: no custom
+  `manifest-file`; the `prune-cache` default flip (v9) only affects cache size; automatic
+  cache disabling for `pull_request_target`/`workflow_run` (v10) concerns triggers we
+  don't use.
+- *cibuildwheel at the one-day-old v4.3.1 despite the same cooldown argument.* Its only
+  change moves CPython 3.15 from rc3 to the final 3.15.0, which the new `cp315-*` builds
+  need. Its releases are *not* immutable, so this tag pin is weaker than setup-uv's. Other
+  actions stay on floating major tags (`@v7` etc.), as before.
+
+**Follow-ups**
+- Type stubs not regenerated: no bound signatures changed. nanobind 3's stubgen output
+  differs in formatting from the hand-corrected stubs, as before.
+- No Dependabot config for `github-actions`, so action bumps stay manual. Adding
+  `.github/dependabot.yml` would automate them; its `cooldown` option could encode the
+  "don't adopt brand-new releases" policy.
+
+---
+
 ## 2026-08-28 — Build binary wheels for PyPI releases (#67)
 
 **Why** — The release workflow published only an sdist, so every `pip install humanleague`

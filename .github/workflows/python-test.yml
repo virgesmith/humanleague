@@ -19,12 +19,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.13", "3.14"]
+        python-version: ["3.13", "3.14", "3.15"]
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: "Setup uv ${{ matrix.python-version }} / ${{ matrix.os }}"
-      uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57
+      uses: astral-sh/setup-uv@v10.2.0
       with:
         python-version: ${{ matrix.python-version }}
     - name: Build

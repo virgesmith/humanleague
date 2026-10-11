@@ -46,6 +46,7 @@ pre-1.0 defaults.
   of v8.0.0 (test/coverage) → `@v10.2.0` everywhere; `pypa/cibuildwheel` v4.2.0 → v4.3.1.
   `upload-artifact@v7`, `download-artifact@v8` and `r-lib/actions@v2` were already on the
   latest major and are unchanged.
+- `uv.lock` is now committed (removed from `.gitignore`).
 - Required checks: each of `python-test.yml`, `coverage.yml` and `r-cmd-check.yml` gains an
   `all-passed` summary job (`Python tests passed`, `Coverage passed`, `R CMD check passed`).
   Branch protection on `main` now requires just those three, instead of 15 per-matrix-leg
@@ -88,6 +89,15 @@ pre-1.0 defaults.
   change moves CPython 3.15 from rc3 to the final 3.15.0, which the new `cp315-*` builds
   need. Its releases are *not* immutable, so this tag pin is weaker than setup-uv's. Other
   actions stay on floating major tags (`@v7` etc.), as before.
+- *Commit `uv.lock`.* CI (`uv sync --dev`) and local dev environments now install the same
+  pinned versions, so a CI failure can be reproduced exactly, and dependency changes arrive
+  as reviewable lockfile diffs instead of silently on the next run. The trade-off: CI no
+  longer tests against the latest numpy/pandas, which is what users get, because the lock
+  only constrains our environments, not the published package's requirements. A new
+  upstream release can therefore break users before CI notices, until the lock is
+  refreshed (Dependabot's `uv` ecosystem, planned next). The lock does not cover
+  `build-system.requires`: isolated builds still fetch the latest scikit-build-core and
+  nanobind.
 - *Summary jobs instead of requiring every matrix leg.* Required checks are matched by job
   name, and matrix job names embed the Python/R version (`build (3.12, ubuntu-latest)`).
   So every version bump left branch protection waiting forever for jobs that no longer

@@ -14,11 +14,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.13" ]
+        python-version: [ "3.14" ]
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: "Setup uv ${{ matrix.python-version }} / ${{ matrix.os }}"
-      uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57
+      uses: astral-sh/setup-uv@v10.2.0
       with:
         python-version: ${{ matrix.python-version }}
     - name: Build
@@ -32,3 +32,12 @@ jobs:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: |
         bash <(curl -s https://codecov.io/bash) -Z
+
+  # Single stable check name for branch protection, so the Python version can change without editing it
+  all-passed:
+    name: Coverage passed
+    if: always()
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - run: test "${{ needs.build.result }}" = success

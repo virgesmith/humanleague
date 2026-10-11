@@ -8,11 +8,11 @@ license = "MIT"
 license-files = ["LICENCE", "LICENSE.md"]
 description = "Microsynthesis using quasirandom sampling and/or IPF"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 classifiers = [
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Operating System :: OS Independent",
 ]
 dependencies = [
@@ -21,7 +21,7 @@ dependencies = [
 ]
 
 [build-system]
-requires = ["scikit-build-core >=0.12", "nanobind >=2.12.0"]
+requires = ["scikit-build-core >=1.1", "nanobind >=3.1"]
 build-backend = "scikit_build_core.build"
 
 [dependency-groups]
@@ -46,8 +46,8 @@ minimum-version = "build-system.requires"
 # Setuptools-style build caching in a local directory
 build-dir = "build/{wheel_tag}"
 
-# Build stable ABI wheels for CPython 3.12+
-wheel.py-api = "cp312"
+# Build stable ABI wheels for CPython 3.13+
+wheel.py-api = "cp313"
 
 [tool.ruff]
 line-length = 120
@@ -61,7 +61,7 @@ ignore = ["E501"]
 "tests/*.py" = ["D103", "N802"]
 
 [tool.cibuildwheel]
-build = ["cp312-*", "cp313-*", "cp314-*"]
+build = ["cp313-*", "cp314-*", "cp315-*"]
 # manylinux only - alpine/musl builds aren't tested anywhere
 skip = ["*-musllinux_*"]
 build-frontend = "build[uv]"

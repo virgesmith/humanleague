@@ -52,7 +52,7 @@ Version 1.0.1 reflects the work described in the [Quasirandom Integer Sampling (
 
 ### Python
 
-Requires Python 3.12 or newer. The package can be installed using `pip`, e.g.
+Requires Python 3.13 or newer. The package can be installed using `pip`, e.g.
 
 
 ```bash
@@ -74,7 +74,7 @@ Nanobind docs suggest a dev workflow where the build happens directly in the dev
 the build deps (required after every `uv sync`)
 
 ```sh
-uv pip install nanobind scikit-build-core[pyproject]
+uv pip install nanobind scikit-build-core
 ```
 
 Then build with

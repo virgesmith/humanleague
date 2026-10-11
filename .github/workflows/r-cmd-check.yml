@@ -54,3 +54,11 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           path: check
+  # Single stable check name for branch protection, so the R matrix can change without editing it
+  all-passed:
+    name: R CMD check passed
+    if: always()
+    needs: R-CMD-check
+    runs-on: ubuntu-latest
+    steps:
+      - run: test "${{ needs.R-CMD-check.result }}" = success

@@ -36,3 +36,12 @@ jobs:
     - name: Test
       run: |
         uv run pytest
+
+  # Single stable check name for branch protection, so the Python matrix can change without editing it
+  all-passed:
+    name: Python tests passed
+    if: always()
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - run: test "${{ needs.build.result }}" = success

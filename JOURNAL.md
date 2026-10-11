@@ -36,7 +36,7 @@ pre-1.0 defaults.
 - Supported Python: `requires-python` `>=3.12` → `>=3.13`; classifiers drop 3.12 and add
   3.15; stable-ABI target `wheel.py-api` `cp312` → `cp313`; cibuildwheel `build` list
   `cp312–cp314` → `cp313–cp315`; CMake `find_package(Python 3.12` → `3.13`. CI test matrix,
-  README and AGENTS.md updated to match.
+  README and AGENTS.md updated to match; the coverage job moves from 3.13 to 3.14.
 - Build requirements: `scikit-build-core >=1.1`, `nanobind >=3.1`. Dropped the
   `[pyproject]` extra from the manual dev-install instructions (README, CMakeLists.txt
   comment, AGENTS.md): scikit-build-core 1.0 removed it and installers now warn about it.
@@ -44,6 +44,10 @@ pre-1.0 defaults.
   of v8.0.0 (test/coverage) → `@v10.2.0` everywhere; `pypa/cibuildwheel` v4.2.0 → v4.3.1.
   `upload-artifact@v7`, `download-artifact@v8` and `r-lib/actions@v2` were already on the
   latest major and are unchanged.
+- Required checks: each of `python-test.yml`, `coverage.yml` and `r-cmd-check.yml` gains an
+  `all-passed` summary job (`Python tests passed`, `Coverage passed`, `R CMD check passed`).
+  Branch protection on `main` now requires just those three, instead of 15 per-matrix-leg
+  job names. AGENTS.md updated: it said no status checks were required, which was out of date.
 
 **Design decisions**
 - *Stable-ABI floor follows `requires-python`.* There is no point tagging the wheel `cp312`
@@ -82,6 +86,20 @@ pre-1.0 defaults.
   change moves CPython 3.15 from rc3 to the final 3.15.0, which the new `cp315-*` builds
   need. Its releases are *not* immutable, so this tag pin is weaker than setup-uv's. Other
   actions stay on floating major tags (`@v7` etc.), as before.
+- *Summary jobs instead of requiring every matrix leg.* Required checks are matched by job
+  name, and matrix job names embed the Python/R version (`build (3.12, ubuntu-latest)`).
+  So every version bump left branch protection waiting forever for jobs that no longer
+  exist, and this PR hit exactly that. A summary job `needs:` the matrix and gives one name
+  that stays the same. Details:
+  - `if: always()` is essential. Without it, a failed matrix leg makes the summary job
+    *skipped*, and GitHub counts a skipped required check as passing.
+  - The step checks `needs.<job>.result == success`, so a failure or cancellation in any
+    leg fails the summary.
+  - One summary job per workflow, because `needs:` cannot cross workflow files. Rejected:
+    merging the three workflows into one, which is a bigger restructure and would couple
+    R and Python CI triggers.
+  - Rejected: a ruleset or third-party "wait for all checks" action. These add a moving
+    part, or a dependency, for what three five-line jobs already do.
 
 **Follow-ups**
 - Type stubs not regenerated: no bound signatures changed. nanobind 3's stubgen output

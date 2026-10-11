@@ -208,9 +208,11 @@ When reviewing a PR or diff, check:
   several R versions/OSes, and [coverage.yml](.github/workflows/coverage.yml). Flag anything
   that might be platform- or compiler-specific — this project has already hit a compiler error
   specific to Debian bookworm.
-- `main` has branch protection (PRs required; force-push and branch deletion disabled) but does
-  **not** currently have required status checks configured server-side — CI passing is expected
-  but not enforced by GitHub, so don't rely on it to block a bad merge.
+- `main` has branch protection (PRs required; force-push and branch deletion disabled) and
+  requires three status checks: `Python tests passed`, `Coverage passed` and
+  `R CMD check passed`. These are summary jobs (`all-passed`) at the end of each workflow,
+  so the matrices can change without editing branch protection. Renaming a summary job,
+  or adding a workflow that should gate merges, *does* need the required checks updated.
 
 ## Repository Layout
 
@@ -246,9 +248,8 @@ release_notes.md
 
 ## Branch and Release Policy
 
-- **`main` is branch-protected** (PRs required; force-push and branch deletion disabled).
-  Required status checks are not configured, so passing CI is expected but not enforced by
-  GitHub — treat it as a hard requirement anyway.
+- **`main` is branch-protected** (PRs required; force-push and branch deletion disabled;
+  the three CI summary checks are required — see [QA Rules](#qa-rules)).
 - **Python releases are triggered by a `v*` tag** (e.g. `v2.5.0`), which runs
   [pypi-release.yml](.github/workflows/pypi-release.yml) and publishes to PyPI. That workflow
   currently builds and publishes an **sdist only** (`uv build --sdist`) — no wheels — so
@@ -275,8 +276,8 @@ release_notes.md
    if a bound function's signature changed, regenerate/update the type stubs (see
    [doc/type-stubs.md](doc/type-stubs.md)).
 8. Commit — pre-commit hooks will auto-fix formatting, re-lock `uv.lock`, and type-check.
-9. Open a PR targeting `main`; CI should pass (Python matrix, R-CMD-check, coverage) before
-   merging even though it isn't a hard-enforced gate.
+9. Open a PR targeting `main`; CI (Python matrix, R-CMD-check, coverage) must pass before
+   merging — GitHub enforces this via the required summary checks.
 10. To release: bump the version in `pyproject.toml`, merge to `main`, then push a `vX.Y.Z`
     tag — PyPI publish triggers automatically (sdist only, see
     [Branch and Release Policy](#branch-and-release-policy)).

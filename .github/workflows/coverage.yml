@@ -32,3 +32,12 @@ jobs:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: |
         bash <(curl -s https://codecov.io/bash) -Z
+
+  # Single stable check name for branch protection, so the Python version can change without editing it
+  all-passed:
+    name: Coverage passed
+    if: always()
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - run: test "${{ needs.build.result }}" = success

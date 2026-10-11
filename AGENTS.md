@@ -162,6 +162,14 @@ uploads coverage to Codecov on every push/PR to `main`.
 - **Runtime dependencies are intentional.** `numpy` and `pandas` are the only runtime deps.
   New runtime deps need a strong justification; dev-only tools go in `[dependency-groups.dev]`
   in [pyproject.toml](pyproject.toml).
+- **Supported Python versions: the three most recent CPython releases.** When a new release
+  lands, the oldest version is dropped in the same change. Update all of these together:
+  `requires-python` and the classifiers, `wheel.py-api` (the stable-ABI floor) and the
+  `[tool.cibuildwheel]` `build` list in [pyproject.toml](pyproject.toml), `find_package(Python …)`
+  in [CMakeLists.txt](CMakeLists.txt), the matrix in
+  [python-test.yml](.github/workflows/python-test.yml), the coverage job's version, and
+  [README.md](README.md). Branch protection needs no change: it requires the summary checks,
+  not the per-version jobs.
 - **C++ unit tests live alongside the algorithms** (`src/Test*.cpp`, run via `UnitTester.cpp`)
   and are exposed to Python as `hl_unittest()` / `test_unittest` in [tests/test_all.py](tests/test_all.py).
   Add to these for new C++-level algorithm behaviour rather than only testing at the Python boundary.

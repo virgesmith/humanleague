@@ -36,7 +36,9 @@ pre-1.0 defaults.
 - Supported Python: `requires-python` `>=3.12` → `>=3.13`; classifiers drop 3.12 and add
   3.15; stable-ABI target `wheel.py-api` `cp312` → `cp313`; cibuildwheel `build` list
   `cp312–cp314` → `cp313–cp315`; CMake `find_package(Python 3.12` → `3.13`. CI test matrix,
-  README and AGENTS.md updated to match; the coverage job moves from 3.13 to 3.14.
+  README and AGENTS.md updated to match; the coverage job moves from 3.13 to 3.14. The
+  three-version policy, and the checklist of places a version change touches, are now a
+  Developer Rule in AGENTS.md.
 - Build requirements: `scikit-build-core >=1.1`, `nanobind >=3.1`. Dropped the
   `[pyproject]` extra from the manual dev-install instructions (README, CMakeLists.txt
   comment, AGENTS.md): scikit-build-core 1.0 removed it and installers now warn about it.
